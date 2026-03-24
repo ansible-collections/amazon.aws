@@ -2,5 +2,3 @@ time=12m
 
 cloud/aws
 connection_aws_ssm
-
-unstable

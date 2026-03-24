@@ -8,6 +8,21 @@
 # when it comes to rewriting the import paths and as such we can't import fixtures via their
 # absolute import path or across collections.
 
+# MEMORY GUARDRAILS:
+# Tests that use poll() and readline() are decorated with @pytest.mark.limit_memory
+# to prevent infinite loops from causing out-of-memory errors. If these tests exceed
+# the memory limit, they will fail fast rather than consuming all system memory.
+#
+# Usage:
+#   @pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
+#   def test_that_uses_poll_or_readline():
+#       ...
+#
+# Common pitfalls that cause memory issues:
+#   1. Mocking session.poll() to always return None creates infinite loops in flush_stderr()
+#   2. Mocking the wrong method (e.g., stdout_read_text instead of stdout_readline)
+#   3. Not providing enough mock data in side_effect, causing MagicMock to return itself infinitely
+#   4. Accumulating mocks in test class instance variables (use local vars instead)
 
 import random
 import string
@@ -23,12 +38,16 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager impo
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMProcessManagerTimeOutFailure
 from ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager import SSMSessionManager
 
+# Memory limit for tests that use poll/readline to prevent infinite loops from causing OOM
+# 50MB should be plenty for these unit tests
+MEMORY_LIMIT_MB = 50
+
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_poll.py requires the python modules 'boto3' and 'botocore'")
 
 
 def verbosity_display(verbose, message):
-    print("".join(["v" for i in range(verbose)]) + " >> " + message)
+    print("v" * verbose + " >> " + message)
 
 
 @pytest.mark.parametrize(
@@ -47,7 +66,7 @@ def test_process_manager_poll(m_create_polling_obj, timeout, number_poll_false):
         instance_id=MagicMock(), session=session, stdout=stdout, timeout=timeout, verbosity_display=verbosity_display
     )
     proc_mgr.poll_stdout = MagicMock()
-    proc_mgr.poll_stdout.side_effect = [False for i in range(number_poll_false)] + [True]
+    proc_mgr.poll_stdout.side_effect = [False] * number_poll_false + [True]
 
     for result in proc_mgr.poll("UNIT_TEST", "ansible-test units"):
         if result:
@@ -55,6 +74,7 @@ def test_process_manager_poll(m_create_polling_obj, timeout, number_poll_false):
     m_create_polling_obj.assert_called_once_with(stdout)
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @patch("time.time")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_poll_with_timeout(m_create_polling_obj, time_time):
@@ -72,7 +92,7 @@ def test_process_manager_poll_with_timeout(m_create_polling_obj, time_time):
         instance_id=instance_id, session=session, stdout=stdout, timeout=timeout, verbosity_display=verbosity_display
     )
     proc_mgr.poll_stdout = MagicMock()
-    proc_mgr.poll_stdout.side_effect = [False for i in range(2 * timeout)]
+    proc_mgr.poll_stdout.side_effect = [False] * (2 * timeout)
 
     with pytest.raises(SSMProcessManagerTimeOutFailure) as exc_info:
         for result in proc_mgr.poll("UNIT_TEST", "ansible-test units"):
@@ -82,6 +102,7 @@ def test_process_manager_poll_with_timeout(m_create_polling_obj, time_time):
     m_create_polling_obj.assert_called_once_with(stdout)
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_flush_stderr(m_create_polling_obj):
     session = MagicMock()
@@ -109,6 +130,7 @@ def test_process_manager_flush_stderr(m_create_polling_obj):
     poller.poll.assert_called()
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @pytest.mark.parametrize(
     "stdout_text, match",
     [
@@ -123,7 +145,7 @@ def test_process_manager_wait_for_match(m_create_polling_obj, stdout_text, match
     stdout = MagicMock()
 
     session.poll = MagicMock()
-    session.poll.side_effect = lambda: None
+    session.poll.return_value = 0
 
     proc_mgr = ProcessManager(
         instance_id=MagicMock(),
@@ -134,24 +156,27 @@ def test_process_manager_wait_for_match(m_create_polling_obj, stdout_text, match
     )
     proc_mgr.poll = MagicMock()
 
-    proc_mgr.poll.return_value = [True for i in range(5)] + [
-        SSMProcessManagerTimeOutFailure("unit tests process failure")
-    ]
-    proc_mgr.stdout_read_text = MagicMock()
-    proc_mgr.stdout_read_text.side_effect = stdout_text
+    def _mock_poll(**kwargs):
+        for i in range(5):
+            yield True
+
+    proc_mgr.poll.side_effect = _mock_poll
+    proc_mgr.stdout_readline = MagicMock()
+    proc_mgr.stdout_readline.side_effect = stdout_text
 
     label = MagicMock()
     cmd = MagicMock()
     proc_mgr.wait_for_match(label=label, cmd=cmd, match=match)
 
 
+@pytest.mark.limit_memory(f"{MEMORY_LIMIT_MB} MB")
 @patch("ansible_collections.amazon.aws.plugins.plugin_utils.ssm.sessionmanager._create_polling_obj")
 def test_process_manager_wait_for_match_failure(m_create_polling_obj):
     session = MagicMock()
     stdout = MagicMock()
 
     session.poll = MagicMock()
-    session.poll.side_effect = lambda: None
+    session.poll.return_value = 0
 
     proc_mgr = ProcessManager(
         instance_id=MagicMock(),
@@ -168,8 +193,8 @@ def test_process_manager_wait_for_match_failure(m_create_polling_obj):
         raise SSMProcessManagerTimeOutFailure("unit tests process failure")
 
     proc_mgr.poll.side_effect = _mock_poll
-    proc_mgr.stdout_read_text = MagicMock()
-    proc_mgr.stdout_read_text.side_effect = ["ansible" for i in range(20)]
+    proc_mgr.stdout_readline = MagicMock()
+    proc_mgr.stdout_readline.side_effect = ["ansible"] * 20
 
     label = MagicMock()
     cmd = MagicMock()
@@ -209,16 +234,15 @@ def test_process_manager_terminate(m_create_polling_obj, has_timeout):
 
 class TestSSMSessionManager:
     def create_session_manager(self):
-        self.ssm_client = MagicMock()
-        self.instance_id = MagicMock()
-        self.ssm_timeout = MagicMock()
-        self.verbosity = verbosity_display
+        ssm_client = MagicMock()
+        instance_id = MagicMock()
+        ssm_timeout = MagicMock()
 
         session = SSMSessionManager(
-            ssm_client=self.ssm_client,
-            instance_id=self.instance_id,
-            ssm_timeout=self.instance_id,
-            verbosity_display=self.verbosity,
+            ssm_client=ssm_client,
+            instance_id=instance_id,
+            ssm_timeout=instance_id,
+            verbosity_display=verbosity_display,
         )
 
         return session

@@ -48,11 +48,31 @@ ami_details:
             sudo systemctl start amazon-ssm-agent
         os_type: linux
     windows:
+        instance_type: m1.large  # Windows Server 2022 requires more memory (2GB minimum)
         ssm_parameter: /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base
         # owner: amazon
         # name: Windows_Server-2022-English-Full-Base-*
         user_data: |
             <powershell>
+            # Pre-create ssm-user account to avoid SSM Agent race conditions on Windows Server 2022
+            # SSM Agent 2.3.612.0+ creates this account on first session, but Windows policies may disable it
+            $username = "ssm-user"
+            $password = ConvertTo-SecureString -String ([System.Guid]::NewGuid().ToString()) -AsPlainText -Force
+
+            # Check if user exists, create if not
+            try {
+                Get-LocalUser -Name $username -ErrorAction Stop
+                Write-Host "User $username already exists"
+            } catch {
+                Write-Host "Creating user $username"
+                New-LocalUser -Name $username -Password $password -PasswordNeverExpires -UserMayNotChangePassword
+            }
+
+            # Ensure user is enabled and in Administrators group
+            Enable-LocalUser -Name $username -ErrorAction SilentlyContinue
+            Add-LocalGroupMember -Group "Administrators" -Member $username -ErrorAction SilentlyContinue
+
+            # Install/Update SSM Agent
             Invoke-WebRequest -Uri "https://amazon-ssm-us-east-1.s3.amazonaws.com/latest/windows_amd64/AmazonSSMAgentSetup.exe"
             -OutFile "C:\AmazonSSMAgentSetup.exe"
             Start-Process -FilePath C:\AmazonSSMAgentSetup.exe -ArgumentList "/S","/v","/qn" -Wait
