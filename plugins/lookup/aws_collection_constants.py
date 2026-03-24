@@ -3,6 +3,8 @@
 # (c) 2023 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 name: aws_collection_constants
 author:
@@ -34,6 +36,11 @@ _raw:
   type: str
 """
 
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+
 from ansible.errors import AnsibleLookupError
 from ansible.plugins.lookup import LookupBase
 
@@ -49,7 +56,14 @@ except ImportError:
 
 
 class LookupModule(LookupBase):
-    def lookup_constant(self, name):  # pylint: disable=too-many-return-statements
+    def _validate_terms(self, terms: list[str]) -> None:
+        """Validate that exactly one term is provided"""
+        if not terms:
+            raise AnsibleLookupError("Constant name not provided")
+        if len(terms) > 1:
+            raise AnsibleLookupError("Multiple constant names provided")
+
+    def lookup_constant(self, name: str) -> str | bool | None:  # pylint: disable=too-many-return-statements
         if name == "MINIMUM_BOTOCORE_VERSION":
             return botocore_utils.MINIMUM_BOTOCORE_VERSION
         if name == "MINIMUM_BOTO3_VERSION":
@@ -71,12 +85,9 @@ class LookupModule(LookupBase):
                 raise AnsibleLookupError("Unable to load ansible_collections.community.aws.plugins.module_utils.common")
             return community_utils.COMMUNITY_AWS_COLLECTION_NAME
 
-    def run(self, terms, variables, **kwargs):
+    def run(self, terms: list[str], variables: dict[str, Any], **kwargs: Any) -> list[str | bool]:
         self.set_options(var_options=variables, direct=kwargs)
-        if not terms:
-            raise AnsibleLookupError("Constant name not provided")
-        if len(terms) > 1:
-            raise AnsibleLookupError("Multiple constant names provided")
+        self._validate_terms(terms)
         name = terms[0].upper()
 
         return [self.lookup_constant(name)]
