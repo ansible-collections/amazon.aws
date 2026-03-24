@@ -66,11 +66,11 @@ exclude = [".tox", "tests/output"]
 unfixable = ["F401"]
 ignore = ["F401", "E402"]
 
-[tool.pylint.main]
-ignore = [".tox", "tests/output"]
-
 [tool.pytest.ini_options]
 xfail_strict = true
+markers = [
+    "limit_memory: Mark test with memory limit for pytest-memray",
+]
 
 [tool.coverage.run]
 source = [
