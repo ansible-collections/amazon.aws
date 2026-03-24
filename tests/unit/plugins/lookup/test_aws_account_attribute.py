@@ -19,6 +19,7 @@ def fixture_lookup_plugin():
     lookup._display = MagicMock()
     lookup.warn = MagicMock()
     lookup.set_options = MagicMock()
+    lookup._load_name = "aws_account_attribute"
     # Mock the cached client instead of the property
     lookup._cached_client = MagicMock()
     return lookup
@@ -255,9 +256,7 @@ class TestRun:
 
         assert result is None
         lookup_plugin.warn.assert_called_once()
-        assert (
-            "access denied for account attribute default-vpc" in lookup_plugin.warn.call_args[0][0].lower()
-        )
+        assert "access denied for account attribute default-vpc" in lookup_plugin.warn.call_args[0][0].lower()
 
     def test_run_access_denied_skip(self, lookup_plugin):
         """Test run with AccessDeniedException - on_denied=skip"""

@@ -156,9 +156,7 @@ class TestLookupErrorHandler:
             result = get_value(mock_lookup, "missing-resource")
             assert result is None
             if on_missing == "warn":
-                mock_lookup.warn.assert_called_once_with(
-                    "Skipping, did not find test resource missing-resource"
-                )
+                mock_lookup.warn.assert_called_once_with("Skipping, did not find test resource missing-resource")
 
     @pytest.mark.parametrize("on_missing", ["error", "warn", "skip"])
     def test_handle_parameter_not_found(self, on_missing):
@@ -181,9 +179,7 @@ class TestLookupErrorHandler:
             result = get_value(mock_lookup, "missing-param")
             assert result is None
             if on_missing == "warn":
-                mock_lookup.warn.assert_called_once_with(
-                    "Skipping, did not find SSM parameter missing-param"
-                )
+                mock_lookup.warn.assert_called_once_with("Skipping, did not find SSM parameter missing-param")
 
     @pytest.mark.parametrize("on_denied", ["error", "warn", "skip"])
     def test_handle_access_denied(self, on_denied):
@@ -322,9 +318,7 @@ class TestLookupErrorHandler:
             result = extract_value(mock_lookup, "parameter.config.database.port")
             assert result is None
             if on_missing == "warn":
-                mock_lookup.warn.assert_called_once_with(
-                    "Skipping nested key config.database.port in SSM parameter"
-                )
+                mock_lookup.warn.assert_called_once_with("Skipping nested key config.database.port in SSM parameter")
 
     def test_handle_botocore_error(self):
         """Test decorator handles BotoCoreError (not ClientError)"""
