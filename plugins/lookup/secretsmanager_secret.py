@@ -120,10 +120,11 @@ _raw:
 import json
 
 from ansible.errors import AnsibleLookupError
+from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupErrorHandler
-from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import NestedKeyNotFoundError
+from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupResourceNotFoundError
 
 
 class LookupModule(AWSLookupBase):
@@ -179,16 +180,19 @@ class LookupModule(AWSLookupBase):
         """Lookup secrets by path"""
         secrets = {}
         for term in terms:
+            self.v_log(3, f"secretsmanager_secret path lookup term: {term} in region: {self.region}")
             secret_list = self._fetch_secret_list(term)
             for secret_obj in secret_list:
                 value = self.get_secret_value(secret_obj["Name"])
                 if value is not None:
                     secrets[secret_obj["Name"]] = value
 
+        self.v_log(4, f"secretsmanager_secret path lookup returning: {to_native(secrets)}")
         return [secrets] if secrets else []
 
     def _lookup_by_name(self, terms):
         """Lookup secrets by name"""
+        self.v_log(3, f"secretsmanager_secret name lookup term: {terms}")
         secrets = []
         for term in terms:
             value = self.get_secret_value(
@@ -201,8 +205,11 @@ class LookupModule(AWSLookupBase):
                 secrets.append(value)
 
         if self.get_option("join"):
-            return ["".join(secrets)]
+            joined = ["".join(secrets)]
+            self.v_log(4, f"secretsmanager_secret name lookup returning (joined): {to_native(joined)}")
+            return joined
 
+        self.v_log(4, f"secretsmanager_secret name lookup returning: {to_native(secrets)}")
         return secrets
 
     @LookupErrorHandler.handle_lookup_errors("secret")
@@ -258,7 +265,7 @@ class LookupModule(AWSLookupBase):
         """
         Extract nested value from secret JSON.
 
-        Raises NestedKeyNotFoundError if any key in the path is not found,
+        Raises LookupResourceNotFoundError if any key in the path is not found,
         which is caught by the @handle_lookup_errors decorator.
         """
         query = term.split(".")[1:]
@@ -273,6 +280,6 @@ class LookupModule(AWSLookupBase):
             except (KeyError, TypeError) as e:
                 # KeyError: key not in dict
                 # TypeError: trying to access a non-dict (e.g., string) as a dict
-                raise NestedKeyNotFoundError(path) from e
+                raise LookupResourceNotFoundError(path) from e
 
         return str(ret_val)

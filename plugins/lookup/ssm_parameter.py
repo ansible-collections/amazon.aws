@@ -141,13 +141,11 @@ EXAMPLES = r"""
 
 from ansible.errors import AnsibleLookupError
 from ansible.module_utils.common.text.converters import to_native
-from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupErrorHandler
-
-display = Display()
+from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupResourceNotFoundError
 
 
 class LookupModule(AWSLookupBase):
@@ -202,21 +200,21 @@ class LookupModule(AWSLookupBase):
         ret = []
 
         for term in terms:
-            display.vvv(f"AWS_ssm path lookup term: {term} in region: {self.region}")
+            self.v_log(3, f"AWS_ssm path lookup term: {term} in region: {self.region}")
 
             paramlist = self.get_path_parameters(term, ssm_dict)
             self._process_parameter_names(paramlist, term)
 
-            display.vvvv(f"aws_ssm path lookup returned: {to_native(paramlist)}")
+            self.v_log(4, f"aws_ssm path lookup returned: {to_native(paramlist)}")
 
             ret.append(boto3_tag_list_to_ansible_dict(paramlist, tag_name_key_name="Name", tag_value_key_name="Value"))
 
-        display.vvvv(f"aws_ssm path lookup returning: {to_native(ret)} ")
+        self.v_log(4, f"aws_ssm path lookup returning: {to_native(ret)} ")
         return ret
 
     def _lookup_by_name(self, ssm_dict, terms):
         """Lookup SSM parameters by name"""
-        display.vvv(f"aws_ssm name lookup term: {terms}")
+        self.v_log(3, f"aws_ssm name lookup term: {terms}")
         ret = []
 
         for term in terms:
@@ -228,7 +226,7 @@ class LookupModule(AWSLookupBase):
         if ret and all(v is None for v in ret):
             ret = []
 
-        display.vvvv(f"aws_ssm path lookup returning: {to_native(ret)} ")
+        self.v_log(4, f"aws_ssm name lookup returning: {to_native(ret)} ")
         return ret
 
     @LookupErrorHandler.handle_lookup_errors("SSM parameter path", default_value=[{}])
@@ -244,11 +242,12 @@ class LookupModule(AWSLookupBase):
 
         # Handle empty results (API call succeeded but no parameters found)
         if not paramlist:
-            on_missing = self.on_missing
-            if on_missing == "error":
-                raise AnsibleLookupError(f"Failed to find SSM parameter path {term} (ResourceNotFound)")
-            elif on_missing == "warn":
-                self.warn(f"Skipping, did not find SSM parameter path {term}")
+            raise LookupResourceNotFoundError(
+                path=term,
+                error_template="Failed to find SSM parameter path {term} (ResourceNotFound)",
+                warn_template="Skipping, did not find SSM parameter path {term}",
+                default_value=[],
+            )
 
         return paramlist
 

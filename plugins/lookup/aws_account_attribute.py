@@ -58,6 +58,8 @@ _raw:
       (or all attributes if one is not specified).
 """
 
+from ansible.module_utils.common.text.converters import to_native
+
 from ansible_collections.amazon.aws.plugins.plugin_utils._lookup.common import LookupErrorHandler
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
 
@@ -135,6 +137,8 @@ class LookupModule(AWSLookupBase):
 
         # Pass attribute name as term for error messages
         term = attribute or "all attributes"
+        self.v_log(3, f"aws_account_attribute lookup term: {term} in region: {self.region}")
+
         result = self._describe_account_attributes(term=term, **params)
 
         # Handle case where access was denied with on_denied=warn/skip
@@ -144,12 +148,18 @@ class LookupModule(AWSLookupBase):
         response = result["AccountAttributes"]
 
         if check_ec2_classic:
-            return [self._process_response_for_ec2_classic(response)]
+            ret = [self._process_response_for_ec2_classic(response)]
+            self.v_log(4, f"aws_account_attribute lookup returning: {to_native(ret)}")
+            return ret
 
         if attribute:
-            return self._process_response_for_attribute(response)
+            ret = self._process_response_for_attribute(response)
+            self.v_log(4, f"aws_account_attribute lookup returning: {to_native(ret)}")
+            return ret
 
-        return [self._process_response_for_all_attributes(response)]
+        ret = [self._process_response_for_all_attributes(response)]
+        self.v_log(4, f"aws_account_attribute lookup returning: {to_native(ret)}")
+        return ret
 
     @LookupErrorHandler.handle_lookup_errors("account attribute")
     def _describe_account_attributes(self, term, **params):

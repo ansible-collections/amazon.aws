@@ -23,18 +23,18 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 
 
-class NestedKeyNotFoundError(KeyError):
+class LookupResourceNotFoundError(KeyError):
     """
-    KeyError that includes the full nested path that failed lookup.
+    Exception for lookup resources that were not found.
 
-    Used when traversing nested dictionaries/JSON structures to preserve
-    the key path for error messages. Optionally carries custom error and
-    warning message templates.
+    Used when a resource (parameter, secret, nested key, etc.) is not found during lookup.
+    Carries custom error and warning message templates that can be used by the error handler.
 
     Parameters:
-        path: The full dotted path that failed (e.g., "root.child.missing_key")
-        error_template: Template for error messages (default: standard nested key message)
-        warn_template: Template for warning messages (default: standard nested key message)
+        path: The resource identifier or path that failed (e.g., "parameter-name", "secret.key.path")
+        error_template: Template for error messages (default: standard not found message)
+        warn_template: Template for warning messages (default: standard not found message)
+        default_value: Value to return for warn/skip (overrides decorator's default_value if provided)
 
     Templates should include a {term} placeholder for the path.
     """
@@ -44,6 +44,7 @@ class NestedKeyNotFoundError(KeyError):
         path: str,
         error_template: str | None = None,
         warn_template: str | None = None,
+        default_value: Any = ...,
     ) -> None:
         self.path = path
         self.error_template = (
@@ -52,6 +53,7 @@ class NestedKeyNotFoundError(KeyError):
         self.warn_template = (
             warn_template or "Skipping, Successfully retrieved secret but there exists no key {term} in the secret"
         )
+        self.default_value = default_value
         super().__init__(path)
 
 
@@ -77,7 +79,7 @@ class LookupErrorHandler:
         Error Handling Behavior:
             - Reads on_missing, on_denied, on_deleted from cached properties on the lookup instance
             - Catches boto3 ClientError/BotoCoreError and handles based on error code
-            - Catches NestedKeyNotFoundError for nested dictionary traversal failures
+            - Catches LookupResourceNotFoundError for custom resource not found cases
             - ResourceNotFoundException/ParameterNotFound -> delegates to on_missing
             - AccessDeniedException -> delegates to on_denied
             - Error message containing "marked for deletion" -> delegates to on_deleted
@@ -138,7 +140,9 @@ class LookupErrorHandler:
                         f"Skipping, did not find {resource_type} {{term}}",
                         default_value,
                     )
-                except NestedKeyNotFoundError as e:  # pylint: disable=duplicate-except
+                except LookupResourceNotFoundError as e:
+                    # Use exception's default_value if provided, otherwise use decorator's default_value
+                    value_to_return = e.default_value if e.default_value is not ... else default_value
                     return LookupErrorHandler._handle_response(
                         self,
                         on_missing,
@@ -146,7 +150,7 @@ class LookupErrorHandler:
                         "key",
                         e.error_template,
                         e.warn_template,
-                        default_value,
+                        value_to_return,
                     )
                 except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
                     return LookupErrorHandler._handle_response(
@@ -196,6 +200,6 @@ class LookupErrorHandler:
         if action == "error":
             raise AnsibleLookupError(error_msg.format(term=term))
         elif action == "warn":
-            lookup_instance._display.warning(warn_msg.format(term=term))
+            lookup_instance.warn(warn_msg.format(term=term))
         # For "skip" or "warn", return the default value
         return default_value

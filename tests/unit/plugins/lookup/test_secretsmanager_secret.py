@@ -234,24 +234,24 @@ class TestExtractNestedValue:
         assert "localhost" in result
 
     def test_extract_missing_key_raises_nested_error(self, lookup_plugin):
-        """Test that missing keys raise NestedKeyNotFoundError"""
-        from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import NestedKeyNotFoundError
+        """Test that missing keys raise LookupResourceNotFoundError"""
+        from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupResourceNotFoundError
 
         secret_string = '{"db": {"prod": {"password": "secret123"}}}'
 
-        with pytest.raises(NestedKeyNotFoundError) as exc_info:
+        with pytest.raises(LookupResourceNotFoundError) as exc_info:
             lookup_plugin._extract_nested_value(secret_string, "my-secret.db.staging.password")
 
         assert exc_info.value.path == "db.staging"
 
     def test_extract_key_from_non_dict_raises_nested_error(self, lookup_plugin):
-        """Test that trying to traverse a non-dict raises NestedKeyNotFoundError"""
-        from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import NestedKeyNotFoundError
+        """Test that trying to traverse a non-dict raises LookupResourceNotFoundError"""
+        from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupResourceNotFoundError
 
         secret_string = '{"password": "secret123"}'
 
         # Trying to access password.nested when password is a string, not a dict
-        with pytest.raises(NestedKeyNotFoundError) as exc_info:
+        with pytest.raises(LookupResourceNotFoundError) as exc_info:
             lookup_plugin._extract_nested_value(secret_string, "my-secret.password.nested")
 
         assert exc_info.value.path == "password.nested"

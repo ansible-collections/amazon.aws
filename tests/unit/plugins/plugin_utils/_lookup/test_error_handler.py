@@ -11,7 +11,7 @@ from botocore.exceptions import ClientError
 from ansible.errors import AnsibleLookupError
 
 from ansible_collections.amazon.aws.plugins.plugin_utils._lookup.common import LookupErrorHandler
-from ansible_collections.amazon.aws.plugins.plugin_utils._lookup.common import NestedKeyNotFoundError
+from ansible_collections.amazon.aws.plugins.plugin_utils._lookup.common import LookupResourceNotFoundError
 
 
 def _raise_boto_clienterror(code, msg):
@@ -28,6 +28,7 @@ class MockLookup:
 
     def __init__(self):
         self._display = MagicMock()
+        self.warn = MagicMock()
         self.aws_client = MagicMock()
         # Set default values for cached properties
         self.on_missing = "error"
@@ -67,7 +68,7 @@ class TestHandleResponse:
         )
 
         assert result is None
-        lookup_instance._display.warning.assert_called_once_with("Skipping test-resource")
+        lookup_instance.warn.assert_called_once_with("Skipping test-resource")
 
     def test_handle_response_skip_action(self):
         """Test _handle_response returns None for 'skip' action"""
@@ -155,7 +156,7 @@ class TestLookupErrorHandler:
             result = get_value(mock_lookup, "missing-resource")
             assert result is None
             if on_missing == "warn":
-                mock_lookup._display.warning.assert_called_once_with(
+                mock_lookup.warn.assert_called_once_with(
                     "Skipping, did not find test resource missing-resource"
                 )
 
@@ -180,7 +181,7 @@ class TestLookupErrorHandler:
             result = get_value(mock_lookup, "missing-param")
             assert result is None
             if on_missing == "warn":
-                mock_lookup._display.warning.assert_called_once_with(
+                mock_lookup.warn.assert_called_once_with(
                     "Skipping, did not find SSM parameter missing-param"
                 )
 
@@ -203,7 +204,7 @@ class TestLookupErrorHandler:
             result = get_value(mock_lookup, "denied-secret")
             assert result is None
             if on_denied == "warn":
-                mock_lookup._display.warning.assert_called_once_with("Skipping, access denied for secret denied-secret")
+                mock_lookup.warn.assert_called_once_with("Skipping, access denied for secret denied-secret")
 
     @pytest.mark.parametrize("on_deleted", ["error", "warn", "skip"])
     def test_handle_marked_for_deletion(self, on_deleted):
@@ -226,7 +227,7 @@ class TestLookupErrorHandler:
             result = get_value(mock_lookup, "deleted-secret")
             assert result is None
             if on_deleted == "warn":
-                mock_lookup._display.warning.assert_called_once_with(
+                mock_lookup.warn.assert_called_once_with(
                     "Skipping, did not find secret (marked for deletion) deleted-secret"
                 )
 
@@ -275,14 +276,14 @@ class TestLookupErrorHandler:
 
     @pytest.mark.parametrize("on_missing", ["error", "warn", "skip"])
     def test_handle_nested_key_not_found(self, on_missing):
-        """Test decorator handles NestedKeyNotFoundError correctly"""
+        """Test decorator handles LookupResourceNotFoundError correctly"""
         mock_lookup = MockLookup()
         mock_lookup.on_missing = on_missing
 
         @LookupErrorHandler.handle_lookup_errors("secret")
         def extract_value(self, term):
             # Simulate nested key traversal that fails
-            raise NestedKeyNotFoundError("root.child.missing_key")
+            raise LookupResourceNotFoundError("root.child.missing_key")
 
         if on_missing == "error":
             with pytest.raises(AnsibleLookupError) as exc_info:
@@ -294,20 +295,20 @@ class TestLookupErrorHandler:
             result = extract_value(mock_lookup, "secret.root.child.missing_key")
             assert result is None
             if on_missing == "warn":
-                mock_lookup._display.warning.assert_called_once_with(
+                mock_lookup.warn.assert_called_once_with(
                     "Skipping, Successfully retrieved secret but there exists no key root.child.missing_key in the secret"
                 )
 
     @pytest.mark.parametrize("on_missing", ["error", "warn", "skip"])
     def test_handle_nested_key_not_found_custom_templates(self, on_missing):
-        """Test decorator handles NestedKeyNotFoundError with custom templates"""
+        """Test decorator handles LookupResourceNotFoundError with custom templates"""
         mock_lookup = MockLookup()
         mock_lookup.on_missing = on_missing
 
         @LookupErrorHandler.handle_lookup_errors("parameter")
         def extract_value(self, term):
             # Simulate nested key traversal with custom error messages
-            raise NestedKeyNotFoundError(
+            raise LookupResourceNotFoundError(
                 "config.database.port",
                 error_template="SSM parameter retrieved but nested key {term} is missing",
                 warn_template="Skipping nested key {term} in SSM parameter",
@@ -321,7 +322,7 @@ class TestLookupErrorHandler:
             result = extract_value(mock_lookup, "parameter.config.database.port")
             assert result is None
             if on_missing == "warn":
-                mock_lookup._display.warning.assert_called_once_with(
+                mock_lookup.warn.assert_called_once_with(
                     "Skipping nested key config.database.port in SSM parameter"
                 )
 
@@ -372,7 +373,7 @@ class TestLookupErrorHandler:
 
         result = get_value(mock_lookup, "missing-secret")
         assert result == default_dict
-        mock_lookup._display.warning.assert_called_once()
+        mock_lookup.warn.assert_called_once()
 
     def test_default_value_with_access_denied(self):
         """Test decorator returns default_value when access is denied"""
