@@ -231,10 +231,9 @@ class TestS3ClientManager:
             if method == "get":
                 m_generate_encryption_settings.assert_called_once_with(bucket_sse_mode, bucket_sse_kms_key_id)
                 if is_windows:
-                    assert test_command_generation.startswith("Invoke-WebRequest -Method PUT -Headers @")
-                    assert test_command_generation.endswith(
-                        "-InFile 'test/in/path' -Uri 'https://test-url' -UseBasicParsing"
-                    )
+                    assert test_command_generation.startswith("python -c \"import urllib.request;")
+                    assert "urllib.request.Request('https://test-url', method='PUT'" in test_command_generation
+                    assert "with open(r'test/in/path', 'rb')" in test_command_generation
                 else:
                     assert test_command_generation.startswith("curl --request PUT ")
                     assert test_command_generation.endswith("--upload-file 'test/in/path' 'https://test-url'")
@@ -245,7 +244,8 @@ class TestS3ClientManager:
             elif method == "put":
                 m_generate_encryption_settings.assert_not_called()
                 if is_windows:
-                    assert "Invoke-WebRequest 'https://test-url' -OutFile 'test/out/path'" == test_command_generation
+                    expected_command = "python -c \"import urllib.request; urllib.request.urlretrieve('https://test-url', r'test/out/path')\""
+                    assert expected_command == test_command_generation
                 else:
                     assert "curl -o 'test/out/path' 'https://test-url';touch 'test/out/path'" == test_command_generation
                 assert put_args is None
