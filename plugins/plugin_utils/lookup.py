@@ -21,7 +21,7 @@ from ansible_collections.amazon.aws.plugins.plugin_utils._lookup import common a
 from ansible_collections.amazon.aws.plugins.plugin_utils.base import AWSPluginBase
 
 LookupErrorHandler = _lookup_common.LookupErrorHandler
-NestedKeyNotFoundError = _lookup_common.NestedKeyNotFoundError
+LookupResourceNotFoundError = _lookup_common.LookupResourceNotFoundError
 
 
 class AWSLookupBase(AWSPluginBase, LookupBase):

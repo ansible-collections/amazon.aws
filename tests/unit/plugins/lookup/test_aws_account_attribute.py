@@ -17,6 +17,7 @@ from ansible_collections.amazon.aws.plugins.lookup.aws_account_attribute import 
 def fixture_lookup_plugin():
     lookup = LookupModule()
     lookup._display = MagicMock()
+    lookup.warn = MagicMock()
     lookup.set_options = MagicMock()
     # Mock the cached client instead of the property
     lookup._cached_client = MagicMock()
@@ -253,9 +254,9 @@ class TestRun:
             result = lookup_plugin.run([], {}, attribute="default-vpc")
 
         assert result is None
-        lookup_plugin._display.warning.assert_called_once()
+        lookup_plugin.warn.assert_called_once()
         assert (
-            "access denied for account attribute default-vpc" in lookup_plugin._display.warning.call_args[0][0].lower()
+            "access denied for account attribute default-vpc" in lookup_plugin.warn.call_args[0][0].lower()
         )
 
     def test_run_access_denied_skip(self, lookup_plugin):
@@ -272,7 +273,7 @@ class TestRun:
             result = lookup_plugin.run([], {}, attribute="default-vpc")
 
         assert result is None
-        lookup_plugin._display.warning.assert_not_called()
+        lookup_plugin.warn.assert_not_called()
 
     def test_run_other_client_error(self, lookup_plugin):
         """Test run with other ClientError from AWS"""
