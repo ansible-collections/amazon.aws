@@ -119,26 +119,16 @@ _raw:
 
 import json
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AWSLookupBase
-
 from ansible.errors import AnsibleLookupError
-from ansible.module_utils._text import to_native
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
-
-
-def _list_secrets(client, term):
-    paginator = client.get_paginator("list_secrets")
-    return paginator.paginate(Filters=[{"Key": "name", "Values": [term]}])
+from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupErrorHandler
+from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import NestedKeyNotFoundError
 
 
 class LookupModule(AWSLookupBase):
+    _SERVICE = "secretsmanager"
+
     def run(self, terms, variables, **kwargs):
         """
         :arg terms: a list of lookups to run.
@@ -149,89 +139,98 @@ class LookupModule(AWSLookupBase):
 
         super().run(terms, variables, **kwargs)
 
-        on_missing = self.get_option("on_missing")
-        on_denied = self.get_option("on_denied")
-        on_deleted = self.get_option("on_deleted")
-
-        # validate arguments 'on_missing' and 'on_denied'
-        if on_missing is not None and (
-            not isinstance(on_missing, str) or on_missing.lower() not in ["error", "warn", "skip"]
-        ):
-            raise AnsibleLookupError(
-                f'"on_missing" must be a string and one of "error", "warn" or "skip", not {on_missing}'
-            )
-        if on_denied is not None and (
-            not isinstance(on_denied, str) or on_denied.lower() not in ["error", "warn", "skip"]
-        ):
-            raise AnsibleLookupError(
-                f'"on_denied" must be a string and one of "error", "warn" or "skip", not {on_denied}'
-            )
-        if on_deleted is not None and (
-            not isinstance(on_deleted, str) or on_deleted.lower() not in ["error", "warn", "skip"]
-        ):
-            raise AnsibleLookupError(
-                f'"on_deleted" must be a string and one of "error", "warn" or "skip", not {on_deleted}'
-            )
-
-        client = self.client("secretsmanager", AWSRetry.jittered_backoff())
+        self._validate_options()
 
         if self.get_option("bypath"):
-            secrets = {}
-            for term in terms:
-                try:
-                    for secret_wrapper in _list_secrets(client, term):
-                        if "SecretList" in secret_wrapper:
-                            for secret_obj in secret_wrapper["SecretList"]:
-                                secrets.update(
-                                    {
-                                        secret_obj["Name"]: self.get_secret_value(
-                                            secret_obj["Name"], client, on_missing=on_missing, on_denied=on_denied
-                                        )
-                                    }
-                                )
-                    secrets = [secrets]
-
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    raise AnsibleLookupError(f"Failed to retrieve secret: {to_native(e)}")
+            return self._lookup_by_path(terms)
         else:
-            secrets = []
-            for term in terms:
-                value = self.get_secret_value(
-                    term,
-                    client,
-                    version_stage=self.get_option("version_stage"),
-                    version_id=self.get_option("version_id"),
-                    on_missing=on_missing,
-                    on_denied=on_denied,
-                    on_deleted=on_deleted,
-                    nested=self.get_option("nested"),
-                )
-                if value:
-                    secrets.append(value)
-            if self.get_option("join"):
-                joined_secret = []
-                joined_secret.append("".join(secrets))
-                return joined_secret
+            return self._lookup_by_name(terms)
+
+    def _validate_options(self):
+        """Validate on_missing, on_denied and on_deleted options"""
+        if self.on_missing.lower() not in ["error", "warn", "skip"]:
+            raise AnsibleLookupError(
+                f'"on_missing" must be a string and one of "error", "warn" or "skip", not {self.on_missing}'
+            )
+        if self.on_denied.lower() not in ["error", "warn", "skip"]:
+            raise AnsibleLookupError(
+                f'"on_denied" must be a string and one of "error", "warn" or "skip", not {self.on_denied}'
+            )
+        if self.on_deleted.lower() not in ["error", "warn", "skip"]:
+            raise AnsibleLookupError(
+                f'"on_deleted" must be a string and one of "error", "warn" or "skip", not {self.on_deleted}'
+            )
+
+    @LookupErrorHandler.handle_lookup_errors("secret path", default_value=[])
+    def _fetch_secret_list(self, term):
+        """
+        Fetch list of secrets matching term.
+
+        Note: on_missing and on_denied are read by the decorator from self.on_missing/self.on_denied.
+        """
+        paginator = self.aws_client.get_paginator("list_secrets")
+        results = []
+        for page in paginator.paginate(Filters=[{"Key": "name", "Values": [term]}]):
+            if "SecretList" in page:
+                results.extend(page["SecretList"])
+        return results
+
+    def _lookup_by_path(self, terms):
+        """Lookup secrets by path"""
+        secrets = {}
+        for term in terms:
+            secret_list = self._fetch_secret_list(term)
+            for secret_obj in secret_list:
+                value = self.get_secret_value(secret_obj["Name"])
+                if value is not None:
+                    secrets[secret_obj["Name"]] = value
+
+        return [secrets] if secrets else []
+
+    def _lookup_by_name(self, terms):
+        """Lookup secrets by name"""
+        secrets = []
+        for term in terms:
+            value = self.get_secret_value(
+                term,
+                version_stage=self.get_option("version_stage"),
+                version_id=self.get_option("version_id"),
+                nested=self.get_option("nested"),
+            )
+            if value is not None:
+                secrets.append(value)
+
+        if self.get_option("join"):
+            return ["".join(secrets)]
 
         return secrets
 
+    @LookupErrorHandler.handle_lookup_errors("secret")
     def get_secret_value(
         self,
         term,
-        client,
         version_stage=None,
         version_id=None,
-        on_missing=None,
-        on_denied=None,
-        on_deleted=None,
         nested=False,
     ):
-        params = {}
-        params["SecretId"] = term
+        """
+        Retrieve a secret value from AWS Secrets Manager.
+
+        Note: on_missing, on_denied, and on_deleted are read by the decorator from self.on_missing/self.on_denied/self.on_deleted properties.
+        """
+        params = self._build_secret_params(term, version_id, version_stage, nested)
+        response = self.aws_client.get_secret_value(aws_retry=True, **params)
+        return self._process_secret_response(response, term, nested)
+
+    def _build_secret_params(self, term, version_id, version_stage, nested):
+        """Build parameters for get_secret_value API call"""
+        params = {"SecretId": term}
+
         if version_id:
             params["VersionId"] = version_id
         if version_stage:
             params["VersionStage"] = version_stage
+
         if nested:
             if len(term.split(".")) < 2:
                 raise AnsibleLookupError(
@@ -240,52 +239,40 @@ class LookupModule(AWSLookupBase):
             secret_name = term.split(".")[0]
             params["SecretId"] = secret_name
 
-        try:
-            response = client.get_secret_value(aws_retry=True, **params)
-            if "SecretBinary" in response:
-                return response["SecretBinary"]
-            if "SecretString" in response:
-                if nested:
-                    query = term.split(".")[1:]
-                    path = None
-                    secret_string = json.loads(response["SecretString"])
-                    ret_val = secret_string
-                    while query:
-                        key = query.pop(0)
-                        path = key if not path else path + "." + key
-                        if key in ret_val:
-                            ret_val = ret_val[key]
-                        elif on_missing == "warn":
-                            self._display.warning(
-                                f"Skipping, Successfully retrieved secret but there exists no key {path} in the secret"
-                            )
-                            return None
-                        elif on_missing == "error":
-                            raise AnsibleLookupError(
-                                f"Successfully retrieved secret but there exists no key {path} in the secret"
-                            )
-                    return str(ret_val)
-                else:
-                    return response["SecretString"]
-        except is_boto3_error_message("marked for deletion"):
-            if on_deleted == "error":
-                raise AnsibleLookupError(f"Failed to find secret {term} (marked for deletion)")
-            elif on_deleted == "warn":
-                self._display.warning(f"Skipping, did not find secret (marked for deletion) {term}")
-        except is_boto3_error_code("ResourceNotFoundException"):  # pylint: disable=duplicate-except
-            if on_missing == "error":
-                raise AnsibleLookupError(f"Failed to find secret {term} (ResourceNotFound)")
-            elif on_missing == "warn":
-                self._display.warning(f"Skipping, did not find secret {term}")
-        except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
-            if on_denied == "error":
-                raise AnsibleLookupError(f"Failed to access secret {term} (AccessDenied)")
-            elif on_denied == "warn":
-                self._display.warning(f"Skipping, access denied for secret {term}")
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            raise AnsibleLookupError(f"Failed to retrieve secret: {to_native(e)}")
+        return params
+
+    def _process_secret_response(self, response, term, nested):
+        """Process the secret response from AWS"""
+        if "SecretBinary" in response:
+            return response["SecretBinary"]
+
+        if "SecretString" in response:
+            if nested:
+                return self._extract_nested_value(response["SecretString"], term)
+            else:
+                return response["SecretString"]
 
         return None
+
+    def _extract_nested_value(self, secret_string, term):
+        """
+        Extract nested value from secret JSON.
+
+        Raises NestedKeyNotFoundError if any key in the path is not found,
+        which is caught by the @handle_lookup_errors decorator.
+        """
+        query = term.split(".")[1:]
+        secret_data = json.loads(secret_string)
+        ret_val = secret_data
+        path = None
+
+        for key in query:
+            path = key if not path else path + "." + key
+            try:
+                ret_val = ret_val[key]
+            except (KeyError, TypeError) as e:
+                # KeyError: key not in dict
+                # TypeError: trying to access a non-dict (e.g., string) as a dict
+                raise NestedKeyNotFoundError(path) from e
+
+        return str(ret_val)
