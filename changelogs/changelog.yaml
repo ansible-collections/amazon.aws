@@ -3979,6 +3979,38 @@ releases:
     - s3_bucket-501.yml
     - sts_assume_role-malformed_policy.yml
     release_date: '2026-01-13'
+  10.3.0:
+    changes:
+      bugfixes:
+      - aws_ssm - Fixed connection being re-established on every loop iteration. The
+        plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
+      - elb_application_lb - fixed comparison of multi-rule default actions to properly
+        handle the ``Order`` field when determining if listener modifications are
+        needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+      - 'elb_application_lb - fixed error where creating a new application load balancer
+        with listener rules would fail with ``Parameter validation failed: Invalid
+        type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).'
+      - s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
+      minor_changes:
+      - meta/runtime.yml - Lowered the ``ansible-core`` minimum version to ``2.16``.
+        This expands compatibility and does not change or remove existing functionality.
+      release_summary: This minor release includes several bug fixes across ALB, S3,
+        and the SSM connection plugin, security hardening for ARN parsing, and expanded
+        compatibility with ansible-core >= 2.16.
+      security_fixes:
+      - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
+        character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+      - ec2_security_group - fix potential ReDoS vulnerability in security group ID
+        parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
+    fragments:
+    - 2773-elb-application-lb-listener-rules.yml
+    - 2810-fix-put-empty-content.yml
+    - 2869_aws_ssm_connection_fix.yml
+    - relax_ansible_core_version.yml
+    - release_summary.yml
+    - sonarcloud_regex.yml
+    - unittests-boto3-credentials.yml
+    release_date: '2026-03-16'
   11.0.0:
     changes:
       major_changes:

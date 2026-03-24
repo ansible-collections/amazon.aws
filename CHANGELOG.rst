@@ -118,6 +118,33 @@ Minor Changes
 - s3_object - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
 - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
 
+v10.3.0
+=======
+
+Release Summary
+---------------
+
+This minor release includes several bug fixes across ALB, S3, and the SSM connection plugin, security hardening for ARN parsing, and expanded compatibility with ansible-core >= 2.16.
+
+Minor Changes
+-------------
+
+- meta/runtime.yml - Lowered the ``ansible-core`` minimum version to ``2.16``. This expands compatibility and does not change or remove existing functionality.
+
+Security Fixes
+--------------
+
+- arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+- ec2_security_group - fix potential ReDoS vulnerability in security group ID parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
+
+Bugfixes
+--------
+
+- aws_ssm - Fixed connection being re-established on every loop iteration. The plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
+- elb_application_lb - fixed comparison of multi-rule default actions to properly handle the ``Order`` field when determining if listener modifications are needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+- elb_application_lb - fixed error where creating a new application load balancer with listener rules would fail with ``Parameter validation failed: Invalid type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).
+- s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
+
 v10.2.0
 =======
 
