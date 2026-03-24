@@ -27,6 +27,7 @@ def fixture_lookup_plugin():
     lookup.get_option.side_effect = _get_option
     lookup.client = MagicMock()
     lookup._display = MagicMock()
+    lookup._load_name = "secretsmanager_secret"
 
     return lookup
 
