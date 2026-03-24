@@ -390,6 +390,30 @@ class TestLookupErrorHandler:
         result = get_value(mock_lookup, "denied-secret")
         assert result == default_list
 
+    @pytest.mark.parametrize("on_missing", ["warn", "skip"])
+    def test_exception_default_value_overrides_decorator_default(self, on_missing):
+        """Test LookupResourceNotFoundError default_value overrides decorator's default_value"""
+        mock_lookup = MockLookup()
+        mock_lookup.on_missing = on_missing
+
+        decorator_default = [{"decorator": "default"}]
+        exception_default = []
+
+        @LookupErrorHandler.handle_lookup_errors("parameter", default_value=decorator_default)
+        def get_value(self, term):
+            # Raise exception with its own default_value
+            raise LookupResourceNotFoundError(
+                path=term,
+                error_template="Parameter {term} not found",
+                warn_template="Skipping parameter {term}",
+                default_value=exception_default,
+            )
+
+        result = get_value(mock_lookup, "/missing/path")
+        # Should use exception's default_value, not decorator's
+        assert result == exception_default
+        assert result != decorator_default
+
     def test_default_value_with_deleted_resource(self):
         """Test decorator returns default_value for deleted resources"""
         mock_lookup = MockLookup()
