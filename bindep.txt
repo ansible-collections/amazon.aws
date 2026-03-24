@@ -2,6 +2,8 @@
 openssl [test platform:rpm]
 gcc [test platform:rpm]
 python3-devel [test platform:rpm]
-# Needed by ansible-rulebook installation for event source EDA integration tests
-java-17-openjdk [test platform:rpm]
-openjdk-17-jdk [test platform:dpkg]
+
+## Needed by ansible-rulebook installation for event source EDA integration tests
+# XXX Currently fails to install in CI
+#java-17-openjdk [test platform:rpm]
+#openjdk-17-jdk [test platform:dpkg]
