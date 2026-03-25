@@ -1,7 +1,7 @@
 [tool.black]
 skip-string-normalization = false
 line-length = 120
-target-version = ['py37', 'py38']
+target-version = ['py38', 'py39']
 extend-exclude = '''
 /(
   | plugins/module_utils/_version.py
