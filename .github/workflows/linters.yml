@@ -5,7 +5,7 @@ on: [workflow_call] # allow this workflow to be called from other workflows
 
 jobs:
   linters:
-    uses: ansible-network/github_actions/.github/workflows/tox.yml@main
+    uses: ansible-network/github_actions/.github/workflows/tox.yml@446d4586bcde8bf6e1a9c085983bf172b59bd7b2 # @main as of 2026-03-25
     with:
       envname: ""
       labelname: lint
