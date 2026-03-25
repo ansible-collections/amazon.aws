@@ -421,3 +421,82 @@ class TestLookupErrorHandler:
 
         result = get_value(mock_lookup, "deleted-secret")
         assert result == []
+
+
+class TestHelperMethods:
+    """Unit tests for LookupErrorHandler helper methods"""
+
+    @pytest.mark.parametrize(
+        "error_type,expected",
+        [
+            (
+                "missing",
+                (
+                    "Failed to find test resource {term} (ResourceNotFound)",
+                    "Skipping, did not find test resource {term}",
+                ),
+            ),
+            (
+                "denied",
+                (
+                    "Failed to access test resource {term} (AccessDenied)",
+                    "Skipping, access denied for test resource {term}",
+                ),
+            ),
+            (
+                "deleted",
+                (
+                    "Failed to find test resource {term} (marked for deletion)",
+                    "Skipping, did not find test resource (marked for deletion) {term}",
+                ),
+            ),
+        ],
+    )
+    def test_build_error_messages(self, error_type, expected):
+        """Test _build_error_messages returns correct templates"""
+        error_msg, warn_msg = LookupErrorHandler._build_error_messages("test resource", error_type)
+        assert error_msg == expected[0]
+        assert warn_msg == expected[1]
+
+    def test_resolve_default_value_uses_exception_default(self):
+        """Test _resolve_default_value prefers exception default when set"""
+        exception_default = []
+        decorator_default = [{"default": "value"}]
+        result = LookupErrorHandler._resolve_default_value(exception_default, decorator_default)
+        assert result == exception_default
+        assert result != decorator_default
+
+    def test_resolve_default_value_uses_decorator_default(self):
+        """Test _resolve_default_value uses decorator default when exception default is not set"""
+        exception_default = ...
+        decorator_default = [{"default": "value"}]
+        result = LookupErrorHandler._resolve_default_value(exception_default, decorator_default)
+        assert result == decorator_default
+
+    def test_extract_term_from_kwargs(self):
+        """Test _extract_term extracts term from kwargs"""
+        args = ()
+        kwargs = {"term": "my-term", "other": "value"}
+        result = LookupErrorHandler._extract_term(args, kwargs)
+        assert result == "my-term"
+
+    def test_extract_term_from_args(self):
+        """Test _extract_term extracts term from first positional argument"""
+        args = ("my-term", "other-arg")
+        kwargs = {}
+        result = LookupErrorHandler._extract_term(args, kwargs)
+        assert result == "my-term"
+
+    def test_extract_term_prefers_kwargs(self):
+        """Test _extract_term prefers kwargs over args"""
+        args = ("arg-term",)
+        kwargs = {"term": "kwarg-term"}
+        result = LookupErrorHandler._extract_term(args, kwargs)
+        assert result == "kwarg-term"
+
+    def test_extract_term_returns_none_when_missing(self):
+        """Test _extract_term returns None when term not found"""
+        args = ()
+        kwargs = {}
+        result = LookupErrorHandler._extract_term(args, kwargs)
+        assert result is None
