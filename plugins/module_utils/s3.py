@@ -1270,10 +1270,10 @@ def calculate_checksum_with_file(
     digests = []
     with open(filename, "rb") as f:
         for head in s3_head_objects(client, parts, bucket, obj, versionId):
-            digests.append(md5(f.read(int(head["ContentLength"]))).digest())
+            digests.append(md5(f.read(int(head["ContentLength"])), usedforsecurity=False).digest())
 
     digest_squared = b"".join(digests)
-    return f'"{md5(digest_squared).hexdigest()}-{len(digests)}"'
+    return f'"{md5(digest_squared, usedforsecurity=False).hexdigest()}-{len(digests)}"'
 
 
 def calculate_checksum_with_content(
@@ -1297,11 +1297,11 @@ def calculate_checksum_with_content(
     offset = 0
     for head in s3_head_objects(client, parts, bucket, obj, versionId):
         length = int(head["ContentLength"])
-        digests.append(md5(content[offset:offset + length]).digest())  # fmt: skip
+        digests.append(md5(content[offset:offset + length], usedforsecurity=False).digest())  # fmt: skip
         offset += length
 
     digest_squared = b"".join(digests)
-    return f'"{md5(digest_squared).hexdigest()}-{len(digests)}"'
+    return f'"{md5(digest_squared, usedforsecurity=False).hexdigest()}-{len(digests)}"'
 
 
 def calculate_etag(
@@ -1377,7 +1377,7 @@ def calculate_etag_content(
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             raise AnsibleS3Error(message="Failed to calculate object ETag", exception=e) from e
     else:  # Compute the MD5 sum normally
-        return f'"{md5(content).hexdigest()}"'
+        return f'"{md5(content, usedforsecurity=False).hexdigest()}"'
 
 
 def validate_bucket_name(name: str) -> Optional[str]:

@@ -591,7 +591,7 @@ def build_changeset_name(stack_params):
 
     json_params = json.dumps(stack_params, sort_keys=True)
 
-    changeset_sha = sha1(to_bytes(json_params, errors="surrogate_or_strict")).hexdigest()
+    changeset_sha = sha1(to_bytes(json_params, errors="surrogate_or_strict"), usedforsecurity=False).hexdigest()
     return f"Ansible-{stack_params['StackName']}-{changeset_sha}"
 
 
