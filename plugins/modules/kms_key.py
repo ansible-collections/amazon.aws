@@ -931,7 +931,7 @@ def fetch_key_metadata(connection, module, key_id, alias):
     # Integration tests will wait for 10 seconds to combat this issue.
     # See https://github.com/ansible-collections/community.aws/pull/1052.
 
-    alias = canonicalize_alias_name(module.params.get("alias"))
+    alias = canonicalize_alias_name(alias)
 
     try:
         # Fetch by key_id where possible
