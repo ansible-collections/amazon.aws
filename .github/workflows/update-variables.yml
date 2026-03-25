@@ -1,19 +1,16 @@
-# Disabled until we can find a way to block the aiobotocore dependencies from causing problems.
-# (aiobotocore generally doesn't support X.Y.0 botocore versions, which means trying to configure
-# constraints causes problems)
-# ---
-# name: update collection variables
-#
-# concurrency:
-#   group: ${{ github.workflow }} @ ${{ github.sha }}
-#   cancel-in-progress: true
-#
-# on:
-#   push:
-#     branches:
-#       - main
-#       - stable-*
-#   pull_request_target:
-# jobs:
-#   update-variables:
-#     uses: ansible-network/github_actions/.github/workflows/update_aws_variables.yml@main
+---
+name: update collection variables
+
+concurrency:
+  group: ${{ github.workflow }} @ ${{ github.sha }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+      - stable-*
+  pull_request_target:
+jobs:
+  update-variables:
+    uses: ansible-network/github_actions/.github/workflows/update_aws_variables.yml@main
