@@ -66,6 +66,66 @@ class LookupErrorHandler:
     """
 
     @staticmethod
+    def _build_error_messages(resource_type: str, error_type: str) -> tuple[str, str]:
+        """
+        Build error and warning message templates for a given error type.
+
+        Parameters:
+            resource_type: Description of the resource (e.g., "secret", "SSM parameter")
+            error_type: Type of error ("missing", "denied", "deleted")
+
+        Returns:
+            Tuple of (error_template, warn_template) with {term} placeholder
+        """
+        templates = {
+            "missing": (
+                f"Failed to find {resource_type} {{term}} (ResourceNotFound)",
+                f"Skipping, did not find {resource_type} {{term}}",
+            ),
+            "denied": (
+                f"Failed to access {resource_type} {{term}} (AccessDenied)",
+                f"Skipping, access denied for {resource_type} {{term}}",
+            ),
+            "deleted": (
+                f"Failed to find {resource_type} {{term}} (marked for deletion)",
+                f"Skipping, did not find {resource_type} (marked for deletion) {{term}}",
+            ),
+        }
+        return templates[error_type]
+
+    @staticmethod
+    def _resolve_default_value(exception_default: Any, decorator_default: Any) -> Any:
+        """
+        Resolve which default value to use.
+
+        Parameters:
+            exception_default: Default value from exception (or ... if not set)
+            decorator_default: Default value from decorator
+
+        Returns:
+            The appropriate default value to use
+        """
+        return exception_default if exception_default is not ... else decorator_default
+
+    @staticmethod
+    def _extract_term(args: tuple, kwargs: dict) -> Any:
+        """
+        Extract the term parameter from function arguments.
+
+        The term is expected to be either:
+        - A keyword argument named 'term'
+        - The first positional argument (after self)
+
+        Parameters:
+            args: Positional arguments (not including self)
+            kwargs: Keyword arguments
+
+        Returns:
+            The term value, or None if not found
+        """
+        return kwargs.get("term") or (args[0] if len(args) > 0 else None)
+
+    @staticmethod
     def handle_lookup_errors(resource_type: str, default_value: Any = None) -> Callable:
         """
         Decorator for handling AWS lookup errors based on runtime error handling parameters.
@@ -113,54 +173,32 @@ class LookupErrorHandler:
                 on_denied = self.on_denied
                 on_deleted = self.on_deleted
 
-                # term is typically the first positional argument after self
-                term = kwargs.get("term") or (args[0] if len(args) > 0 else None)
+                # Extract term from arguments
+                term = LookupErrorHandler._extract_term(args, kwargs)
 
                 try:
                     return func(self, *args, **kwargs)
                 except is_boto3_error_message("marked for deletion"):
+                    error_msg, warn_msg = LookupErrorHandler._build_error_messages(resource_type, "deleted")
                     return LookupErrorHandler._handle_response(
-                        self,
-                        on_deleted,
-                        term,
-                        resource_type,
-                        f"Failed to find {resource_type} {{term}} (marked for deletion)",
-                        f"Skipping, did not find {resource_type} (marked for deletion) {{term}}",
-                        default_value,
+                        self, on_deleted, term, resource_type, error_msg, warn_msg, default_value
                     )
                 except is_boto3_error_code(
                     ["ResourceNotFoundException", "ParameterNotFound"]
                 ):  # pylint: disable=duplicate-except
+                    error_msg, warn_msg = LookupErrorHandler._build_error_messages(resource_type, "missing")
                     return LookupErrorHandler._handle_response(
-                        self,
-                        on_missing,
-                        term,
-                        resource_type,
-                        f"Failed to find {resource_type} {{term}} (ResourceNotFound)",
-                        f"Skipping, did not find {resource_type} {{term}}",
-                        default_value,
+                        self, on_missing, term, resource_type, error_msg, warn_msg, default_value
                     )
                 except LookupResourceNotFoundError as e:
-                    # Use exception's default_value if provided, otherwise use decorator's default_value
-                    value_to_return = e.default_value if e.default_value is not ... else default_value
+                    value_to_return = LookupErrorHandler._resolve_default_value(e.default_value, default_value)
                     return LookupErrorHandler._handle_response(
-                        self,
-                        on_missing,
-                        e.path,
-                        "key",
-                        e.error_template,
-                        e.warn_template,
-                        value_to_return,
+                        self, on_missing, e.path, "key", e.error_template, e.warn_template, value_to_return
                     )
                 except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
+                    error_msg, warn_msg = LookupErrorHandler._build_error_messages(resource_type, "denied")
                     return LookupErrorHandler._handle_response(
-                        self,
-                        on_denied,
-                        term,
-                        resource_type,
-                        f"Failed to access {resource_type} {{term}} (AccessDenied)",
-                        f"Skipping, access denied for {resource_type} {{term}}",
-                        default_value,
+                        self, on_denied, term, resource_type, error_msg, warn_msg, default_value
                     )
                 except (
                     botocore.exceptions.ClientError,
