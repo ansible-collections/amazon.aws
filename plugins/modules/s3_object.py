@@ -151,9 +151,7 @@ options:
       - Force overwrite either locally on the filesystem or remotely with the object/key.
       - Used when O(mode=put) or O(mode=get).
       - Ignored when when O(mode) is neither V(put) nor V(get).
-      - Must be a Boolean, V(always), V(never), V(different) or V(latest).
-      - V(true) is the same as V(always).
-      - V(false) is equal to V(never).
+      - Must be V(always), V(never), V(different) or V(latest).
       - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag'
         of the object/key in S3.  The ETag may or may not be an MD5 digest of the object data. See
         the ETag response header here
@@ -163,6 +161,7 @@ options:
     default: 'different'
     aliases: ['force']
     type: str
+    choices: ['always', 'never', 'different', 'latest']
   retries:
     description:
      - On recoverable failure, how many times to retry before actually failing.
@@ -172,9 +171,8 @@ options:
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
-      - Support for passing O(dualstack) and O(endpoint_url) at the same time has been deprecated,
-        the dualstack endpoints are automatically configured using the configured O(region).
-        Support will be removed in a release after 2024-12-01.
+      - Mutually exclusive with O(endpoint_url). To use dualstack endpoints with a custom endpoint,
+        specify the dualstack endpoint URL directly in O(endpoint_url).
     type: bool
     default: false
   ceph:
@@ -1237,17 +1235,6 @@ def populate_params(module: AnsibleAWSModule) -> Dict:
     if variable_dict.get("overwrite") == "different" and not HAS_MD5:
         module.fail_json(msg="overwrite=different is unavailable: ETag calculation requires MD5 support")
 
-    if variable_dict.get("overwrite") not in [
-        "always",
-        "never",
-        "different",
-        "latest",
-    ]:
-        if module.boolean(variable_dict["overwrite"]):
-            variable_dict["overwrite"] = "always"
-        else:
-            variable_dict["overwrite"] = "never"
-
     # Bucket deletion does not require obj.  Prevents ambiguity with delobj.
     if variable_dict["object"]:
         if variable_dict.get("mode") == "delete":
@@ -1314,7 +1301,7 @@ def main():
         object=dict(),
         permission=dict(type="list", elements="str", default=["private"], choices=valid_acls),
         version=dict(default=None),
-        overwrite=dict(aliases=["force"], default="different"),
+        overwrite=dict(aliases=["force"], default="different", choices=["always", "never", "different", "latest"]),
         prefix=dict(default=""),
         retries=dict(aliases=["retry"], type="int", default=0),
         dualstack=dict(default=False, type="bool"),
@@ -1355,7 +1342,7 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
         required_if=required_if,
-        mutually_exclusive=[["content", "content_base64", "src"]],
+        mutually_exclusive=[["content", "content_base64", "src"], ["dualstack", "endpoint_url"]],
     )
 
     if module.params.get("mode") == "list":
@@ -1365,31 +1352,6 @@ def main():
                 "2026-11-01.  Please use the amazon.aws.s3_object_info module instead."
             ),
             date="2026-11-01",
-            collection_name="amazon.aws",
-        )
-
-    endpoint_url = module.params.get("endpoint_url")
-    dualstack = module.params.get("dualstack")
-
-    if dualstack and endpoint_url:
-        module.deprecate(
-            (
-                "Support for passing both the 'dualstack' and 'endpoint_url' parameters at the same "
-                "time has been deprecated."
-            ),
-            date="2024-12-01",
-            collection_name="amazon.aws",
-        )
-        if "amazonaws.com" not in endpoint_url:
-            module.fail_json(msg="dualstack only applies to AWS S3")
-
-    if module.params.get("overwrite") not in ("always", "never", "different", "latest"):
-        module.deprecate(
-            (
-                "Support for passing values of 'overwrite' other than 'always', 'never', "
-                "'different' or 'latest', has been deprecated."
-            ),
-            date="2024-12-01",
             collection_name="amazon.aws",
         )
 
