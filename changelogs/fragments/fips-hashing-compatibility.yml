@@ -1,3 +1,3 @@
 bugfixes:
-  - module_utils/s3 - Fix MD5 hashing for FIPS mode compatibility by adding usedforsecurity=False parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
-  - cloudformation - Fix SHA1 hashing for FIPS mode compatibility by adding usedforsecurity=False parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - module_utils/s3 - Fix MD5 hashing for FIPS mode compatibility by adding usedforsecurity=False parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/2921).
+  - cloudformation - Fix SHA1 hashing for FIPS mode compatibility by adding usedforsecurity=False parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/2921).
