@@ -1,0 +1,2 @@
+minor_changes:
+  - extensions/eda/plugins/event_source/aws_sqs_queue.py - Added optional support for feedback so that the event can be removed from the SQS Queue on receipt of acknowledgement from ansible-rulebook.
