@@ -285,4 +285,3 @@
     that:
       - role_info is succeeded
       - role_info.iam_roles | length == 0
-
