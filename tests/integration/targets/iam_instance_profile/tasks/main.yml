@@ -275,9 +275,7 @@
 
     - ansible.builtin.assert:
         that:
-          - profile_info.iam_instance_profiles | length >= 4
-          - test_role in profile_names
-          - test_role+"-2" in profile_names
+          - profile_info.iam_instance_profiles | length >= 2
           - test_profile in profile_names
           - test_profile_complex in profile_names
 
@@ -309,9 +307,7 @@
 
     - ansible.builtin.assert:
         that:
-          - profile_info.iam_instance_profiles | length == 3
-          - test_role in profile_names
-          - test_role+"-2" in profile_names
+          - profile_info.iam_instance_profiles | length == 1
           - test_profile_complex in profile_names
 
           - '"arn" in complex_profile'
@@ -496,8 +492,6 @@
       loop:
         - "{{ test_profile }}"
         - "{{ test_profile_complex }}"
-        - "{{ test_role }}"
-        - "{{ test_role }}-2"
 
     - name: Remove IAM Roles
       amazon.aws.iam_role:

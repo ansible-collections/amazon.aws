@@ -66,11 +66,17 @@
       when: s3_vars_file.stat.exists is true
       ignore_errors: true  # noqa: ignore-errors
 
+    - name: Delete IAM instance profile
+      amazon.aws.iam_instance_profile:
+        name: "{{ iam_role_name }}"
+        state: absent
+      ignore_errors: true  # noqa: ignore-errors
+      when: iam_role_vars_file.stat.exists is true
+
     - name: Delete IAM role
       amazon.aws.iam_role:
         name: "{{ iam_role_name }}"
         state: absent
-        delete_instance_profile: true
       ignore_errors: true  # noqa: ignore-errors
       when: iam_role_vars_file.stat.exists is true
 

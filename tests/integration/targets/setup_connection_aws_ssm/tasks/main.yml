@@ -27,6 +27,12 @@
         wait: true
       register: role_output
 
+    - name: Create IAM instance profile
+      amazon.aws.iam_instance_profile:
+        name: "ansible-test-{{ tiny_prefix }}-aws-ssm-role"
+        role: "ansible-test-{{ tiny_prefix }}-aws-ssm-role"
+        state: present
+
     - name: Lookup AMI configuration
       ansible.builtin.set_fact:
         ami_configuration: "{{ ami_details[(target_os | default('fedora'))] }}"
@@ -90,7 +96,7 @@
         ebs_optimized: true
         image_id: "{{ latest_ami_id }}"
         wait: true
-        instance_role: "{{ role_output.iam_role.role_name }}"
+        instance_role: "ansible-test-{{ tiny_prefix }}-aws-ssm-role"
         name: "{{ resource_prefix }}-connection-aws-ssm"
         user_data: "{{ ami_configuration.user_data }}"
         state: started
