@@ -18,7 +18,6 @@
         state: present
         name: "{{ item }}"
         path: "{{ test_path }}"
-        create_instance_profile: true
         assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
         managed_policies:
           - "{{ safe_managed_policy }}"
@@ -505,7 +504,6 @@
         state: absent
         name: "{{ item }}"
         path: "{{ test_path }}"
-        delete_instance_profile: true
       ignore_errors: true
       loop:
         - "{{ test_role }}"

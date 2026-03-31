@@ -17,7 +17,6 @@
   amazon.aws.iam_role:
     name: "{{ test_role }}"
     boundary: AWSDenyAll
-    create_instance_profile: false
   register: iam_role
   ignore_errors: true
 - ansible.builtin.assert:

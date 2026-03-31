@@ -11,7 +11,6 @@
       amazon.aws.iam_role:
         name: "{{ lambda_role_name }}"
         assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
-        create_instance_profile: false
         managed_policies:
           - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       register: iam_role
@@ -49,7 +48,6 @@
       amazon.aws.iam_role:
         name: ansible_lambda_role
         assume_role_policy_document: "{{ lookup('file', 'minimal_trust_policy.json', convert_data=False) }}"
-        create_instance_profile: false
       register: iam_role
     - name: Wait 10 seconds for role to become available
       ansible.builtin.pause:

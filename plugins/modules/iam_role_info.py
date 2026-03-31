@@ -27,9 +27,8 @@ options:
             - Prefix of role to restrict IAM role search for.
             - Mutually exclusive with O(name).
             - O(path) and O(prefix) were added as aliases in release 7.2.0.
-            - In a release after 2026-05-01 paths must begin and end with C(/).
-              Prior to this paths will automatically have C(/) added as appropriate
-              to ensure that they start and end with C(/).
+            - Paths must begin and end with C(/). Prior to release 12.0.0 paths would automatically have
+              C(/) added as appropriate to ensure that they started and ended with C(/).
         type: str
         aliases: ["path", "prefix"]
 extends_documentation_fragment:
@@ -71,15 +70,6 @@ iam_roles:
           snake_case.  This behaviour changed in release 8.0.0.
       returned: always
       type: dict
-    assume_role_policy_document_raw:
-      description:
-        - |
-          Note: this return value has been deprecated and will be removed in a release after
-          2026-05-01.  RV(iam_roles.assume_role_policy_document) and RV(iam_roles.assume_role_policy_document_raw)
-          now use the same format.
-      returned: always
-      type: dict
-      version_added: 5.3.0
     create_date:
       description: Date IAM role was created.
       returned: always
@@ -189,7 +179,7 @@ def describe_iam_roles(client, name, path_prefix):
     else:
         roles = list_iam_roles(client, path=path_prefix)
     roles = [r for r in roles if r is not None]
-    return [normalize_iam_role(expand_iam_role(client, role), _v7_compat=True) for role in roles]
+    return [normalize_iam_role(expand_iam_role(client, role)) for role in roles]
 
 
 def main():
@@ -211,31 +201,9 @@ def main():
     name = module.params["name"]
     path_prefix = module.params["path_prefix"]
 
-    module.deprecate(
-        "In a release after 2026-05-01 iam_role.assume_role_policy_document_raw "
-        "will no longer be returned.  Since release 8.0.0 assume_role_policy_document "
-        "has been returned with the same format as iam_role.assume_role_policy_document_raw",
-        date="2026-05-01",
-        collection_name="amazon.aws",
-    )
-
-    # Once the deprecation is over we can merge this into a single call to validate_iam_identifiers
-    if name:
-        validation_error = validate_iam_identifiers("role", name=name)
-        if validation_error:
-            module.fail_json(msg=validation_error)
-    if path_prefix:
-        validation_error = validate_iam_identifiers("role", path=path_prefix)
-        if validation_error:
-            _prefix = "/" if not path_prefix.startswith("/") else ""
-            _suffix = "/" if not path_prefix.endswith("/") else ""
-            path_prefix = f"{_prefix}{path_prefix}{_suffix}"
-            module.deprecate(
-                "In a release after 2026-05-01 paths must begin and end with /.  "
-                f"path_prefix has been modified to '{path_prefix}'",
-                date="2026-05-01",
-                collection_name="amazon.aws",
-            )
+    validation_error = validate_iam_identifiers("role", name=name, path=path_prefix)
+    if validation_error:
+        module.fail_json(msg=validation_error)
 
     try:
         module.exit_json(changed=False, iam_roles=describe_iam_roles(client, name, path_prefix))

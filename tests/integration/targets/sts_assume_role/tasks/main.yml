@@ -24,7 +24,6 @@
       amazon.aws.iam_role:
         name: "{{ iam_role_name }}"
         assume_role_policy_document: "{{ lookup('template', 'policy.json.j2') }}"
-        create_instance_profile: false
         managed_policy:
           - arn:aws:iam::aws:policy/IAMReadOnlyAccess
         state: present
@@ -245,7 +244,6 @@
         session_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "{{ iam_role_name }}"
         assume_role_policy_document: "{{ lookup('template', 'policy.json.j2') }}"
-        create_instance_profile: false
         state: present
       register: result
 
@@ -290,7 +288,6 @@
       amazon.aws.iam_role:
         name: "{{ iam_role_name }}"
         assume_role_policy_document: "{{ lookup('template', 'policy.json.j2') }}"
-        delete_instance_profile: true
         managed_policy:
           - arn:aws:iam::aws:policy/IAMReadOnlyAccess
         state: absent
