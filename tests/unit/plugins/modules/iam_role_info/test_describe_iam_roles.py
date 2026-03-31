@@ -6,8 +6,6 @@
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-import pytest
-
 from ansible_collections.amazon.aws.plugins.modules.iam_role_info import describe_iam_roles
 
 
@@ -18,9 +16,7 @@ class TestDescribeIamRoles:
         """Test that None values from get_iam_role are filtered out."""
         client = MagicMock()
 
-        with patch(
-            "ansible_collections.amazon.aws.plugins.modules.iam_role_info.get_iam_role", return_value=None
-        ):
+        with patch("ansible_collections.amazon.aws.plugins.modules.iam_role_info.get_iam_role", return_value=None):
             result = describe_iam_roles(client, name="non-existent-role", path_prefix=None)
 
         assert result == []
@@ -34,7 +30,8 @@ class TestDescribeIamRoles:
             return_value=[{"RoleName": "role1"}, None, {"RoleName": "role2"}],
         ):
             with patch(
-                "ansible_collections.amazon.aws.plugins.modules.iam_role_info.expand_iam_role", side_effect=lambda c, r: r
+                "ansible_collections.amazon.aws.plugins.modules.iam_role_info.expand_iam_role",
+                side_effect=lambda c, r: r,
             ):
                 with patch(
                     "ansible_collections.amazon.aws.plugins.modules.iam_role_info.normalize_iam_role",

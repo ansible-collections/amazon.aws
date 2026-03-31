@@ -7,8 +7,6 @@ from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
 
-import pytest
-
 from ansible_collections.amazon.aws.plugins.modules.iam_role import remove_role_from_instance_profiles
 
 
