@@ -896,7 +896,6 @@ def get_properties(autoscaling_group):
     properties["default_cooldown"] = autoscaling_group.get("DefaultCooldown")
     properties["healthcheck_grace_period"] = autoscaling_group.get("HealthCheckGracePeriod")
     properties["healthcheck_type"] = autoscaling_group.get("HealthCheckType")
-    properties["default_cooldown"] = autoscaling_group.get("DefaultCooldown")
     properties["termination_policies"] = autoscaling_group.get("TerminationPolicies")
     properties["target_group_arns"] = autoscaling_group.get("TargetGroupARNs")
     properties["vpc_zone_identifier"] = autoscaling_group.get("VPCZoneIdentifier")
