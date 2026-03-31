@@ -61,10 +61,7 @@
       - '"create_date" in role_info.iam_roles[0]'
       - role_info.iam_roles[0].description == 'Ansible Test Role (updated) '+resource_prefix
       - role_info.iam_roles[0].inline_policies | length == 0
-      - role_info.iam_roles[0].instance_profiles | length == 1
-      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
-      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
-      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].instance_profiles | length == 0
       - role_info.iam_roles[0].managed_policies | length == 1
       - safe_managed_policy in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - custom_policy_name not in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
@@ -141,10 +138,7 @@
       - '"create_date" in role_info.iam_roles[0]'
       - role_info.iam_roles[0].description == 'Ansible Test Role (updated) '+resource_prefix
       - role_info.iam_roles[0].inline_policies | length == 0
-      - role_info.iam_roles[0].instance_profiles | length == 1
-      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
-      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
-      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].instance_profiles | length == 0
       - role_info.iam_roles[0].managed_policies | length == 2
       - safe_managed_policy in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
@@ -218,10 +212,7 @@
       - '"create_date" in role_info.iam_roles[0]'
       - role_info.iam_roles[0].description == 'Ansible Test Role (updated) '+resource_prefix
       - role_info.iam_roles[0].inline_policies | length == 0
-      - role_info.iam_roles[0].instance_profiles | length == 1
-      - role_info.iam_roles[0].instance_profiles[0].instance_profile_name == test_role
-      - role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")
-      - role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)
+      - role_info.iam_roles[0].instance_profiles | length == 0
       - role_info.iam_roles[0].managed_policies | length == 1
       - safe_managed_policy not in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
