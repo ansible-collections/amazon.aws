@@ -7,3 +7,8 @@
 # isn't as agressive as the ansible_test._util.target.pytest.plugins.ansible_pytest_collections plugin
 # when it comes to rewriting the import paths and as such we can't import fixtures via their
 # absolute import path or across collections.
+
+
+def pytest_configure(config):
+    """Register custom markers for ansible-test compatibility."""
+    config.addinivalue_line("markers", "limit_memory: Mark test with memory limit for pytest-memray")
