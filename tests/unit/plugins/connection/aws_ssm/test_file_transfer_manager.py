@@ -110,9 +110,13 @@ class TestFileTransferManager:
     def test_handle_get(self, file_transfer_manager, connection_aws_ssm):
         connection_aws_ssm._s3_manager.client.download_fileobj = MagicMock()
         file_transfer_manager.exec_command.return_value = (0, "test", "")
-        result = file_transfer_manager._handle_get(
-            "in_path", "out_path", [{"command": "test-cmd", "method": "put"}], "s3_path"
-        )
+
+        mock_file = BytesIO()
+        with patch("builtins.open", return_value=mock_file):
+            result = file_transfer_manager._handle_get(
+                "in_path", "out_path", [{"command": "test-cmd", "method": "put"}], "s3_path"
+            )
+
         assert result["returncode"] == 0
         connection_aws_ssm._s3_manager.client.download_fileobj.assert_called_once()
 
