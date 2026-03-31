@@ -1,0 +1,4 @@
+bugfixes:
+  - s3_object_info - Fixed duplicate dictionary key assignments when retrieving object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
+  - autoscaling_group - Fixed duplicate default_cooldown assignment in properties dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
+  - kms_key - Fixed parameter reassignment by using passed alias parameter instead of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
