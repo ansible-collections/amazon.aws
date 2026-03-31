@@ -89,7 +89,8 @@ jobs:
           echo "SONAR_ARGS=${SONAR_ARGS}" >> $GITHUB_ENV
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v7
+        # a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 (v7)
+        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9
         env:
           SONAR_TOKEN: ${{ secrets.ANSIBLE_COLLECTIONS_ORG_SONAR_TOKEN_CICD_BOT }}
         with:
