@@ -3,7 +3,6 @@
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   check_mode: true
   register: iam_role
 - ansible.builtin.assert:
@@ -23,7 +22,6 @@
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   register: iam_role
 - ansible.builtin.assert:
     that:
@@ -42,7 +40,6 @@
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   register: iam_role
   check_mode: true
 - ansible.builtin.assert:
@@ -53,7 +50,6 @@
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   register: iam_role
 - ansible.builtin.assert:
     that:

@@ -15,6 +15,12 @@
           - AmazonEC2ContainerServiceRole
       register: iam_role
 
+    - name: Create IAM instance profile for first role
+      amazon.aws.iam_instance_profile:
+        name: "{{ first_iam_role }}"
+        role: "{{ first_iam_role }}"
+        state: present
+
     - name: Create second IAM role for test
       amazon.aws.iam_role:
         state: present
@@ -23,6 +29,12 @@
         managed_policy:
           - AmazonEC2ContainerServiceRole
       register: iam_role_2
+
+    - name: Create IAM instance profile for second role
+      amazon.aws.iam_instance_profile:
+        name: "{{ second_iam_role }}"
+        role: "{{ second_iam_role }}"
+        state: present
 
     - name: Wait 10 seconds for roles to become available
       ansible.builtin.wait_for:
@@ -114,6 +126,15 @@
         filters:
           tag:TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
+      ignore_errors: true
+
+    - name: Delete IAM instance profiles for test
+      amazon.aws.iam_instance_profile:
+        state: absent
+        name: "{{ item }}"
+      loop:
+        - "{{ first_iam_role }}"
+        - "{{ second_iam_role }}"
       ignore_errors: true
 
     - name: Delete IAM role for test

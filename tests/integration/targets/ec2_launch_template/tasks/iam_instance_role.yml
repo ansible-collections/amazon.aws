@@ -12,6 +12,12 @@
           - AWSDenyAll
       register: iam_role
 
+    - name: Create IAM instance profile for first role
+      amazon.aws.iam_instance_profile:
+        name: "{{ test_role_name }}-1"
+        role: "{{ test_role_name }}-1"
+        state: present
+
     - name: Create second IAM role for test
       amazon.aws.iam_role:
         name: "{{ test_role_name }}-2"
@@ -20,6 +26,12 @@
         managed_policy:
           - AWSDenyAll
       register: iam_role_2
+
+    - name: Create IAM instance profile for second role
+      amazon.aws.iam_instance_profile:
+        name: "{{ test_role_name }}-2"
+        role: "{{ test_role_name }}-2"
+        state: present
 
     - name: Make instance with an instance_role
       amazon.aws.ec2_launch_template:
@@ -181,6 +193,15 @@
         name: "{{ test_launch_template_name }}"
         state: absent
       register: lt_removed
+      ignore_errors: true
+
+    - name: Delete IAM instance profiles for test
+      amazon.aws.iam_instance_profile:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ test_role_name }}-1"
+        - "{{ test_role_name }}-2"
       ignore_errors: true
 
     - name: Delete IAM role for test

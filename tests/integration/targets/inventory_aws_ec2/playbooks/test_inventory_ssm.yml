@@ -37,13 +37,20 @@
             wait: true
           register: role_output
 
+        - name: Create IAM instance profile
+          amazon.aws.iam_instance_profile:
+            name: "{{ iam_role_name }}"
+            role: "{{ iam_role_name }}"
+            state: present
+          register: profile_output
+
         - name: Create EC2 instance
           amazon.aws.ec2_instance:
             instance_type: t3.micro
             ebs_optimized: true
             image_id: "{{ ec2_ami_id }}"
             wait: "yes"
-            instance_role: "{{ role_output.iam_role.role_name }}"
+            instance_role: "{{ iam_role_name }}"
             name: "{{ resource_prefix }}-inventory-ssm"
             user_data: "{{ instance_user_data }}"
             state: running
@@ -99,6 +106,11 @@
             std_hostname: "{{ resource_prefix }}-inventory-std"
 
       always:
+        - name: Delete IAM instance profile
+          amazon.aws.iam_instance_profile:
+            name: "{{ iam_role_name }}"
+            state: absent
+
         - name: Delete IAM role
           amazon.aws.iam_role:
             name: "{{ iam_role_name }}"

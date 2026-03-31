@@ -1,152 +1,35 @@
 ---
+# Tests to verify iam_role doesn't manage instance profiles
+# Instance profiles should be managed using iam_instance_profile module
+
 - block:
-    # Ensure profile doesn't already exist (from an old test)
-    - name: Delete Instance Profile
+    # Verify iam_role doesn't create instance profiles
+    - name: Delete Instance Profile (cleanup)
       amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_role }}"
 
-    ##################################################################
-
-    # Profile doesn't exist, don't create
-    - name: Minimal IAM Role without instance profile (without existing profile)
+    - name: Create IAM Role without creating instance profile
       amazon.aws.iam_role:
         name: "{{ test_role }}"
       register: iam_role
+
     - ansible.builtin.assert:
         that:
           - iam_role is changed
           - '"iam:CreateInstanceProfile" not in iam_role.resource_actions'
 
-    - name: Verify instance profile doesn't exist
+    - name: Verify instance profile was not created
       amazon.aws.iam_instance_profile_info:
         name: "{{ test_role }}"
       register: iam_instance_profile
+
     - ansible.builtin.assert:
         that:
           - iam_instance_profile.iam_instance_profiles | length == 0
 
-    # Profile doesn't exist, do delete
-    - name: Remove IAM Role and profile (with non-existent profile)
-      amazon.aws.iam_role:
-        state: absent
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:DeleteInstanceProfile" not in iam_role.resource_actions'
-
-    - name: Verify instance profile doesn't exist
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 0
-
-    ##################################################################
-
-    # Profile doesn't exist, do create
-    - name: Minimal IAM Role with instance profile (without existing profile)
-      amazon.aws.iam_role:
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:CreateInstanceProfile" in iam_role.resource_actions'
-
-    - name: Verify instance profile exists
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 1
-
-    # Profile does exist, don't delete
-    - name: Remove IAM Role and not profile (with existent profile)
-      amazon.aws.iam_role:
-        state: absent
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:DeleteInstanceProfile" not in iam_role.resource_actions'
-
-    - name: Verify instance profile exists
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 1
-
-    ##################################################################
-
-    # Profile does exist, do create
-    - name: Minimal IAM Role with instance profile (profile exists)
-      amazon.aws.iam_role:
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:CreateInstanceProfile" not in iam_role.resource_actions'
-
-    - name: Verify instance profile exists
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 1
-
-    # Profile does exist, don't delete
-    - name: Remove IAM Role and don't delete profile (with existent profile)
-      amazon.aws.iam_role:
-        state: absent
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:DeleteInstanceProfile" not in iam_role.resource_actions'
-
-    - name: Verify instance profile exists
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 1
-
-    ##################################################################
-    #  No create profile - profile already exists
-
-    # Profile does exist, don't create
-    - name: Minimal IAM Role without instance profile (profile exists)
-      amazon.aws.iam_role:
-        name: "{{ test_role }}"
-      register: iam_role
-
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:CreateInstanceProfile" not in iam_role.resource_actions'
-
-    - name: Verify instance profile exists
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 1
-
-    - name: Attach Role to profile
+    # Verify iam_role detaches from but doesn't delete instance profiles
+    - name: Create Instance Profile and attach role
       amazon.aws.iam_instance_profile:
         name: "{{ test_role }}"
         role: "{{ test_role }}"
@@ -156,8 +39,7 @@
         that:
           - iam_instance_profile is changed
 
-    # Profile does exist, do delete
-    - name: Remove IAM Role and delete profile (with existent profile)
+    - name: Delete IAM Role (should detach from instance profile but not delete it)
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
@@ -166,112 +48,21 @@
     - ansible.builtin.assert:
         that:
           - iam_role is changed
-          - '"iam:DeleteInstanceProfile" in iam_role.resource_actions'
-
-    - name: Verify instance profile exists
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 0
-
-    ##################################################################
-
-    # Profile doesn't exist, don't create
-    - name: Minimal IAM Role without instance profile (without existing profile)
-      amazon.aws.iam_role:
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:CreateInstanceProfile" not in iam_role.resource_actions'
-
-    - name: Verify instance profile doesn't exist
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 0
-
-    # Profile doesn't exist, don't delete
-    - name: Remove IAM Role and profile (with non-existent profile)
-      amazon.aws.iam_role:
-        state: absent
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
+          - '"iam:RemoveRoleFromInstanceProfile" in iam_role.resource_actions'
           - '"iam:DeleteInstanceProfile" not in iam_role.resource_actions'
 
-    - name: Verify instance profile doesn't exist
+    - name: Verify instance profile still exists after role deletion
       amazon.aws.iam_instance_profile_info:
         name: "{{ test_role }}"
       register: iam_instance_profile
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile.iam_instance_profiles | length == 0
 
-    ##################################################################
-
-    # Profile doesn't exist, do create
-    - name: Minimal IAM Role with instance profile (profile does not exist)
-      amazon.aws.iam_role:
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:CreateInstanceProfile" in iam_role.resource_actions'
-
-    - name: Decouple Instance Profile from role
-      amazon.aws.iam_instance_profile:
-        name: "{{ test_role }}"
-        role: ""
-      register: iam_instance_profile
-
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile is changed
-
-    # Detached profile exists, we shouldn't delete it.
-    - name: Remove IAM Role and "delete" profile (with detached profile)
-      amazon.aws.iam_role:
-        state: absent
-        name: "{{ test_role }}"
-      register: iam_role
-    - ansible.builtin.assert:
-        that:
-          - iam_role is changed
-          - '"iam:DeleteInstanceProfile" not in iam_role.resource_actions'
-
-    - name: Verify instance profile exists
-      amazon.aws.iam_instance_profile_info:
-        name: "{{ test_role }}"
-      register: iam_instance_profile
     - ansible.builtin.assert:
         that:
           - iam_instance_profile.iam_instance_profiles | length == 1
-
-    ##################################################################
-    #  Delete profile
-
-    - name: Delete Instance Profile
-      amazon.aws.iam_instance_profile:
-        state: absent
-        name: "{{ test_role }}"
-      register: iam_instance_profile
-
-    - ansible.builtin.assert:
-        that:
-          - iam_instance_profile is changed
+          - iam_instance_profile.iam_instance_profiles[0].roles | length == 0
 
   always:
-    - name: Delete Instance Profiles
+    - name: Delete Instance Profile (cleanup)
       amazon.aws.iam_instance_profile:
         state: absent
         name: "{{ test_role }}"
