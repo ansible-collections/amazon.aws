@@ -12,6 +12,9 @@ version_added_collection: community.aws
 short_description: Manage AWS IAM roles
 description:
   - Manage AWS IAM roles.
+notes:
+  - As of release 12.0.0 this module no longer manages IAM instance profiles.
+    Use M(amazon.aws.iam_instance_profile) to manage instance profiles.
 author:
   - "Rob White (@wimnat)"
 options:
@@ -43,7 +46,6 @@ options:
   boundary:
     description:
       - The ARN of an IAM managed policy to use to restrict the permissions this role can pass on to IAM roles/users that it creates.
-      - Boundaries cannot be set on Instance Profiles, as such if this option is specified then O(create_instance_profile) must be V(false).
       - This is intended for roles/users that have permissions to create new IAM objects.
       - For more information on boundaries, see U(https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html).
     aliases: [boundary_policy_arn]
@@ -78,24 +80,6 @@ options:
     default: present
     choices: [ present, absent ]
     type: str
-  create_instance_profile:
-    description:
-      - If no IAM instance profile with the same O(name) exists, setting O(create_instance_profile=True)
-        will create an IAM instance profile along with the role.
-      - This option has been deprecated and will be removed in a release after 2026-05-01.  The
-        M(amazon.aws.iam_instance_profile) module can be used to manage instance profiles.
-      - Defaults to V(True)
-    type: bool
-  delete_instance_profile:
-    description:
-      - When O(delete_instance_profile=true) and O(state=absent) deleting a role will also delete an
-        instance profile with the same O(name) as the role, but only if the instance profile is
-        associated with the role.
-      - Only applies when O(state=absent).
-      - This option has been deprecated and will be removed in a release after 2026-05-01.  The
-        M(amazon.aws.iam_instance_profile) module can be used to manage instance profiles.
-      - Defaults to V(False)
-    type: bool
   wait_timeout:
     description:
       - How long (in seconds) to wait for creation / update to complete.
@@ -197,28 +181,6 @@ iam_role:
                         ],
                         'version': '2012-10-17'
                     }
-        assume_role_policy_document_raw:
-            description:
-              - |
-                Note: this return value has been deprecated and will be removed in a release after
-                2026-05-01. RV(iam_role.assume_role_policy_document) and RV(iam_role.assume_role_policy_document_raw)
-                now use the same format.
-            type: dict
-            returned: always
-            sample: {
-                        'statement': [
-                            {
-                                'action': 'sts:AssumeRole',
-                                'effect': 'Allow',
-                                'principal': {
-                                    'service': 'ec2.amazonaws.com'
-                                },
-                                'sid': ''
-                            }
-                        ],
-                        'version': '2012-10-17'
-                    }
-            version_added: 5.3.0
         attached_policies:
             description: A list of dicts containing the name and ARN of the managed IAM policies attached to the role.
             type: list
@@ -278,10 +240,7 @@ import json
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
-from ansible_collections.amazon.aws.plugins.module_utils.iam import add_role_to_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
-from ansible_collections.amazon.aws.plugins.module_utils.iam import create_iam_instance_profile
-from ansible_collections.amazon.aws.plugins.module_utils.iam import delete_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_role
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_instance_profiles
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_role_attached_policies
@@ -515,11 +474,10 @@ def update_basic_role(module, client, role_name, role):
     return changed
 
 
-def create_or_update_role(module, client, role_name, create_instance_profile):
+def create_or_update_role(module, client, role_name):
     check_mode = module.check_mode
     wait = module.params.get("wait")
     wait_timeout = module.params.get("wait_timeout")
-    path = module.params.get("path")
     purge_policies = module.params.get("purge_policies")
     managed_policies = module.params.get("managed_policies")
     if managed_policies:
@@ -540,50 +498,19 @@ def create_or_update_role(module, client, role_name, create_instance_profile):
         changed = update_basic_role(module, client, role_name, role)
         wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
 
-    if create_instance_profile:
-        try:
-            changed |= create_instance_profiles(client, check_mode, role_name, path)
-            wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
-        except AnsibleIAMAlreadyExistsError:
-            module.warn(f"profile {role_name} already exists and will not be updated")
-
     changed |= update_managed_policies(client, module.check_mode, role_name, managed_policies, purge_policies)
     wait_iam_exists(client, check_mode, role_name, wait, wait_timeout)
 
     # Get the role again
     role = get_iam_role(client, role_name)
     role["AttachedPolicies"] = list_iam_role_attached_policies(client, role_name)
-    camel_role = normalize_iam_role(role, _v7_compat=True)
+    camel_role = normalize_iam_role(role)
 
     module.exit_json(changed=changed, iam_role=camel_role)
 
 
-def create_instance_profiles(client, check_mode, role_name, path):
-    # Fetch existing Profiles
-    role_profiles = list_iam_instance_profiles(client, role=role_name)
-    # Profile already exists
-    if any(p["InstanceProfileName"] == role_name for p in role_profiles):
-        return False
-
-    named_profile = list_iam_instance_profiles(client, name=role_name)
-    if named_profile:
-        raise AnsibleIAMAlreadyExistsError(f"profile {role_name} already exists")
-
-    if check_mode:
-        return True
-
-    path = path or "/"
-    # Make sure an instance profile is created
-    create_iam_instance_profile(client, role_name, path, {})
-    add_role_to_iam_instance_profile(client, role_name, role_name)
-
-    return True
-
-
-def remove_instance_profiles(client, check_mode, role_name, delete_instance_profile):
-    """Removes the role from instance profiles and deletes the instance profile if
-    delete_instance_profile is set
-    """
+def remove_role_from_instance_profiles(client, check_mode, role_name):
+    """Removes the role from any instance profiles it's attached to."""
 
     instance_profiles = list_iam_instance_profiles(client, role=role_name)
     if not instance_profiles:
@@ -595,15 +522,12 @@ def remove_instance_profiles(client, check_mode, role_name, delete_instance_prof
     for profile in instance_profiles:
         profile_name = profile["InstanceProfileName"]
         remove_role_from_iam_instance_profile(client, profile_name, role_name)
-        if not delete_instance_profile:
-            continue
-        # Delete the instance profile if the role and profile names match
-        if profile_name == role_name:
-            delete_iam_instance_profile(client, profile_name)
+
+    return True
 
 
 @IAMErrorHandler.deletion_error_handler("delete role")
-def destroy_role(client, check_mode, role_name, delete_profiles):
+def destroy_role(client, check_mode, role_name):
     role = get_iam_role(client, role_name)
 
     if role is None:
@@ -616,7 +540,7 @@ def destroy_role(client, check_mode, role_name, delete_profiles):
     # - attached instance profiles
     # - attached managed policies
     # - embedded inline policies
-    remove_instance_profiles(client, check_mode, role_name, delete_profiles)
+    remove_role_from_instance_profiles(client, check_mode, role_name)
     update_managed_policies(client, check_mode, role_name, [], True)
     remove_inline_policies(client, role_name)
 
@@ -670,9 +594,6 @@ def update_role_tags(client, check_mode, role_name, new_tags, purge_tags, existi
 
 def validate_params(module):
     if module.params.get("boundary"):
-        # We need to handle both None and True
-        if module.params.get("create_instance_profile") is not False:
-            module.fail_json(msg="When using a boundary policy, `create_instance_profile` must be set to `false`.")
         if not validate_aws_arn(module.params.get("boundary"), service="iam"):
             module.fail_json(msg="Boundary policy must be an ARN")
     if module.params.get("max_session_duration"):
@@ -697,8 +618,6 @@ def main():
         state=dict(type="str", choices=["present", "absent"], default="present"),
         description=dict(type="str"),
         boundary=dict(type="str", aliases=["boundary_policy_arn"]),
-        create_instance_profile=dict(type="bool"),
-        delete_instance_profile=dict(type="bool"),
         purge_policies=dict(default=True, type="bool", aliases=["purge_policy", "purge_managed_policies"]),
         tags=dict(type="dict", aliases=["resource_tags"]),
         purge_tags=dict(type="bool", default=True),
@@ -712,29 +631,6 @@ def main():
         supports_check_mode=True,
     )
 
-    module.deprecate(
-        "In a release after 2026-05-01 iam_role.assume_role_policy_document_raw "
-        "will no longer be returned.  Since release 8.0.0 assume_role_policy_document "
-        "has been returned with the same format as iam_role.assume_role_policy_document_raw",
-        date="2026-05-01",
-        collection_name="amazon.aws",
-    )
-    if module.params.get("create_instance_profile") is None:
-        module.deprecate(
-            "In a release after 2026-05-01 the 'create_instance_profile' option will be removed. "
-            "The amazon.aws.iam_instance_profile module can be used to manage instance profiles instead.",
-            date="2026-05-01",
-            collection_name="amazon.aws",
-        )
-    if module.params.get("delete_instance_profile") is None:
-        module.deprecate(
-            "In a release after 2026-05-01 the 'delete_instance_profile' option will be removed. "
-            "The amazon.aws.iam_instance_profile module can be used to manage and delete instance "
-            "profiles instead.",
-            date="2026-05-01",
-            collection_name="amazon.aws",
-        )
-
     validate_params(module)
 
     client = module.client("iam", retry_decorator=AWSRetry.jittered_backoff())
@@ -742,15 +638,11 @@ def main():
     state = module.params.get("state")
     role_name = module.params.get("name")
 
-    create_profile = module.params.get("create_instance_profile")
-    create_profile = True if create_profile is None else create_profile
-    delete_profile = module.params.get("delete_instance_profile") or False
-
     try:
         if state == "present":
-            create_or_update_role(module, client, role_name, create_profile)
+            create_or_update_role(module, client, role_name)
         elif state == "absent":
-            changed = destroy_role(client, module.check_mode, role_name, delete_profile)
+            changed = destroy_role(client, module.check_mode, role_name)
             module.exit_json(changed=changed)
     except AnsibleIAMError as e:
         module.fail_json_aws_error(e)

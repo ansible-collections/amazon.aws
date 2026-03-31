@@ -2,7 +2,6 @@
 - name: Create minimal role with no boundary policy
   amazon.aws.iam_role:
     name: "{{ test_role }}"
-    create_instance_profile: false
   register: iam_role
 - ansible.builtin.assert:
     that:
@@ -12,7 +11,6 @@
 - name: Configure Boundary Policy (CHECK MODE)
   amazon.aws.iam_role:
     name: "{{ test_role }}"
-    create_instance_profile: false
     boundary: "{{ boundary_policy }}"
   check_mode: true
   register: iam_role
@@ -23,7 +21,6 @@
 - name: Configure Boundary Policy
   amazon.aws.iam_role:
     name: "{{ test_role }}"
-    create_instance_profile: false
     boundary: "{{ boundary_policy }}"
   register: iam_role
 - ansible.builtin.assert:
@@ -34,7 +31,6 @@
 - name: Configure Boundary Policy (no change) - check mode
   amazon.aws.iam_role:
     name: "{{ test_role }}"
-    create_instance_profile: false
     boundary: "{{ boundary_policy }}"
   register: iam_role
   check_mode: true
@@ -45,7 +41,6 @@
 - name: Configure Boundary Policy (no change)
   amazon.aws.iam_role:
     name: "{{ test_role }}"
-    create_instance_profile: false
     boundary: "{{ boundary_policy }}"
   register: iam_role
 - ansible.builtin.assert:
@@ -80,7 +75,6 @@
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   register: iam_role
 - ansible.builtin.assert:
     that:

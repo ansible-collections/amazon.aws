@@ -4,7 +4,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"
@@ -33,7 +32,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"
@@ -63,7 +61,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"
@@ -83,7 +80,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"

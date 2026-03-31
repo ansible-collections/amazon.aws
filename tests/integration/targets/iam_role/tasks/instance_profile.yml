@@ -12,7 +12,6 @@
     - name: Minimal IAM Role without instance profile (without existing profile)
       amazon.aws.iam_role:
         name: "{{ test_role }}"
-        create_instance_profile: false
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -32,7 +31,6 @@
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: true
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -53,7 +51,6 @@
     - name: Minimal IAM Role with instance profile (without existing profile)
       amazon.aws.iam_role:
         name: "{{ test_role }}"
-        create_instance_profile: true
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -73,7 +70,6 @@
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: false
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -94,7 +90,6 @@
     - name: Minimal IAM Role with instance profile (profile exists)
       amazon.aws.iam_role:
         name: "{{ test_role }}"
-        create_instance_profile: true
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -114,7 +109,6 @@
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: false
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -136,7 +130,6 @@
     - name: Minimal IAM Role without instance profile (profile exists)
       amazon.aws.iam_role:
         name: "{{ test_role }}"
-        create_instance_profile: false
       register: iam_role
 
     - ansible.builtin.assert:
@@ -168,7 +161,6 @@
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: true
       register: iam_role
 
     - ansible.builtin.assert:
@@ -191,7 +183,6 @@
     - name: Minimal IAM Role without instance profile (without existing profile)
       amazon.aws.iam_role:
         name: "{{ test_role }}"
-        create_instance_profile: false
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -211,7 +202,6 @@
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: false
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -232,7 +222,6 @@
     - name: Minimal IAM Role with instance profile (profile does not exist)
       amazon.aws.iam_role:
         name: "{{ test_role }}"
-        create_instance_profile: true
       register: iam_role
     - ansible.builtin.assert:
         that:
@@ -254,7 +243,6 @@
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: true
       register: iam_role
     - ansible.builtin.assert:
         that:
