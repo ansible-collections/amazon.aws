@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: read
     name: Validate Ansible Docs
-    uses: ansible-community/github-docs-build/.github/workflows/_shared-docs-build-pr.yml@main
+    uses: ansible-community/github-docs-build/.github/workflows/_shared-docs-build-pr.yml@ea28abedf20b2db685a934b54d9833b9da24fe37 # @main as of 2026-03-25
     with:
       init-lenient: false
       init-fail-on-error: true
@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: read
     name: Build Ansible Docs
-    uses: ansible-community/github-docs-build/.github/workflows/_shared-docs-build-pr.yml@main
+    uses: ansible-community/github-docs-build/.github/workflows/_shared-docs-build-pr.yml@ea28abedf20b2db685a934b54d9833b9da24fe37 # @main as of 2026-03-25
     with:
       init-lenient: true
       init-fail-on-error: false
@@ -46,7 +46,7 @@ jobs:
     name: PR comments
     steps:
       - name: PR comment
-        uses: ansible-community/github-docs-build/actions/ansible-docs-build-comment@main
+        uses: ansible-community/github-docs-build/actions/ansible-docs-build-comment@ea28abedf20b2db685a934b54d9833b9da24fe37 # @main as of 2026-03-25
         with:
           body-includes: "## Docs Build"
           reactions: heart
