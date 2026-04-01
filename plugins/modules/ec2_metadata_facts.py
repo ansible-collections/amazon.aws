@@ -459,8 +459,8 @@ import socket
 import time
 import zlib
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.text.converters import to_text
 from ansible.module_utils.six.moves.urllib.parse import quote
 from ansible.module_utils.urls import fetch_url
 
@@ -478,16 +478,27 @@ except AttributeError:
 
 
 class Ec2Metadata:
-    ec2_metadata_token_uri = "http://169.254.169.254/latest/api/token"
-    ec2_metadata_uri = "http://169.254.169.254/latest/meta-data/"
-    ec2_metadata_instance_tags_uri = "http://169.254.169.254/latest/meta-data/tags/instance"
-    ec2_sshdata_uri = "http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key"
-    ec2_userdata_uri = "http://169.254.169.254/latest/user-data/"
-    ec2_dynamicdata_uri = "http://169.254.169.254/latest/dynamic/"
+    # The Metadata endpoint is a HTTP only endpoint with a predefined (link-local) address
+    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
+    # In future we may need to add support for [fd00:ec2::254], the IPv6 equivalent
+    default_metadata_endpoint = "http://169.254.169.254"  # NOSONAR(S5332,S1313)
+
+    @staticmethod
+    def _build_uris_from_endpoint(endpoint):
+        """Generate all metadata URIs from a base endpoint."""
+        return {
+            "token": "{}/latest/api/token".format(endpoint),
+            "meta": "{}/latest/meta-data/".format(endpoint),
+            "instance_tags": "{}/latest/meta-data/tags/instance".format(endpoint),
+            "ssh": "{}/latest/meta-data/public-keys/0/openssh-key".format(endpoint),
+            "user": "{}/latest/user-data/".format(endpoint),
+            "dynamic": "{}/latest/dynamic/".format(endpoint),
+        }
 
     def __init__(
         self,
         module,
+        ec2_metadata_endpoint=None,
         ec2_metadata_token_uri=None,
         ec2_metadata_uri=None,
         ec2_metadata_instance_tags_uri=None,
@@ -496,12 +507,19 @@ class Ec2Metadata:
         ec2_dynamicdata_uri=None,
     ):
         self.module = module
-        self.uri_token = ec2_metadata_token_uri or self.ec2_metadata_token_uri
-        self.uri_meta = ec2_metadata_uri or self.ec2_metadata_uri
-        self.uri_instance_tags = ec2_metadata_instance_tags_uri or self.ec2_metadata_instance_tags_uri
-        self.uri_user = ec2_userdata_uri or self.ec2_userdata_uri
-        self.uri_ssh = ec2_sshdata_uri or self.ec2_sshdata_uri
-        self.uri_dynamic = ec2_dynamicdata_uri or self.ec2_dynamicdata_uri
+
+        # Generate URIs from endpoint
+        endpoint = ec2_metadata_endpoint or self.default_metadata_endpoint
+        default_uris = self._build_uris_from_endpoint(endpoint)
+
+        # Allow individual URI overrides for backward compatibility and testing
+        self.uri_token = ec2_metadata_token_uri or default_uris["token"]
+        self.uri_meta = ec2_metadata_uri or default_uris["meta"]
+        self.uri_instance_tags = ec2_metadata_instance_tags_uri or default_uris["instance_tags"]
+        self.uri_ssh = ec2_sshdata_uri or default_uris["ssh"]
+        self.uri_user = ec2_userdata_uri or default_uris["user"]
+        self.uri_dynamic = ec2_dynamicdata_uri or default_uris["dynamic"]
+
         self._data = {}
         self._token = None
         self._prefix = "ansible_ec2_%s"
@@ -564,31 +582,121 @@ class Ec2Metadata:
             data = None
         return to_text(data)
 
+    @staticmethod
+    def _extract_iam_role_name(split_fields):
+        """Extract IAM role name from metadata path if it matches the pattern.
+
+        The IAM role name is found in paths like iam/security-credentials/role-name.
+        This is different from the instance profile name.
+
+        Args:
+            split_fields: List of path components
+
+        Returns:
+            str or None: The role name if pattern matches, None otherwise
+        """
+        if (
+            len(split_fields) == 3
+            and split_fields[0:2] == ["iam", "security-credentials"]
+            and ":" not in split_fields[2]
+        ):
+            return split_fields[2]
+        return None
+
+    @staticmethod
+    def _build_metadata_key(split_fields):
+        """Transform split metadata path fields into a key.
+
+        Args:
+            split_fields: List of path components
+
+        Returns:
+            str: Transformed key (joined with hyphens or concatenated)
+        """
+        if len(split_fields) > 1 and split_fields[1]:
+            return "-".join(split_fields)
+        return "".join(split_fields)
+
+    @staticmethod
+    def _filter_fields_by_patterns(fields, patterns):
+        """Remove fields matching any of the filter patterns.
+
+        Args:
+            fields: Dictionary of fields to filter
+            patterns: List of regex patterns to match against keys
+
+        Returns:
+            dict: Filtered fields with matching keys removed
+        """
+        return {
+            key: value  # fmt: skip
+            for key, value in fields.items()
+            if not any(re.search(pattern, key) for pattern in patterns)
+        }
+
     def _mangle_fields(self, fields, uri, filter_patterns=None):
+        """Transform metadata fields by stripping URI prefix and applying transformations.
+
+        Args:
+            fields: Dictionary of metadata fields
+            uri: URI prefix to strip from keys
+            filter_patterns: List of regex patterns for filtering (default: ["public-keys-0"])
+
+        Returns:
+            dict: Transformed and filtered metadata fields
+        """
         filter_patterns = ["public-keys-0"] if filter_patterns is None else filter_patterns
 
         new_fields = {}
         for key, value in fields.items():
             split_fields = key[len(uri):].split("/")  # fmt: skip
-            # Parse out the IAM role name (which is _not_ the same as the instance profile name)
-            if (
-                len(split_fields) == 3
-                and split_fields[0:2] == ["iam", "security-credentials"]
-                and ":" not in split_fields[2]
-            ):
-                new_fields[self._prefix % "iam-instance-profile-role"] = split_fields[2]
-            if len(split_fields) > 1 and split_fields[1]:
-                new_key = "-".join(split_fields)
-                new_fields[self._prefix % new_key] = value
-            else:
-                new_key = "".join(split_fields)
-                new_fields[self._prefix % new_key] = value
-        for pattern in filter_patterns:
-            for key in dict(new_fields):
-                match = re.search(pattern, key)
-                if match:
-                    new_fields.pop(key)
-        return new_fields
+
+            # Extract IAM role name if present
+            role_name = self._extract_iam_role_name(split_fields)
+            if role_name:
+                new_fields[self._prefix % "iam-instance-profile-role"] = role_name
+
+            # Build and store the transformed key
+            metadata_key = self._build_metadata_key(split_fields)
+            new_fields[self._prefix % metadata_key] = value
+
+        # Filter out keys matching patterns
+        return self._filter_fields_by_patterns(new_fields, filter_patterns)
+
+    @staticmethod
+    def _build_field_uri(uri, field):
+        """Build a complete URI by joining base URI and field.
+
+        Args:
+            uri: Base URI
+            field: Field name to append
+
+        Returns:
+            str: Complete URI with proper path separator
+        """
+        if uri.endswith("/"):
+            return uri + field
+        return uri + "/" + field
+
+    def _process_metadata_content(self, new_uri, field, content):
+        """Process and store metadata content based on field type.
+
+        Args:
+            new_uri: The URI key for storing the data
+            field: The metadata field name
+            content: The raw content to process
+        """
+        if field == "security-groups" or field == "security-group-ids":
+            sg_fields = ",".join(content.split("\n"))
+            self._data[new_uri] = sg_fields
+        else:
+            try:
+                json_dict = json.loads(content)
+                self._data[new_uri] = content
+                for key, value in json_dict.items():
+                    self._data["{0}:{1}".format(new_uri, key.lower())] = value
+            except (json_decode_error, AttributeError):
+                self._data[new_uri] = content  # not a stringified JSON string
 
     def fetch(self, uri, recurse=True):
         raw_subfields = self._fetch(uri)
@@ -598,30 +706,17 @@ class Ec2Metadata:
         for field in subfields:
             if field.endswith("/") and recurse:
                 self.fetch(uri + field)
-            if uri.endswith("/"):
-                new_uri = uri + field
-            else:
-                new_uri = uri + "/" + field
+            new_uri = self._build_field_uri(uri, field)
             if new_uri not in self._data and not new_uri.endswith("/"):
                 content = self._fetch(new_uri)
-                if field == "security-groups" or field == "security-group-ids":
-                    sg_fields = ",".join(content.split("\n"))
-                    self._data["%s" % (new_uri)] = sg_fields
-                else:
-                    try:
-                        json_dict = json.loads(content)
-                        self._data["%s" % (new_uri)] = content
-                        for key, value in json_dict.items():
-                            self._data["%s:%s" % (new_uri, key.lower())] = value
-                    except (json_decode_error, AttributeError):
-                        self._data["%s" % (new_uri)] = content  # not a stringified JSON string
+                self._process_metadata_content(new_uri, field, content)
 
     def fix_invalid_varnames(self, data):
         """Change ':'' and '-' to '_' to ensure valid template variable names"""
         new_data = data.copy()
         for key, value in data.items():
             if ":" in key or "-" in key:
-                newkey = re.sub(":|-", "_", key)
+                newkey = re.sub("[:-]", "_", key)
                 new_data[newkey] = value
                 del new_data[key]
 
