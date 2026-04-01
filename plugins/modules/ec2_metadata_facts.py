@@ -459,8 +459,8 @@ import socket
 import time
 import zlib
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.text.converters import to_text
 from ansible.module_utils.six.moves.urllib.parse import quote
 from ansible.module_utils.urls import fetch_url
 
@@ -478,16 +478,27 @@ except AttributeError:
 
 
 class Ec2Metadata:
-    ec2_metadata_token_uri = "http://169.254.169.254/latest/api/token"
-    ec2_metadata_uri = "http://169.254.169.254/latest/meta-data/"
-    ec2_metadata_instance_tags_uri = "http://169.254.169.254/latest/meta-data/tags/instance"
-    ec2_sshdata_uri = "http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key"
-    ec2_userdata_uri = "http://169.254.169.254/latest/user-data/"
-    ec2_dynamicdata_uri = "http://169.254.169.254/latest/dynamic/"
+    # The Metadata endpoint is a HTTP only endpoint with a predefined (link-local) address
+    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
+    # In future we may need to add support for [fd00:ec2::254], the IPv6 equivalent
+    default_metadata_endpoint = "http://169.254.169.254"  # NOSONAR(S5332,S1313)
+
+    @staticmethod
+    def _build_uris_from_endpoint(endpoint):
+        """Generate all metadata URIs from a base endpoint."""
+        return {
+            "token": "{}/latest/api/token".format(endpoint),
+            "meta": "{}/latest/meta-data/".format(endpoint),
+            "instance_tags": "{}/latest/meta-data/tags/instance".format(endpoint),
+            "ssh": "{}/latest/meta-data/public-keys/0/openssh-key".format(endpoint),
+            "user": "{}/latest/user-data/".format(endpoint),
+            "dynamic": "{}/latest/dynamic/".format(endpoint),
+        }
 
     def __init__(
         self,
         module,
+        ec2_metadata_endpoint=None,
         ec2_metadata_token_uri=None,
         ec2_metadata_uri=None,
         ec2_metadata_instance_tags_uri=None,
@@ -496,12 +507,19 @@ class Ec2Metadata:
         ec2_dynamicdata_uri=None,
     ):
         self.module = module
-        self.uri_token = ec2_metadata_token_uri or self.ec2_metadata_token_uri
-        self.uri_meta = ec2_metadata_uri or self.ec2_metadata_uri
-        self.uri_instance_tags = ec2_metadata_instance_tags_uri or self.ec2_metadata_instance_tags_uri
-        self.uri_user = ec2_userdata_uri or self.ec2_userdata_uri
-        self.uri_ssh = ec2_sshdata_uri or self.ec2_sshdata_uri
-        self.uri_dynamic = ec2_dynamicdata_uri or self.ec2_dynamicdata_uri
+
+        # Generate URIs from endpoint
+        endpoint = ec2_metadata_endpoint or self.default_metadata_endpoint
+        default_uris = self._build_uris_from_endpoint(endpoint)
+
+        # Allow individual URI overrides for backward compatibility and testing
+        self.uri_token = ec2_metadata_token_uri or default_uris["token"]
+        self.uri_meta = ec2_metadata_uri or default_uris["meta"]
+        self.uri_instance_tags = ec2_metadata_instance_tags_uri or default_uris["instance_tags"]
+        self.uri_ssh = ec2_sshdata_uri or default_uris["ssh"]
+        self.uri_user = ec2_userdata_uri or default_uris["user"]
+        self.uri_dynamic = ec2_dynamicdata_uri or default_uris["dynamic"]
+
         self._data = {}
         self._token = None
         self._prefix = "ansible_ec2_%s"
