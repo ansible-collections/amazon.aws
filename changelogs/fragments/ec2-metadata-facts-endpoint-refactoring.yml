@@ -1,6 +1,6 @@
 minor_changes:
-  - ec2_metadata_facts - Refactor metadata endpoint handling to use a single endpoint parameter with automatic URI generation, maintaining backward compatibility (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
-  - ec2_metadata_facts - Internal code refactoring to improve maintainability and reduce complexity (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - ec2_metadata_facts - Refactor metadata endpoint handling to use a single endpoint parameter with automatic URI generation, maintaining backward compatibility (https://github.com/ansible-collections/amazon.aws/pull/2934).
+  - ec2_metadata_facts - Internal code refactoring to improve maintainability and reduce complexity (https://github.com/ansible-collections/amazon.aws/pull/2934).
 trivial:
-  - ec2_metadata_facts - Replace deprecated ansible.module_utils._text import (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
-  - ec2_metadata_facts - Reorganise and expand unit test coverage (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - ec2_metadata_facts - Replace deprecated ansible.module_utils._text import (https://github.com/ansible-collections/amazon.aws/pull/2934).
+  - ec2_metadata_facts - Reorganise and expand unit test coverage (https://github.com/ansible-collections/amazon.aws/pull/2934).
