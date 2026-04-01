@@ -10,6 +10,7 @@ cleanup() {
 
     cd "${PLAYBOOK_DIR}"
     ansible-playbook -c local aws_ssm_integration_test_teardown.yml "${CMD_ARGS[@]}"
+    return 0
 
 }
 
