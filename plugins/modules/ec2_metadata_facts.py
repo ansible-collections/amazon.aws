@@ -628,7 +628,7 @@ class Ec2Metadata:
         Returns:
             dict: Filtered fields with matching keys removed
         """
-        filtered_fields = dict(fields)
+        filtered_fields = fields.copy()
         for pattern in patterns:
             for key in list(filtered_fields.keys()):
                 if re.search(pattern, key):
@@ -680,22 +680,22 @@ class Ec2Metadata:
                 content = self._fetch(new_uri)
                 if field == "security-groups" or field == "security-group-ids":
                     sg_fields = ",".join(content.split("\n"))
-                    self._data["%s" % (new_uri)] = sg_fields
+                    self._data[new_uri] = sg_fields
                 else:
                     try:
                         json_dict = json.loads(content)
-                        self._data["%s" % (new_uri)] = content
+                        self._data[new_uri] = content
                         for key, value in json_dict.items():
-                            self._data["%s:%s" % (new_uri, key.lower())] = value
+                            self._data["{0}:{1}".format(new_uri, key.lower())] = value
                     except (json_decode_error, AttributeError):
-                        self._data["%s" % (new_uri)] = content  # not a stringified JSON string
+                        self._data[new_uri] = content  # not a stringified JSON string
 
     def fix_invalid_varnames(self, data):
         """Change ':'' and '-' to '_' to ensure valid template variable names"""
         new_data = data.copy()
         for key, value in data.items():
             if ":" in key or "-" in key:
-                newkey = re.sub(":|-", "_", key)
+                newkey = re.sub("[:-]", "_", key)
                 new_data[newkey] = value
                 del new_data[key]
 
