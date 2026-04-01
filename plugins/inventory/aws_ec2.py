@@ -347,6 +347,7 @@ from typing import Dict
 from typing import List
 from typing import Set
 
+from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
 
 try:
@@ -356,6 +357,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.common import get_collection_info
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
@@ -614,7 +616,7 @@ def _remove_trailing_dot(data: str) -> str:
 
 
 class InventoryModule(AWSInventoryBase):
-    NAME = "amazon.aws.aws_ec2"
+    NAME = f"{get_collection_info()['name']}.aws_ec2"
     INVENTORY_FILE_SUFFIXES = ("aws_ec2.yml", "aws_ec2.yaml")
 
     def __init__(self):
@@ -691,6 +693,28 @@ class InventoryModule(AWSInventoryBase):
     def route53_enabled(self) -> bool:
         return self.get_option("route53_enabled")
 
+    def _process_hostname_dict_preference(self, instance, preference):
+        """
+        Process a dict preference to construct a hostname.
+
+        :param instance: an instance dict returned by boto3 ec2 describe_instances()
+        :param preference: a dict containing 'name', optional 'prefix', and optional 'separator'
+        :return: constructed hostname or None
+        """
+        if "name" not in preference:
+            raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
+
+        hostname = self._get_preferred_hostname(instance, [preference["name"]])
+        if "prefix" not in preference:
+            return hostname
+
+        hostname_from_prefix = self._get_preferred_hostname(instance, [preference["prefix"]])
+        if not (hostname and hostname_from_prefix):
+            return hostname
+
+        separator = preference.get("separator", "_")
+        return hostname_from_prefix + separator + hostname
+
     def _get_preferred_hostname(self, instance, hostnames):
         """
         :param instance: an instance dict returned by boto3 ec2 describe_instances()
@@ -706,24 +730,51 @@ class InventoryModule(AWSInventoryBase):
         if not hostnames:
             hostnames = ["dns-name", "private-dns-name"]
 
-        hostname = None
         for preference in hostnames:
             if isinstance(preference, dict):
-                if "name" not in preference:
-                    self.fail_aws("A 'name' key must be defined in a hostnames dictionary.")
-                hostname = self._get_preferred_hostname(instance, [preference["name"]])
-                hostname_from_prefix = None
-                if "prefix" in preference:
-                    hostname_from_prefix = self._get_preferred_hostname(instance, [preference["prefix"]])
-                separator = preference.get("separator", "_")
-                if hostname and hostname_from_prefix and "prefix" in preference:
-                    hostname = hostname_from_prefix + separator + hostname
+                hostname = self._process_hostname_dict_preference(instance, preference)
             else:
                 hostname = self._get_hostname_with_jinja2_filter(instance, preference, return_single_hostname=True)
+
             if hostname:
-                break
-        if hostname:
-            return self._sanitize_hostname(hostname)
+                return self._sanitize_hostname(hostname)
+
+        return None
+
+    def _process_all_hostnames_dict_preference(self, instance, preference):
+        """
+        Process a dict preference to construct a hostname for the all hostnames case.
+
+        :param instance: an instance dict returned by boto3 ec2 describe_instances()
+        :param preference: a dict containing 'name', optional 'prefix', and optional 'separator'
+        :return: constructed hostname (string or list) or None
+        """
+        if "name" not in preference:
+            raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
+
+        hostname = self._get_all_hostnames(instance, [preference["name"]])
+        if "prefix" not in preference:
+            return hostname
+
+        hostname_from_prefix = self._get_all_hostnames(instance, [preference["prefix"]])
+        if not (hostname and hostname_from_prefix):
+            return hostname
+
+        separator = preference.get("separator", "_")
+        return hostname_from_prefix[0] + separator + hostname[0]
+
+    def _add_hostname_to_list(self, hostname_list, hostname):
+        """
+        Add a hostname to the list, handling both string and list types.
+
+        :param hostname_list: the list to add to
+        :param hostname: the hostname(s) to add (string or list)
+        """
+        if isinstance(hostname, list):
+            for host in hostname:
+                hostname_list.append(self._sanitize_hostname(host))
+        elif isinstance(hostname, str):
+            hostname_list.append(self._sanitize_hostname(hostname))
 
     def _get_all_hostnames(self, instance, hostnames):
         """
@@ -738,27 +789,14 @@ class InventoryModule(AWSInventoryBase):
         if not hostnames:
             hostnames = ["dns-name", "private-dns-name"]
 
-        hostname = None
         for preference in hostnames:
             if isinstance(preference, dict):
-                if "name" not in preference:
-                    self.fail_aws("A 'name' key must be defined in a hostnames dictionary.")
-                hostname = self._get_all_hostnames(instance, [preference["name"]])
-                hostname_from_prefix = None
-                if "prefix" in preference:
-                    hostname_from_prefix = self._get_all_hostnames(instance, [preference["prefix"]])
-                separator = preference.get("separator", "_")
-                if hostname and hostname_from_prefix and "prefix" in preference:
-                    hostname = hostname_from_prefix[0] + separator + hostname[0]
+                hostname = self._process_all_hostnames_dict_preference(instance, preference)
             else:
                 hostname = self._get_hostname_with_jinja2_filter(instance, preference)
 
             if hostname:
-                if isinstance(hostname, list):
-                    for host in hostname:
-                        hostname_list.append(self._sanitize_hostname(host))
-                elif isinstance(hostname, str):
-                    hostname_list.append(self._sanitize_hostname(hostname))
+                self._add_hostname_to_list(hostname_list, hostname)
 
         return hostname_list
 
@@ -957,7 +995,7 @@ class InventoryModule(AWSInventoryBase):
         self.display.deprecated(
             "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
             date="2026-12-01",
-            collection_name="amazon.aws",
+            collection_name=get_collection_info()["name"],
         )
 
         # get user specifications
@@ -979,7 +1017,7 @@ class InventoryModule(AWSInventoryBase):
                 "The 'use_contrib_script_compatible_sanitization' option is deprecated. "
                 "Use Ansible's default group name sanitization instead.",
                 date="2026-12-01",
-                collection_name="amazon.aws",
+                collection_name=get_collection_info()["name"],
             )
 
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
@@ -989,7 +1027,7 @@ class InventoryModule(AWSInventoryBase):
                 "The 'use_contrib_script_compatible_ec2_tag_keys' option is deprecated. "
                 "Use the 'ec2_tags' structure instead.",
                 date="2026-12-01",
-                collection_name="amazon.aws",
+                collection_name=get_collection_info()["name"],
             )
 
         if not all(isinstance(element, (dict, str)) for element in hostnames):
