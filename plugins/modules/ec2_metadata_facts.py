@@ -582,31 +582,87 @@ class Ec2Metadata:
             data = None
         return to_text(data)
 
+    @staticmethod
+    def _extract_iam_role_name(split_fields):
+        """Extract IAM role name from metadata path if it matches the pattern.
+
+        The IAM role name is found in paths like iam/security-credentials/role-name.
+        This is different from the instance profile name.
+
+        Args:
+            split_fields: List of path components
+
+        Returns:
+            str or None: The role name if pattern matches, None otherwise
+        """
+        if (
+            len(split_fields) == 3
+            and split_fields[0:2] == ["iam", "security-credentials"]
+            and ":" not in split_fields[2]
+        ):
+            return split_fields[2]
+        return None
+
+    @staticmethod
+    def _build_metadata_key(split_fields):
+        """Transform split metadata path fields into a key.
+
+        Args:
+            split_fields: List of path components
+
+        Returns:
+            str: Transformed key (joined with hyphens or concatenated)
+        """
+        if len(split_fields) > 1 and split_fields[1]:
+            return "-".join(split_fields)
+        return "".join(split_fields)
+
+    @staticmethod
+    def _filter_fields_by_patterns(fields, patterns):
+        """Remove fields matching any of the filter patterns.
+
+        Args:
+            fields: Dictionary of fields to filter
+            patterns: List of regex patterns to match against keys
+
+        Returns:
+            dict: Filtered fields with matching keys removed
+        """
+        filtered_fields = dict(fields)
+        for pattern in patterns:
+            for key in list(filtered_fields.keys()):
+                if re.search(pattern, key):
+                    filtered_fields.pop(key)
+        return filtered_fields
+
     def _mangle_fields(self, fields, uri, filter_patterns=None):
+        """Transform metadata fields by stripping URI prefix and applying transformations.
+
+        Args:
+            fields: Dictionary of metadata fields
+            uri: URI prefix to strip from keys
+            filter_patterns: List of regex patterns for filtering (default: ["public-keys-0"])
+
+        Returns:
+            dict: Transformed and filtered metadata fields
+        """
         filter_patterns = ["public-keys-0"] if filter_patterns is None else filter_patterns
 
         new_fields = {}
         for key, value in fields.items():
             split_fields = key[len(uri):].split("/")  # fmt: skip
-            # Parse out the IAM role name (which is _not_ the same as the instance profile name)
-            if (
-                len(split_fields) == 3
-                and split_fields[0:2] == ["iam", "security-credentials"]
-                and ":" not in split_fields[2]
-            ):
-                new_fields[self._prefix % "iam-instance-profile-role"] = split_fields[2]
-            if len(split_fields) > 1 and split_fields[1]:
-                new_key = "-".join(split_fields)
-                new_fields[self._prefix % new_key] = value
-            else:
-                new_key = "".join(split_fields)
-                new_fields[self._prefix % new_key] = value
-        for pattern in filter_patterns:
-            for key in dict(new_fields):
-                match = re.search(pattern, key)
-                if match:
-                    new_fields.pop(key)
-        return new_fields
+
+            # Extract IAM role name if present
+            role_name = self._extract_iam_role_name(split_fields)
+            if role_name:
+                new_fields[self._prefix % "iam-instance-profile-role"] = role_name
+
+            # Build and store the transformed key
+            metadata_key = self._build_metadata_key(split_fields)
+            new_fields[self._prefix % metadata_key] = value
+
+        # Filter out keys matching patterns
+        return self._filter_fields_by_patterns(new_fields, filter_patterns)
 
     def fetch(self, uri, recurse=True):
         raw_subfields = self._fetch(uri)
