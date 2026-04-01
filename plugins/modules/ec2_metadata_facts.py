@@ -629,7 +629,7 @@ class Ec2Metadata:
             dict: Filtered fields with matching keys removed
         """
         return {
-            key: value
+            key: value  # fmt: skip
             for key, value in fields.items()
             if not any(re.search(pattern, key) for pattern in patterns)
         }
