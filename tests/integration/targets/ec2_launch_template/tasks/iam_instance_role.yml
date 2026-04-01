@@ -8,20 +8,30 @@
         name: "{{ test_role_name }}-1"
         assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
         state: present
-        create_instance_profile: true
         managed_policy:
           - AWSDenyAll
       register: iam_role
+
+    - name: Create IAM instance profile for first role
+      amazon.aws.iam_instance_profile:
+        name: "{{ test_role_name }}-1"
+        role: "{{ test_role_name }}-1"
+        state: present
 
     - name: Create second IAM role for test
       amazon.aws.iam_role:
         name: "{{ test_role_name }}-2"
         assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
         state: present
-        create_instance_profile: true
         managed_policy:
           - AWSDenyAll
       register: iam_role_2
+
+    - name: Create IAM instance profile for second role
+      amazon.aws.iam_instance_profile:
+        name: "{{ test_role_name }}-2"
+        role: "{{ test_role_name }}-2"
+        state: present
 
     - name: Make instance with an instance_role
       amazon.aws.ec2_launch_template:
@@ -185,12 +195,20 @@
       register: lt_removed
       ignore_errors: true
 
+    - name: Delete IAM instance profiles for test
+      amazon.aws.iam_instance_profile:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ test_role_name }}-1"
+        - "{{ test_role_name }}-2"
+      ignore_errors: true
+
     - name: Delete IAM role for test
       amazon.aws.iam_role:
         name: "{{ test_role_name }}-1"
         assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
         state: absent
-        delete_instance_profile: true
       register: iam_removed
       ignore_errors: true
 
@@ -199,6 +217,5 @@
         name: "{{ test_role_name }}-2"
         assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
         state: absent
-        delete_instance_profile: true
       register: iam_2_removed
       ignore_errors: true

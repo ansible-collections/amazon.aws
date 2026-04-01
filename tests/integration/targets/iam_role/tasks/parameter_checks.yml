@@ -1,23 +1,9 @@
 ---
 # Parameter Checks
-- name: Friendly message when creating an instance profile and adding a boundary profile
-  amazon.aws.iam_role:
-    name: "{{ test_role }}"
-    boundary: "{{ boundary_policy }}"
-  register: iam_role
-  ignore_errors: true
-- ansible.builtin.assert:
-    that:
-      - iam_role is failed
-      - '"boundary policy" in iam_role.msg'
-      - '"create_instance_profile" in iam_role.msg'
-      - '"false" in iam_role.msg'
-
 - name: Friendly message when boundary profile is not an ARN
   amazon.aws.iam_role:
     name: "{{ test_role }}"
     boundary: AWSDenyAll
-    create_instance_profile: false
   register: iam_role
   ignore_errors: true
 - ansible.builtin.assert:

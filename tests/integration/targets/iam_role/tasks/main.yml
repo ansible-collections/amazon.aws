@@ -61,14 +61,12 @@
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: true
       ignore_errors: true
     - name: Remove IAM Role (with path)
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
         path: "{{ test_path }}"
-        delete_instance_profile: true
       ignore_errors: true
     - name: Iam_role_info after Role deletion
       amazon.aws.iam_role_info:

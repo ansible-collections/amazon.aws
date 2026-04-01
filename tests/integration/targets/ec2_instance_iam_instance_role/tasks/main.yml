@@ -11,20 +11,30 @@
         state: present
         name: "{{ first_iam_role }}"
         assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
-        create_instance_profile: true
         managed_policy:
           - AmazonEC2ContainerServiceRole
       register: iam_role
+
+    - name: Create IAM instance profile for first role
+      amazon.aws.iam_instance_profile:
+        name: "{{ first_iam_role }}"
+        role: "{{ first_iam_role }}"
+        state: present
 
     - name: Create second IAM role for test
       amazon.aws.iam_role:
         state: present
         name: "{{ second_iam_role }}"
         assume_role_policy_document: "{{ lookup('file', 'assume-role-policy.json') }}"
-        create_instance_profile: true
         managed_policy:
           - AmazonEC2ContainerServiceRole
       register: iam_role_2
+
+    - name: Create IAM instance profile for second role
+      amazon.aws.iam_instance_profile:
+        name: "{{ second_iam_role }}"
+        role: "{{ second_iam_role }}"
+        state: present
 
     - name: Wait 10 seconds for roles to become available
       ansible.builtin.wait_for:
@@ -118,11 +128,19 @@
         wait: true
       ignore_errors: true
 
+    - name: Delete IAM instance profiles for test
+      amazon.aws.iam_instance_profile:
+        state: absent
+        name: "{{ item }}"
+      loop:
+        - "{{ first_iam_role }}"
+        - "{{ second_iam_role }}"
+      ignore_errors: true
+
     - name: Delete IAM role for test
       amazon.aws.iam_role:
         state: absent
         name: "{{ item }}"
-        delete_instance_profile: true
       loop:
         - "{{ first_iam_role }}"
         - "{{ second_iam_role }}"
