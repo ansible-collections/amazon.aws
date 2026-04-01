@@ -1,0 +1,287 @@
+---
+# Integration test for ec2_instance alternate_instance_types functionality
+# Tests the ability to fall back to alternate instance types when primary fails
+
+- name: Set up test environment
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ aws_session_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    # Setup infrastructure
+    - name: Create VPC for testing
+      amazon.aws.ec2_vpc:
+        name: "{{ resource_prefix }}-vpc-alt-types"
+        cidr_block: 10.0.0.0/16
+        state: present
+        tags:
+          TestId: "{{ resource_prefix }}"
+          TestType: "alternate-instance-types"
+      register: test_vpc
+
+    - name: Create subnet
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ test_vpc.vpc.vpc_id }}"
+        cidr: 10.0.1.0/24
+        state: present
+        tags:
+          Name: "{{ resource_prefix }}-subnet-alt-types"
+          TestId: "{{ resource_prefix }}"
+      register: test_subnet
+
+    - name: Create security group
+      amazon.aws.ec2_security_group:
+        name: "{{ resource_prefix }}-sg-alt-types"
+        description: Security group for alternate instance types test
+        vpc_id: "{{ test_vpc.vpc.vpc_id }}"
+        rules:
+          - proto: tcp
+            ports: [22]
+            cidr_ip: 0.0.0.0/0
+        tags:
+          TestId: "{{ resource_prefix }}"
+        state: present
+      register: test_sg
+
+    # Test 1: Basic alternate instance types functionality
+    - name: "Test 1: Launch instance with alternate types (primary likely unavailable)"
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}-test1-alternate"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "{{ unlikely_instance_type }}"  # Likely to fail
+        alternate_instance_types:
+          - "{{ backup_instance_type_1 }}"
+          - "{{ backup_instance_type_2 }}"
+          - "{{ backup_instance_type_3 }}"
+        vpc_subnet_id: "{{ test_subnet.subnet.subnet_id }}"
+        security_groups:
+          - "{{ test_sg.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 300
+        tags:
+          TestId: "{{ resource_prefix }}"
+          TestCase: "alternate-fallback"
+      register: test1_result
+
+    - name: Verify Test 1 - Instance launched successfully
+      assert:
+        that:
+          - test1_result.changed
+          - test1_result.instances | length == 1
+          - test1_result.instances[0].state.name in ['running', 'pending']
+          - test1_result.instances[0].instance_type in [unlikely_instance_type, backup_instance_type_1, backup_instance_type_2, backup_instance_type_3]
+        fail_msg: "Test 1 failed: Instance was not launched successfully"
+
+    - name: Display Test 1 results
+      debug:
+        msg: |
+          Test 1 Results:
+          - Requested instance type: {{ unlikely_instance_type }}
+          - Actual instance type: {{ test1_result.instances[0].instance_type }}
+          - Alternate used: {{ test1_result.instances[0].instance_type != unlikely_instance_type }}
+
+    # Test 2: Primary instance type available (control test)
+    - name: "Test 2: Launch instance with available primary type"
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}-test2-primary"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "{{ available_instance_type }}"
+        alternate_instance_types:
+          - "{{ backup_instance_type_1 }}"
+          - "{{ backup_instance_type_2 }}"
+        vpc_subnet_id: "{{ test_subnet.subnet.subnet_id }}"
+        security_groups:
+          - "{{ test_sg.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 300
+        tags:
+          TestId: "{{ resource_prefix }}"
+          TestCase: "primary-available"
+      register: test2_result
+
+    - name: Verify Test 2 - Primary type used when available
+      assert:
+        that:
+          - test2_result.changed
+          - test2_result.instances | length == 1
+          - test2_result.instances[0].state.name in ['running', 'pending']
+          - test2_result.instances[0].instance_type == available_instance_type
+        fail_msg: "Test 2 failed: Primary instance type should have been used"
+
+    # Test 3: Idempotency check
+    - name: "Test 3: Verify idempotency (no changes on re-run)"
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}-test1-alternate"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "{{ unlikely_instance_type }}"
+        alternate_instance_types:
+          - "{{ backup_instance_type_1 }}"
+          - "{{ backup_instance_type_2 }}"
+          - "{{ backup_instance_type_3 }}"
+        vpc_subnet_id: "{{ test_subnet.subnet.subnet_id }}"
+        security_groups:
+          - "{{ test_sg.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 300
+        tags:
+          TestId: "{{ resource_prefix }}"
+          TestCase: "alternate-fallback"
+      register: test3_result
+
+    - name: Verify Test 3 - Idempotency maintained
+      assert:
+        that:
+          - not test3_result.changed
+          - test3_result.instances[0].instance_id == test1_result.instances[0].instance_id
+          - test3_result.instances[0].instance_type == test1_result.instances[0].instance_type
+        fail_msg: "Test 3 failed: Module should be idempotent after alternate type launch"
+
+    # Test 4: Multiple instances with exact_count
+    - name: "Test 4: Launch multiple instances with exact_count and alternates"
+      amazon.aws.ec2_instance:
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "{{ unlikely_instance_type }}"
+        alternate_instance_types:
+          - "{{ backup_instance_type_1 }}"
+          - "{{ backup_instance_type_2 }}"
+        vpc_subnet_id: "{{ test_subnet.subnet.subnet_id }}"
+        security_groups:
+          - "{{ test_sg.group_id }}"
+        exact_count: 2
+        filters:
+          tag:TestCase: "exact-count-alternate"
+          tag:TestId: "{{ resource_prefix }}"
+          instance-state-name: ["running", "pending"]
+        state: present
+        wait: true
+        wait_timeout: 300
+        tags:
+          TestId: "{{ resource_prefix }}"
+          TestCase: "exact-count-alternate"
+      register: test4_result
+
+    - name: Verify Test 4 - Exact count with alternates
+      assert:
+        that:
+          - test4_result.changed
+          - test4_result.instances | length == 2
+          - test4_result.instances | selectattr('state.name', 'in', ['running', 'pending']) | list | length == 2
+        fail_msg: "Test 4 failed: Should have launched exactly 2 instances"
+
+    # Test 5: Empty alternate list (should work normally)
+    - name: "Test 5: Launch with empty alternate_instance_types list"
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}-test5-empty-alt"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "{{ available_instance_type }}"
+        alternate_instance_types: []
+        vpc_subnet_id: "{{ test_subnet.subnet.subnet_id }}"
+        security_groups:
+          - "{{ test_sg.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 300
+        tags:
+          TestId: "{{ resource_prefix }}"
+          TestCase: "empty-alternates"
+      register: test5_result
+
+    - name: Verify Test 5 - Empty alternates list works
+      assert:
+        that:
+          - test5_result.changed
+          - test5_result.instances | length == 1
+          - test5_result.instances[0].instance_type == available_instance_type
+        fail_msg: "Test 5 failed: Empty alternate list should work normally"
+
+    # Test 6: No alternate_instance_types parameter (backward compatibility)
+    - name: "Test 6: Launch without alternate_instance_types parameter"
+      amazon.aws.ec2_instance:
+        name: "{{ resource_prefix }}-test6-no-alt"
+        image_id: "{{ ec2_ami_id }}"
+        instance_type: "{{ available_instance_type }}"
+        vpc_subnet_id: "{{ test_subnet.subnet.subnet_id }}"
+        security_groups:
+          - "{{ test_sg.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 300
+        tags:
+          TestId: "{{ resource_prefix }}"
+          TestCase: "no-alternates"
+      register: test6_result
+
+    - name: Verify Test 6 - Backward compatibility maintained
+      assert:
+        that:
+          - test6_result.changed
+          - test6_result.instances | length == 1
+          - test6_result.instances[0].instance_type == available_instance_type
+        fail_msg: "Test 6 failed: Backward compatibility broken"
+
+    # Summary
+    - name: Test Summary
+      debug:
+        msg: |
+          === Integration Test Results Summary ===
+          Test 1 (Alternate Fallback): {{ 'PASS' if test1_result.instances[0].state.name in ['running', 'pending'] else 'FAIL' }}
+            - Used instance type: {{ test1_result.instances[0].instance_type }}
+            - Alternate used: {{ test1_result.instances[0].instance_type != unlikely_instance_type }}
+          
+          Test 2 (Primary Available): {{ 'PASS' if test2_result.instances[0].instance_type == available_instance_type else 'FAIL' }}
+            - Used instance type: {{ test2_result.instances[0].instance_type }}
+          
+          Test 3 (Idempotency): {{ 'PASS' if not test3_result.changed else 'FAIL' }}
+            - Changes made: {{ test3_result.changed }}
+          
+          Test 4 (Exact Count): {{ 'PASS' if test4_result.instances | length == 2 else 'FAIL' }}
+            - Instances launched: {{ test4_result.instances | length }}
+          
+          Test 5 (Empty Alternates): {{ 'PASS' if test5_result.instances[0].instance_type == available_instance_type else 'FAIL' }}
+            - Used instance type: {{ test5_result.instances[0].instance_type }}
+          
+          Test 6 (No Alternates Param): {{ 'PASS' if test6_result.instances[0].instance_type == available_instance_type else 'FAIL' }}
+            - Used instance type: {{ test6_result.instances[0].instance_type }}
+
+  always:
+    # Cleanup
+    - name: Cleanup - Terminate all test instances
+      amazon.aws.ec2_instance:
+        filters:
+          tag:TestId: "{{ resource_prefix }}"
+          instance-state-name: ["running", "pending", "stopping", "stopped"]
+        state: terminated
+        wait: true
+        wait_timeout: 300
+      ignore_errors: true
+
+    - name: Cleanup - Delete security group
+      amazon.aws.ec2_security_group:
+        name: "{{ resource_prefix }}-sg-alt-types"
+        state: absent
+      ignore_errors: true
+
+    - name: Cleanup - Delete subnet
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ test_vpc.vpc.vpc_id }}"
+        cidr: 10.0.1.0/24
+        state: absent
+      ignore_errors: true
+      when: test_vpc is defined
+
+    - name: Cleanup - Delete VPC
+      amazon.aws.ec2_vpc:
+        name: "{{ resource_prefix }}-vpc-alt-types"
+        cidr_block: 10.0.0.0/16
+        state: absent
+      ignore_errors: true
+      when: test_vpc is defined
+
+    - name: Final cleanup status
+      debug:
+        msg: "Cleanup completed. All test resources should be removed."
