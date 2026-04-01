@@ -628,12 +628,11 @@ class Ec2Metadata:
         Returns:
             dict: Filtered fields with matching keys removed
         """
-        filtered_fields = fields.copy()
-        for pattern in patterns:
-            for key in list(filtered_fields.keys()):
-                if re.search(pattern, key):
-                    filtered_fields.pop(key)
-        return filtered_fields
+        return {
+            key: value
+            for key, value in fields.items()
+            if not any(re.search(pattern, key) for pattern in patterns)
+        }
 
     def _mangle_fields(self, fields, uri, filter_patterns=None):
         """Transform metadata fields by stripping URI prefix and applying transformations.
