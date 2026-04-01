@@ -664,6 +664,41 @@ class Ec2Metadata:
         # Filter out keys matching patterns
         return self._filter_fields_by_patterns(new_fields, filter_patterns)
 
+    @staticmethod
+    def _build_field_uri(uri, field):
+        """Build a complete URI by joining base URI and field.
+
+        Args:
+            uri: Base URI
+            field: Field name to append
+
+        Returns:
+            str: Complete URI with proper path separator
+        """
+        if uri.endswith("/"):
+            return uri + field
+        return uri + "/" + field
+
+    def _process_metadata_content(self, new_uri, field, content):
+        """Process and store metadata content based on field type.
+
+        Args:
+            new_uri: The URI key for storing the data
+            field: The metadata field name
+            content: The raw content to process
+        """
+        if field == "security-groups" or field == "security-group-ids":
+            sg_fields = ",".join(content.split("\n"))
+            self._data[new_uri] = sg_fields
+        else:
+            try:
+                json_dict = json.loads(content)
+                self._data[new_uri] = content
+                for key, value in json_dict.items():
+                    self._data["{0}:{1}".format(new_uri, key.lower())] = value
+            except (json_decode_error, AttributeError):
+                self._data[new_uri] = content  # not a stringified JSON string
+
     def fetch(self, uri, recurse=True):
         raw_subfields = self._fetch(uri)
         if not raw_subfields:
@@ -672,23 +707,10 @@ class Ec2Metadata:
         for field in subfields:
             if field.endswith("/") and recurse:
                 self.fetch(uri + field)
-            if uri.endswith("/"):
-                new_uri = uri + field
-            else:
-                new_uri = uri + "/" + field
+            new_uri = self._build_field_uri(uri, field)
             if new_uri not in self._data and not new_uri.endswith("/"):
                 content = self._fetch(new_uri)
-                if field == "security-groups" or field == "security-group-ids":
-                    sg_fields = ",".join(content.split("\n"))
-                    self._data[new_uri] = sg_fields
-                else:
-                    try:
-                        json_dict = json.loads(content)
-                        self._data[new_uri] = content
-                        for key, value in json_dict.items():
-                            self._data["{0}:{1}".format(new_uri, key.lower())] = value
-                    except (json_decode_error, AttributeError):
-                        self._data[new_uri] = content  # not a stringified JSON string
+                self._process_metadata_content(new_uri, field, content)
 
     def fix_invalid_varnames(self, data):
         """Change ':'' and '-' to '_' to ensure valid template variable names"""
