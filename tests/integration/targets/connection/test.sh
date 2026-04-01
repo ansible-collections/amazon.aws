@@ -2,7 +2,7 @@
 
 set -eux
 
-[ -f "${INVENTORY}" ]
+[[ -f "${INVENTORY}" ]]
 
 ansible-playbook test_connection.yml -i "${INVENTORY}" "$@"
 
