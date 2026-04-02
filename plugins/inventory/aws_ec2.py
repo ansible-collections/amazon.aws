@@ -460,7 +460,14 @@ instance_data_filter_to_boto_attr = {
 }
 
 
-def _get_tag_hostname(preference, instance):
+def _get_tag_hostname(preference: str, instance: Dict[str, Any]) -> Any:
+    """
+    Extract hostname from instance tags based on preference string.
+
+    :param preference: Tag preference string (e.g., "tag:Name" or "tag:Name,Environment")
+    :param instance: EC2 instance dictionary containing Tags
+    :return: Tag value(s) as string or list of strings
+    """
     tag_hostnames = preference.split("tag:", 1)[1]
     expected_single_value = False
     if "," in tag_hostnames:
@@ -486,11 +493,23 @@ def _get_tag_hostname(preference, instance):
 
 
 def _prepare_host_vars(
-    original_host_vars,
-    hostvars_prefix=None,
-    hostvars_suffix=None,
-    use_contrib_script_compatible_ec2_tag_keys=False,
-):
+    original_host_vars: Dict[str, Any],
+    hostvars_prefix: str = None,
+    hostvars_suffix: str = None,
+    use_contrib_script_compatible_ec2_tag_keys: bool = False,
+) -> Dict[str, Any]:
+    """
+    Transform EC2 instance data into Ansible host variables.
+
+    Converts camelCase keys to snake_case, processes tags, adds region info,
+    and applies optional prefixes/suffixes.
+
+    :param original_host_vars: Raw EC2 instance data
+    :param hostvars_prefix: Optional prefix to add to all host variable names
+    :param hostvars_suffix: Optional suffix to add to all host variable names
+    :param use_contrib_script_compatible_ec2_tag_keys: If True, create ec2_tag_* variables
+    :return: Dictionary of processed host variables
+    """
     host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=["Tags"])
     host_vars["ec2_tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
     # ec2_tags is the new key, tags is deprecated but kept for backward compatibility
@@ -515,18 +534,20 @@ def _prepare_host_vars(
     return host_vars
 
 
-def _compile_values(obj, attr):
+def _compile_values(obj: Any, attr: str) -> Any:
     """
+    Recursively extract attribute values from nested lists/dicts.
+
     :param obj: A list or dict of instance attributes
-    :param attr: A key
-    :return The value(s) found via the attr
+    :param attr: A key to extract from the object
+    :return: The value(s) found via the attr
     """
     if obj is None:
         return
 
     temp_obj = []
 
-    if isinstance(obj, list) or isinstance(obj, tuple):
+    if isinstance(obj, (list, tuple)):
         for each in obj:
             value = _compile_values(each, attr)
             if value:
@@ -534,17 +555,20 @@ def _compile_values(obj, attr):
     else:
         temp_obj = obj.get(attr)
 
-    has_indexes = any([isinstance(temp_obj, list), isinstance(temp_obj, tuple)])
+    has_indexes = any([isinstance(temp_obj, (list, tuple))])
     if has_indexes and len(temp_obj) == 1:
         return temp_obj[0]
 
     return temp_obj
 
 
-def _get_boto_attr_chain(filter_name, instance):
+def _get_boto_attr_chain(filter_name: str, instance: Dict[str, Any]) -> Any:
     """
-    :param filter_name: The filter
-    :param instance: instance dict returned by boto3 ec2 describe_instances()
+    Resolve filter name to instance attribute value by following boto3 attribute chain.
+
+    :param filter_name: Filter name (e.g., 'dns-name', 'private-ip-address')
+    :param instance: Instance dict returned by boto3 ec2 describe_instances()
+    :return: Attribute value from instance, or filter_name as literal if not recognized
     """
     allowed_filters = sorted(
         list(instance_data_filter_to_boto_attr.keys()) + list(instance_meta_filter_to_boto_attr.keys())

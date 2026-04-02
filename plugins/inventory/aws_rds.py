@@ -3,6 +3,8 @@
 # Copyright (c) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 name: aws_rds
 short_description: RDS instance inventory source
@@ -80,6 +82,12 @@ hostvars_prefix: aws_
 hostvars_suffix: _rds
 """
 
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -90,7 +98,14 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInv
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import InventoryErrorHandler
 
 
-def _find_hosts_with_valid_statuses(hosts, statuses):
+def _find_hosts_with_valid_statuses(hosts: list, statuses: list) -> list:
+    """
+    Filter RDS hosts by their current status.
+
+    :param hosts: List of RDS DB instances or clusters
+    :param statuses: List of desired statuses (or ['all'] for all hosts)
+    :return: Filtered list of hosts matching the desired statuses
+    """
     if "all" in statuses:
         return hosts
     valid_hosts = []
@@ -102,11 +117,16 @@ def _find_hosts_with_valid_statuses(hosts, statuses):
     return valid_hosts
 
 
-def _get_rds_hostname(host):
+def _get_rds_hostname(host: dict) -> str:
+    """
+    Extract the hostname identifier from an RDS host.
+
+    :param host: RDS DB instance or cluster dictionary
+    :return: DBInstanceIdentifier for instances or DBClusterIdentifier for clusters
+    """
     if host.get("DBInstanceIdentifier"):
         return host["DBInstanceIdentifier"]
-    else:
-        return host["DBClusterIdentifier"]
+    return host["DBClusterIdentifier"]
 
 
 @InventoryErrorHandler.list_error_handler("list tags for RDS resource", default_value=[])
@@ -122,7 +142,7 @@ def _get_tags_for_resource(connection, resource_arn):
     return connection.list_tags_for_resource(ResourceName=resource_arn)["TagList"]
 
 
-def _add_tags_for_rds_hosts(connection, hosts, strict):
+def _add_tags_for_rds_hosts(connection: Any, hosts: list, strict: bool) -> None:
     """
     Add tags to RDS hosts, handling permission errors based on strict mode.
 
@@ -146,14 +166,17 @@ def _add_tags_for_rds_hosts(connection, hosts, strict):
         host["Tags"] = tags
 
 
-def describe_resource_with_tags(func):
+def describe_resource_with_tags(func: Callable) -> Callable:
     """
     Decorator that extracts DB instances/clusters from API results and adds tags.
 
     Handles permission errors from describe operations based on strict mode.
+
+    :param func: Function that returns describe_db_instances or describe_db_clusters result
+    :return: Wrapped function that extracts list and adds tags
     """
 
-    def describe_wrapper(connection, filters, strict=False):
+    def describe_wrapper(connection: Any, filters: Any, strict: bool = False) -> list:
         try:
             results = func(connection=connection, filters=filters)
             if "DBInstances" in results:
