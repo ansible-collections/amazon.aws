@@ -14,8 +14,13 @@ from ansible.plugins.inventory import Cacheable
 from ansible.plugins.inventory import Constructable
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.plugin_utils._inventory import common as _common
 from ansible_collections.amazon.aws.plugins.plugin_utils.base import AWSPluginBase
 from ansible_collections.amazon.aws.plugins.plugin_utils.botocore import AnsibleBotocoreError
+
+AnsibleInventoryAWSError = _common.AnsibleInventoryAWSError
+AnsibleInventoryPermissionsError = _common.AnsibleInventoryPermissionsError
+InventoryErrorHandler = _common.InventoryErrorHandler
 
 
 def _boto3_session(profile_name=None):
