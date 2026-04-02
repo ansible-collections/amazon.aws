@@ -32,8 +32,6 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible.errors import AnsibleError
-
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import InventoryModule
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _add_tags_for_rds_hosts
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _describe_db_clusters
@@ -42,6 +40,8 @@ from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _find_hosts
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _get_rds_hostname
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryAWSError
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryPermissionsError
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_aws_rds.py requires the python modules 'boto3' and 'botocore'")
@@ -314,7 +314,7 @@ def test_add_tags_for_rds_hosts_with_failure_strict(connection):
 
     connection.list_tags_for_resource.side_effect = make_clienterror_exception()
 
-    with pytest.raises(botocore.exceptions.ClientError):
+    with pytest.raises(AnsibleInventoryPermissionsError):
         _add_tags_for_rds_hosts(connection, hosts, strict=True)
 
 
@@ -352,7 +352,7 @@ def test_describe_db_clusters_with_access_denied(m_add_tags_for_rds_hosts, conne
     filters = generate_random_string(with_punctuation=False)
 
     if strict:
-        with pytest.raises(AnsibleError):
+        with pytest.raises(AnsibleInventoryPermissionsError):
             _describe_db_clusters(connection=connection, filters=filters, strict=strict)
     else:
         assert _describe_db_clusters(connection=connection, filters=filters, strict=strict) == []
@@ -365,7 +365,7 @@ def test_describe_db_clusters_with_client_error(m_add_tags_for_rds_hosts, connec
     connection.describe_db_clusters.side_effect = make_clienterror_exception(code="Unknown")
 
     filters = generate_random_string(with_punctuation=False)
-    with pytest.raises(AnsibleError):
+    with pytest.raises(AnsibleInventoryAWSError):
         _describe_db_clusters(connection=connection, filters=filters, strict=False)
 
     m_add_tags_for_rds_hosts.assert_not_called()

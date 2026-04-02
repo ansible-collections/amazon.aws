@@ -37,6 +37,8 @@ from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_a
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _prepare_host_vars
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _remove_trailing_dot
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryAWSError
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryPermissionsError
 
 
 @pytest.fixture(name="inventory")
@@ -536,38 +538,41 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
 @pytest.mark.parametrize(
     "error",
     [
-        botocore.exceptions.ClientError(
-            {"Error": {"Code": 1, "Message": "Something went wrong"}, "ResponseMetadata": {"HTTPStatusCode": 404}},
-            "some_botocore_client_error",
+        AnsibleInventoryAWSError(
+            message="Failed to describe EC2 instances",
+            exception=botocore.exceptions.ClientError(
+                {"Error": {"Code": 1, "Message": "Something went wrong"}, "ResponseMetadata": {"HTTPStatusCode": 404}},
+                "some_botocore_client_error",
+            ),
         ),
-        botocore.exceptions.ClientError(
-            {
-                "Error": {"Code": "UnauthorizedOperation", "Message": "Something went wrong"},
-                "ResponseMetadata": {"HTTPStatusCode": 403},
-            },
-            "some_botocore_client_error",
+        AnsibleInventoryPermissionsError(
+            message="Failed to describe EC2 instances (permission denied)",
+            exception=botocore.exceptions.ClientError(
+                {
+                    "Error": {"Code": "UnauthorizedOperation", "Message": "Something went wrong"},
+                    "ResponseMetadata": {"HTTPStatusCode": 403},
+                },
+                "some_botocore_client_error",
+            ),
         ),
-        botocore.exceptions.PaginationError(message="some pagination error"),
+        AnsibleInventoryAWSError(
+            message="Timeout trying to describe EC2 instances",
+            exception=botocore.exceptions.PaginationError(message="some pagination error"),
+        ),
     ],
 )
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._describe_ec2_instances")
 def test_inventory_get_instances_by_region_failures(m_describe_ec2_instances, inventory, strict, error):
     inventory.all_clients = MagicMock()
     inventory.all_clients.return_value = [(MagicMock(), "us-west-2")]
-    inventory.fail_aws = MagicMock()
-    inventory.fail_aws.side_effect = SystemExit(1)
 
     m_describe_ec2_instances.side_effect = error
     regions = ["us-east-2", "us-east-4"]
 
-    if (
-        isinstance(error, botocore.exceptions.ClientError)
-        and error.response["ResponseMetadata"]["HTTPStatusCode"] == 403
-        and not strict
-    ):
+    if isinstance(error, AnsibleInventoryPermissionsError) and not strict:
         assert inventory._get_instances_by_region(regions, [], strict) == []
     else:
-        with pytest.raises(SystemExit):
+        with pytest.raises((AnsibleInventoryAWSError, AnsibleInventoryPermissionsError)):
             inventory._get_instances_by_region(regions, [], strict)
 
 

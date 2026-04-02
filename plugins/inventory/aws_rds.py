@@ -3,6 +3,8 @@
 # Copyright (c) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 name: aws_rds
 short_description: RDS instance inventory source
@@ -80,22 +82,30 @@ hostvars_prefix: aws_
 hostvars_suffix: _rds
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # will be captured by imported HAS_BOTO3
+import typing
 
-from ansible.errors import AnsibleError
-from ansible.module_utils._text import to_native
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Callable
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryPermissionsError
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import InventoryErrorHandler
 
 
-def _find_hosts_with_valid_statuses(hosts, statuses):
+def _find_hosts_with_valid_statuses(hosts: list, statuses: list) -> list:
+    """
+    Filter RDS hosts by their current status.
+
+    :param hosts: List of RDS DB instances or clusters
+    :param statuses: List of desired statuses (or ['all'] for all hosts)
+    :return: Filtered list of hosts matching the desired statuses
+    """
     if "all" in statuses:
         return hosts
     valid_hosts = []
@@ -107,14 +117,39 @@ def _find_hosts_with_valid_statuses(hosts, statuses):
     return valid_hosts
 
 
-def _get_rds_hostname(host):
+def _get_rds_hostname(host: dict) -> str:
+    """
+    Extract the hostname identifier from an RDS host.
+
+    :param host: RDS DB instance or cluster dictionary
+    :return: DBInstanceIdentifier for instances or DBClusterIdentifier for clusters
+    """
     if host.get("DBInstanceIdentifier"):
         return host["DBInstanceIdentifier"]
-    else:
-        return host["DBClusterIdentifier"]
+    return host["DBClusterIdentifier"]
 
 
-def _add_tags_for_rds_hosts(connection, hosts, strict):
+@InventoryErrorHandler.list_error_handler("list tags for RDS resource", default_value=[])
+@AWSRetry.jittered_backoff()
+def _get_tags_for_resource(connection, resource_arn):
+    """
+    Retrieve tags for an RDS resource.
+
+    :param connection: boto3 client for RDS
+    :param resource_arn: ARN of the RDS resource
+    :return: List of tags (empty list if resource not found)
+    """
+    return connection.list_tags_for_resource(ResourceName=resource_arn)["TagList"]
+
+
+def _add_tags_for_rds_hosts(connection: Any, hosts: list, strict: bool) -> None:
+    """
+    Add tags to RDS hosts, handling permission errors based on strict mode.
+
+    :param connection: boto3 client for RDS
+    :param hosts: List of RDS host dictionaries
+    :param strict: If True, raise on permission errors; if False, set empty tags
+    """
     for host in hosts:
         if "DBInstanceArn" in host:
             resource_arn = host["DBInstanceArn"]
@@ -122,17 +157,26 @@ def _add_tags_for_rds_hosts(connection, hosts, strict):
             resource_arn = host["DBClusterArn"]
 
         try:
-            tags = connection.list_tags_for_resource(ResourceName=resource_arn)["TagList"]
-        except is_boto3_error_code("AccessDenied") as e:
-            if not strict:
-                tags = []
-            else:
-                raise e
+            tags = _get_tags_for_resource(connection, resource_arn)
+        except AnsibleInventoryPermissionsError:
+            if strict:
+                raise
+            tags = []
+
         host["Tags"] = tags
 
 
-def describe_resource_with_tags(func):
-    def describe_wrapper(connection, filters, strict=False):
+def describe_resource_with_tags(func: Callable) -> Callable:
+    """
+    Decorator that extracts DB instances/clusters from API results and adds tags.
+
+    Handles permission errors from describe operations based on strict mode.
+
+    :param func: Function that returns describe_db_instances or describe_db_clusters result
+    :return: Wrapped function that extracts list and adds tags
+    """
+
+    def describe_wrapper(connection: Any, filters: Any, strict: bool = False) -> list:
         try:
             results = func(connection=connection, filters=filters)
             if "DBInstances" in results:
@@ -140,15 +184,10 @@ def describe_resource_with_tags(func):
             else:
                 results = results["DBClusters"]
             _add_tags_for_rds_hosts(connection, results, strict)
-        except is_boto3_error_code("AccessDenied") as e:  # pylint: disable=duplicate-except
+        except AnsibleInventoryPermissionsError:
             if not strict:
                 return []
-            raise AnsibleError(f"Failed to query RDS: {to_native(e)}")
-        except (
-            botocore.exceptions.BotoCoreError,
-            botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
-            raise AnsibleError(f"Failed to query RDS: {to_native(e)}")
+            raise
 
         return results
 
@@ -156,13 +195,30 @@ def describe_resource_with_tags(func):
 
 
 @describe_resource_with_tags
+@InventoryErrorHandler.common_error_handler("describe RDS DB instances")
 def _describe_db_instances(connection, filters):
+    """
+    Describe RDS DB instances using the given boto3 RDS client.
+
+    :param connection: boto3 client for RDS
+    :param filters: List of filters to apply to the describe operation
+    :return: Dictionary containing DB instances
+    """
     paginator = connection.get_paginator("describe_db_instances")
     return paginator.paginate(Filters=filters).build_full_result()
 
 
 @describe_resource_with_tags
+@InventoryErrorHandler.common_error_handler("describe RDS DB clusters")
+@AWSRetry.jittered_backoff()
 def _describe_db_clusters(connection, filters):
+    """
+    Describe RDS DB clusters using the given boto3 RDS client.
+
+    :param connection: boto3 client for RDS
+    :param filters: List of filters to apply to the describe operation
+    :return: Dictionary containing DB clusters
+    """
     return connection.describe_db_clusters(Filters=filters)
 
 
