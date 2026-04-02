@@ -32,8 +32,6 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible.errors import AnsibleError
-
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import InventoryModule
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _add_tags_for_rds_hosts
 from ansible_collections.amazon.aws.plugins.inventory.aws_rds import _describe_db_clusters

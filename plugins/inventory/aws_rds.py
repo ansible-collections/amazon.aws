@@ -82,6 +82,7 @@ hostvars_suffix: _rds
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryPermissionsError
@@ -109,6 +110,7 @@ def _get_rds_hostname(host):
 
 
 @InventoryErrorHandler.list_error_handler("list tags for RDS resource", default_value=[])
+@AWSRetry.jittered_backoff()
 def _get_tags_for_resource(connection, resource_arn):
     """
     Retrieve tags for an RDS resource.
@@ -185,6 +187,7 @@ def _describe_db_instances(connection, filters):
 
 @describe_resource_with_tags
 @InventoryErrorHandler.common_error_handler("describe RDS DB clusters")
+@AWSRetry.jittered_backoff()
 def _describe_db_clusters(connection, filters):
     """
     Describe RDS DB clusters using the given boto3 RDS client.

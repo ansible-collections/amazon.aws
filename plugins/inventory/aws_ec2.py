@@ -351,7 +351,6 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.common import get_collection_info
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryPermissionsError
@@ -593,7 +592,6 @@ def _get_ssm_information(client: Any, filters: List[Dict[str, Any]]) -> Dict[str
 
 
 @InventoryErrorHandler.common_error_handler("list Route53 hosted zones")
-@AWSRetry.jittered_backoff()
 def _list_hosted_zones(client: Any, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     List all hosted zones using the given boto3 Route53 client.
@@ -607,7 +605,6 @@ def _list_hosted_zones(client: Any, **kwargs: Dict[str, Any]) -> List[Dict[str, 
 
 
 @InventoryErrorHandler.common_error_handler("list Route53 resource record sets")
-@AWSRetry.jittered_backoff()
 def _list_resource_record_sets(client: Any, hosted_zone_id: str, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Retrieve all resource record sets for a specific hosted zone in Route53.
