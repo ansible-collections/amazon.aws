@@ -1028,7 +1028,7 @@ class InventoryModule(AWSInventoryBase):
         self.display.deprecated(
             "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
             date="2026-12-01",
-            collection_name=get_collection_info()["name"],
+            collection_name="amazon.aws",
         )
 
         # get user specifications
@@ -1050,7 +1050,7 @@ class InventoryModule(AWSInventoryBase):
                 "The 'use_contrib_script_compatible_sanitization' option is deprecated. "
                 "Use Ansible's default group name sanitization instead.",
                 date="2026-12-01",
-                collection_name=get_collection_info()["name"],
+                collection_name="amazon.aws",
             )
 
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
@@ -1060,7 +1060,7 @@ class InventoryModule(AWSInventoryBase):
                 "The 'use_contrib_script_compatible_ec2_tag_keys' option is deprecated. "
                 "Use the 'ec2_tags' structure instead.",
                 date="2026-12-01",
-                collection_name=get_collection_info()["name"],
+                collection_name="amazon.aws",
             )
 
         if not all(isinstance(element, (dict, str)) for element in hostnames):
