@@ -335,12 +335,6 @@ route53_excluded_zones:
 """
 
 import re
-
-try:
-    import botocore
-except ImportError:
-    pass  # will be captured by imported HAS_BOTO3
-
 from collections import defaultdict
 from typing import Any
 from typing import Dict
@@ -356,12 +350,13 @@ except ImportError:
     trust_as_template = None
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.common import get_collection_info
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryPermissionsError
 from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AWSInventoryBase
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import InventoryErrorHandler
 
 # The mappings give an array of keys to get from the filter name to the value
 # returned by boto3's EC2 describe_instances method.
@@ -571,16 +566,33 @@ def _get_boto_attr_chain(filter_name, instance):
     return instance_value
 
 
-def _describe_ec2_instances(connection, filters):
+@InventoryErrorHandler.common_error_handler("describe EC2 instances")
+def _describe_ec2_instances(connection: Any, filters: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Describe EC2 instances using the given boto3 EC2 client.
+
+    :param connection: boto3 client for EC2
+    :param filters: List of filters to apply to the describe operation
+    :return: Dictionary containing reservations and instance data
+    """
     paginator = connection.get_paginator("describe_instances")
     return paginator.paginate(Filters=filters).build_full_result()
 
 
-def _get_ssm_information(client, filters):
+@InventoryErrorHandler.common_error_handler("get SSM inventory information")
+def _get_ssm_information(client: Any, filters: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Retrieve SSM inventory information using the given boto3 SSM client.
+
+    :param client: boto3 client for SSM
+    :param filters: List of filters to apply to the inventory query
+    :return: Dictionary containing inventory entities and metadata
+    """
     paginator = client.get_paginator("get_inventory")
     return paginator.paginate(Filters=filters).build_full_result()
 
 
+@InventoryErrorHandler.common_error_handler("list Route53 hosted zones")
 @AWSRetry.jittered_backoff()
 def _list_hosted_zones(client: Any, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
@@ -594,6 +606,7 @@ def _list_hosted_zones(client: Any, **kwargs: Dict[str, Any]) -> List[Dict[str, 
     return paginator.paginate(**kwargs).build_full_result()["HostedZones"]
 
 
+@InventoryErrorHandler.common_error_handler("list Route53 resource record sets")
 @AWSRetry.jittered_backoff()
 def _list_resource_record_sets(client: Any, hosted_zone_id: str, **kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
@@ -639,23 +652,22 @@ class InventoryModule(AWSInventoryBase):
         for connection, _region in self.all_clients("ec2"):
             try:
                 reservations = _describe_ec2_instances(connection, filters).get("Reservations")
-                instances = []
-                for r in reservations:
-                    new_instances = r["Instances"]
-                    reservation_details = {
-                        "OwnerId": r["OwnerId"],
-                        "RequesterId": r.get("RequesterId", ""),
-                        "ReservationId": r["ReservationId"],
-                    }
-                    for instance in new_instances:
-                        instance.update(reservation_details)
-                    instances.extend(new_instances)
-            except is_boto3_error_code("UnauthorizedOperation") as e:
-                if not strict_permissions:
-                    continue
-                self.fail_aws("Failed to describe instances", exception=e)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self.fail_aws("Failed to describe instances", exception=e)
+            except AnsibleInventoryPermissionsError:
+                if strict_permissions:
+                    raise
+                continue
+
+            instances = []
+            for r in reservations:
+                new_instances = r["Instances"]
+                reservation_details = {
+                    "OwnerId": r["OwnerId"],
+                    "RequesterId": r.get("RequesterId", ""),
+                    "ReservationId": r["ReservationId"],
+                }
+                for instance in new_instances:
+                    instance.update(reservation_details)
+                instances.extend(new_instances)
 
             all_instances.extend(instances)
 
