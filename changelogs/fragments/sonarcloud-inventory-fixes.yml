@@ -1,6 +1,6 @@
 minor_changes:
-  - plugin_utils/inventory - Refactored error handling to use centralised InventoryErrorHandler following S3ErrorHandler pattern (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
-  - aws_ec2 inventory plugin - Addressed SonarCloud code-smells by reducing cognitive complexity in hostname processing methods (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - plugin_utils/inventory - Refactored error handling to use centralised InventoryErrorHandler following S3ErrorHandler pattern (https://github.com/ansible-collections/amazon.aws/pull/2936).
+  - aws_ec2 inventory plugin - Addressed SonarCloud code-smells by reducing cognitive complexity in hostname processing methods (https://github.com/ansible-collections/amazon.aws/pull/2936).
 trivial:
-  - aws_ec2 and aws_rds inventory plugins - Cleaned up retry decorator usage by removing redundant retries from paginated functions (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
-  - aws_ec2 and aws_rds inventory plugins - Added type hints and docstrings to helper functions (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - aws_ec2 and aws_rds inventory plugins - Cleaned up retry decorator usage by removing redundant retries from paginated functions (https://github.com/ansible-collections/amazon.aws/pull/2936).
+  - aws_ec2 and aws_rds inventory plugins - Added type hints and docstrings to helper functions (https://github.com/ansible-collections/amazon.aws/pull/2936).
