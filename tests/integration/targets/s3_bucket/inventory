@@ -14,6 +14,7 @@ object_lock
 accelerate
 default_retention
 inventory
+logging
 
 [all:vars]
 ansible_connection=local
