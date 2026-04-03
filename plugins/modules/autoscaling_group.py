@@ -701,6 +701,7 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -785,21 +786,25 @@ def del_notification_config(connection, asg_name, topic_arn):
     connection.delete_notification_configuration(AutoScalingGroupName=asg_name, TopicARN=topic_arn)
 
 
+@AutoScalingErrorHandler.common_error_handler("attach load balancers")
 @AWSRetry.jittered_backoff(**backoff_params)
 def attach_load_balancers(connection, asg_name, load_balancers):
     connection.attach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
+@AutoScalingErrorHandler.common_error_handler("detach load balancers")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_load_balancers(connection, asg_name, load_balancers):
     connection.detach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
+@AutoScalingErrorHandler.common_error_handler("attach target groups")
 @AWSRetry.jittered_backoff(**backoff_params)
 def attach_lb_target_groups(connection, asg_name, target_group_arns):
     connection.attach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
 
 
+@AutoScalingErrorHandler.common_error_handler("detach target groups")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_lb_target_groups(connection, asg_name, target_group_arns):
     connection.detach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
@@ -1251,6 +1256,82 @@ def apply_asg_tag_changes(
         connection.create_or_update_tags(Tags=tags_to_set)
 
 
+def update_load_balancers(
+    connection: Any, group_name: str, current_elbs: list[str], desired_elbs: list[str] | None
+) -> bool:
+    """
+    Update load balancers attached to an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the autoscaling group
+        current_elbs: Currently attached load balancer names
+        desired_elbs: Desired load balancer names (None means no change)
+
+    Returns:
+        True if changes were made, False otherwise
+    """
+    # If desired_elbs is None, no change requested
+    if desired_elbs is None:
+        return False
+
+    changed = False
+    current_set = set(current_elbs)
+    desired_set = set(desired_elbs)
+
+    # Detach load balancers no longer wanted
+    elbs_to_detach = current_set - desired_set
+    if elbs_to_detach:
+        detach_load_balancers(connection, group_name, list(elbs_to_detach))
+        changed = True
+
+    # Attach new load balancers
+    elbs_to_attach = desired_set - current_set
+    if elbs_to_attach:
+        attach_load_balancers(connection, group_name, list(elbs_to_attach))
+        changed = True
+
+    return changed
+
+
+def update_target_groups(
+    connection: Any, group_name: str, current_tgs: list[str], desired_tgs: list[str] | None
+) -> bool:
+    """
+    Update target groups attached to an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the autoscaling group
+        current_tgs: Currently attached target group ARNs
+        desired_tgs: Desired target group ARNs (None means no change)
+
+    Returns:
+        True if changes were made, False otherwise
+    """
+    # If desired_tgs is None, no change requested
+    if desired_tgs is None:
+        return False
+
+    changed = False
+    current_set = set(current_tgs)
+    desired_set = set(desired_tgs)
+
+    # Detach target groups no longer wanted
+    tgs_to_detach = current_set - desired_set
+    if tgs_to_detach:
+        detach_lb_target_groups(connection, group_name, list(tgs_to_detach))
+        changed = True
+
+    # Attach new target groups
+    tgs_to_attach = desired_set - current_set
+    if tgs_to_attach:
+        attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
+        changed = True
+
+    return changed
+
+
 def create_autoscaling_group(connection):
     group_name = module.params.get("name")
     load_balancers = module.params["load_balancers"]
@@ -1386,73 +1467,9 @@ def create_autoscaling_group(connection):
             apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
             changed = True
 
-        # Handle load balancer attachments/detachments
-        # Attach load balancers if they are specified but none currently exist
-        if load_balancers and not as_group["LoadBalancerNames"]:
-            changed = True
-            try:
-                attach_load_balancers(connection, group_name, load_balancers)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update Autoscaling Group.")
-
-        # Update load balancers if they are specified and one or more already exists
-        elif as_group["LoadBalancerNames"]:
-            change_load_balancers = load_balancers is not None
-            # Get differences
-            if not load_balancers:
-                load_balancers = list()
-            wanted_elbs = set(load_balancers)
-
-            has_elbs = set(as_group["LoadBalancerNames"])
-            # check if all requested are already existing
-            if has_elbs - wanted_elbs and change_load_balancers:
-                # if wanted contains less than existing, then we need to delete some
-                elbs_to_detach = has_elbs.difference(wanted_elbs)
-                if elbs_to_detach:
-                    changed = True
-                    try:
-                        detach_load_balancers(connection, group_name, list(elbs_to_detach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg=f"Failed to detach load balancers {elbs_to_detach}")
-            if wanted_elbs - has_elbs:
-                # if has contains less than wanted, then we need to add some
-                elbs_to_attach = wanted_elbs.difference(has_elbs)
-                if elbs_to_attach:
-                    changed = True
-                    try:
-                        attach_load_balancers(connection, group_name, list(elbs_to_attach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg=f"Failed to attach load balancers {elbs_to_attach}")
-
-        # Handle target group attachments/detachments
-        # Attach target groups if they are specified but none currently exist
-        if target_group_arns and not as_group["TargetGroupARNs"]:
-            changed = True
-            try:
-                attach_lb_target_groups(connection, group_name, target_group_arns)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update Autoscaling Group.")
-        # Update target groups if they are specified and one or more already exists
-        elif target_group_arns is not None and as_group["TargetGroupARNs"]:
-            # Get differences
-            wanted_tgs = set(target_group_arns)
-            has_tgs = set(as_group["TargetGroupARNs"])
-
-            tgs_to_detach = has_tgs.difference(wanted_tgs)
-            if tgs_to_detach:
-                changed = True
-                try:
-                    detach_lb_target_groups(connection, group_name, list(tgs_to_detach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, msg=f"Failed to detach load balancer target groups {tgs_to_detach}")
-
-            tgs_to_attach = wanted_tgs.difference(has_tgs)
-            if tgs_to_attach:
-                changed = True
-                try:
-                    attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-                    module.fail_json(msg=f"Failed to attach load balancer target groups {tgs_to_attach}")
+        # Handle load balancer and target group attachments/detachments
+        changed |= update_load_balancers(connection, group_name, as_group["LoadBalancerNames"], load_balancers)
+        changed |= update_target_groups(connection, group_name, as_group["TargetGroupARNs"], target_group_arns)
 
         # check for attributes that aren't required for updating an existing ASG
         # check if min_size/max_size/desired capacity have been specified and if not use ASG values
