@@ -4,6 +4,8 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: iam_user
@@ -230,6 +232,18 @@ user:
                     sample: test_policy
 """
 
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import NoReturn
+    from typing import Optional
+    from typing import Tuple
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
+
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
@@ -245,12 +259,32 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_
 
 
 @IAMErrorHandler.common_error_handler("wait for IAM user creation")
-def _wait_user_exists(connection, **params):
+def _wait_user_exists(connection: ClientType, **params: Any) -> None:
+    """
+    Wait for an IAM user to exist using a waiter.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        **params: Parameters to pass to the waiter.
+
+    Returns:
+        None
+    """
     waiter = connection.get_waiter("user_exists")
     waiter.wait(**params)
 
 
-def wait_iam_exists(connection, module):
+def wait_iam_exists(connection: ClientType, module: AnsibleAWSModule) -> None:
+    """
+    Wait for an IAM user to exist.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        None
+    """
     if not module.params.get("wait"):
         return
 
@@ -265,7 +299,28 @@ def wait_iam_exists(connection, module):
 
 
 @IAMErrorHandler.common_error_handler("create user")
-def create_user(connection, module, user_name, path, boundary, tags):
+def create_user(
+    connection: ClientType,
+    module: AnsibleAWSModule,
+    user_name: str,
+    path: Optional[str],
+    boundary: Optional[str],
+    tags: Optional[Dict[str, str]],
+) -> Dict[str, Any]:
+    """
+    Create an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+        user_name: The name of the IAM user.
+        path: The path for the user.
+        boundary: The permissions boundary ARN for the user.
+        tags: Dictionary of tags to apply to the user.
+
+    Returns:
+        Dictionary containing the normalized IAM user data.
+    """
     params = {"UserName": user_name}
     if path:
         params["Path"] = path
@@ -283,18 +338,53 @@ def create_user(connection, module, user_name, path, boundary, tags):
 
 
 @IAMErrorHandler.common_error_handler("create user login profile")
-def _create_login_profile(connection, **params):
+def _create_login_profile(connection: ClientType, **params: Any) -> Dict[str, Any]:
+    """
+    Create a login profile for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        **params: Parameters to pass to create_login_profile.
+
+    Returns:
+        Dictionary containing the login profile response.
+    """
     return connection.create_login_profile(aws_retry=True, **params)
 
 
 # Uses the list error handler because we "update" as a quick test for existence
 # when our next step would be update or create.
 @IAMErrorHandler.list_error_handler("update user login profile")
-def _update_login_profile(connection, **params):
+def _update_login_profile(connection: ClientType, **params: Any) -> Optional[Dict[str, Any]]:
+    """
+    Update a login profile for an IAM user.
+
+    Uses the list error handler because we use update as a quick test for existence
+    when our next step would be update or create.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        **params: Parameters to pass to update_login_profile.
+
+    Returns:
+        Dictionary containing the login profile response, or None if it doesn't exist.
+    """
     return connection.update_login_profile(aws_retry=True, **params)
 
 
-def _create_or_update_login_profile(connection, name, password, reset):
+def _create_or_update_login_profile(connection: ClientType, name: str, password: str, reset: bool) -> Dict[str, Any]:
+    """
+    Create or update a login profile for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        name: The name of the IAM user.
+        password: The password for the user.
+        reset: Whether password reset is required on next login.
+
+    Returns:
+        Dictionary containing the login profile response.
+    """
     # Apply new password / update password for the user
     user_params = {
         "UserName": name,
@@ -308,7 +398,30 @@ def _create_or_update_login_profile(connection, name, password, reset):
     return _create_login_profile(connection, **user_params)
 
 
-def ensure_login_profile(connection, check_mode, user_name, password, update, reset, new_user):
+def ensure_login_profile(
+    connection: ClientType,
+    check_mode: bool,
+    user_name: str,
+    password: Optional[str],
+    update: str,
+    reset: bool,
+    new_user: bool,
+) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    """
+    Ensure a login profile exists for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        password: The password for the user.
+        update: When to update the password ('always' or 'on_create').
+        reset: Whether password reset is required on next login.
+        new_user: Whether this is a newly created user.
+
+    Returns:
+        Tuple of (changed, login_profile_response).
+    """
     if password is None:
         return False, None
     if update == "on_create" and not new_user:
@@ -321,16 +434,51 @@ def ensure_login_profile(connection, check_mode, user_name, password, update, re
 
 
 @IAMErrorHandler.list_error_handler("get login profile")
-def _get_login_profile(connection, name):
+def _get_login_profile(connection: ClientType, name: str) -> Optional[Dict[str, Any]]:
+    """
+    Get the login profile for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        name: The name of the IAM user.
+
+    Returns:
+        Dictionary containing the login profile, or None if it doesn't exist.
+    """
     return connection.get_login_profile(aws_retry=True, UserName=name).get("LoginProfile")
 
 
 @IAMErrorHandler.deletion_error_handler("delete login profile")
-def _delete_login_profile(connection, name):
+def _delete_login_profile(connection: ClientType, name: str) -> None:
+    """
+    Delete the login profile for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        name: The name of the IAM user.
+
+    Returns:
+        None
+    """
     connection.delete_login_profile(aws_retry=True, UserName=name)
 
 
-def remove_login_profile(connection, check_mode, user_name, remove_password, new_user):
+def remove_login_profile(
+    connection: ClientType, check_mode: bool, user_name: str, remove_password: bool, new_user: bool
+) -> bool:
+    """
+    Remove the login profile from an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        remove_password: Whether to remove the password.
+        new_user: Whether this is a newly created user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if new_user:
         return False
     if not remove_password:
@@ -349,31 +497,86 @@ def remove_login_profile(connection, check_mode, user_name, remove_password, new
 
 
 @IAMErrorHandler.list_error_handler("get policies for user")
-def _list_attached_policies(connection, user_name):
+def _list_attached_policies(connection: ClientType, user_name: str) -> List[Dict[str, str]]:
+    """
+    List all managed policies attached to an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        user_name: The name of the IAM user.
+
+    Returns:
+        List of attached policy dictionaries.
+    """
     return connection.list_attached_user_policies(aws_retry=True, UserName=user_name)["AttachedPolicies"]
 
 
 @IAMErrorHandler.common_error_handler("attach policy to user")
-def attach_policies(connection, check_mode, user_name, policies):
+def attach_policies(connection: ClientType, check_mode: bool, user_name: str, policies: List[str]) -> bool:
+    """
+    Attach managed policies to an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        policies: List of policy ARNs to attach.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if not policies:
         return False
     if check_mode:
         return True
     for policy_arn in policies:
         connection.attach_user_policy(UserName=user_name, PolicyArn=policy_arn)
+    return True
 
 
 @IAMErrorHandler.common_error_handler("detach policy from user")
-def detach_policies(connection, check_mode, user_name, policies):
+def detach_policies(connection: ClientType, check_mode: bool, user_name: str, policies: List[str]) -> bool:
+    """
+    Detach managed policies from an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        policies: List of policy ARNs to detach.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if not policies:
         return False
     if check_mode:
         return True
     for policy_arn in policies:
         connection.detach_user_policy(UserName=user_name, PolicyArn=policy_arn)
+    return True
 
 
-def ensure_managed_policies(connection, check_mode, user_name, managed_policies, purge_policies):
+def ensure_managed_policies(
+    connection: ClientType,
+    check_mode: bool,
+    user_name: str,
+    managed_policies: Optional[List[str]],
+    purge_policies: bool,
+) -> bool:
+    """
+    Ensure managed policies are attached to an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        managed_policies: List of policy ARNs or names to attach.
+        purge_policies: Whether to remove policies not in the managed_policies list.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if managed_policies is None:
         return False
 
@@ -401,7 +604,28 @@ def ensure_managed_policies(connection, check_mode, user_name, managed_policies,
 
 
 @IAMErrorHandler.common_error_handler("set tags for user")
-def ensure_user_tags(connection, check_mode, user, user_name, new_tags, purge_tags):
+def ensure_user_tags(
+    connection: ClientType,
+    check_mode: bool,
+    user: Dict[str, Any],
+    user_name: str,
+    new_tags: Optional[Dict[str, str]],
+    purge_tags: bool,
+) -> bool:
+    """
+    Update tags for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user: Dictionary containing the current user data.
+        user_name: The name of the IAM user.
+        new_tags: Dictionary of tags to apply to the user.
+        purge_tags: Whether to remove tags not in the new_tags dict.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if new_tags is None:
         return False
 
@@ -424,20 +648,64 @@ def ensure_user_tags(connection, check_mode, user, user_name, new_tags, purge_ta
 
 
 @IAMErrorHandler.deletion_error_handler("remove permissions boundary for user")
-def _delete_user_permissions_boundary(connection, check_mode, user_name):
+def _delete_user_permissions_boundary(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete the permissions boundary from an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True
+    """
     if check_mode:
         return True
     connection.delete_user_permissions_boundary(aws_retry=True, UserName=user_name)
+    return True
 
 
 @IAMErrorHandler.common_error_handler("set permissions boundary for user")
-def _put_user_permissions_boundary(connection, check_mode, user_name, boundary):
+def _put_user_permissions_boundary(connection: ClientType, check_mode: bool, user_name: str, boundary: str) -> bool:
+    """
+    Set the permissions boundary for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        boundary: The permissions boundary ARN.
+
+    Returns:
+        True
+    """
     if check_mode:
         return True
     connection.put_user_permissions_boundary(aws_retry=True, UserName=user_name, PermissionsBoundary=boundary)
+    return True
 
 
-def ensure_permissions_boundary(connection, check_mode, user, user_name, boundary):
+def ensure_permissions_boundary(
+    connection: ClientType,
+    check_mode: bool,
+    user: Optional[Dict[str, Any]],
+    user_name: str,
+    boundary: Optional[str],
+) -> bool:
+    """
+    Ensure the permissions boundary is set for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user: Dictionary containing the current user data, or None.
+        user_name: The name of the IAM user.
+        boundary: The desired permissions boundary ARN (empty string to remove).
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if boundary is None:
         return False
 
@@ -461,7 +729,26 @@ def ensure_permissions_boundary(connection, check_mode, user, user_name, boundar
 
 
 @IAMErrorHandler.common_error_handler("set path for user")
-def ensure_path(connection, check_mode, user, user_name, path):
+def ensure_path(
+    connection: ClientType,
+    check_mode: bool,
+    user: Optional[Dict[str, Any]],
+    user_name: str,
+    path: Optional[str],
+) -> bool:
+    """
+    Ensure the path is set for an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user: Dictionary containing the current user data, or None.
+        user_name: The name of the IAM user.
+        path: The desired path for the user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     if path is None:
         return False
 
@@ -478,7 +765,17 @@ def ensure_path(connection, check_mode, user, user_name, path):
     return True
 
 
-def create_or_update_user(connection, module):
+def create_or_update_user(connection: ClientType, module: AnsibleAWSModule) -> NoReturn:
+    """
+    Create or update an IAM user with all requested attributes.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        Does not return (exits via module.exit_json).
+    """
     user_name = module.params.get("name")
 
     changed = False
@@ -579,7 +876,19 @@ def create_or_update_user(connection, module):
 
 
 @IAMErrorHandler.deletion_error_handler("delete access key")
-def delete_access_key(connection, check_mode, user_name, key_id):
+def delete_access_key(connection: ClientType, check_mode: bool, user_name: str, key_id: str) -> bool:
+    """
+    Delete a single IAM access key.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        key_id: The access key ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_access_key(aws_retry=True, UserName=user_name, AccessKeyId=key_id)
@@ -587,7 +896,18 @@ def delete_access_key(connection, check_mode, user_name, key_id):
 
 
 @IAMErrorHandler.list_error_handler("list access keys")
-def delete_access_keys(connection, check_mode, user_name):
+def delete_access_keys(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete all IAM access keys for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     access_keys = connection.list_access_keys(aws_retry=True, UserName=user_name)["AccessKeyMetadata"]
     if not access_keys:
         return False
@@ -597,7 +917,19 @@ def delete_access_keys(connection, check_mode, user_name):
 
 
 @IAMErrorHandler.deletion_error_handler("delete SSH key")
-def delete_ssh_key(connection, check_mode, user_name, key_id):
+def delete_ssh_key(connection: ClientType, check_mode: bool, user_name: str, key_id: str) -> bool:
+    """
+    Delete a single SSH public key for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        key_id: The SSH public key ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_ssh_public_key(aws_retry=True, UserName=user_name, SSHPublicKeyId=key_id)
@@ -605,7 +937,18 @@ def delete_ssh_key(connection, check_mode, user_name, key_id):
 
 
 @IAMErrorHandler.list_error_handler("list SSH keys")
-def delete_ssh_public_keys(connection, check_mode, user_name):
+def delete_ssh_public_keys(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete all SSH public keys for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     public_keys = connection.list_ssh_public_keys(aws_retry=True, UserName=user_name)["SSHPublicKeys"]
     if not public_keys:
         return False
@@ -615,7 +958,19 @@ def delete_ssh_public_keys(connection, check_mode, user_name):
 
 
 @IAMErrorHandler.deletion_error_handler("delete service credential")
-def delete_service_credential(connection, check_mode, user_name, cred_id):
+def delete_service_credential(connection: ClientType, check_mode: bool, user_name: str, cred_id: str) -> bool:
+    """
+    Delete a single service-specific credential for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        cred_id: The service-specific credential ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_ssh_public_key(aws_retry=True, UserName=user_name, SSHPublicKeyId=cred_id)
@@ -623,7 +978,18 @@ def delete_service_credential(connection, check_mode, user_name, cred_id):
 
 
 @IAMErrorHandler.list_error_handler("list service credentials")
-def delete_service_credentials(connection, check_mode, user_name):
+def delete_service_credentials(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete all service-specific credentials for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     credentials = connection.list_service_specific_credentials(aws_retry=True, UserName=user_name)[
         "ServiceSpecificCredentials"
     ]
@@ -635,7 +1001,19 @@ def delete_service_credentials(connection, check_mode, user_name):
 
 
 @IAMErrorHandler.deletion_error_handler("delete signing certificate")
-def delete_signing_certificate(connection, check_mode, user_name, cert_id):
+def delete_signing_certificate(connection: ClientType, check_mode: bool, user_name: str, cert_id: str) -> bool:
+    """
+    Delete a single signing certificate for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        cert_id: The certificate ID to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_signing_certificate(aws_retry=True, UserName=user_name, CertificateId=cert_id)
@@ -643,7 +1021,18 @@ def delete_signing_certificate(connection, check_mode, user_name, cert_id):
 
 
 @IAMErrorHandler.list_error_handler("list signing certificates")
-def delete_signing_certificates(connection, check_mode, user_name):
+def delete_signing_certificates(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete all signing certificates for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     certificates = connection.list_signing_certificates(aws_retry=True, UserName=user_name)["Certificates"]
     if not certificates:
         return False
@@ -653,7 +1042,19 @@ def delete_signing_certificates(connection, check_mode, user_name):
 
 
 @IAMErrorHandler.deletion_error_handler("delete MFA device")
-def delete_mfa_device(connection, check_mode, user_name, device_id):
+def delete_mfa_device(connection: ClientType, check_mode: bool, user_name: str, device_id: str) -> bool:
+    """
+    Delete a single MFA device for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        device_id: The MFA device serial number to deactivate.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.deactivate_mfa_device(aws_retry=True, UserName=user_name, SerialNumber=device_id)
@@ -661,7 +1062,18 @@ def delete_mfa_device(connection, check_mode, user_name, device_id):
 
 
 @IAMErrorHandler.list_error_handler("list MFA devices")
-def delete_mfa_devices(connection, check_mode, user_name):
+def delete_mfa_devices(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete all MFA devices for a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     devices = connection.list_mfa_devices(aws_retry=True, UserName=user_name)["MFADevices"]
     if not devices:
         return False
@@ -670,7 +1082,18 @@ def delete_mfa_devices(connection, check_mode, user_name):
     return True
 
 
-def detach_all_policies(connection, check_mode, user_name):
+def detach_all_policies(connection: ClientType, check_mode: bool, user_name: str) -> None:
+    """
+    Detach all managed policies from an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        None
+    """
     # Remove any attached policies
     attached_policies_desc = _list_attached_policies(connection, user_name)
     current_attached_policies = [policy["PolicyArn"] for policy in attached_policies_desc]
@@ -678,7 +1101,19 @@ def detach_all_policies(connection, check_mode, user_name):
 
 
 @IAMErrorHandler.deletion_error_handler("delete inline policy")
-def delete_inline_policy(connection, check_mode, user_name, policy):
+def delete_inline_policy(connection: ClientType, check_mode: bool, user_name: str, policy: str) -> bool:
+    """
+    Delete a single inline policy from a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        policy: The name of the policy to delete.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_user_policy(aws_retry=True, UserName=user_name, PolicyName=policy)
@@ -686,7 +1121,18 @@ def delete_inline_policy(connection, check_mode, user_name, policy):
 
 
 @IAMErrorHandler.list_error_handler("list inline policies")
-def delete_inline_policies(connection, check_mode, user_name):
+def delete_inline_policies(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete all inline policies from a user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     inline_policies = connection.list_user_policies(aws_retry=True, UserName=user_name)["PolicyNames"]
     if not inline_policies:
         return False
@@ -696,7 +1142,19 @@ def delete_inline_policies(connection, check_mode, user_name):
 
 
 @IAMErrorHandler.deletion_error_handler("remove user from group")
-def remove_from_group(connection, check_mode, user_name, group_name):
+def remove_from_group(connection: ClientType, check_mode: bool, user_name: str, group_name: str) -> bool:
+    """
+    Remove a user from a single IAM group.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+        group_name: The name of the IAM group.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.remove_user_from_group(aws_retry=True, UserName=user_name, GroupName=group_name)
@@ -704,7 +1162,18 @@ def remove_from_group(connection, check_mode, user_name, group_name):
 
 
 @IAMErrorHandler.list_error_handler("list groups containing user")
-def remove_from_all_groups(connection, check_mode, user_name):
+def remove_from_all_groups(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Remove a user from all IAM groups.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made, False otherwise.
+    """
     user_groups = connection.list_groups_for_user(aws_retry=True, UserName=user_name)["Groups"]
     if not user_groups:
         return False
@@ -714,14 +1183,35 @@ def remove_from_all_groups(connection, check_mode, user_name):
 
 
 @IAMErrorHandler.deletion_error_handler("delete user")
-def delete_user(connection, check_mode, user_name):
+def delete_user(connection: ClientType, check_mode: bool, user_name: str) -> bool:
+    """
+    Delete an IAM user.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        check_mode: Whether the module is running in check mode.
+        user_name: The name of the IAM user.
+
+    Returns:
+        True if changes were made or would be made.
+    """
     if check_mode:
         return True
     connection.delete_user(aws_retry=True, UserName=user_name)
     return True
 
 
-def destroy_user(connection, module):
+def destroy_user(connection: ClientType, module: AnsibleAWSModule) -> NoReturn:
+    """
+    Delete an IAM user and all associated resources.
+
+    Parameters:
+        connection: The Boto3 IAM client object.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        Does not return (exits via module.exit_json).
+    """
     user_name = module.params.get("name")
 
     user = get_iam_user(connection, user_name)
@@ -762,7 +1252,7 @@ def destroy_user(connection, module):
     module.exit_json(changed=changed)
 
 
-def main():
+def main() -> NoReturn:
     argument_spec = dict(
         name=dict(required=True, type="str", aliases=["user_name"]),
         path=dict(type="str", aliases=["prefix", "path_prefix"]),
