@@ -6,8 +6,6 @@
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-import pytest
-
 import ansible_collections.amazon.aws.plugins.modules.autoscaling_group as asg_module
 
 

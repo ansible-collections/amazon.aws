@@ -3,8 +3,6 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import pytest
-
 import ansible_collections.amazon.aws.plugins.modules.autoscaling_group as asg_module
 
 
@@ -38,9 +36,7 @@ class TestCompareAsgTags:
             }
         ]
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=True
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=True)
 
         assert tags_to_delete == []
         assert tags_to_set is None
@@ -59,9 +55,7 @@ class TestCompareAsgTags:
             }
         ]
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=True
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=True)
 
         assert tags_to_delete == []
         assert tags_to_set == want_tags
@@ -80,9 +74,7 @@ class TestCompareAsgTags:
         ]
         want_tags = []
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=True
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=True)
 
         assert len(tags_to_delete) == 1
         assert tags_to_delete[0]["Key"] == "OldTag"
@@ -103,9 +95,7 @@ class TestCompareAsgTags:
         ]
         want_tags = []
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=False
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=False)
 
         assert tags_to_delete == []
         # tags_to_set is None because have_remaining (empty after filtering keys_to_delete) == want_sorted (empty)
@@ -134,9 +124,7 @@ class TestCompareAsgTags:
             }
         ]
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=True
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=True)
 
         assert tags_to_delete == []
         assert tags_to_set == want_tags
@@ -163,9 +151,7 @@ class TestCompareAsgTags:
             }
         ]
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=True
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=True)
 
         assert tags_to_delete == []
         assert tags_to_set == want_tags
@@ -206,9 +192,7 @@ class TestCompareAsgTags:
             },
         ]
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=True
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=True)
 
         assert len(tags_to_delete) == 1
         assert tags_to_delete[0]["Key"] == "OldTag"
@@ -226,9 +210,7 @@ class TestCompareAsgTags:
             {"Key": "B", "Value": "b", "PropagateAtLaunch": True},
         ]
 
-        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(
-            current_tags, want_tags, purge_tags=True
-        )
+        tags_to_delete, tags_to_set, changed = asg_module.compare_asg_tags(current_tags, want_tags, purge_tags=True)
 
         assert tags_to_delete == []
         assert tags_to_set is None
