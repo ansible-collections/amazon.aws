@@ -4,6 +4,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: autoscaling_group
@@ -685,11 +687,15 @@ metrics_collection:
 """
 
 import time
+import typing
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
+if typing.TYPE_CHECKING:
+    from typing import Any
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
@@ -1144,7 +1150,7 @@ def suspend_processes(ec2_connection, as_group):
     return True
 
 
-def build_asg_tags(set_tags, group_name):
+def build_asg_tags(set_tags: list[dict[str, Any]], group_name: str) -> list[dict[str, Any]]:
     """
     Convert user-provided tags to ASG tag format.
 
@@ -1169,6 +1175,80 @@ def build_asg_tags(set_tags, group_name):
                     }
                 )
     return asg_tags
+
+
+def compare_asg_tags(
+    have_tags: list[dict[str, Any]] | None, want_tags: list[dict[str, Any]] | None, purge_tags: bool
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]] | None, bool]:
+    """
+    Compare current and desired ASG tags to determine changes.
+
+    Compares full tag dictionaries including Key, Value, PropagateAtLaunch, etc.
+
+    Args:
+        have_tags: Current tags on the ASG (AWS format)
+        want_tags: Desired tags (AWS format)
+        purge_tags: Whether to remove tags not in want_tags
+
+    Returns:
+        tuple: (tags_to_delete, tags_to_set, changed)
+            - tags_to_delete: List of tag dicts to delete (empty if not purge_tags)
+            - tags_to_set: List of tag dicts to create/update (or None if no changes)
+            - changed: Boolean indicating if any changes detected
+    """
+    # Sort for comparison
+    have_sorted = sorted(have_tags or [], key=lambda x: x["Key"])
+    want_sorted = sorted(want_tags or [], key=lambda x: x["Key"])
+
+    # Find tags to delete
+    have_keys = {tag["Key"] for tag in have_sorted}
+    want_keys = {tag["Key"] for tag in want_sorted}
+    keys_to_delete = have_keys - want_keys
+
+    tags_to_delete = []
+    if keys_to_delete and purge_tags:
+        tags_to_delete = [tag for tag in have_sorted if tag["Key"] in keys_to_delete]
+
+    # Compare remaining tags (including PropagateAtLaunch)
+    have_remaining = [tag for tag in have_sorted if tag["Key"] not in keys_to_delete]
+    tags_changed = have_remaining != want_sorted
+
+    # Determine return values
+    changed = bool(keys_to_delete) or tags_changed
+    tags_to_set = want_sorted if tags_changed else None
+
+    return tags_to_delete, tags_to_set, changed
+
+
+def apply_asg_tag_changes(
+    connection: Any,
+    as_group_name: str,
+    tags_to_delete: list[dict[str, Any]],
+    tags_to_set: list[dict[str, Any]] | None,
+) -> None:
+    """
+    Apply tag changes to an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        as_group_name: Name of the autoscaling group
+        tags_to_delete: List of tag dicts to delete
+        tags_to_set: List of tag dicts to create/update (or None if no changes)
+    """
+    if tags_to_delete:
+        # Format for delete_tags API
+        delete_tags = [
+            {
+                "ResourceId": as_group_name,
+                "ResourceType": "auto-scaling-group",
+                "Key": tag["Key"],
+            }
+            for tag in tags_to_delete
+        ]
+        connection.delete_tags(Tags=delete_tags)
+
+    if tags_to_set is not None:
+        connection.create_or_update_tags(Tags=tags_to_set)
 
 
 def create_autoscaling_group(connection):
@@ -1299,37 +1379,12 @@ def create_autoscaling_group(connection):
             changed = True
 
         # process tag changes
-        have_tags = as_group.get("Tags")
-        want_tags = asg_tags
-        if purge_tags and not want_tags and have_tags:
-            connection.delete_tags(Tags=list(have_tags))
-
-        if len(set_tags) > 0:
-            if have_tags:
-                have_tags.sort(key=lambda x: x["Key"])
-            if want_tags:
-                want_tags.sort(key=lambda x: x["Key"])
-            dead_tags = []
-            have_tag_keyvals = [x["Key"] for x in have_tags]
-            want_tag_keyvals = [x["Key"] for x in want_tags]
-
-            for dead_tag in set(have_tag_keyvals).difference(want_tag_keyvals):
-                changed = True
-                if purge_tags:
-                    dead_tags.append(
-                        dict(
-                            ResourceId=as_group["AutoScalingGroupName"], ResourceType="auto-scaling-group", Key=dead_tag
-                        )
-                    )
-                have_tags = [have_tag for have_tag in have_tags if have_tag["Key"] != dead_tag]
-
-            if dead_tags:
-                connection.delete_tags(Tags=dead_tags)
-
-            zipped = zip(have_tags, want_tags)
-            if len(have_tags) != len(want_tags) or not all(x == y for x, y in zipped):
-                changed = True
-                connection.create_or_update_tags(Tags=asg_tags)
+        tags_to_delete, tags_to_set, tags_changed = compare_asg_tags(
+            as_group.get("Tags"), asg_tags, purge_tags
+        )
+        if tags_changed:
+            apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
+            changed = True
 
         # Handle load balancer attachments/detachments
         # Attach load balancers if they are specified but none currently exist
