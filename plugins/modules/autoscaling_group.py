@@ -1126,7 +1126,7 @@ def suspend_processes(ec2_connection, as_group):
     processes_to_suspend = set(module.params.get("suspend_processes"))
 
     try:
-        suspended_processes = set([p["ProcessName"] for p in as_group["SuspendedProcesses"]])
+        suspended_processes = {p["ProcessName"] for p in as_group["SuspendedProcesses"]}
     except AttributeError:
         # New ASG being created, no suspended_processes defined yet
         suspended_processes = set()
@@ -1851,7 +1851,6 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
 def wait_for_term_inst(connection, term_instances):
     wait_timeout = module.params.get("wait_timeout")
     group_name = module.params.get("name")
-    as_group = describe_autoscaling_groups(connection, group_name)[0]
     count = 1
     wait_timeout = time.time() + wait_timeout
     while wait_timeout > time.time() and count > 0:
