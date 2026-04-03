@@ -810,6 +810,18 @@ def detach_lb_target_groups(connection, asg_name, target_group_arns):
     connection.detach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
 
 
+@AutoScalingErrorHandler.common_error_handler("delete tags")
+@AWSRetry.jittered_backoff(**backoff_params)
+def delete_asg_tags(connection, tags):
+    connection.delete_tags(Tags=tags)
+
+
+@AutoScalingErrorHandler.common_error_handler("create or update tags")
+@AWSRetry.jittered_backoff(**backoff_params)
+def create_or_update_asg_tags(connection, tags):
+    connection.create_or_update_tags(Tags=tags)
+
+
 @AWSRetry.jittered_backoff(**backoff_params)
 def update_asg(connection, **params):
     connection.update_auto_scaling_group(**params)
@@ -1250,10 +1262,10 @@ def apply_asg_tag_changes(
             }
             for tag in tags_to_delete
         ]
-        connection.delete_tags(Tags=delete_tags)
+        delete_asg_tags(connection, delete_tags)
 
     if tags_to_set is not None:
-        connection.create_or_update_tags(Tags=tags_to_set)
+        create_or_update_asg_tags(connection, tags_to_set)
 
 
 def update_load_balancers(
