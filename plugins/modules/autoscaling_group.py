@@ -1144,6 +1144,33 @@ def suspend_processes(ec2_connection, as_group):
     return True
 
 
+def build_asg_tags(set_tags, group_name):
+    """
+    Convert user-provided tags to ASG tag format.
+
+    Args:
+        set_tags: List of tag dictionaries from module params
+        group_name: Name of the autoscaling group
+
+    Returns:
+        List of tags formatted for AWS ASG API
+    """
+    asg_tags = []
+    for tag in set_tags:
+        for k, v in tag.items():
+            if k != "propagate_at_launch":
+                asg_tags.append(
+                    {
+                        "Key": k,
+                        "Value": to_native(v),
+                        "PropagateAtLaunch": bool(tag.get("propagate_at_launch", True)),
+                        "ResourceType": "auto-scaling-group",
+                        "ResourceId": group_name,
+                    }
+                )
+    return asg_tags
+
+
 def create_autoscaling_group(connection):
     group_name = module.params.get("name")
     load_balancers = module.params["load_balancers"]
@@ -1181,19 +1208,7 @@ def create_autoscaling_group(connection):
     if vpc_zone_identifier:
         vpc_zone_identifier = ",".join(vpc_zone_identifier)
 
-    asg_tags = []
-    for tag in set_tags:
-        for k, v in tag.items():
-            if k != "propagate_at_launch":
-                asg_tags.append(
-                    dict(
-                        Key=k,
-                        Value=to_native(v),
-                        PropagateAtLaunch=bool(tag.get("propagate_at_launch", True)),
-                        ResourceType="auto-scaling-group",
-                        ResourceId=group_name,
-                    )
-                )
+    asg_tags = build_asg_tags(set_tags, group_name)
     if not as_groups:
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have created AutoScalingGroup if not in check_mode.")
