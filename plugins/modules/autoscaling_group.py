@@ -1205,7 +1205,7 @@ def build_asg_tags(set_tags: list[dict[str, Any]], group_name: str) -> list[dict
 
 def compare_asg_tags(
     have_tags: list[dict[str, Any]] | None, want_tags: list[dict[str, Any]] | None, purge_tags: bool
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]] | None, bool]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]] | None]:
     """
     Compare current and desired ASG tags to determine changes.
 
@@ -1217,10 +1217,9 @@ def compare_asg_tags(
         purge_tags: Whether to remove tags not in want_tags
 
     Returns:
-        tuple: (tags_to_delete, tags_to_set, changed)
+        tuple: (tags_to_delete, tags_to_set)
             - tags_to_delete: List of tag dicts to delete (empty if not purge_tags)
             - tags_to_set: List of tag dicts to create/update (or None if no changes)
-            - changed: Boolean indicating if any changes detected
     """
     # Sort for comparison
     have_sorted = sorted(have_tags or [], key=lambda x: x["Key"])
@@ -1239,11 +1238,10 @@ def compare_asg_tags(
     have_remaining = [tag for tag in have_sorted if tag["Key"] not in keys_to_delete]
     tags_changed = have_remaining != want_sorted
 
-    # Determine return values
-    changed = bool(keys_to_delete) or tags_changed
+    # Determine tags to set
     tags_to_set = want_sorted if tags_changed else None
 
-    return tags_to_delete, tags_to_set, changed
+    return tags_to_delete, tags_to_set
 
 
 def apply_asg_tag_changes(
@@ -1251,7 +1249,7 @@ def apply_asg_tag_changes(
     as_group_name: str,
     tags_to_delete: list[dict[str, Any]],
     tags_to_set: list[dict[str, Any]] | None,
-) -> None:
+) -> bool:
     """
     Apply tag changes to an ASG.
 
@@ -1260,7 +1258,13 @@ def apply_asg_tag_changes(
         as_group_name: Name of the autoscaling group
         tags_to_delete: List of tag dicts to delete
         tags_to_set: List of tag dicts to create/update (or None if no changes)
+
+    Returns:
+        bool: True if changes were applied, False otherwise
     """
+    if not tags_to_delete and tags_to_set is None:
+        return False
+
     if tags_to_delete:
         # Format for delete_tags API
         delete_tags = [
@@ -1275,6 +1279,8 @@ def apply_asg_tag_changes(
 
     if tags_to_set is not None:
         create_or_update_asg_tags(connection, tags_to_set)
+
+    return True
 
 
 def update_load_balancers(
@@ -1588,14 +1594,11 @@ def create_autoscaling_group(connection):
         initial_asg_properties = get_properties(as_group)
         changed = False
 
-        if suspend_processes(connection, as_group):
-            changed = True
+        changed |= suspend_processes(connection, as_group)
 
         # process tag changes
-        tags_to_delete, tags_to_set, tags_changed = compare_asg_tags(as_group.get("Tags"), asg_tags, purge_tags)
-        if tags_changed:
-            apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
-            changed = True
+        tags_to_delete, tags_to_set = compare_asg_tags(as_group.get("Tags"), asg_tags, purge_tags)
+        changed |= apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
 
         # Handle load balancer and target group attachments/detachments
         changed |= update_load_balancers(connection, group_name, as_group["LoadBalancerNames"], load_balancers)
