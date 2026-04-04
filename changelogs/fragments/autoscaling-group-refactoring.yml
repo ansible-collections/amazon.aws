@@ -1,0 +1,2 @@
+minor_changes:
+  - autoscaling_group - Refactored module to reduce code complexity, improve error handling, and replace manual wait loops with waiter-based implementations (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
