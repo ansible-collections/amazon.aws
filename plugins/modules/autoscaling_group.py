@@ -1485,16 +1485,138 @@ def build_create_only_params(
     return params
 
 
-def create_autoscaling_group(connection):
-    group_name = module.params.get("name")
+def _create_new_asg(connection: Any, group_name: str, ec2_connection: Any) -> tuple[bool, dict[str, Any]]:
+    """
+    Create a new AutoScaling Group.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG to create
+        ec2_connection: EC2 connection for launch template lookups
+
+    Returns:
+        tuple: (changed=True, asg_properties)
+    """
     load_balancers = module.params["load_balancers"]
     target_group_arns = module.params["target_group_arns"]
     availability_zones = module.params["availability_zones"]
-    launch_template = module.params.get("launch_template")
     min_size = module.params["min_size"]
     max_size = module.params["max_size"]
     max_instance_lifetime = module.params.get("max_instance_lifetime")
     placement_group = module.params.get("placement_group")
+    desired_capacity = module.params.get("desired_capacity")
+    vpc_zone_identifier = module.params.get("vpc_zone_identifier")
+    set_tags = module.params.get("tags")
+    protected_from_scale_in = module.params.get("protected_from_scale_in")
+    health_check_period = module.params.get("health_check_period")
+    health_check_type = module.params.get("health_check_type")
+    default_cooldown = module.params.get("default_cooldown")
+    wait_for_instances = module.params.get("wait_for_instances")
+    wait_timeout = module.params.get("wait_timeout")
+    termination_policies = module.params.get("termination_policies")
+    notification_topic = module.params.get("notification_topic")
+    notification_types = module.params.get("notification_types")
+    metrics_collection = module.params.get("metrics_collection")
+    metrics_granularity = module.params.get("metrics_granularity")
+    metrics_list = module.params.get("metrics_list")
+
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have created AutoScalingGroup if not in check_mode.")
+
+    if vpc_zone_identifier:
+        vpc_zone_identifier = ",".join(vpc_zone_identifier)
+
+    if not vpc_zone_identifier and not availability_zones:
+        availability_zones = module.params["availability_zones"] = [
+            zone["ZoneName"] for zone in ec2_connection.describe_availability_zones()["AvailabilityZones"]
+        ]
+
+    enforce_required_arguments_for_create()
+
+    if desired_capacity is None:
+        desired_capacity = min_size
+    if protected_from_scale_in is None:
+        protected_from_scale_in = False
+
+    asg_tags = build_asg_tags(set_tags, group_name)
+
+    ag = build_base_asg_params(
+        group_name=group_name,
+        min_size=min_size,
+        max_size=max_size,
+        desired_capacity=desired_capacity,
+        health_check_period=health_check_period,
+        health_check_type=health_check_type,
+        default_cooldown=default_cooldown,
+        termination_policies=termination_policies,
+        protected_from_scale_in=protected_from_scale_in,
+        vpc_zone_identifier=vpc_zone_identifier,
+        availability_zones=availability_zones,
+        max_instance_lifetime=max_instance_lifetime,
+    )
+
+    ag.update(
+        build_create_only_params(
+            tags=asg_tags,
+            placement_group=placement_group,
+            load_balancers=load_balancers,
+            target_group_arns=target_group_arns,
+        )
+    )
+
+    launch_object = get_launch_object(connection, ec2_connection)
+    ag.update(build_launch_config_params(launch_object, None))
+
+    create_asg(connection, **ag)
+
+    if metrics_collection:
+        connection.enable_metrics_collection(
+            AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
+        )
+
+    all_ag = describe_autoscaling_groups(connection, group_name)
+    if len(all_ag) == 0:
+        module.fail_json(msg=f"No auto scaling group found with the name {group_name}")
+
+    as_group = all_ag[0]
+    suspend_processes(connection, as_group)
+
+    if wait_for_instances:
+        wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
+        if load_balancers:
+            wait_for_elb(connection, group_name)
+        if target_group_arns:
+            wait_for_target_group(connection, group_name)
+
+    if notification_topic:
+        put_notification_config(connection, group_name, notification_topic, notification_types)
+
+    as_group = describe_autoscaling_groups(connection, group_name)[0]
+    asg_properties = get_properties(as_group)
+    return True, asg_properties
+
+
+def _update_existing_asg(
+    connection: Any, group_name: str, ec2_connection: Any, as_group: dict[str, Any]
+) -> tuple[bool, dict[str, Any]]:
+    """
+    Update an existing AutoScaling Group.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG to update
+        ec2_connection: EC2 connection for launch template lookups
+        as_group: Existing ASG configuration
+
+    Returns:
+        tuple: (changed, asg_properties)
+    """
+    load_balancers = module.params["load_balancers"]
+    target_group_arns = module.params["target_group_arns"]
+    availability_zones = module.params["availability_zones"]
+    min_size = module.params["min_size"]
+    max_size = module.params["max_size"]
+    max_instance_lifetime = module.params.get("max_instance_lifetime")
     desired_capacity = module.params.get("desired_capacity")
     vpc_zone_identifier = module.params.get("vpc_zone_identifier")
     set_tags = module.params.get("tags")
@@ -1512,155 +1634,107 @@ def create_autoscaling_group(connection):
     metrics_granularity = module.params.get("metrics_granularity")
     metrics_list = module.params.get("metrics_list")
 
-    as_groups = describe_autoscaling_groups(connection, group_name)
-    ec2_connection = module.client("ec2")
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have modified AutoScalingGroup if required if not in check_mode.")
 
     if vpc_zone_identifier:
         vpc_zone_identifier = ",".join(vpc_zone_identifier)
 
+    initial_asg_properties = get_properties(as_group)
+    changed = False
+
+    changed |= suspend_processes(connection, as_group)
+
+    # Process tag changes
     asg_tags = build_asg_tags(set_tags, group_name)
-    if not as_groups:
-        if module.check_mode:
-            module.exit_json(changed=True, msg="Would have created AutoScalingGroup if not in check_mode.")
+    tags_to_delete, tags_to_set = compare_asg_tags(as_group.get("Tags"), asg_tags, purge_tags)
+    changed |= apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
 
-        if not vpc_zone_identifier and not availability_zones:
-            availability_zones = module.params["availability_zones"] = [
-                zone["ZoneName"] for zone in ec2_connection.describe_availability_zones()["AvailabilityZones"]
-            ]
+    # Handle load balancer and target group attachments/detachments
+    changed |= update_load_balancers(connection, group_name, as_group["LoadBalancerNames"], load_balancers)
+    changed |= update_target_groups(connection, group_name, as_group["TargetGroupARNs"], target_group_arns)
 
-        enforce_required_arguments_for_create()
+    # Use existing ASG values as defaults if not specified
+    if min_size is None:
+        min_size = as_group["MinSize"]
+    if max_size is None:
+        max_size = as_group["MaxSize"]
+    if desired_capacity is None:
+        desired_capacity = as_group["DesiredCapacity"]
+    if protected_from_scale_in is None:
+        protected_from_scale_in = as_group["NewInstancesProtectedFromScaleIn"]
 
-        if desired_capacity is None:
-            desired_capacity = min_size
-        if protected_from_scale_in is None:
-            protected_from_scale_in = False
+    ag = build_base_asg_params(
+        group_name=group_name,
+        min_size=min_size,
+        max_size=max_size,
+        desired_capacity=desired_capacity,
+        health_check_period=health_check_period,
+        health_check_type=health_check_type,
+        default_cooldown=default_cooldown,
+        termination_policies=termination_policies,
+        protected_from_scale_in=protected_from_scale_in,
+        vpc_zone_identifier=vpc_zone_identifier,
+        availability_zones=availability_zones,
+        max_instance_lifetime=max_instance_lifetime,
+    )
 
-        ag = build_base_asg_params(
-            group_name=group_name,
-            min_size=min_size,
-            max_size=max_size,
-            desired_capacity=desired_capacity,
-            health_check_period=health_check_period,
-            health_check_type=health_check_type,
-            default_cooldown=default_cooldown,
-            termination_policies=termination_policies,
-            protected_from_scale_in=protected_from_scale_in,
-            vpc_zone_identifier=vpc_zone_identifier,
-            availability_zones=availability_zones,
-            max_instance_lifetime=max_instance_lifetime,
+    # Get the launch object (config or template) if one is provided in args or use the existing one attached to ASG if not.
+    launch_object = get_launch_object(connection, ec2_connection)
+    ag.update(build_launch_config_params(launch_object, as_group))
+
+    update_asg(connection, **ag)
+
+    if metrics_collection:
+        connection.enable_metrics_collection(
+            AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
         )
-
-        ag.update(
-            build_create_only_params(
-                tags=asg_tags,
-                placement_group=placement_group,
-                load_balancers=load_balancers,
-                target_group_arns=target_group_arns,
-            )
-        )
-
-        launch_object = get_launch_object(connection, ec2_connection)
-        ag.update(build_launch_config_params(launch_object, None))
-
-        create_asg(connection, **ag)
-        if metrics_collection:
-            connection.enable_metrics_collection(
-                AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
-            )
-
-        all_ag = describe_autoscaling_groups(connection, group_name)
-        if len(all_ag) == 0:
-            module.fail_json(msg=f"No auto scaling group found with the name {group_name}")
-        as_group = all_ag[0]
-        suspend_processes(connection, as_group)
-        if wait_for_instances:
-            wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
-            if load_balancers:
-                wait_for_elb(connection, group_name)
-            # Wait for target group health if target group(s)defined
-            if target_group_arns:
-                wait_for_target_group(connection, group_name)
-        if notification_topic:
-            put_notification_config(connection, group_name, notification_topic, notification_types)
-        as_group = describe_autoscaling_groups(connection, group_name)[0]
-        asg_properties = get_properties(as_group)
-        changed = True
-        return changed, asg_properties
     else:
-        if module.check_mode:
-            module.exit_json(changed=True, msg="Would have modified AutoScalingGroup if required if not in check_mode.")
+        connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
 
+    if notification_topic:
+        put_notification_config(connection, group_name, notification_topic, notification_types)
+
+    if wait_for_instances:
+        wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
+        if load_balancers:
+            module.debug("\tWAITING FOR ELB HEALTH")
+            wait_for_elb(connection, group_name)
+        if target_group_arns:
+            module.debug("\tWAITING FOR TG HEALTH")
+            wait_for_target_group(connection, group_name)
+
+    as_group = describe_autoscaling_groups(connection, group_name)[0]
+    asg_properties = get_properties(as_group)
+
+    if asg_properties != initial_asg_properties:
+        changed = True
+
+    return changed, asg_properties
+
+
+def create_autoscaling_group(connection):
+    """
+    Create or update an AutoScaling Group.
+
+    Dispatcher function that checks if ASG exists and delegates to
+    _create_new_asg() or _update_existing_asg() accordingly.
+
+    Args:
+        connection: AutoScaling connection
+
+    Returns:
+        tuple: (changed, asg_properties)
+    """
+    group_name = module.params.get("name")
+    as_groups = describe_autoscaling_groups(connection, group_name)
+    ec2_connection = module.client("ec2")
+
+    if not as_groups:
+        return _create_new_asg(connection, group_name, ec2_connection)
+    else:
         as_group = as_groups[0]
-        initial_asg_properties = get_properties(as_group)
-        changed = False
-
-        changed |= suspend_processes(connection, as_group)
-
-        # process tag changes
-        tags_to_delete, tags_to_set = compare_asg_tags(as_group.get("Tags"), asg_tags, purge_tags)
-        changed |= apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
-
-        # Handle load balancer and target group attachments/detachments
-        changed |= update_load_balancers(connection, group_name, as_group["LoadBalancerNames"], load_balancers)
-        changed |= update_target_groups(connection, group_name, as_group["TargetGroupARNs"], target_group_arns)
-
-        # Use existing ASG values as defaults if not specified
-        if min_size is None:
-            min_size = as_group["MinSize"]
-        if max_size is None:
-            max_size = as_group["MaxSize"]
-        if desired_capacity is None:
-            desired_capacity = as_group["DesiredCapacity"]
-        if protected_from_scale_in is None:
-            protected_from_scale_in = as_group["NewInstancesProtectedFromScaleIn"]
-
-        ag = build_base_asg_params(
-            group_name=group_name,
-            min_size=min_size,
-            max_size=max_size,
-            desired_capacity=desired_capacity,
-            health_check_period=health_check_period,
-            health_check_type=health_check_type,
-            default_cooldown=default_cooldown,
-            termination_policies=termination_policies,
-            protected_from_scale_in=protected_from_scale_in,
-            vpc_zone_identifier=vpc_zone_identifier,
-            availability_zones=availability_zones,
-            max_instance_lifetime=max_instance_lifetime,
-        )
-
-        # Get the launch object (config or template) if one is provided in args or use the existing one attached to ASG if not.
-        launch_object = get_launch_object(connection, ec2_connection)
-        ag.update(build_launch_config_params(launch_object, as_group))
-
-        update_asg(connection, **ag)
-
-        if metrics_collection:
-            connection.enable_metrics_collection(
-                AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
-            )
-        else:
-            connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
-
-        if notification_topic:
-            put_notification_config(connection, group_name, notification_topic, notification_types)
-        if wait_for_instances:
-            wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
-            # Wait for ELB health if ELB(s)defined
-            if load_balancers:
-                module.debug("\tWAITING FOR ELB HEALTH")
-                wait_for_elb(connection, group_name)
-            # Wait for target group health if target group(s)defined
-
-            if target_group_arns:
-                module.debug("\tWAITING FOR TG HEALTH")
-                wait_for_target_group(connection, group_name)
-
-        as_group = describe_autoscaling_groups(connection, group_name)[0]
-        asg_properties = get_properties(as_group)
-        if asg_properties != initial_asg_properties:
-            changed = True
-        return changed, asg_properties
+        return _update_existing_asg(connection, group_name, ec2_connection, as_group)
 
 
 def delete_autoscaling_group(connection):
