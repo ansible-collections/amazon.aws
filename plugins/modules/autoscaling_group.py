@@ -1049,9 +1049,7 @@ def _build_mixed_instances_policy(
     instances_distribution = mixed_instances_policy.get("instances_distribution", {})
     if instances_distribution:
         instances_distribution_params = scrub_none_parameters(instances_distribution)
-        policy["InstancesDistribution"] = snake_dict_to_camel_dict(
-            instances_distribution_params, capitalize_first=True
-        )
+        policy["InstancesDistribution"] = snake_dict_to_camel_dict(instances_distribution_params, capitalize_first=True)
 
     return policy
 
@@ -1083,33 +1081,66 @@ def get_launch_object(connection, ec2_connection):
     return launch_object
 
 
+def _is_instance_in_service_on_elb(elb_connection: str, lb_name: str, instance_id: str) -> bool:
+    """
+    Check if an instance is InService on a load balancer.
+
+    Args:
+        elb_connection: ELB connection
+        lb_name: Load balancer name
+        instance_id: Instance ID to check
+
+    Returns:
+        bool: True if instance is InService on the load balancer
+    """
+    lb_instances = describe_instance_health(elb_connection, lb_name, [])
+    for instance_state in lb_instances["InstanceStates"]:
+        if instance_state["InstanceId"] == instance_id and instance_state["State"] == "InService":
+            module.debug(f"{instance_state['InstanceId']}: {instance_state['State']}, {instance_state['Description']}")
+            return True
+    return False
+
+
+def _wait_for_elb_deregistration(elb_connection: str, lb_names: list[str], instance_id: str, deadline: float) -> None:
+    """
+    Wait for an instance to be deregistered from all load balancers.
+
+    Args:
+        elb_connection: ELB connection
+        lb_names: List of load balancer names
+        instance_id: Instance ID to wait for
+        deadline: Timeout deadline (time.time() value)
+
+    Raises:
+        AnsibleAWSError: If timeout is reached
+    """
+    while deadline > time.time():
+        count = sum(1 for lb in lb_names if _is_instance_in_service_on_elb(elb_connection, lb, instance_id))
+        if count == 0:
+            return
+        time.sleep(10)
+
+    raise AnsibleAWSError(f"Waited too long for instance to deregister. {time.asctime()}")
+
+
 def elb_dreg(asg_connection, group_name, instance_id):
     as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
     wait_timeout = module.params.get("wait_timeout")
-    count = 1
-    if as_group["LoadBalancerNames"] and as_group["HealthCheckType"] == "ELB":
-        elb_connection = module.client("elb")
-    else:
+
+    # Early return if no ELB health checking
+    if not (as_group["LoadBalancerNames"] and as_group["HealthCheckType"] == "ELB"):
         return
 
+    elb_connection = module.client("elb")
+
+    # Deregister from all load balancers
     for lb in as_group["LoadBalancerNames"]:
         deregister_lb_instances(elb_connection, lb, instance_id)
         module.debug(f"De-registering {instance_id} from ELB {lb}")
 
-    wait_timeout = time.time() + wait_timeout
-    while wait_timeout > time.time() and count > 0:
-        count = 0
-        for lb in as_group["LoadBalancerNames"]:
-            lb_instances = describe_instance_health(elb_connection, lb, [])
-            for i in lb_instances["InstanceStates"]:
-                if i["InstanceId"] == instance_id and i["State"] == "InService":
-                    count += 1
-                    module.debug(f"{i['InstanceId']}: {i['State']}, {i['Description']}")
-        time.sleep(10)
-
-    if wait_timeout <= time.time():
-        # waiting took too long
-        module.fail_json(msg=f"Waited too long for instance to deregister. {time.asctime()}")
+    # Wait for deregistration to complete
+    deadline = time.time() + wait_timeout
+    _wait_for_elb_deregistration(elb_connection, as_group["LoadBalancerNames"], instance_id, deadline)
 
 
 def elb_healthy(asg_connection, elb_connection, group_name):

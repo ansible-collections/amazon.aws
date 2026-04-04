@@ -56,9 +56,7 @@ class TestBuildMixedInstancesPolicy:
         result = asg_module._build_mixed_instances_policy(lt_spec, policy_params)
 
         assert result == {
-            "LaunchTemplate": {
-                "LaunchTemplateSpecification": {"LaunchTemplateId": "lt-123", "Version": "1"}
-            }
+            "LaunchTemplate": {"LaunchTemplateSpecification": {"LaunchTemplateId": "lt-123", "Version": "1"}}
         }
 
     def test_with_instance_types(self):
