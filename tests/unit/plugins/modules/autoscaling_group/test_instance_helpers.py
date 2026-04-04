@@ -173,7 +173,7 @@ class TestUpdateInstanceCounts:
         }
 
         # Add 3 viable instances
-        for _ in range(3):
+        for _dummy in range(3):
             _update_instance_counts(
                 {"HealthStatus": "Healthy", "LifecycleState": "InService"},
                 counts,
