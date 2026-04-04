@@ -20,20 +20,38 @@ WAITER_MAP = {
 
 
 def _fail_on_instance_lifecycle_states(state):
-    return {"state": "failure", "matcher": "pathAny", "expected": state, "argument": "AutoScalingInstances[].LifecycleState"}
+    return {
+        "state": "failure",
+        "matcher": "pathAny",
+        "expected": state,
+        "argument": "AutoScalingInstances[].LifecycleState",
+    }
 
 
 def _success_on_instance_lifecycle_states(state):
-    return {"state": "success", "matcher": "pathAll", "expected": state, "argument": "AutoScalingInstances[].LifecycleState"}
+    return {
+        "state": "success",
+        "matcher": "pathAll",
+        "expected": state,
+        "argument": "AutoScalingInstances[].LifecycleState",
+    }
 
 
 def _success_on_instance_health(health):
-    return {"state": "success", "matcher": "pathAll", "expected": health, "argument": "AutoScalingInstances[].HealthStatus"}
+    return {
+        "state": "success",
+        "matcher": "pathAll",
+        "expected": health,
+        "argument": "AutoScalingInstances[].HealthStatus",
+    }
 
 
 def _success_on_instance_protection(state):
     return {
-        "state": "success", "matcher": "pathAll", "expected": state, "argument": "AutoScalingInstances[].ProtectedFromScaleIn"
+        "state": "success",
+        "matcher": "pathAll",
+        "expected": state,
+        "argument": "AutoScalingInstances[].ProtectedFromScaleIn",
     }
 
 
