@@ -311,3 +311,17 @@ def get_elbv2_waiter(client: ClientType, waiter_name: str) -> Any:
         Waiter instance
     """
     return _elbv2_waiters.waiter_factory.get_waiter(client, waiter_name)
+
+
+def get_min_healthy_targets_waiter(client: ClientType, min_count: int) -> Any:
+    """
+    Get a waiter that waits for a minimum number of healthy targets in a target group.
+
+    Args:
+        client: boto3 ELBv2 client
+        min_count: Minimum number of targets in healthy state required
+
+    Returns:
+        Waiter instance
+    """
+    return _elbv2_waiters.get_waiter_with_min_targets(client, min_count)

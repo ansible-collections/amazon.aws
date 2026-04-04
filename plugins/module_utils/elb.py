@@ -27,3 +27,17 @@ def get_elb_waiter(client: ClientType, waiter_name: str) -> Any:
         Waiter instance
     """
     return _elb_waiters.waiter_factory.get_waiter(client, waiter_name)
+
+
+def get_min_healthy_instances_waiter(client: ClientType, min_count: int) -> Any:
+    """
+    Get a waiter that waits for a minimum number of healthy instances on an ELB.
+
+    Args:
+        client: boto3 ELB client
+        min_count: Minimum number of instances in InService state required
+
+    Returns:
+        Waiter instance
+    """
+    return _elb_waiters.get_waiter_with_min_instances(client, min_count)

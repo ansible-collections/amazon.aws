@@ -689,11 +689,6 @@ metrics_collection:
 import time
 import typing
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 if typing.TYPE_CHECKING:
     from typing import Any
 
@@ -703,9 +698,12 @@ from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_autoscaling_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_min_viable_instances_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.elb import get_elb_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.elb import get_min_healthy_instances_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_min_healthy_targets_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -1140,116 +1138,110 @@ def elb_dreg(asg_connection, group_name, instance_id):
     _wait_for_elb_deregistration(elb_connection, as_group["LoadBalancerNames"], instance_id, wait_timeout)
 
 
-def elb_healthy(asg_connection, elb_connection, group_name):
-    healthy_instances = set()
-    as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
-    props = get_properties(as_group)
-    # get healthy, inservice instances from ASG
-    instances = []
-    for instance, settings in props["instance_facts"].items():
-        if settings["lifecycle_state"] == "InService" and settings["health_status"] == "Healthy":
-            instances.append(dict(InstanceId=instance))
-    module.debug(f"ASG considers the following instances InService and Healthy: {instances}")
-    module.debug("ELB instance status:")
-    lb_instances = list()
-    for lb in as_group.get("LoadBalancerNames"):
-        # we catch a race condition that sometimes happens if the instance exists in the ASG
-        # but has not yet show up in the ELB
-        try:
-            lb_instances = describe_instance_health(elb_connection, lb, instances)
-        except is_boto3_error_code("InvalidInstance"):
-            return None
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to get load balancer.")
-
-        for i in lb_instances.get("InstanceStates"):
-            if i["State"] == "InService":
-                healthy_instances.add(i["InstanceId"])
-            module.debug(f"ELB Health State {i['InstanceId']}: {i['State']}")
-    return len(healthy_instances)
-
-
-def tg_healthy(asg_connection, elbv2_connection, group_name):
-    healthy_instances = set()
-    as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
-    props = get_properties(as_group)
-    # get healthy, inservice instances from ASG
-    instances = []
-    for instance, settings in props["instance_facts"].items():
-        if settings["lifecycle_state"] == "InService" and settings["health_status"] == "Healthy":
-            instances.append(dict(Id=instance))
-    module.debug(f"ASG considers the following instances InService and Healthy: {instances}")
-    module.debug("Target Group instance status:")
-    tg_instances = list()
-    for tg in as_group.get("TargetGroupARNs"):
-        # we catch a race condition that sometimes happens if the instance exists in the ASG
-        # but has not yet show up in the ELB
-        try:
-            tg_instances = describe_target_health(elbv2_connection, tg, instances)
-        except is_boto3_error_code("InvalidInstance"):
-            return None
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to get target group.")
-
-        for i in tg_instances.get("TargetHealthDescriptions"):
-            if i["TargetHealth"]["State"] == "healthy":
-                healthy_instances.add(i["Target"]["Id"])
-            module.debug(f"Target Group Health State {i['Target']['Id']}: {i['TargetHealth']['State']}")
-    return len(healthy_instances)
-
-
+@AutoScalingErrorHandler.common_error_handler("wait for ELB health")
 def wait_for_elb(asg_connection, group_name):
-    wait_timeout = module.params.get("wait_timeout")
+    """
+    Wait for instances to be healthy on all attached ELBs.
 
-    # if the health_check_type is ELB, we want to query the ELBs directly for instance
-    # status as to avoid health_check_grace period that is awarded to ASG instances
+    Waits until at least MinSize instances are healthy across all load balancers.
+
+    Args:
+        asg_connection: AutoScaling connection
+        group_name: Name of the ASG
+    """
+    wait_timeout = module.params.get("wait_timeout")
     as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
 
-    if as_group.get("LoadBalancerNames") and as_group.get("HealthCheckType") == "ELB":
-        module.debug("Waiting for ELB to consider instances healthy.")
-        elb_connection = module.client("elb")
+    # Only wait if using ELB health checks and ELBs are attached
+    if not (as_group.get("LoadBalancerNames") and as_group.get("HealthCheckType") == "ELB"):
+        return
 
-        wait_timeout = time.time() + wait_timeout
-        healthy_instances = elb_healthy(asg_connection, elb_connection, group_name)
+    module.debug("Waiting for ELB to consider instances healthy.")
+    elb_connection = module.client("elb")
+    min_size = as_group.get("MinSize")
 
-        while healthy_instances < as_group.get("MinSize") and wait_timeout > time.time():
-            healthy_instances = elb_healthy(asg_connection, elb_connection, group_name)
-            module.debug(f"ELB thinks {healthy_instances} instances are healthy.")
-            time.sleep(10)
-        if wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg=f"Waited too long for ELB instances to be healthy. {time.asctime()}")
-        module.debug(f"Waiting complete. ELB thinks {healthy_instances} instances are healthy.")
+    # Get viable instances from ASG (Healthy + InService)
+    props = get_properties(as_group)
+    viable_instance_ids = [
+        instance_id
+        for instance_id, facts in props["instance_facts"].items()
+        if facts["lifecycle_state"] == "InService" and facts["health_status"] == "Healthy"
+    ]
+
+    if not viable_instance_ids:
+        module.debug("No viable instances in ASG yet")
+        return
+
+    instances_param = [{"InstanceId": iid} for iid in viable_instance_ids]
+
+    # Track elapsed time to avoid exceeding total timeout across multiple ELBs
+    start_time = time.time()
+
+    # Wait for each ELB to have MinSize healthy instances
+    for lb_name in as_group.get("LoadBalancerNames"):
+        # Calculate remaining timeout, ensuring at least 1 second
+        elapsed = time.time() - start_time
+        remaining_timeout = max(1, int(wait_timeout - elapsed))
+
+        module.debug(f"Waiting for {min_size} instances to be healthy on ELB {lb_name} (timeout: {remaining_timeout}s)")
+        waiter_config = custom_waiter_config(timeout=remaining_timeout, default_pause=10)
+        waiter = get_min_healthy_instances_waiter(elb_connection, min_size)
+        waiter.wait(LoadBalancerName=lb_name, Instances=instances_param, WaiterConfig=waiter_config)
+
+    module.debug(f"ELBs have at least {min_size} healthy instances")
 
 
+@AutoScalingErrorHandler.common_error_handler("wait for target group health")
 def wait_for_target_group(asg_connection, group_name):
-    wait_timeout = module.params.get("wait_timeout")
+    """
+    Wait for instances to be healthy in all attached target groups.
 
-    # if the health_check_type is ELB, we want to query the ELBs directly for instance
-    # status as to avoid health_check_grace period that is awarded to ASG instances
+    Waits until at least MinSize instances are healthy across all target groups.
+
+    Args:
+        asg_connection: AutoScaling connection
+        group_name: Name of the ASG
+    """
+    wait_timeout = module.params.get("wait_timeout")
     as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
 
-    if as_group.get("TargetGroupARNs") and as_group.get("HealthCheckType") == "ELB":
-        module.debug("Waiting for Target Group to consider instances healthy.")
-        elbv2_connection = module.client("elbv2")
+    # Only wait if using ELB health checks and target groups are attached
+    if not (as_group.get("TargetGroupARNs") and as_group.get("HealthCheckType") == "ELB"):
+        return
 
-        wait_timeout = time.time() + wait_timeout
-        healthy_instances = tg_healthy(asg_connection, elbv2_connection, group_name)
+    module.debug("Waiting for Target Group to consider instances healthy.")
+    elbv2_connection = module.client("elbv2")
+    min_size = as_group.get("MinSize")
 
-        while healthy_instances < as_group.get("MinSize") and wait_timeout > time.time():
-            healthy_instances = tg_healthy(asg_connection, elbv2_connection, group_name)
-            module.debug(f"Target Group thinks {healthy_instances} instances are healthy.")
-            time.sleep(10)
-        if wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg=f"Waited too long for ELB instances to be healthy. {time.asctime()}")
-        module.debug(f"Waiting complete. Target Group thinks {healthy_instances} instances are healthy.")
+    # Get viable instances from ASG (Healthy + InService)
+    props = get_properties(as_group)
+    viable_instance_ids = [
+        instance_id
+        for instance_id, facts in props["instance_facts"].items()
+        if facts["lifecycle_state"] == "InService" and facts["health_status"] == "Healthy"
+    ]
+
+    if not viable_instance_ids:
+        module.debug("No viable instances in ASG yet")
+        return
+
+    targets_param = [{"Id": iid} for iid in viable_instance_ids]
+
+    # Track elapsed time to avoid exceeding total timeout across multiple target groups
+    start_time = time.time()
+
+    # Wait for each target group to have MinSize healthy targets
+    for tg_arn in as_group.get("TargetGroupARNs"):
+        # Calculate remaining timeout, ensuring at least 1 second
+        elapsed = time.time() - start_time
+        remaining_timeout = max(1, int(wait_timeout - elapsed))
+
+        module.debug(f"Waiting for {min_size} targets to be healthy in target group {tg_arn} (timeout: {remaining_timeout}s)")
+        waiter_config = custom_waiter_config(timeout=remaining_timeout, default_pause=10)
+        waiter = get_min_healthy_targets_waiter(elbv2_connection, min_size)
+        waiter.wait(TargetGroupArn=tg_arn, Targets=targets_param, WaiterConfig=waiter_config)
+
+    module.debug(f"Target groups have at least {min_size} healthy targets")
 
 
 def suspend_processes(ec2_connection, as_group):
@@ -2368,22 +2360,29 @@ def wait_for_term_inst(connection, term_instances):
         module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
 
 
+@AutoScalingErrorHandler.common_error_handler("wait for viable instances")
 def wait_for_new_inst(connection, group_name, wait_timeout, desired_size, prop):
-    # make sure we have the latest stats after that last loop.
+    """
+    Wait for a minimum number of viable instances in an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        wait_timeout: Wait timeout in seconds
+        desired_size: Minimum number of viable instances required
+        prop: Property to wait for (always "viable_instances")
+
+    Returns:
+        dict: ASG properties after waiting completes
+    """
+    module.debug(f"Waiting for {prop} >= {desired_size}")
+    waiter_config = custom_waiter_config(timeout=wait_timeout, default_pause=10)
+    waiter = get_min_viable_instances_waiter(connection, desired_size)
+    waiter.wait(AutoScalingGroupNames=[group_name], WaiterConfig=waiter_config)
+
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     props = get_properties(as_group)
-    module.debug(f"Waiting for {prop} = {desired_size}, currently {props[prop]}")
-    # now we make sure that we have enough instances in a viable state
-    wait_timeout = time.time() + wait_timeout
-    while wait_timeout > time.time() and desired_size > props[prop]:
-        module.debug(f"Waiting for {prop} = {desired_size}, currently {props[prop]}")
-        time.sleep(10)
-        as_group = describe_autoscaling_groups(connection, group_name)[0]
-        props = get_properties(as_group)
-    if wait_timeout <= time.time():
-        # waiting took too long
-        module.fail_json(msg=f"Waited too long for new instances to become viable. {time.asctime()}")
-    module.debug(f"Reached {prop}: {desired_size}")
+    module.debug(f"Reached {prop}: {props[prop]}")
     return props
 
 

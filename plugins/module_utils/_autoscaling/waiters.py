@@ -192,3 +192,49 @@ class AutoscalingWaiterFactory(BaseWaiterFactory):
 
 
 waiter_factory = AutoscalingWaiterFactory()
+
+
+class DynamicASGViableInstanceWaiterFactory(BaseWaiterFactory):
+    """
+    Factory for creating ASG waiters with dynamic viable instance count thresholds.
+
+    Args:
+        min_count: Minimum number of viable instances (Healthy + InService) required
+    """
+
+    def __init__(self, min_count: int):
+        self._min_count = min_count
+        super().__init__()
+
+    @property
+    def _waiter_model_data(self):
+        return {
+            "min_viable_instances": {
+                "operation": "DescribeAutoScalingGroups",
+                "delay": 10,
+                "maxAttempts": 60,
+                "acceptors": [
+                    {
+                        "state": "success",
+                        "matcher": "path",
+                        "expected": True,
+                        "argument": f"length(AutoScalingGroups[0].Instances[?HealthStatus=='Healthy' && LifecycleState=='InService']) >= `{self._min_count}`",
+                    },
+                ],
+            },
+        }
+
+
+def get_waiter_with_min_viable_instances(client, min_count: int):
+    """
+    Get a waiter that waits for a minimum number of viable instances.
+
+    Args:
+        client: boto3 AutoScaling client
+        min_count: Minimum number of viable instances (Healthy + InService) required
+
+    Returns:
+        Waiter instance that checks for minimum viable instances in an ASG
+    """
+    factory = DynamicASGViableInstanceWaiterFactory(min_count)
+    return factory.get_waiter(client, "min_viable_instances")

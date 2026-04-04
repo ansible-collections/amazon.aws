@@ -52,3 +52,54 @@ class ELBv2WaiterFactory(BaseWaiterFactory):
 
 
 waiter_factory = ELBv2WaiterFactory()
+
+
+class DynamicTargetGroupHealthWaiterFactory(BaseWaiterFactory):
+    """
+    Factory for creating target group health waiters with dynamic minimum target count thresholds.
+
+    Args:
+        min_count: Minimum number of healthy targets required in the target group
+    """
+
+    def __init__(self, min_count: int):
+        self._min_count = min_count
+        super().__init__()
+
+    @property
+    def _waiter_model_data(self):
+        return {
+            "min_targets_healthy": {
+                "operation": "DescribeTargetHealth",
+                "delay": 10,
+                "maxAttempts": 60,
+                "acceptors": [
+                    {
+                        "state": "success",
+                        "matcher": "path",
+                        "expected": True,
+                        "argument": f"length(TargetHealthDescriptions[?TargetHealth.State=='healthy']) >= `{self._min_count}`",
+                    },
+                    {
+                        "state": "retry",
+                        "matcher": "error",
+                        "expected": "InvalidInstance",
+                    },
+                ],
+            },
+        }
+
+
+def get_waiter_with_min_targets(client, min_count: int):
+    """
+    Get a waiter that waits for a minimum number of healthy targets in a target group.
+
+    Args:
+        client: boto3 ELBv2 client
+        min_count: Minimum number of targets in healthy state required
+
+    Returns:
+        Waiter instance that checks for minimum healthy targets in the target group
+    """
+    factory = DynamicTargetGroupHealthWaiterFactory(min_count)
+    return factory.get_waiter(client, "min_targets_healthy")
