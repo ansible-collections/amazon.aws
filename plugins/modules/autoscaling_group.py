@@ -711,6 +711,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.transformation import s
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
 
 
+@AutoScalingErrorHandler.list_error_handler("describe auto scaling groups", [])
 @AWSRetry.jittered_backoff(**backoff_params)
 def describe_autoscaling_groups(connection, group_name):
     pg = connection.get_paginator("describe_auto_scaling_groups")
@@ -737,16 +738,19 @@ def describe_target_health(connection, target_group_arn, instances):
     return connection.describe_target_health(TargetGroupArn=target_group_arn, Targets=instances)
 
 
+@AutoScalingErrorHandler.common_error_handler("suspend processes")
 @AWSRetry.jittered_backoff(**backoff_params)
 def suspend_asg_processes(connection, asg_name, processes):
     connection.suspend_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
+@AutoScalingErrorHandler.common_error_handler("resume processes")
 @AWSRetry.jittered_backoff(**backoff_params)
 def resume_asg_processes(connection, asg_name, processes):
     connection.resume_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
+@AutoScalingErrorHandler.list_error_handler("describe launch configurations", {})
 @AWSRetry.jittered_backoff(**backoff_params)
 def describe_launch_configurations(connection, launch_config_name):
     pg = connection.get_paginator("describe_launch_configurations")
@@ -769,11 +773,13 @@ def describe_launch_templates(connection, launch_template):
             module.fail_json(msg=f"No launch template found matching: {launch_template}")
 
 
+@AutoScalingErrorHandler.common_error_handler("create auto scaling group")
 @AWSRetry.jittered_backoff(**backoff_params)
 def create_asg(connection, **params):
     connection.create_auto_scaling_group(**params)
 
 
+@AutoScalingErrorHandler.common_error_handler("configure notifications")
 @AWSRetry.jittered_backoff(**backoff_params)
 def put_notification_config(connection, asg_name, topic_arn, notification_types):
     connection.put_notification_configuration(
@@ -781,6 +787,7 @@ def put_notification_config(connection, asg_name, topic_arn, notification_types)
     )
 
 
+@AutoScalingErrorHandler.deletion_error_handler("delete notification configuration")
 @AWSRetry.jittered_backoff(**backoff_params)
 def del_notification_config(connection, asg_name, topic_arn):
     connection.delete_notification_configuration(AutoScalingGroupName=asg_name, TopicARN=topic_arn)
@@ -822,16 +829,19 @@ def create_or_update_asg_tags(connection, tags):
     connection.create_or_update_tags(Tags=tags)
 
 
+@AutoScalingErrorHandler.common_error_handler("update auto scaling group")
 @AWSRetry.jittered_backoff(**backoff_params)
 def update_asg(connection, **params):
     connection.update_auto_scaling_group(**params)
 
 
+@AutoScalingErrorHandler.deletion_error_handler("delete auto scaling group")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=["ScalingActivityInProgress"], **backoff_params)
 def delete_asg(connection, asg_name, force_delete):
     connection.delete_auto_scaling_group(AutoScalingGroupName=asg_name, ForceDelete=force_delete)
 
 
+@AutoScalingErrorHandler.common_error_handler("terminate instance")
 @AWSRetry.jittered_backoff(**backoff_params)
 def terminate_asg_instance(connection, instance_id, decrement_capacity):
     connection.terminate_instance_in_auto_scaling_group(
@@ -839,6 +849,7 @@ def terminate_asg_instance(connection, instance_id, decrement_capacity):
     )
 
 
+@AutoScalingErrorHandler.common_error_handler("detach instances")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_asg_instances(connection, instance_ids, as_group_name, decrement_capacity):
     connection.detach_instances(
@@ -962,10 +973,7 @@ def get_launch_object(connection, ec2_connection):
     if launch_config_name is None and launch_template is None:
         return launch_object
     elif launch_config_name:
-        try:
-            launch_configs = describe_launch_configurations(connection, launch_config_name)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to describe launch configurations")
+        launch_configs = describe_launch_configurations(connection, launch_config_name)
         if len(launch_configs["LaunchConfigurations"]) == 0:
             module.fail_json(msg=f"No launch config found with name {launch_config_name}")
         launch_object = {
@@ -1371,11 +1379,7 @@ def create_autoscaling_group(connection):
     metrics_granularity = module.params.get("metrics_granularity")
     metrics_list = module.params.get("metrics_list")
 
-    try:
-        as_groups = describe_autoscaling_groups(connection, group_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe auto scaling groups.")
-
+    as_groups = describe_autoscaling_groups(connection, group_name)
     ec2_connection = module.client("ec2")
 
     if vpc_zone_identifier:
@@ -1433,33 +1437,30 @@ def create_autoscaling_group(connection):
         else:
             module.fail_json(msg="Missing LaunchConfigurationName or LaunchTemplate")
 
-        try:
-            create_asg(connection, **ag)
-            if metrics_collection:
-                connection.enable_metrics_collection(
-                    AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
-                )
+        create_asg(connection, **ag)
+        if metrics_collection:
+            connection.enable_metrics_collection(
+                AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
+            )
 
-            all_ag = describe_autoscaling_groups(connection, group_name)
-            if len(all_ag) == 0:
-                module.fail_json(msg=f"No auto scaling group found with the name {group_name}")
-            as_group = all_ag[0]
-            suspend_processes(connection, as_group)
-            if wait_for_instances:
-                wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
-                if load_balancers:
-                    wait_for_elb(connection, group_name)
-                # Wait for target group health if target group(s)defined
-                if target_group_arns:
-                    wait_for_target_group(connection, group_name)
-            if notification_topic:
-                put_notification_config(connection, group_name, notification_topic, notification_types)
-            as_group = describe_autoscaling_groups(connection, group_name)[0]
-            asg_properties = get_properties(as_group)
-            changed = True
-            return changed, asg_properties
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to create Autoscaling Group.")
+        all_ag = describe_autoscaling_groups(connection, group_name)
+        if len(all_ag) == 0:
+            module.fail_json(msg=f"No auto scaling group found with the name {group_name}")
+        as_group = all_ag[0]
+        suspend_processes(connection, as_group)
+        if wait_for_instances:
+            wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
+            if load_balancers:
+                wait_for_elb(connection, group_name)
+            # Wait for target group health if target group(s)defined
+            if target_group_arns:
+                wait_for_target_group(connection, group_name)
+        if notification_topic:
+            put_notification_config(connection, group_name, notification_topic, notification_types)
+        as_group = describe_autoscaling_groups(connection, group_name)[0]
+        asg_properties = get_properties(as_group)
+        changed = True
+        return changed, asg_properties
     else:
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have modified AutoScalingGroup if required if not in check_mode.")
@@ -1472,9 +1473,7 @@ def create_autoscaling_group(connection):
             changed = True
 
         # process tag changes
-        tags_to_delete, tags_to_set, tags_changed = compare_asg_tags(
-            as_group.get("Tags"), asg_tags, purge_tags
-        )
+        tags_to_delete, tags_to_set, tags_changed = compare_asg_tags(as_group.get("Tags"), asg_tags, purge_tags)
         if tags_changed:
             apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
             changed = True
@@ -1532,24 +1531,17 @@ def create_autoscaling_group(connection):
         if max_instance_lifetime is not None:
             ag["MaxInstanceLifetime"] = max_instance_lifetime
 
-        try:
-            update_asg(connection, **ag)
+        update_asg(connection, **ag)
 
-            if metrics_collection:
-                connection.enable_metrics_collection(
-                    AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
-                )
-            else:
-                connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
-
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to update autoscaling group")
+        if metrics_collection:
+            connection.enable_metrics_collection(
+                AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
+            )
+        else:
+            connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
 
         if notification_topic:
-            try:
-                put_notification_config(connection, group_name, notification_topic, notification_types)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update Autoscaling Group notifications.")
+            put_notification_config(connection, group_name, notification_topic, notification_types)
         if wait_for_instances:
             wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
             # Wait for ELB health if ELB(s)defined
@@ -1562,13 +1554,10 @@ def create_autoscaling_group(connection):
                 module.debug("\tWAITING FOR TG HEALTH")
                 wait_for_target_group(connection, group_name)
 
-        try:
-            as_group = describe_autoscaling_groups(connection, group_name)[0]
-            asg_properties = get_properties(as_group)
-            if asg_properties != initial_asg_properties:
-                changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to read existing Autoscaling Groups.")
+        as_group = describe_autoscaling_groups(connection, group_name)[0]
+        asg_properties = get_properties(as_group)
+        if asg_properties != initial_asg_properties:
+            changed = True
         return changed, asg_properties
 
 
@@ -1783,10 +1772,7 @@ def detach(connection):
             )
 
     if instances_to_detach:
-        try:
-            detach_asg_instances(connection, instances_to_detach, group_name, decrement_desired_capacity)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to detach instances from AutoScaling Group")
+        detach_asg_instances(connection, instances_to_detach, group_name, decrement_desired_capacity)
 
     asg_properties = get_properties(as_group)
     return True, asg_properties
