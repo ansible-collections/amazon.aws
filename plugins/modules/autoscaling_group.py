@@ -2009,35 +2009,96 @@ def get_instances_by_launch_template(props, lt_check, initial_instances):
     return new_instances, old_instances
 
 
+def _should_terminate_instance_for_launch_config(
+    instance_id: str, props: dict[str, Any], lc_check: bool, initial_instances: list[str]
+) -> bool:
+    """
+    Determine if an instance should be terminated based on launch configuration.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts
+        lc_check: Whether to check if instance has current launch config
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        bool: True if instance should be terminated
+    """
+    if not lc_check:
+        return instance_id in initial_instances
+
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Terminate if migrating from launch template to launch config
+    if "launch_template" in instance_facts:
+        return True
+
+    # Terminate if instance has different launch config
+    if instance_facts.get("launch_config_name") != props.get("launch_config_name"):
+        return True
+
+    return False
+
+
+def _should_terminate_instance_for_launch_template(
+    instance_id: str, props: dict[str, Any], lt_check: bool, initial_instances: list[str]
+) -> bool:
+    """
+    Determine if an instance should be terminated based on launch template.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts
+        lt_check: Whether to check if instance has current launch template
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        bool: True if instance should be terminated
+    """
+    if not lt_check:
+        return instance_id in initial_instances
+
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Terminate if migrating from launch config to launch template
+    if "launch_config_name" in instance_facts:
+        return True
+
+    # Terminate if instance has different launch template
+    if instance_facts.get("launch_template") != props.get("launch_template"):
+        return True
+
+    return False
+
+
 def list_purgeable_instances(props, lc_check, lt_check, replace_instances, initial_instances):
+    """
+    Identify instances that should be terminated during replacement.
+
+    Args:
+        props: ASG properties including instance facts
+        lc_check: Whether to check launch config matches
+        lt_check: Whether to check launch template matches
+        replace_instances: List of instance IDs to potentially replace
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        list: Instance IDs that should be terminated
+    """
     instances_to_terminate = []
-    instances = (inst_id for inst_id in replace_instances if inst_id in props["instances"])
-    # check to make sure instances given are actually in the given ASG
-    # and they have a non-current launch config
+    # Filter to only instances that are actually in the ASG
+    instances = [inst_id for inst_id in replace_instances if inst_id in props["instances"]]
+
     if "launch_config_name" in module.params:
-        if lc_check:
-            for i in instances:
-                if (
-                    "launch_template" in props["instance_facts"][i]
-                    or props["instance_facts"][i]["launch_config_name"] != props["launch_config_name"]
-                ):
-                    instances_to_terminate.append(i)
-        else:
-            for i in instances:
-                if i in initial_instances:
-                    instances_to_terminate.append(i)
+        instances_to_terminate = [
+            i for i in instances if _should_terminate_instance_for_launch_config(i, props, lc_check, initial_instances)
+        ]
     elif "launch_template" in module.params:
-        if lt_check:
-            for i in instances:
-                if (
-                    "launch_config_name" in props["instance_facts"][i]
-                    or props["instance_facts"][i]["launch_template"] != props["launch_template"]
-                ):
-                    instances_to_terminate.append(i)
-        else:
-            for i in instances:
-                if i in initial_instances:
-                    instances_to_terminate.append(i)
+        instances_to_terminate = [
+            i
+            for i in instances
+            if _should_terminate_instance_for_launch_template(i, props, lt_check, initial_instances)
+        ]
 
     return instances_to_terminate
 
