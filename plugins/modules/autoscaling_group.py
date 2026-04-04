@@ -1101,26 +1101,6 @@ def get_launch_object(connection, ec2_connection):
     return launch_object
 
 
-def _is_instance_in_service_on_elb(elb_connection: str, lb_name: str, instance_id: str) -> bool:
-    """
-    Check if an instance is InService on a load balancer.
-
-    Args:
-        elb_connection: ELB connection
-        lb_name: Load balancer name
-        instance_id: Instance ID to check
-
-    Returns:
-        bool: True if instance is InService on the load balancer
-    """
-    lb_instances = describe_instance_health(elb_connection, lb_name, [])
-    for instance_state in lb_instances["InstanceStates"]:
-        if instance_state["InstanceId"] == instance_id and instance_state["State"] == "InService":
-            module.debug(f"{instance_state['InstanceId']}: {instance_state['State']}, {instance_state['Description']}")
-            return True
-    return False
-
-
 @AutoScalingErrorHandler.common_error_handler("wait for ELB deregistration")
 def _wait_for_elb_deregistration(elb_connection: str, lb_names: list[str], instance_id: str, timeout: int) -> None:
     """
