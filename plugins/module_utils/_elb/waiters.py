@@ -5,61 +5,64 @@
 
 from ..waiter import BaseWaiterFactory
 
+# JMESPath constant for instance state matching
+_INSTANCE_STATES_PATH = "InstanceStates[].State"
+
 
 class ELBWaiterFactory(BaseWaiterFactory):
     @property
     def _waiter_model_data(self):
-        data = dict(
-            instance_deregistered=dict(
-                operation="DescribeInstanceHealth",
-                delay=15,
-                maxAttempts=40,
-                acceptors=[
-                    dict(
-                        state="success",
-                        matcher="pathAll",
-                        expected="OutOfService",
-                        argument="InstanceStates[].State",
-                    ),
-                    dict(
-                        state="success",
-                        matcher="error",
-                        expected="InvalidInstance",
-                    ),
+        data = {
+            "instance_deregistered": {
+                "operation": "DescribeInstanceHealth",
+                "delay": 15,
+                "maxAttempts": 40,
+                "acceptors": [
+                    {
+                        "state": "success",
+                        "matcher": "pathAll",
+                        "expected": "OutOfService",
+                        "argument": _INSTANCE_STATES_PATH,
+                    },
+                    {
+                        "state": "success",
+                        "matcher": "error",
+                        "expected": "InvalidInstance",
+                    },
                 ],
-            ),
-            instance_in_service=dict(
-                operation="DescribeInstanceHealth",
-                delay=15,
-                maxAttempts=40,
-                acceptors=[
-                    dict(
-                        state="success",
-                        matcher="pathAll",
-                        expected="InService",
-                        argument="InstanceStates[].State",
-                    ),
-                    dict(
-                        state="retry",
-                        matcher="error",
-                        expected="InvalidInstance",
-                    ),
+            },
+            "instance_in_service": {
+                "operation": "DescribeInstanceHealth",
+                "delay": 15,
+                "maxAttempts": 40,
+                "acceptors": [
+                    {
+                        "state": "success",
+                        "matcher": "pathAll",
+                        "expected": "InService",
+                        "argument": _INSTANCE_STATES_PATH,
+                    },
+                    {
+                        "state": "retry",
+                        "matcher": "error",
+                        "expected": "InvalidInstance",
+                    },
                 ],
-            ),
-            any_instance_in_service=dict(
-                operation="DescribeInstanceHealth",
-                delay=15,
-                maxAttempts=40,
-                acceptors=[
-                    dict(
-                        state="success",
-                        matcher="pathAny",
-                        expected="InService",
-                        argument="InstanceStates[].State",
-                    ),
+            },
+            "any_instance_in_service": {
+                "operation": "DescribeInstanceHealth",
+                "delay": 15,
+                "maxAttempts": 40,
+                "acceptors": [
+                    {
+                        "state": "success",
+                        "matcher": "pathAny",
+                        "expected": "InService",
+                        "argument": _INSTANCE_STATES_PATH,
+                    },
                 ],
-            ),
-        )
+            },
+        }
 
         return data
 

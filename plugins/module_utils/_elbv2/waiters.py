@@ -9,44 +9,44 @@ from ..waiter import BaseWaiterFactory
 class ELBv2WaiterFactory(BaseWaiterFactory):
     @property
     def _waiter_model_data(self):
-        data = dict(
-            target_in_service=dict(
-                operation="DescribeTargetHealth",
-                delay=15,
-                maxAttempts=40,
-                acceptors=[
-                    dict(
-                        state="success",
-                        matcher="pathAll",
-                        expected="healthy",
-                        argument="TargetHealthDescriptions[].TargetHealth.State",
-                    ),
-                    dict(
-                        state="retry",
-                        matcher="error",
-                        expected="InvalidInstance",
-                    ),
+        data = {
+            "target_in_service": {
+                "operation": "DescribeTargetHealth",
+                "delay": 15,
+                "maxAttempts": 40,
+                "acceptors": [
+                    {
+                        "state": "success",
+                        "matcher": "pathAll",
+                        "expected": "healthy",
+                        "argument": "TargetHealthDescriptions[].TargetHealth.State",
+                    },
+                    {
+                        "state": "retry",
+                        "matcher": "error",
+                        "expected": "InvalidInstance",
+                    },
                 ],
-            ),
-            target_deregistered=dict(
-                operation="DescribeTargetHealth",
-                delay=15,
-                maxAttempts=40,
-                acceptors=[
-                    dict(
-                        state="success",
-                        matcher="error",
-                        expected="InvalidTarget",
-                    ),
-                    dict(
-                        state="success",
-                        matcher="pathAll",
-                        expected="unused",
-                        argument="TargetHealthDescriptions[].TargetHealth.State",
-                    ),
+            },
+            "target_deregistered": {
+                "operation": "DescribeTargetHealth",
+                "delay": 15,
+                "maxAttempts": 40,
+                "acceptors": [
+                    {
+                        "state": "success",
+                        "matcher": "error",
+                        "expected": "InvalidTarget",
+                    },
+                    {
+                        "state": "success",
+                        "matcher": "pathAll",
+                        "expected": "unused",
+                        "argument": "TargetHealthDescriptions[].TargetHealth.State",
+                    },
                 ],
-            ),
-        )
+            },
+        }
 
         return data
 
