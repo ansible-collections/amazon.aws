@@ -2,16 +2,25 @@
 
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Union
 
+from __future__ import annotations
+
+import typing
+
+from ._elbv2 import waiters as _elbv2_waiters
 from .botocore import is_boto3_error_code
 from .errors import AWSErrorHandler
 from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import Optional
+    from typing import Union
+
+    from .botocore import ClientType
 
 
 class AnsibleELBv2Error(AnsibleAWSError):
@@ -288,3 +297,31 @@ def convert_tg_name_to_arn(connection, module, tg_name):
         return target_groups[0]["TargetGroupArn"]
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
+
+
+def get_elbv2_waiter(client: ClientType, waiter_name: str) -> Any:
+    """
+    Get an ELBv2 waiter by name.
+
+    Args:
+        client: boto3 elbv2 client
+        waiter_name: Name of the waiter to retrieve
+
+    Returns:
+        Waiter instance
+    """
+    return _elbv2_waiters.waiter_factory.get_waiter(client, waiter_name)
+
+
+def get_min_healthy_targets_waiter(client: ClientType, min_count: int) -> Any:
+    """
+    Get a waiter that waits for a minimum number of healthy targets in a target group.
+
+    Args:
+        client: boto3 ELBv2 client
+        min_count: Minimum number of targets in healthy state required
+
+    Returns:
+        Waiter instance
+    """
+    return _elbv2_waiters.get_waiter_with_min_targets(client, min_count)
