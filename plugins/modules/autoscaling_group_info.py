@@ -100,6 +100,28 @@ results:
             returned: success
             type: list
             sample: ["us-west-2a", "us-west-2b", "us-west-2a"]
+        availability_zone_distribution:
+            description: Availability zone distribution settings
+            returned: success
+            type: dict
+            version_added: 12.0.0
+            contains:
+                capacity_distribution_strategy:
+                    description: Strategy for distributing capacity across availability zones
+                    type: str
+                    returned: always
+                    sample: "balanced-best-effort"
+        capacity_reservation_specification:
+            description: Capacity reservation preference for instances
+            returned: success
+            type: dict
+            version_added: 12.0.0
+            contains:
+                capacity_reservation_preference:
+                    description: Instance capacity reservation preference
+                    type: str
+                    returned: always
+                    sample: "default"
         created_time:
             description: The date and time this ASG was created, in ISO 8601 format.
             returned: success
@@ -116,7 +138,9 @@ results:
             type: int
             sample: 3
         enabled_metrics:
-            description: The metrics enabled for the group.
+            description:
+                - The metrics enabled for the group.
+                - Deprecated, use RV(metrics_collection) instead.
             returned: success
             type: list
             elements: dict
@@ -128,23 +152,31 @@ results:
                 metric:
                     description: Name of the metric.
                     type: str
+                    returned: always
+                    version_added: 12.0.0
                     sample: "GroupAndWarmPoolTotalCapacity"
                 granularity:
                     description: The granularity of the metric. The only valid value is 1Minute.
                     type: str
+                    returned: always
+                    version_added: 12.0.0
                     sample: "1Minute"
         health_check_grace_period:
             description: Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.
             returned: success
             type: int
+            version_added: 12.0.0
             sample: 300
         health_check_type:
             description: The service you want the health status from, one of "EC2" or "ELB".
             returned: success
             type: str
+            version_added: 12.0.0
             sample: "ELB"
         instances:
-            description: List of EC2 instances associated with ASG and their status.
+            description:
+                - List of EC2 instances associated with ASG and their status.
+                - Deprecated, use RV(instance_details) instead.
             returned: success
             type: list
             elements: dict
@@ -199,6 +231,41 @@ results:
                 protected_from_scale_in:
                     description: Indicates whether the instance is protected from termination by Amazon EC2 Auto Scaling when scaling in.
                     type: bool
+        instance_details:
+            description: List of detailed information about instances in the ASG
+            returned: success
+            type: list
+            version_added: 12.0.0
+            elements: dict
+            contains:
+                instance_id:
+                    description: The ID of the instance
+                    type: str
+                    returned: always
+                    sample: "i-0123456789012"
+                availability_zone:
+                    description: The availability zone the instance is in
+                    type: str
+                    returned: always
+                    sample: "us-east-1a"
+                lifecycle_state:
+                    description: The lifecycle state of the instance
+                    type: str
+                    returned: always
+                    sample: "InService"
+                health_status:
+                    description: The health status of the instance
+                    type: str
+                    returned: always
+                    sample: "HEALTHY"
+        instance_ids:
+            description: List of instance IDs in the ASG (same as RV(instances))
+            returned: success
+            type: list
+            version_added: 12.0.0
+            sample: [
+                "i-0123456789012"
+            ]
         launch_config_name:
             description: >
                 Name of launch configuration associated with the ASG. Same as launch_configuration_name,
@@ -238,6 +305,11 @@ results:
             returned: success
             type: list
             sample: ["elb-webapp-prod"]
+        max_instance_lifetime:
+            description: The maximum amount of time, in seconds, that an instance can be in service.
+            returned: when configured
+            type: int
+            sample: 604800
         max_size:
             description: Maximum size of group.
             returned: success
@@ -248,10 +320,29 @@ results:
             returned: success
             type: int
             sample: 1
+        metrics_collection:
+            description: List of enabled AutoScalingGroup metrics (sorted by metric name).
+            returned: success
+            type: list
+            elements: dict
+            contains:
+                metric:
+                    description: The name of the metric
+                    type: str
+                    returned: always
+                    version_added: 12.0.0
+                    sample: "GroupInServiceInstances"
+                granularity:
+                    description: The frequency at which metrics are collected
+                    type: str
+                    returned: always
+                    version_added: 12.0.0
+                    sample: "1Minute"
         new_instances_protected_from_scale_in:
             description: Whether or not new instances a protected from automatic scaling in.
             returned: success
             type: bool
+            version_added: 12.0.0
             sample: false
         placement_group:
             description: Placement group into which instances are launched, if any.
@@ -262,11 +353,13 @@ results:
             description: The ARN of the service-linked role that the Auto Scaling group uses to call other Amazon Web Services on your behalf.
             returned: success
             type: str
+            version_added: 12.0.0
             sample: "arn:aws:iam::721234567890:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
         suspended_processes:
             description: The suspended processes associated with the group.
             returned: success
             type: list
+            version_added: 12.0.0
             elements: dict
             sample: [{
                         "process_name": "AddToLoadBalancer",
@@ -276,9 +369,11 @@ results:
                 process_name:
                     description: The name of the suspended process.
                     type: str
+                    returned: always
                 suspension_reason:
                     description: The reason that the process was suspended.
                     type: str
+                    returned: when available
         status:
             description: The current state of the group when DeleteAutoScalingGroup is in progress.
             returned: success
@@ -326,10 +421,17 @@ results:
             type: list
             elements: str
             sample: ["Default"]
+        terminating_instances:
+            description: Number of instances in terminating state
+            returned: success
+            type: int
+            version_added: 12.0.0
+            sample: 0
         traffic_sources:
             description: The traffic sources associated with this Auto Scaling group.
             returned: success
             type: list
+            version_added: 12.0.0
             sample: [{
                         "identifier": "arn:aws:elasticloadbalancing:us-west-2:721234567890:targetgroup/Check-Exter-A4XXXXXXXXXX/8aXXXXXXXXXXXXXX",
                         "type": "elbv2"
@@ -338,9 +440,11 @@ results:
                 identifier:
                     description: Identifies the traffic source.
                     type: str
+                    returned: always
                 type:
                     description: Provides additional context for the value of Identifier.
                     type: str
+                    returned: always
         vpc_zone_identifier:
             description: One or more subnet IDs, if applicable, separated by commas.
             returned: success

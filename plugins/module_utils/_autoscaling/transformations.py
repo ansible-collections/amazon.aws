@@ -28,6 +28,8 @@ def _inject_asg_name(
         return instance
     if "AutoScalingGroupName" in instance:
         return instance
+    # Make a copy to avoid mutating the original
+    instance = instance.copy()
     instance["AutoScalingGroupName"] = group_name
     return instance
 
@@ -43,8 +45,12 @@ def normalize_autoscaling_instance(
     if not instance:
         return instance
 
+    # Make a copy to avoid mutating the original
+    instance = instance.copy()
+
     # describe_autoscaling_group doesn't add AutoScalingGroupName
-    instance = _inject_asg_name(instance, group_name)
+    if group_name and "AutoScalingGroupName" not in instance:
+        instance["AutoScalingGroupName"] = group_name
 
     try:
         # describe_autoscaling_group and describe_autoscaling_instances aren't consistent
@@ -186,7 +192,7 @@ def _extract_mixed_instances_policy_instance_types(mixed_instances_policy: dict[
 
 def _sort_metrics(metrics: list[dict[str, Any]] | None) -> list[dict[str, Any]] | None:
     """
-    Sort metrics collection by metric name.
+    Sort metrics collection by metric name and add CamelCase keys for backwards compatibility.
 
     Pure transformation function - no API calls, fully testable.
 
@@ -194,13 +200,23 @@ def _sort_metrics(metrics: list[dict[str, Any]] | None) -> list[dict[str, Any]] 
         metrics: List of metric dicts (after snake_case conversion), or None
 
     Returns:
-        Sorted list of metrics, or None if input was None
+        Sorted list of metrics with both snake_case and CamelCase keys, or None if input was None
     """
     if not metrics:
         return metrics
 
-    # After boto3_resource_to_ansible_dict, the key is lowercase "metric"
-    return sorted(metrics, key=lambda x: x.get("metric", ""))
+    # After boto3_resource_to_ansible_dict, the keys are lowercase "metric" and "granularity"
+    # Add CamelCase keys for backwards compatibility
+    enriched_metrics = []
+    for metric in metrics:
+        enriched_metric = metric.copy()
+        if "metric" in enriched_metric:
+            enriched_metric["Metric"] = enriched_metric["metric"]
+        if "granularity" in enriched_metric:
+            enriched_metric["Granularity"] = enriched_metric["granularity"]
+        enriched_metrics.append(enriched_metric)
+
+    return sorted(enriched_metrics, key=lambda x: x.get("metric", ""))
 
 
 def transform_autoscaling_group(autoscaling_group: dict[str, Any], instances_as_ids: bool = True) -> dict[str, Any]:
@@ -257,15 +273,23 @@ def transform_autoscaling_group(autoscaling_group: dict[str, Any], instances_as_
     else:
         properties["instances"] = instance_details
 
-    # Extract mixed instances policy instance types - pure transformation (testable)
+    # Handle mixed instances policy - pure transformation (testable)
+    # boto3_resource_to_ansible_dict already transformed MixedInstancesPolicy to mixed_instances_policy
+    # Save the full policy as mixed_instances_policy_full, then extract just instance types
+    if "mixed_instances_policy" in properties:
+        properties["mixed_instances_policy_full"] = properties["mixed_instances_policy"]
+
+    # Extract instance types list for backwards compatibility
     properties["mixed_instances_policy"] = _extract_mixed_instances_policy_instance_types(
         autoscaling_group.get("MixedInstancesPolicy")
     )
 
     # Sort metrics - pure transformation (testable)
     # boto3 returns EnabledMetrics, boto3_resource_to_ansible_dict transforms it to enabled_metrics
-    # We sort it and store as metrics_collection for compatibility
-    properties["metrics_collection"] = _sort_metrics(properties.get("enabled_metrics"))
+    # Sort enabled_metrics for consistent ordering (idempotency)
+    properties["enabled_metrics"] = _sort_metrics(properties.get("enabled_metrics"))
+    # Store as metrics_collection for compatibility
+    properties["metrics_collection"] = properties["enabled_metrics"]
 
     # Add launch_config_name for compatibility with autoscaling_group module
     if "launch_configuration_name" in properties:

@@ -24,7 +24,15 @@ class TestSortMetrics:
         # Metrics after boto3_resource_to_ansible_dict have lowercase keys
         metrics = [{"metric": "GroupInServiceInstances", "granularity": "1Minute"}]
         result = transformations._sort_metrics(metrics)
-        assert result == metrics
+        # Should have both snake_case and CamelCase keys for backwards compatibility
+        assert result == [
+            {
+                "metric": "GroupInServiceInstances",
+                "granularity": "1Minute",
+                "Metric": "GroupInServiceInstances",
+                "Granularity": "1Minute",
+            }
+        ]
 
     def test_already_sorted_metrics(self):
         """Test with already sorted metrics"""
@@ -35,7 +43,27 @@ class TestSortMetrics:
             {"metric": "GroupMaxSize", "granularity": "1Minute"},
         ]
         result = transformations._sort_metrics(metrics)
-        assert result == metrics
+        # Should have both snake_case and CamelCase keys for backwards compatibility
+        assert result == [
+            {
+                "metric": "GroupDesiredCapacity",
+                "granularity": "1Minute",
+                "Metric": "GroupDesiredCapacity",
+                "Granularity": "1Minute",
+            },
+            {
+                "metric": "GroupInServiceInstances",
+                "granularity": "1Minute",
+                "Metric": "GroupInServiceInstances",
+                "Granularity": "1Minute",
+            },
+            {
+                "metric": "GroupMaxSize",
+                "granularity": "1Minute",
+                "Metric": "GroupMaxSize",
+                "Granularity": "1Minute",
+            },
+        ]
 
     def test_unsorted_metrics(self):
         """Test sorting unsorted metrics"""
@@ -46,10 +74,26 @@ class TestSortMetrics:
             {"metric": "GroupInServiceInstances", "granularity": "1Minute"},
         ]
         result = transformations._sort_metrics(metrics)
+        # Should have both snake_case and CamelCase keys for backwards compatibility
         assert result == [
-            {"metric": "GroupDesiredCapacity", "granularity": "1Minute"},
-            {"metric": "GroupInServiceInstances", "granularity": "1Minute"},
-            {"metric": "GroupMaxSize", "granularity": "1Minute"},
+            {
+                "metric": "GroupDesiredCapacity",
+                "granularity": "1Minute",
+                "Metric": "GroupDesiredCapacity",
+                "Granularity": "1Minute",
+            },
+            {
+                "metric": "GroupInServiceInstances",
+                "granularity": "1Minute",
+                "Metric": "GroupInServiceInstances",
+                "Granularity": "1Minute",
+            },
+            {
+                "metric": "GroupMaxSize",
+                "granularity": "1Minute",
+                "Metric": "GroupMaxSize",
+                "Granularity": "1Minute",
+            },
         ]
 
     def test_sorts_by_metric_name_alphabetically(self):
@@ -60,10 +104,11 @@ class TestSortMetrics:
             {"metric": "M-Metric"},
         ]
         result = transformations._sort_metrics(metrics)
+        # Should have both snake_case and CamelCase keys for backwards compatibility
         assert result == [
-            {"metric": "A-Metric"},
-            {"metric": "M-Metric"},
-            {"metric": "Z-Metric"},
+            {"metric": "A-Metric", "Metric": "A-Metric"},
+            {"metric": "M-Metric", "Metric": "M-Metric"},
+            {"metric": "Z-Metric", "Metric": "Z-Metric"},
         ]
 
     def test_handles_missing_metric_key(self):

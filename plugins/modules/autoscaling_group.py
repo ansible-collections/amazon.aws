@@ -501,6 +501,28 @@ availability_zones:
     sample: [
         "us-east-1d"
     ]
+availability_zone_distribution:
+    description: Availability zone distribution settings
+    returned: success
+    type: dict
+    version_added: 12.0.0
+    contains:
+        capacity_distribution_strategy:
+            description: Strategy for distributing capacity across availability zones
+            type: str
+            returned: always
+            sample: "balanced-best-effort"
+capacity_reservation_specification:
+    description: Capacity reservation preference for instances
+    returned: success
+    type: dict
+    version_added: 12.0.0
+    contains:
+        capacity_reservation_preference:
+            description: Instance capacity reservation preference
+            type: str
+            returned: always
+            sample: "default"
 created_time:
     description: Timestamp of create time of the auto scaling group
     returned: success
@@ -516,13 +538,48 @@ desired_capacity:
     returned: success
     type: int
     sample: 3
-healthcheck_period:
+enabled_metrics:
+    description:
+        - List of enabled metrics
+        - Deprecated, use RV(metrics_collection) instead.
+    returned: success
+    type: list
+    version_added: 12.0.0
+    elements: dict
+    contains:
+        metric:
+            description: The name of the metric
+            type: str
+            returned: always
+            sample: "GroupInServiceInstances"
+        granularity:
+            description: The frequency at which metrics are collected
+            type: str
+            returned: always
+            sample: "1Minute"
+health_check_grace_period:
     description: Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.
+    returned: success
+    type: int
+    version_added: 12.0.0
+    sample: 300
+health_check_type:
+    description: The service you want the health status from, one of C(EC2) or C(ELB).
+    returned: success
+    type: str
+    version_added: 12.0.0
+    sample: "ELB"
+healthcheck_period:
+    description:
+        - Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.
+        - Deprecated, use RV(health_check_grace_period) instead.
     returned: success
     type: int
     sample: 30
 healthcheck_type:
-    description: The service you want the health status from, one of "EC2" or "ELB".
+    description:
+        - The service you want the health status from, one of C(EC2) or C(ELB).
+        - Deprecated, use RV(health_check_type) instead.
     returned: success
     type: str
     sample: "ELB"
@@ -536,6 +593,33 @@ in_service_instances:
     returned: success
     type: int
     sample: 3
+instance_details:
+    description: List of detailed information about instances in the ASG
+    returned: success
+    type: list
+    version_added: 12.0.0
+    elements: dict
+    contains:
+        instance_id:
+            description: The ID of the instance
+            type: str
+            returned: always
+            sample: "i-0123456789012"
+        availability_zone:
+            description: The availability zone the instance is in
+            type: str
+            returned: always
+            sample: "us-east-1a"
+        lifecycle_state:
+            description: The lifecycle state of the instance
+            type: str
+            returned: always
+            sample: "InService"
+        health_status:
+            description: The health status of the instance
+            type: str
+            returned: always
+            sample: "HEALTHY"
 instance_facts:
     description: Dictionary of EC2 instances and their status as it relates to the ASG.
     returned: success
@@ -547,8 +631,18 @@ instance_facts:
             "lifecycle_state": "InService"
         }
     }
+instance_ids:
+    description: List of instance IDs in the ASG (same as RV(instances))
+    returned: success
+    type: list
+    version_added: 12.0.0
+    sample: [
+        "i-0123456789012"
+    ]
 instances:
-    description: list of instance IDs in the ASG
+    description:
+        - list of instance IDs in the ASG
+        - Deprecated, use RV(instance_ids) instead.
     returned: success
     type: list
     sample: [
@@ -568,7 +662,7 @@ load_balancers:
     sample: ["elb-webapp-prod"]
 max_instance_lifetime:
     description: The maximum amount of time, in seconds, that an instance can be in service.
-    returned: success
+    returned: when configured
     type: int
     sample: 604800
 max_size:
@@ -583,12 +677,12 @@ min_size:
     sample: 1
 mixed_instances_policy:
     description: Returns the list of instance types if a mixed instances policy is set.
-    returned: success
+    returned: when configured
     type: list
     sample: ["t3.micro", "t3a.micro"]
 mixed_instances_policy_full:
     description: Returns the full dictionary representation of the mixed instances policy if a mixed instances policy is set.
-    returned: success
+    returned: when configured
     type: dict
     sample: {
         "instances_distribution": {
@@ -613,11 +707,40 @@ mixed_instances_policy_full:
             ]
         }
     }
+new_instances_protected_from_scale_in:
+    description: Whether newly launched instances are protected from scale-in
+    returned: success
+    type: bool
+    version_added: 12.0.0
+    sample: false
 pending_instances:
     description: Number of instances in pending state
     returned: success
     type: int
     sample: 1
+service_linked_role_arn:
+    description: ARN of the service-linked role for the Auto Scaling group
+    returned: success
+    type: str
+    version_added: 12.0.0
+    sample: "arn:aws:iam::123456789012:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+suspended_processes:
+    description: List of suspended Auto Scaling processes
+    returned: success
+    type: list
+    version_added: 12.0.0
+    elements: dict
+    contains:
+        process_name:
+            description: The name of the suspended process
+            type: str
+            returned: always
+            sample: "Launch"
+        suspension_reason:
+            description: The reason the process was suspended
+            type: str
+            returned: when available
+            sample: "User suspended at 2023-01-01 00:00:00"
 tags:
     description: List of tags for the ASG, and whether or not each tag propagates to instances at launch.
     returned: success
@@ -659,6 +782,29 @@ termination_policies:
     returned: success
     type: list
     sample: ["Default"]
+terminating_instances:
+    description: Number of instances in terminating state
+    returned: success
+    type: int
+    version_added: 12.0.0
+    sample: 0
+traffic_sources:
+    description: Traffic sources associated with the Auto Scaling group
+    returned: success
+    type: list
+    version_added: 12.0.0
+    elements: dict
+    contains:
+        identifier:
+            description: Identifier of the traffic source
+            type: str
+            returned: always
+            sample: "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-targets/abc123"
+        type:
+            description: Type of traffic source
+            type: str
+            returned: always
+            sample: "elbv2"
 unhealthy_instances:
     description: Number of instances in an unhealthy state
     returned: success
@@ -675,15 +821,23 @@ vpc_zone_identifier:
     type: str
     sample: "subnet-a31ef45f"
 metrics_collection:
-    description: List of enabled AutosSalingGroup metrics
+    description: List of enabled AutoScalingGroup metrics (sorted by metric name).
     returned: success
     type: list
-    sample: [
-        {
-            "Granularity": "1Minute",
-            "Metric": "GroupInServiceInstances"
-        }
-    ]
+    elements: dict
+    contains:
+        metric:
+            description: The name of the metric
+            type: str
+            returned: always
+            version_added: 12.0.0
+            sample: "GroupInServiceInstances"
+        granularity:
+            description: The frequency at which metrics are collected
+            type: str
+            returned: always
+            version_added: 12.0.0
+            sample: "1Minute"
 """
 
 import time
@@ -711,7 +865,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.exceptions import Ansib
 from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import boto3_resource_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.waiter import custom_waiter_config
 
@@ -1370,6 +1523,47 @@ def update_target_groups(
     return changed
 
 
+def update_metrics_collection(
+    connection: Any,
+    group_name: str,
+    current_metrics: list[dict[str, str]],
+    metrics_collection: bool,
+    metrics_granularity: str,
+    metrics_list: list[str],
+) -> bool:
+    """
+    Update metrics collection for an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the autoscaling group
+        current_metrics: Currently enabled metrics (from EnabledMetrics field)
+        metrics_collection: Whether metrics collection should be enabled
+        metrics_granularity: Granularity for metrics collection
+        metrics_list: List of metrics to collect
+
+    Returns:
+        True if changes were made, False otherwise
+    """
+    # Extract current metric names
+    current_metric_names = set(m["Metric"] for m in current_metrics)
+    desired_metric_names = set(metrics_list) if metrics_collection else set()
+
+    # No change needed if current matches desired
+    if current_metric_names == desired_metric_names:
+        return False
+
+    # Update metrics collection state
+    if metrics_collection:
+        connection.enable_metrics_collection(
+            AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
+        )
+    else:
+        connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
+
+    return True
+
+
 def build_launch_config_params(launch_object: dict[str, Any], as_group: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Build launch configuration parameters for ASG create/update.
@@ -1690,12 +1884,15 @@ def _update_existing_asg(
 
     update_asg(connection, **ag)
 
-    if metrics_collection:
-        connection.enable_metrics_collection(
-            AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
-        )
-    else:
-        connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
+    # Update metrics collection if needed
+    changed |= update_metrics_collection(
+        connection,
+        group_name,
+        as_group.get("EnabledMetrics", []),
+        metrics_collection,
+        metrics_granularity,
+        metrics_list,
+    )
 
     if notification_topic:
         put_notification_config(connection, group_name, notification_topic, notification_types)
@@ -1712,8 +1909,18 @@ def _update_existing_asg(
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     asg_properties = get_properties(as_group)
 
+    # Debug: identify what changed
     if asg_properties != initial_asg_properties:
         changed = True
+        differences = {}
+        for key in set(list(asg_properties.keys()) + list(initial_asg_properties.keys())):
+            initial_val = initial_asg_properties.get(key)
+            final_val = asg_properties.get(key)
+            if initial_val != final_val:
+                differences[key] = {"initial": initial_val, "final": final_val}
+        module.debug(f"ASG properties changed. Differences: {differences}")
+        # Add debug info to output for troubleshooting
+        asg_properties["_debug_property_changes"] = differences
 
     return changed, asg_properties
 

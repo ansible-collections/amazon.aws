@@ -79,19 +79,38 @@ class TestTransformAutoscalingGroup:
             "Instances": [],
             "MixedInstancesPolicy": {
                 "LaunchTemplate": {
+                    "LaunchTemplateSpecification": {
+                        "LaunchTemplateId": "lt-123",
+                        "Version": "1",
+                    },
                     "Overrides": [
                         {"InstanceType": "t3.micro"},
                         {"InstanceType": "t3.small"},
                         {"InstanceType": "t3.medium"},
-                    ]
-                }
+                    ],
+                },
+                "InstancesDistribution": {
+                    "OnDemandPercentageAboveBaseCapacity": 0,
+                    "SpotAllocationStrategy": "capacity-optimized",
+                },
             },
             "TargetGroupNames": [],
         }
 
         result = transformations.transform_autoscaling_group(asg)
 
+        # mixed_instances_policy should contain just the instance types list
         assert result["mixed_instances_policy"] == ["t3.micro", "t3.small", "t3.medium"]
+
+        # mixed_instances_policy_full should contain the full transformed policy dict
+        assert "mixed_instances_policy_full" in result
+        assert "launch_template" in result["mixed_instances_policy_full"]
+        assert "instances_distribution" in result["mixed_instances_policy_full"]
+        assert result["mixed_instances_policy_full"]["launch_template"]["overrides"][0]["instance_type"] == "t3.micro"
+        assert result["mixed_instances_policy_full"]["launch_template"]["overrides"][1]["instance_type"] == "t3.small"
+        assert result["mixed_instances_policy_full"]["launch_template"]["overrides"][2]["instance_type"] == "t3.medium"
+        assert result["mixed_instances_policy_full"]["instances_distribution"]["on_demand_percentage_above_base_capacity"] == 0
+        assert result["mixed_instances_policy_full"]["instances_distribution"]["spot_allocation_strategy"] == "capacity-optimized"
 
     def test_asg_with_metrics(self):
         """Test transformation with unsorted metrics"""
@@ -120,6 +139,18 @@ class TestTransformAutoscalingGroup:
         assert result["metrics_collection"][0]["metric"] == "GroupDesiredCapacity"
         assert result["metrics_collection"][1]["metric"] == "GroupInServiceInstances"
         assert result["metrics_collection"][2]["metric"] == "GroupMaxSize"
+
+        # Verify compatibility: enabled_metrics and metrics_collection should be identical
+        assert result["enabled_metrics"] == result["metrics_collection"]
+
+        # Verify both snake_case and CamelCase keys exist for backwards compatibility
+        for metric in result["metrics_collection"]:
+            assert "metric" in metric
+            assert "Metric" in metric
+            assert "granularity" in metric
+            assert "Granularity" in metric
+            assert metric["metric"] == metric["Metric"]
+            assert metric["granularity"] == metric["Granularity"]
 
     def test_asg_with_tags(self):
         """Test transformation converts tag keys to snake_case"""
@@ -163,6 +194,7 @@ class TestTransformAutoscalingGroup:
             "TargetGroupNames": ["tg-1"],
             "HealthCheckType": "ELB",
             "HealthCheckGracePeriod": 300,
+            "LaunchConfigurationName": "lc-1",
             "Instances": [
                 {
                     "InstanceId": "i-123",
@@ -199,6 +231,12 @@ class TestTransformAutoscalingGroup:
 
         # Check target group names
         assert result["target_group_names"] == ["tg-1"]
+
+        # Verify compatibility: launch_config_name should match launch_configuration_name
+        assert "launch_configuration_name" in result
+        assert "launch_config_name" in result
+        assert result["launch_config_name"] == result["launch_configuration_name"]
+        assert result["launch_config_name"] == "lc-1"
 
     def test_transformation_does_not_modify_original(self):
         """Test that transformation doesn't modify the original ASG dict"""
@@ -249,6 +287,9 @@ class TestTransformAutoscalingGroup:
 
         # instance_ids should also be list of IDs
         assert result["instance_ids"] == ["i-123", "i-456"]
+
+        # Verify compatibility: instances and instance_ids should be identical when instances_as_ids=True
+        assert result["instances"] == result["instance_ids"]
 
         # instance_details should be list of dicts
         assert len(result["instance_details"]) == 2
