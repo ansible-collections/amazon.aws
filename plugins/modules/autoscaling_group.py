@@ -1783,6 +1783,59 @@ def create_autoscaling_group(connection):
         return _update_existing_asg(connection, group_name, ec2_connection, as_group)
 
 
+def _wait_for_asg_instances_to_terminate(connection: str, group_name: str, deadline: float) -> None:
+    """
+    Wait for all instances in an ASG to terminate.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        deadline: Timeout deadline (time.time() value)
+
+    Raises:
+        Fails the module if timeout is reached
+    """
+    while deadline >= time.time():
+        groups = describe_autoscaling_groups(connection, group_name)
+        if not groups or not groups[0].get("Instances"):
+            return
+        time.sleep(10)
+
+    module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
+
+
+def _wait_for_asg_to_delete(connection: str, group_name: str, deadline: float) -> None:
+    """
+    Wait for an ASG to be fully deleted.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        deadline: Timeout deadline (time.time() value)
+
+    Raises:
+        Fails the module if timeout is reached
+    """
+    while deadline >= time.time():
+        if not describe_autoscaling_groups(connection, group_name):
+            return
+        time.sleep(5)
+
+    module.fail_json(msg=f"Waited too long for ASG to delete. {time.asctime()}")
+
+
+def _scale_asg_to_zero(connection: str, group_name: str) -> None:
+    """
+    Scale an ASG to zero instances before deletion.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+    """
+    updated_params = dict(AutoScalingGroupName=group_name, MinSize=0, MaxSize=0, DesiredCapacity=0)
+    update_asg(connection, **updated_params)
+
+
 def delete_autoscaling_group(connection):
     group_name = module.params.get("name")
     notification_topic = module.params.get("notification_topic")
@@ -1791,38 +1844,27 @@ def delete_autoscaling_group(connection):
 
     if notification_topic:
         del_notification_config(connection, group_name, notification_topic)
+
     groups = describe_autoscaling_groups(connection, group_name)
-    if groups:
-        if module.check_mode:
-            module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
-        wait_timeout = time.time() + wait_timeout
-        if not wait_for_instances:
-            delete_asg(connection, group_name, force_delete=True)
-        else:
-            updated_params = dict(AutoScalingGroupName=group_name, MinSize=0, MaxSize=0, DesiredCapacity=0)
-            update_asg(connection, **updated_params)
-            instances = True
-            while instances and wait_for_instances and wait_timeout >= time.time():
-                tmp_groups = describe_autoscaling_groups(connection, group_name)
-                if tmp_groups:
-                    tmp_group = tmp_groups[0]
-                    if not tmp_group.get("Instances"):
-                        instances = False
-                time.sleep(10)
+    if not groups:
+        return False
 
-            if wait_timeout <= time.time():
-                # waiting took too long
-                module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
 
-            delete_asg(connection, group_name, force_delete=False)
-        while describe_autoscaling_groups(connection, group_name) and wait_timeout >= time.time():
-            time.sleep(5)
-        if wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg=f"Waited too long for ASG to delete. {time.asctime()}")
-        return True
+    deadline = time.time() + wait_timeout
 
-    return False
+    # Scale to zero and wait for instances to terminate if requested
+    if wait_for_instances:
+        _scale_asg_to_zero(connection, group_name)
+        _wait_for_asg_instances_to_terminate(connection, group_name, deadline)
+        delete_asg(connection, group_name, force_delete=False)
+    else:
+        delete_asg(connection, group_name, force_delete=True)
+
+    # Wait for ASG to be fully deleted
+    _wait_for_asg_to_delete(connection, group_name, deadline)
+    return True
 
 
 def get_chunks(objects, chunk_size):

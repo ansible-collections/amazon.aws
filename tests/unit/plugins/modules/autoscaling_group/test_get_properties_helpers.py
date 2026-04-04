@@ -217,7 +217,9 @@ class TestResolveTargetGroupNames:
         mock_module.client.return_value = mock_elbv2_conn
         mock_describe.return_value = [{"TargetGroupName": "tg-1"}]
 
-        result = asg_module._resolve_target_group_names(["arn:aws:elasticloadbalancing:us-east-1:123:targetgroup/tg-1/abc"])
+        result = asg_module._resolve_target_group_names(
+            ["arn:aws:elasticloadbalancing:us-east-1:123:targetgroup/tg-1/abc"]
+        )
 
         assert result == ["tg-1"]
         mock_describe.assert_called_once_with(
