@@ -704,6 +704,7 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
@@ -1352,6 +1353,132 @@ def update_target_groups(
     return changed
 
 
+def build_launch_config_params(launch_object: dict[str, Any], as_group: dict[str, Any] | None = None) -> dict[str, Any]:
+    """
+    Build launch configuration parameters for ASG create/update.
+
+    Args:
+        launch_object: Launch object from get_launch_object()
+        as_group: Existing ASG (for updates) or None (for creates)
+
+    Returns:
+        dict: Parameters to add to ASG create/update call
+
+    Raises:
+        AnsibleAWSError: If no launch configuration or template is available
+    """
+    if "LaunchConfigurationName" in launch_object:
+        return {"LaunchConfigurationName": launch_object["LaunchConfigurationName"]}
+
+    if "LaunchTemplate" in launch_object:
+        if "MixedInstancesPolicy" in launch_object:
+            return {"MixedInstancesPolicy": launch_object["MixedInstancesPolicy"]}
+        return {"LaunchTemplate": launch_object["LaunchTemplate"]}
+
+    # For updates when no launch object provided, use existing
+    if as_group:
+        if "LaunchConfigurationName" in as_group:
+            return {"LaunchConfigurationName": as_group["LaunchConfigurationName"]}
+        if "LaunchTemplate" in as_group:
+            # Use existing launch template
+            launch_template = as_group["LaunchTemplate"]
+            # Prefer LaunchTemplateId over Name as it's more specific
+            return {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": launch_template["LaunchTemplateId"],
+                    "Version": launch_template["Version"],
+                }
+            }
+
+    raise AnsibleAWSError(message="Missing LaunchConfigurationName or LaunchTemplate")
+
+
+def build_base_asg_params(
+    group_name: str,
+    min_size: int,
+    max_size: int,
+    desired_capacity: int,
+    health_check_period: int,
+    health_check_type: str,
+    default_cooldown: int,
+    termination_policies: list[str],
+    protected_from_scale_in: bool,
+    vpc_zone_identifier: str | None = None,
+    availability_zones: list[str] | None = None,
+    max_instance_lifetime: int | None = None,
+) -> dict[str, Any]:
+    """
+    Build base ASG parameters common to both create and update operations.
+
+    Args:
+        group_name: Name of the AutoScaling Group
+        min_size: Minimum number of instances
+        max_size: Maximum number of instances
+        desired_capacity: Desired number of instances
+        health_check_period: Health check grace period in seconds
+        health_check_type: Health check type (EC2 or ELB)
+        default_cooldown: Default cooldown period in seconds
+        termination_policies: List of termination policies
+        protected_from_scale_in: Whether instances are protected from scale-in
+        vpc_zone_identifier: Comma-separated subnet IDs (optional)
+        availability_zones: List of availability zones (optional)
+        max_instance_lifetime: Maximum instance lifetime in seconds (optional)
+
+    Returns:
+        dict: Base parameters for ASG create/update
+    """
+    params = {
+        "AutoScalingGroupName": group_name,
+        "MinSize": min_size,
+        "MaxSize": max_size,
+        "DesiredCapacity": desired_capacity,
+        "HealthCheckGracePeriod": health_check_period,
+        "HealthCheckType": health_check_type,
+        "DefaultCooldown": default_cooldown,
+        "TerminationPolicies": termination_policies,
+        "NewInstancesProtectedFromScaleIn": protected_from_scale_in,
+    }
+
+    if vpc_zone_identifier:
+        params["VPCZoneIdentifier"] = vpc_zone_identifier
+    if availability_zones:
+        params["AvailabilityZones"] = availability_zones
+    if max_instance_lifetime is not None:
+        params["MaxInstanceLifetime"] = max_instance_lifetime
+
+    return params
+
+
+def build_create_only_params(
+    tags: list[dict[str, Any]],
+    placement_group: str | None = None,
+    load_balancers: list[str] | None = None,
+    target_group_arns: list[str] | None = None,
+) -> dict[str, Any]:
+    """
+    Build parameters that can only be set during ASG creation.
+
+    Args:
+        tags: List of tags (always required for create)
+        placement_group: Placement group name (optional, create-only)
+        load_balancers: List of classic ELB names (optional, create-only)
+        target_group_arns: List of target group ARNs (optional, create-only)
+
+    Returns:
+        dict: Create-only parameters for ASG
+    """
+    params = {"Tags": tags}
+
+    if placement_group:
+        params["PlacementGroup"] = placement_group
+    if load_balancers:
+        params["LoadBalancerNames"] = load_balancers
+    if target_group_arns:
+        params["TargetGroupARNs"] = target_group_arns
+
+    return params
+
+
 def create_autoscaling_group(connection):
     group_name = module.params.get("name")
     load_balancers = module.params["load_balancers"]
@@ -1399,43 +1526,35 @@ def create_autoscaling_group(connection):
 
         if desired_capacity is None:
             desired_capacity = min_size
-        ag = dict(
-            AutoScalingGroupName=group_name,
-            MinSize=min_size,
-            MaxSize=max_size,
-            DesiredCapacity=desired_capacity,
-            Tags=asg_tags,
-            HealthCheckGracePeriod=health_check_period,
-            HealthCheckType=health_check_type,
-            DefaultCooldown=default_cooldown,
-            TerminationPolicies=termination_policies,
-        )
-        if vpc_zone_identifier:
-            ag["VPCZoneIdentifier"] = vpc_zone_identifier
-        if availability_zones:
-            ag["AvailabilityZones"] = availability_zones
-        if placement_group:
-            ag["PlacementGroup"] = placement_group
-        if load_balancers:
-            ag["LoadBalancerNames"] = load_balancers
-        if target_group_arns:
-            ag["TargetGroupARNs"] = target_group_arns
-        if max_instance_lifetime:
-            ag["MaxInstanceLifetime"] = max_instance_lifetime
         if protected_from_scale_in is None:
-            ag["NewInstancesProtectedFromScaleIn"] = False
-        else:
-            ag["NewInstancesProtectedFromScaleIn"] = bool(protected_from_scale_in)
+            protected_from_scale_in = False
+
+        ag = build_base_asg_params(
+            group_name=group_name,
+            min_size=min_size,
+            max_size=max_size,
+            desired_capacity=desired_capacity,
+            health_check_period=health_check_period,
+            health_check_type=health_check_type,
+            default_cooldown=default_cooldown,
+            termination_policies=termination_policies,
+            protected_from_scale_in=protected_from_scale_in,
+            vpc_zone_identifier=vpc_zone_identifier,
+            availability_zones=availability_zones,
+            max_instance_lifetime=max_instance_lifetime,
+        )
+
+        ag.update(
+            build_create_only_params(
+                tags=asg_tags,
+                placement_group=placement_group,
+                load_balancers=load_balancers,
+                target_group_arns=target_group_arns,
+            )
+        )
+
         launch_object = get_launch_object(connection, ec2_connection)
-        if "LaunchConfigurationName" in launch_object:
-            ag["LaunchConfigurationName"] = launch_object["LaunchConfigurationName"]
-        elif "LaunchTemplate" in launch_object:
-            if "MixedInstancesPolicy" in launch_object:
-                ag["MixedInstancesPolicy"] = launch_object["MixedInstancesPolicy"]
-            else:
-                ag["LaunchTemplate"] = launch_object["LaunchTemplate"]
-        else:
-            module.fail_json(msg="Missing LaunchConfigurationName or LaunchTemplate")
+        ag.update(build_launch_config_params(launch_object, None))
 
         create_asg(connection, **ag)
         if metrics_collection:
@@ -1482,8 +1601,7 @@ def create_autoscaling_group(connection):
         changed |= update_load_balancers(connection, group_name, as_group["LoadBalancerNames"], load_balancers)
         changed |= update_target_groups(connection, group_name, as_group["TargetGroupARNs"], target_group_arns)
 
-        # check for attributes that aren't required for updating an existing ASG
-        # check if min_size/max_size/desired capacity have been specified and if not use ASG values
+        # Use existing ASG values as defaults if not specified
         if min_size is None:
             min_size = as_group["MinSize"]
         if max_size is None:
@@ -1492,44 +1610,25 @@ def create_autoscaling_group(connection):
             desired_capacity = as_group["DesiredCapacity"]
         if protected_from_scale_in is None:
             protected_from_scale_in = as_group["NewInstancesProtectedFromScaleIn"]
-        ag = dict(
-            AutoScalingGroupName=group_name,
-            MinSize=min_size,
-            MaxSize=max_size,
-            DesiredCapacity=desired_capacity,
-            NewInstancesProtectedFromScaleIn=protected_from_scale_in,
-            HealthCheckGracePeriod=health_check_period,
-            HealthCheckType=health_check_type,
-            DefaultCooldown=default_cooldown,
-            TerminationPolicies=termination_policies,
+
+        ag = build_base_asg_params(
+            group_name=group_name,
+            min_size=min_size,
+            max_size=max_size,
+            desired_capacity=desired_capacity,
+            health_check_period=health_check_period,
+            health_check_type=health_check_type,
+            default_cooldown=default_cooldown,
+            termination_policies=termination_policies,
+            protected_from_scale_in=protected_from_scale_in,
+            vpc_zone_identifier=vpc_zone_identifier,
+            availability_zones=availability_zones,
+            max_instance_lifetime=max_instance_lifetime,
         )
 
         # Get the launch object (config or template) if one is provided in args or use the existing one attached to ASG if not.
         launch_object = get_launch_object(connection, ec2_connection)
-        if "LaunchConfigurationName" in launch_object:
-            ag["LaunchConfigurationName"] = launch_object["LaunchConfigurationName"]
-        elif "LaunchTemplate" in launch_object:
-            if "MixedInstancesPolicy" in launch_object:
-                ag["MixedInstancesPolicy"] = launch_object["MixedInstancesPolicy"]
-            else:
-                ag["LaunchTemplate"] = launch_object["LaunchTemplate"]
-        else:
-            try:
-                ag["LaunchConfigurationName"] = as_group["LaunchConfigurationName"]
-            except KeyError:
-                launch_template = as_group["LaunchTemplate"]
-                # Prefer LaunchTemplateId over Name as it's more specific.  Only one can be used for update_asg.
-                ag["LaunchTemplate"] = {
-                    "LaunchTemplateId": launch_template["LaunchTemplateId"],
-                    "Version": launch_template["Version"],
-                }
-
-        if availability_zones:
-            ag["AvailabilityZones"] = availability_zones
-        if vpc_zone_identifier:
-            ag["VPCZoneIdentifier"] = vpc_zone_identifier
-        if max_instance_lifetime is not None:
-            ag["MaxInstanceLifetime"] = max_instance_lifetime
+        ag.update(build_launch_config_params(launch_object, as_group))
 
         update_asg(connection, **ag)
 
