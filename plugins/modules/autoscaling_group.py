@@ -1887,6 +1887,38 @@ def update_size(connection, group, max_size, min_size, dc, protected_from_scale_
     update_asg(connection, **updated_group)
 
 
+def _get_launch_spec_check_flags() -> tuple[bool, bool]:
+    """
+    Determine if launch config/template checks should be performed.
+
+    Returns:
+        tuple: (lc_check, lt_check) flags
+    """
+    launch_config_name = module.params.get("launch_config_name")
+    launch_template = module.params.get("launch_template")
+
+    # Required to maintain the default value being set to 'true'
+    lc_check = module.params.get("lc_check") if launch_config_name else False
+    lt_check = module.params.get("lt_check") if launch_template else False
+
+    return lc_check, lt_check
+
+
+def _wait_for_replacement_instances(connection: str, group_name: str, wait_timeout: int, desired_size: int) -> None:
+    """
+    Wait for replacement instances to be viable and registered with load balancers.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        wait_timeout: Timeout in seconds
+        desired_size: Number of viable instances to wait for
+    """
+    wait_for_new_inst(connection, group_name, wait_timeout, desired_size, "viable_instances")
+    wait_for_elb(connection, group_name)
+    wait_for_target_group(connection, group_name)
+
+
 def replace(connection):
     batch_size = module.params.get("replace_batch_size")
     wait_timeout = module.params.get("wait_timeout")
@@ -1897,20 +1929,11 @@ def replace(connection):
     protected_from_scale_in = module.params.get("protected_from_scale_in")
     desired_capacity = module.params.get("desired_capacity")
     launch_config_name = module.params.get("launch_config_name")
-
-    # Required to maintain the default value being set to 'true'
-    if launch_config_name:
-        lc_check = module.params.get("lc_check")
-    else:
-        lc_check = False
-    # Mirror above behavior for Launch Templates
     launch_template = module.params.get("launch_template")
-    if launch_template:
-        lt_check = module.params.get("lt_check")
-    else:
-        lt_check = False
     replace_instances = module.params.get("replace_instances")
     replace_all_instances = module.params.get("replace_all_instances")
+
+    lc_check, lt_check = _get_launch_spec_check_flags()
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     if desired_capacity is None:
@@ -1974,9 +1997,7 @@ def replace(connection):
     )
 
     if wait_for_instances:
-        wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size, "viable_instances")
-        wait_for_elb(connection, group_name)
-        wait_for_target_group(connection, group_name)
+        _wait_for_replacement_instances(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size)
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     props = get_properties(as_group)
@@ -1991,9 +2012,7 @@ def replace(connection):
 
         if wait_for_instances:
             wait_for_term_inst(connection, term_instances)
-            wait_for_new_inst(connection, group_name, wait_timeout, desired_size, "viable_instances")
-            wait_for_elb(connection, group_name)
-            wait_for_target_group(connection, group_name)
+            _wait_for_replacement_instances(connection, group_name, wait_timeout, desired_size)
 
         if break_early:
             module.debug("breaking loop")
