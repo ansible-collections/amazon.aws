@@ -3,7 +3,7 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import ansible_collections.amazon.aws.plugins.module_utils._autoscaling.transformations as transformations
+from ansible_collections.amazon.aws.plugins.module_utils._autoscaling import transformations
 
 
 class TestProcessAsgInstances:
@@ -99,7 +99,7 @@ class TestProcessAsgInstances:
             }
         ]
 
-        _, instance_facts, _ = transformations._process_asg_instances(instances)
+        _instance_ids, instance_facts, _count_stats = transformations._process_asg_instances(instances)
 
         assert instance_facts["i-123"]["health_status"] == "Healthy"
         assert instance_facts["i-123"]["lifecycle_state"] == "InService"

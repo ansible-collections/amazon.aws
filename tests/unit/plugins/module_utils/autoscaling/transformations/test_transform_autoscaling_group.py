@@ -3,7 +3,7 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import ansible_collections.amazon.aws.plugins.module_utils._autoscaling.transformations as transformations
+from ansible_collections.amazon.aws.plugins.module_utils._autoscaling import transformations
 
 
 class TestTransformAutoscalingGroup:
@@ -109,8 +109,14 @@ class TestTransformAutoscalingGroup:
         assert result["mixed_instances_policy_full"]["launch_template"]["overrides"][0]["instance_type"] == "t3.micro"
         assert result["mixed_instances_policy_full"]["launch_template"]["overrides"][1]["instance_type"] == "t3.small"
         assert result["mixed_instances_policy_full"]["launch_template"]["overrides"][2]["instance_type"] == "t3.medium"
-        assert result["mixed_instances_policy_full"]["instances_distribution"]["on_demand_percentage_above_base_capacity"] == 0
-        assert result["mixed_instances_policy_full"]["instances_distribution"]["spot_allocation_strategy"] == "capacity-optimized"
+        assert (
+            result["mixed_instances_policy_full"]["instances_distribution"]["on_demand_percentage_above_base_capacity"]
+            == 0
+        )
+        assert (
+            result["mixed_instances_policy_full"]["instances_distribution"]["spot_allocation_strategy"]
+            == "capacity-optimized"
+        )
 
     def test_asg_with_metrics(self):
         """Test transformation with unsorted metrics"""

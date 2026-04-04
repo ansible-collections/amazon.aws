@@ -140,7 +140,7 @@ results:
         enabled_metrics:
             description:
                 - The metrics enabled for the group.
-                - Deprecated, use RV(metrics_collection) instead.
+                - Deprecated, use C(metrics_collection) instead.
             returned: success
             type: list
             elements: dict
@@ -176,7 +176,7 @@ results:
         instances:
             description:
                 - List of EC2 instances associated with ASG and their status.
-                - Deprecated, use RV(instance_details) instead.
+                - Deprecated, use C(instance_details) instead.
             returned: success
             type: list
             elements: dict
@@ -259,7 +259,7 @@ results:
                     returned: always
                     sample: "HEALTHY"
         instance_ids:
-            description: List of instance IDs in the ASG (same as RV(instances))
+            description: List of instance IDs in the ASG
             returned: success
             type: list
             version_added: 12.0.0
@@ -460,11 +460,8 @@ if typing.TYPE_CHECKING:
 
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import transform_autoscaling_group
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
