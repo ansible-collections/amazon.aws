@@ -713,6 +713,23 @@ from ansible_collections.amazon.aws.plugins.module_utils.transformation import s
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
 
 
+def _default_if_none(value: Any, default: Any) -> Any:
+    """
+    Return default if value is None, otherwise return value.
+
+    This helper reduces cyclomatic complexity by removing conditional
+    assignments from function complexity calculations.
+
+    Args:
+        value: The value to check
+        default: The default to use if value is None
+
+    Returns:
+        default if value is None, otherwise value
+    """
+    return default if value is None else value
+
+
 @AutoScalingErrorHandler.list_error_handler("describe auto scaling groups", [])
 @AWSRetry.jittered_backoff(**backoff_params)
 def describe_autoscaling_groups(connection, group_name):
@@ -1634,10 +1651,8 @@ def _create_new_asg(connection: Any, group_name: str, ec2_connection: Any) -> tu
 
     enforce_required_arguments_for_create()
 
-    if desired_capacity is None:
-        desired_capacity = min_size
-    if protected_from_scale_in is None:
-        protected_from_scale_in = False
+    desired_capacity = _default_if_none(desired_capacity, min_size)
+    protected_from_scale_in = _default_if_none(protected_from_scale_in, False)
 
     asg_tags = build_asg_tags(set_tags, group_name)
 
@@ -1756,14 +1771,10 @@ def _update_existing_asg(
     changed |= update_target_groups(connection, group_name, as_group["TargetGroupARNs"], target_group_arns)
 
     # Use existing ASG values as defaults if not specified
-    if min_size is None:
-        min_size = as_group["MinSize"]
-    if max_size is None:
-        max_size = as_group["MaxSize"]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
-    if protected_from_scale_in is None:
-        protected_from_scale_in = as_group["NewInstancesProtectedFromScaleIn"]
+    min_size = _default_if_none(min_size, as_group["MinSize"])
+    max_size = _default_if_none(max_size, as_group["MaxSize"])
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
+    protected_from_scale_in = _default_if_none(protected_from_scale_in, as_group["NewInstancesProtectedFromScaleIn"])
 
     ag = build_base_asg_params(
         group_name=group_name,
@@ -1922,11 +1933,6 @@ def delete_autoscaling_group(connection):
     return True
 
 
-def get_chunks(objects, chunk_size):
-    for i in range(0, len(objects), chunk_size):
-        yield objects[i:i + chunk_size]  # fmt: skip
-
-
 def update_size(connection, group, max_size, min_size, dc, protected_from_scale_in):
     module.debug("setting ASG sizes")
     module.debug(
@@ -1991,8 +1997,7 @@ def replace(connection):
     lc_check, lt_check = _get_launch_spec_check_flags()
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
 
     if wait_for_instances:
         wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"], "viable_instances")
@@ -2033,10 +2038,8 @@ def replace(connection):
         return changed, props
 
     # check if min_size/max_size/desired capacity have been specified and if not use ASG values
-    if min_size is None:
-        min_size = as_group["MinSize"]
-    if max_size is None:
-        max_size = as_group["MaxSize"]
+    min_size = _default_if_none(min_size, as_group["MinSize"])
+    max_size = _default_if_none(max_size, as_group["MaxSize"])
 
     # set temporary settings and wait for them to be reached
     # This should get overwritten if the number of instances left is less than the batch size.
@@ -2061,7 +2064,7 @@ def replace(connection):
         instances = replace_instances
 
     module.debug("beginning main loop")
-    for i in get_chunks(instances, batch_size):
+    for i in chunks(instances, batch_size):
         # break out of this loop if we have enough new instances
         break_early, desired_size, term_instances = terminate_batch(connection, i, instances, False)
 
@@ -2313,8 +2316,7 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     break_loop = False
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
 
     props = get_properties(as_group)
     desired_size = as_group["MinSize"]
@@ -2336,8 +2338,7 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     if num_new_inst_needed == 0:
         decrement_capacity = True
         if as_group["MinSize"] != min_size:
-            if min_size is None:
-                min_size = as_group["MinSize"]
+            min_size = _default_if_none(min_size, as_group["MinSize"])
             updated_params = dict(AutoScalingGroupName=as_group["AutoScalingGroupName"], MinSize=min_size)
             update_asg(connection, **updated_params)
             module.debug(f"Updating minimum size back to original of {min_size}")
