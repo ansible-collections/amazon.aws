@@ -694,7 +694,6 @@ if typing.TYPE_CHECKING:
 
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.text.converters import to_native
@@ -994,7 +993,7 @@ def get_launch_object(connection, ec2_connection):
     mixed_instances_policy = module.params.get("mixed_instances_policy")
 
     if launch_config_name is None and launch_template is None:
-        return dict()
+        return {}
 
     if launch_config_name:
         launch_configs = describe_launch_configurations(connection, launch_config_name)
@@ -1152,7 +1151,9 @@ def wait_for_target_group(asg_connection, group_name):
         elapsed = time.time() - start_time
         remaining_timeout = max(1, int(wait_timeout - elapsed))
 
-        module.debug(f"Waiting for {min_size} targets to be healthy in target group {tg_arn} (timeout: {remaining_timeout}s)")
+        module.debug(
+            f"Waiting for {min_size} targets to be healthy in target group {tg_arn} (timeout: {remaining_timeout}s)"
+        )
         waiter_config = custom_waiter_config(timeout=remaining_timeout, default_pause=10)
         waiter = get_min_healthy_targets_waiter(elbv2_connection, min_size)
         waiter.wait(TargetGroupArn=tg_arn, Targets=targets_param, WaiterConfig=waiter_config)
