@@ -1012,51 +1012,75 @@ def get_properties(autoscaling_group):
     return properties
 
 
+def _build_launch_template_spec(lt_data: dict[str, Any], requested_version: str | None) -> dict[str, Any]:
+    """
+    Build launch template specification from template data.
+
+    Args:
+        lt_data: Launch template data from AWS
+        requested_version: Requested version or None for latest
+
+    Returns:
+        dict: Launch template specification with ID and version
+    """
+    version = requested_version if requested_version is not None else str(lt_data["LatestVersionNumber"])
+    return {"LaunchTemplateId": lt_data["LaunchTemplateId"], "Version": version}
+
+
+def _build_mixed_instances_policy(
+    launch_template_spec: dict[str, Any], mixed_instances_policy: dict[str, Any]
+) -> dict[str, Any]:
+    """
+    Build mixed instances policy from parameters.
+
+    Args:
+        launch_template_spec: Launch template specification
+        mixed_instances_policy: Mixed instances policy parameters
+
+    Returns:
+        dict: Complete mixed instances policy
+    """
+    policy = {"LaunchTemplate": {"LaunchTemplateSpecification": launch_template_spec}}
+
+    instance_types = mixed_instances_policy.get("instance_types", [])
+    if instance_types:
+        policy["LaunchTemplate"]["Overrides"] = [{"InstanceType": it} for it in instance_types]
+
+    instances_distribution = mixed_instances_policy.get("instances_distribution", {})
+    if instances_distribution:
+        instances_distribution_params = scrub_none_parameters(instances_distribution)
+        policy["InstancesDistribution"] = snake_dict_to_camel_dict(
+            instances_distribution_params, capitalize_first=True
+        )
+
+    return policy
+
+
 def get_launch_object(connection, ec2_connection):
-    launch_object = dict()
     launch_config_name = module.params.get("launch_config_name")
     launch_template = module.params.get("launch_template")
     mixed_instances_policy = module.params.get("mixed_instances_policy")
+
     if launch_config_name is None and launch_template is None:
-        return launch_object
-    elif launch_config_name:
+        return dict()
+
+    if launch_config_name:
         launch_configs = describe_launch_configurations(connection, launch_config_name)
         if len(launch_configs["LaunchConfigurations"]) == 0:
-            module.fail_json(msg=f"No launch config found with name {launch_config_name}")
-        launch_object = {
-            "LaunchConfigurationName": launch_configs["LaunchConfigurations"][0]["LaunchConfigurationName"]
-        }
-        return launch_object
-    elif launch_template:
-        lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
-        if launch_template["version"] is not None:
-            launch_object = {
-                "LaunchTemplate": {"LaunchTemplateId": lt["LaunchTemplateId"], "Version": launch_template["version"]}
-            }
-        else:
-            launch_object = {
-                "LaunchTemplate": {
-                    "LaunchTemplateId": lt["LaunchTemplateId"],
-                    "Version": str(lt["LatestVersionNumber"]),
-                }
-            }
+            raise AnsibleAWSError(f"No launch config found with name {launch_config_name}")
+        return {"LaunchConfigurationName": launch_configs["LaunchConfigurations"][0]["LaunchConfigurationName"]}
 
-        if mixed_instances_policy:
-            instance_types = mixed_instances_policy.get("instance_types", [])
-            instances_distribution = mixed_instances_policy.get("instances_distribution", {})
-            policy = {"LaunchTemplate": {"LaunchTemplateSpecification": launch_object["LaunchTemplate"]}}
-            if instance_types:
-                policy["LaunchTemplate"]["Overrides"] = []
-                for instance_type in instance_types:
-                    instance_type_dict = {"InstanceType": instance_type}
-                    policy["LaunchTemplate"]["Overrides"].append(instance_type_dict)
-            if instances_distribution:
-                instances_distribution_params = scrub_none_parameters(instances_distribution)
-                policy["InstancesDistribution"] = snake_dict_to_camel_dict(
-                    instances_distribution_params, capitalize_first=True
-                )
-            launch_object["MixedInstancesPolicy"] = policy
-        return launch_object
+    # launch_template path
+    lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
+    launch_template_spec = _build_launch_template_spec(lt, launch_template["version"])
+    launch_object = {"LaunchTemplate": launch_template_spec}
+
+    if mixed_instances_policy:
+        launch_object["MixedInstancesPolicy"] = _build_mixed_instances_policy(
+            launch_template_spec, mixed_instances_policy
+        )
+
+    return launch_object
 
 
 def elb_dreg(asg_connection, group_name, instance_id):
