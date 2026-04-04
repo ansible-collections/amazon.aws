@@ -706,11 +706,29 @@ from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import Auto
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
+
+
+def _default_if_none(value: Any, default: Any) -> Any:
+    """
+    Return default if value is None, otherwise return value.
+
+    This helper reduces cyclomatic complexity by removing conditional
+    assignments from function complexity calculations.
+
+    Args:
+        value: The value to check
+        default: The default to use if value is None
+
+    Returns:
+        default if value is None, otherwise value
+    """
+    return default if value is None else value
 
 
 @AutoScalingErrorHandler.list_error_handler("describe auto scaling groups", [])
@@ -873,6 +891,85 @@ def enforce_required_arguments_for_create():
         module.fail_json(msg=f"Missing required arguments for autoscaling group create: {','.join(missing_args)}")
 
 
+def _build_instance_facts(instance: dict[str, Any]) -> dict[str, Any]:
+    """
+    Build instance facts dictionary from ASG instance data.
+
+    Args:
+        instance: Instance data from ASG
+
+    Returns:
+        dict: Instance facts including health, lifecycle, and launch spec
+    """
+    facts = {
+        "health_status": instance["HealthStatus"],
+        "lifecycle_state": instance["LifecycleState"],
+    }
+
+    if "LaunchConfigurationName" in instance:
+        facts["launch_config_name"] = instance["LaunchConfigurationName"]
+    elif "LaunchTemplate" in instance:
+        facts["launch_template"] = instance["LaunchTemplate"]
+
+    return facts
+
+
+def _update_instance_counts(instance: dict[str, Any], counts: dict[str, int]) -> None:
+    """
+    Update instance count statistics based on instance state.
+
+    Args:
+        instance: Instance data from ASG
+        counts: Dictionary of count statistics to update in-place
+    """
+    health_status = instance["HealthStatus"]
+    lifecycle_state = instance["LifecycleState"]
+
+    # Count viable instances (healthy and in service)
+    if health_status == "Healthy" and lifecycle_state == "InService":
+        counts["viable_instances"] += 1
+
+    # Count by health status
+    if health_status == "Healthy":
+        counts["healthy_instances"] += 1
+    else:
+        counts["unhealthy_instances"] += 1
+
+    # Count by lifecycle state
+    if lifecycle_state == "InService":
+        counts["in_service_instances"] += 1
+    elif lifecycle_state == "Terminating":
+        counts["terminating_instances"] += 1
+    elif lifecycle_state == "Pending":
+        counts["pending_instances"] += 1
+
+
+def _resolve_target_group_names(target_group_arns: list[str]) -> list[str]:
+    """
+    Resolve target group ARNs to names in chunks.
+
+    Args:
+        target_group_arns: List of target group ARNs
+
+    Returns:
+        list: Target group names
+    """
+    if not target_group_arns:
+        return []
+
+    elbv2_connection = module.client("elbv2")
+    target_group_names = []
+
+    # Process in chunks of 20 (API limit)
+    # https://github.com/ansible-collections/amazon.aws/pull/1593
+    for chunk in chunks(target_group_arns, 20):
+        target_group_names.extend(
+            [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
+        )
+
+    return target_group_names
+
+
 def get_properties(autoscaling_group):
     properties = dict(
         healthy_instances=0,
@@ -887,30 +984,10 @@ def get_properties(autoscaling_group):
 
     if autoscaling_group_instances:
         properties["instances"] = [i["InstanceId"] for i in autoscaling_group_instances]
-        for i in autoscaling_group_instances:
-            instance_facts[i["InstanceId"]] = {
-                "health_status": i["HealthStatus"],
-                "lifecycle_state": i["LifecycleState"],
-            }
-            if "LaunchConfigurationName" in i:
-                instance_facts[i["InstanceId"]]["launch_config_name"] = i["LaunchConfigurationName"]
-            elif "LaunchTemplate" in i:
-                instance_facts[i["InstanceId"]]["launch_template"] = i["LaunchTemplate"]
-
-            if i["HealthStatus"] == "Healthy" and i["LifecycleState"] == "InService":
-                properties["viable_instances"] += 1
-
-            if i["HealthStatus"] == "Healthy":
-                properties["healthy_instances"] += 1
-            else:
-                properties["unhealthy_instances"] += 1
-
-            if i["LifecycleState"] == "InService":
-                properties["in_service_instances"] += 1
-            if i["LifecycleState"] == "Terminating":
-                properties["terminating_instances"] += 1
-            if i["LifecycleState"] == "Pending":
-                properties["pending_instances"] += 1
+        for instance in autoscaling_group_instances:
+            instance_id = instance["InstanceId"]
+            instance_facts[instance_id] = _build_instance_facts(instance)
+            _update_instance_counts(instance, properties)
     else:
         properties["instances"] = []
 
@@ -948,99 +1025,140 @@ def get_properties(autoscaling_group):
         metrics.sort(key=lambda x: x["Metric"])
     properties["metrics_collection"] = metrics
 
-    if properties["target_group_arns"]:
-        elbv2_connection = module.client("elbv2")
-        # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
-        tg_chunk_size = 20
-        properties["target_group_names"] = []
-        tg_chunks = [
-            properties["target_group_arns"][i: i + tg_chunk_size]
-            for i in range(0, len(properties["target_group_arns"]), tg_chunk_size)
-        ]  # fmt: skip
-        for chunk in tg_chunks:
-            properties["target_group_names"].extend(
-                [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
-            )
-    else:
-        properties["target_group_names"] = []
+    properties["target_group_names"] = _resolve_target_group_names(properties["target_group_arns"])
 
     return properties
 
 
+def _build_launch_template_spec(lt_data: dict[str, Any], requested_version: str | None) -> dict[str, Any]:
+    """
+    Build launch template specification from template data.
+
+    Args:
+        lt_data: Launch template data from AWS
+        requested_version: Requested version or None for latest
+
+    Returns:
+        dict: Launch template specification with ID and version
+    """
+    version = requested_version if requested_version is not None else str(lt_data["LatestVersionNumber"])
+    return {"LaunchTemplateId": lt_data["LaunchTemplateId"], "Version": version}
+
+
+def _build_mixed_instances_policy(
+    launch_template_spec: dict[str, Any], mixed_instances_policy: dict[str, Any]
+) -> dict[str, Any]:
+    """
+    Build mixed instances policy from parameters.
+
+    Args:
+        launch_template_spec: Launch template specification
+        mixed_instances_policy: Mixed instances policy parameters
+
+    Returns:
+        dict: Complete mixed instances policy
+    """
+    policy = {"LaunchTemplate": {"LaunchTemplateSpecification": launch_template_spec}}
+
+    instance_types = mixed_instances_policy.get("instance_types", [])
+    if instance_types:
+        policy["LaunchTemplate"]["Overrides"] = [{"InstanceType": it} for it in instance_types]
+
+    instances_distribution = mixed_instances_policy.get("instances_distribution", {})
+    if instances_distribution:
+        instances_distribution_params = scrub_none_parameters(instances_distribution)
+        policy["InstancesDistribution"] = snake_dict_to_camel_dict(instances_distribution_params, capitalize_first=True)
+
+    return policy
+
+
 def get_launch_object(connection, ec2_connection):
-    launch_object = dict()
     launch_config_name = module.params.get("launch_config_name")
     launch_template = module.params.get("launch_template")
     mixed_instances_policy = module.params.get("mixed_instances_policy")
+
     if launch_config_name is None and launch_template is None:
-        return launch_object
-    elif launch_config_name:
+        return dict()
+
+    if launch_config_name:
         launch_configs = describe_launch_configurations(connection, launch_config_name)
         if len(launch_configs["LaunchConfigurations"]) == 0:
-            module.fail_json(msg=f"No launch config found with name {launch_config_name}")
-        launch_object = {
-            "LaunchConfigurationName": launch_configs["LaunchConfigurations"][0]["LaunchConfigurationName"]
-        }
-        return launch_object
-    elif launch_template:
-        lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
-        if launch_template["version"] is not None:
-            launch_object = {
-                "LaunchTemplate": {"LaunchTemplateId": lt["LaunchTemplateId"], "Version": launch_template["version"]}
-            }
-        else:
-            launch_object = {
-                "LaunchTemplate": {
-                    "LaunchTemplateId": lt["LaunchTemplateId"],
-                    "Version": str(lt["LatestVersionNumber"]),
-                }
-            }
+            raise AnsibleAWSError(f"No launch config found with name {launch_config_name}")
+        return {"LaunchConfigurationName": launch_configs["LaunchConfigurations"][0]["LaunchConfigurationName"]}
 
-        if mixed_instances_policy:
-            instance_types = mixed_instances_policy.get("instance_types", [])
-            instances_distribution = mixed_instances_policy.get("instances_distribution", {})
-            policy = {"LaunchTemplate": {"LaunchTemplateSpecification": launch_object["LaunchTemplate"]}}
-            if instance_types:
-                policy["LaunchTemplate"]["Overrides"] = []
-                for instance_type in instance_types:
-                    instance_type_dict = {"InstanceType": instance_type}
-                    policy["LaunchTemplate"]["Overrides"].append(instance_type_dict)
-            if instances_distribution:
-                instances_distribution_params = scrub_none_parameters(instances_distribution)
-                policy["InstancesDistribution"] = snake_dict_to_camel_dict(
-                    instances_distribution_params, capitalize_first=True
-                )
-            launch_object["MixedInstancesPolicy"] = policy
-        return launch_object
+    # launch_template path
+    lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
+    launch_template_spec = _build_launch_template_spec(lt, launch_template["version"])
+    launch_object = {"LaunchTemplate": launch_template_spec}
+
+    if mixed_instances_policy:
+        launch_object["MixedInstancesPolicy"] = _build_mixed_instances_policy(
+            launch_template_spec, mixed_instances_policy
+        )
+
+    return launch_object
+
+
+def _is_instance_in_service_on_elb(elb_connection: str, lb_name: str, instance_id: str) -> bool:
+    """
+    Check if an instance is InService on a load balancer.
+
+    Args:
+        elb_connection: ELB connection
+        lb_name: Load balancer name
+        instance_id: Instance ID to check
+
+    Returns:
+        bool: True if instance is InService on the load balancer
+    """
+    lb_instances = describe_instance_health(elb_connection, lb_name, [])
+    for instance_state in lb_instances["InstanceStates"]:
+        if instance_state["InstanceId"] == instance_id and instance_state["State"] == "InService":
+            module.debug(f"{instance_state['InstanceId']}: {instance_state['State']}, {instance_state['Description']}")
+            return True
+    return False
+
+
+def _wait_for_elb_deregistration(elb_connection: str, lb_names: list[str], instance_id: str, deadline: float) -> None:
+    """
+    Wait for an instance to be deregistered from all load balancers.
+
+    Args:
+        elb_connection: ELB connection
+        lb_names: List of load balancer names
+        instance_id: Instance ID to wait for
+        deadline: Timeout deadline (time.time() value)
+
+    Raises:
+        AnsibleAWSError: If timeout is reached
+    """
+    while deadline > time.time():
+        count = sum(1 for lb in lb_names if _is_instance_in_service_on_elb(elb_connection, lb, instance_id))
+        if count == 0:
+            return
+        time.sleep(10)
+
+    raise AnsibleAWSError(f"Waited too long for instance to deregister. {time.asctime()}")
 
 
 def elb_dreg(asg_connection, group_name, instance_id):
     as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
     wait_timeout = module.params.get("wait_timeout")
-    count = 1
-    if as_group["LoadBalancerNames"] and as_group["HealthCheckType"] == "ELB":
-        elb_connection = module.client("elb")
-    else:
+
+    # Early return if no ELB health checking
+    if not (as_group["LoadBalancerNames"] and as_group["HealthCheckType"] == "ELB"):
         return
 
+    elb_connection = module.client("elb")
+
+    # Deregister from all load balancers
     for lb in as_group["LoadBalancerNames"]:
         deregister_lb_instances(elb_connection, lb, instance_id)
         module.debug(f"De-registering {instance_id} from ELB {lb}")
 
-    wait_timeout = time.time() + wait_timeout
-    while wait_timeout > time.time() and count > 0:
-        count = 0
-        for lb in as_group["LoadBalancerNames"]:
-            lb_instances = describe_instance_health(elb_connection, lb, [])
-            for i in lb_instances["InstanceStates"]:
-                if i["InstanceId"] == instance_id and i["State"] == "InService":
-                    count += 1
-                    module.debug(f"{i['InstanceId']}: {i['State']}, {i['Description']}")
-        time.sleep(10)
-
-    if wait_timeout <= time.time():
-        # waiting took too long
-        module.fail_json(msg=f"Waited too long for instance to deregister. {time.asctime()}")
+    # Wait for deregistration to complete
+    deadline = time.time() + wait_timeout
+    _wait_for_elb_deregistration(elb_connection, as_group["LoadBalancerNames"], instance_id, deadline)
 
 
 def elb_healthy(asg_connection, elb_connection, group_name):
@@ -1534,10 +1652,8 @@ def _create_new_asg(connection: Any, group_name: str, ec2_connection: Any) -> tu
 
     enforce_required_arguments_for_create()
 
-    if desired_capacity is None:
-        desired_capacity = min_size
-    if protected_from_scale_in is None:
-        protected_from_scale_in = False
+    desired_capacity = _default_if_none(desired_capacity, min_size)
+    protected_from_scale_in = _default_if_none(protected_from_scale_in, False)
 
     asg_tags = build_asg_tags(set_tags, group_name)
 
@@ -1656,14 +1772,10 @@ def _update_existing_asg(
     changed |= update_target_groups(connection, group_name, as_group["TargetGroupARNs"], target_group_arns)
 
     # Use existing ASG values as defaults if not specified
-    if min_size is None:
-        min_size = as_group["MinSize"]
-    if max_size is None:
-        max_size = as_group["MaxSize"]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
-    if protected_from_scale_in is None:
-        protected_from_scale_in = as_group["NewInstancesProtectedFromScaleIn"]
+    min_size = _default_if_none(min_size, as_group["MinSize"])
+    max_size = _default_if_none(max_size, as_group["MaxSize"])
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
+    protected_from_scale_in = _default_if_none(protected_from_scale_in, as_group["NewInstancesProtectedFromScaleIn"])
 
     ag = build_base_asg_params(
         group_name=group_name,
@@ -1738,6 +1850,59 @@ def create_autoscaling_group(connection):
         return _update_existing_asg(connection, group_name, ec2_connection, as_group)
 
 
+def _wait_for_asg_instances_to_terminate(connection: str, group_name: str, deadline: float) -> None:
+    """
+    Wait for all instances in an ASG to terminate.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        deadline: Timeout deadline (time.time() value)
+
+    Raises:
+        Fails the module if timeout is reached
+    """
+    while deadline >= time.time():
+        groups = describe_autoscaling_groups(connection, group_name)
+        if not groups or not groups[0].get("Instances"):
+            return
+        time.sleep(10)
+
+    module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
+
+
+def _wait_for_asg_to_delete(connection: str, group_name: str, deadline: float) -> None:
+    """
+    Wait for an ASG to be fully deleted.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        deadline: Timeout deadline (time.time() value)
+
+    Raises:
+        Fails the module if timeout is reached
+    """
+    while deadline >= time.time():
+        if not describe_autoscaling_groups(connection, group_name):
+            return
+        time.sleep(5)
+
+    module.fail_json(msg=f"Waited too long for ASG to delete. {time.asctime()}")
+
+
+def _scale_asg_to_zero(connection: str, group_name: str) -> None:
+    """
+    Scale an ASG to zero instances before deletion.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+    """
+    updated_params = dict(AutoScalingGroupName=group_name, MinSize=0, MaxSize=0, DesiredCapacity=0)
+    update_asg(connection, **updated_params)
+
+
 def delete_autoscaling_group(connection):
     group_name = module.params.get("name")
     notification_topic = module.params.get("notification_topic")
@@ -1746,43 +1911,27 @@ def delete_autoscaling_group(connection):
 
     if notification_topic:
         del_notification_config(connection, group_name, notification_topic)
+
     groups = describe_autoscaling_groups(connection, group_name)
-    if groups:
-        if module.check_mode:
-            module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
-        wait_timeout = time.time() + wait_timeout
-        if not wait_for_instances:
-            delete_asg(connection, group_name, force_delete=True)
-        else:
-            updated_params = dict(AutoScalingGroupName=group_name, MinSize=0, MaxSize=0, DesiredCapacity=0)
-            update_asg(connection, **updated_params)
-            instances = True
-            while instances and wait_for_instances and wait_timeout >= time.time():
-                tmp_groups = describe_autoscaling_groups(connection, group_name)
-                if tmp_groups:
-                    tmp_group = tmp_groups[0]
-                    if not tmp_group.get("Instances"):
-                        instances = False
-                time.sleep(10)
+    if not groups:
+        return False
 
-            if wait_timeout <= time.time():
-                # waiting took too long
-                module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
 
-            delete_asg(connection, group_name, force_delete=False)
-        while describe_autoscaling_groups(connection, group_name) and wait_timeout >= time.time():
-            time.sleep(5)
-        if wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg=f"Waited too long for ASG to delete. {time.asctime()}")
-        return True
+    deadline = time.time() + wait_timeout
 
-    return False
+    # Scale to zero and wait for instances to terminate if requested
+    if wait_for_instances:
+        _scale_asg_to_zero(connection, group_name)
+        _wait_for_asg_instances_to_terminate(connection, group_name, deadline)
+        delete_asg(connection, group_name, force_delete=False)
+    else:
+        delete_asg(connection, group_name, force_delete=True)
 
-
-def get_chunks(objects, chunk_size):
-    for i in range(0, len(objects), chunk_size):
-        yield objects[i:i + chunk_size]  # fmt: skip
+    # Wait for ASG to be fully deleted
+    _wait_for_asg_to_delete(connection, group_name, deadline)
+    return True
 
 
 def update_size(connection, group, max_size, min_size, dc, protected_from_scale_in):
@@ -1800,6 +1949,38 @@ def update_size(connection, group, max_size, min_size, dc, protected_from_scale_
     update_asg(connection, **updated_group)
 
 
+def _get_launch_spec_check_flags() -> tuple[bool, bool]:
+    """
+    Determine if launch config/template checks should be performed.
+
+    Returns:
+        tuple: (lc_check, lt_check) flags
+    """
+    launch_config_name = module.params.get("launch_config_name")
+    launch_template = module.params.get("launch_template")
+
+    # Required to maintain the default value being set to 'true'
+    lc_check = module.params.get("lc_check") if launch_config_name else False
+    lt_check = module.params.get("lt_check") if launch_template else False
+
+    return lc_check, lt_check
+
+
+def _wait_for_replacement_instances(connection: str, group_name: str, wait_timeout: int, desired_size: int) -> None:
+    """
+    Wait for replacement instances to be viable and registered with load balancers.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        wait_timeout: Timeout in seconds
+        desired_size: Number of viable instances to wait for
+    """
+    wait_for_new_inst(connection, group_name, wait_timeout, desired_size, "viable_instances")
+    wait_for_elb(connection, group_name)
+    wait_for_target_group(connection, group_name)
+
+
 def replace(connection):
     batch_size = module.params.get("replace_batch_size")
     wait_timeout = module.params.get("wait_timeout")
@@ -1810,24 +1991,14 @@ def replace(connection):
     protected_from_scale_in = module.params.get("protected_from_scale_in")
     desired_capacity = module.params.get("desired_capacity")
     launch_config_name = module.params.get("launch_config_name")
-
-    # Required to maintain the default value being set to 'true'
-    if launch_config_name:
-        lc_check = module.params.get("lc_check")
-    else:
-        lc_check = False
-    # Mirror above behavior for Launch Templates
     launch_template = module.params.get("launch_template")
-    if launch_template:
-        lt_check = module.params.get("lt_check")
-    else:
-        lt_check = False
     replace_instances = module.params.get("replace_instances")
     replace_all_instances = module.params.get("replace_all_instances")
 
+    lc_check, lt_check = _get_launch_spec_check_flags()
+
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
 
     if wait_for_instances:
         wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"], "viable_instances")
@@ -1868,10 +2039,8 @@ def replace(connection):
         return changed, props
 
     # check if min_size/max_size/desired capacity have been specified and if not use ASG values
-    if min_size is None:
-        min_size = as_group["MinSize"]
-    if max_size is None:
-        max_size = as_group["MaxSize"]
+    min_size = _default_if_none(min_size, as_group["MinSize"])
+    max_size = _default_if_none(max_size, as_group["MaxSize"])
 
     # set temporary settings and wait for them to be reached
     # This should get overwritten if the number of instances left is less than the batch size.
@@ -1887,9 +2056,7 @@ def replace(connection):
     )
 
     if wait_for_instances:
-        wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size, "viable_instances")
-        wait_for_elb(connection, group_name)
-        wait_for_target_group(connection, group_name)
+        _wait_for_replacement_instances(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size)
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     props = get_properties(as_group)
@@ -1898,15 +2065,13 @@ def replace(connection):
         instances = replace_instances
 
     module.debug("beginning main loop")
-    for i in get_chunks(instances, batch_size):
+    for i in chunks(instances, batch_size):
         # break out of this loop if we have enough new instances
         break_early, desired_size, term_instances = terminate_batch(connection, i, instances, False)
 
         if wait_for_instances:
             wait_for_term_inst(connection, term_instances)
-            wait_for_new_inst(connection, group_name, wait_timeout, desired_size, "viable_instances")
-            wait_for_elb(connection, group_name)
-            wait_for_target_group(connection, group_name)
+            _wait_for_replacement_instances(connection, group_name, wait_timeout, desired_size)
 
         if break_early:
             module.debug("breaking loop")
@@ -1955,20 +2120,76 @@ def detach(connection):
     return True, asg_properties
 
 
-def get_instances_by_launch_config(props, lc_check, initial_instances):
+def _is_instance_using_launch_config(instance_id: str, props: dict[str, Any]) -> bool:
+    """
+    Check if an instance is using the current launch configuration.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts and launch config name
+
+    Returns:
+        bool: True if instance uses current launch config, False otherwise
+    """
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Migration check - instance has launch template instead of launch config
+    if "launch_template" in instance_facts:
+        return False
+
+    # Match check - instance has the current launch config
+    if instance_facts.get("launch_config_name") == props["launch_config_name"]:
+        return True
+
+    return False
+
+
+def _is_instance_using_launch_template(instance_id: str, props: dict[str, Any]) -> bool:
+    """
+    Check if an instance is using the current launch template.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts and launch template
+
+    Returns:
+        bool: True if instance uses current launch template, False otherwise
+    """
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Migration check - instance has launch config instead of launch template
+    if "launch_config_name" in instance_facts:
+        return False
+
+    # Match check - instance has the current launch template
+    if instance_facts.get("launch_template") == props["launch_template"]:
+        return True
+
+    return False
+
+
+def _get_instances_by_launch_spec(props, check_enabled, initial_instances, is_using_current_spec):
+    """
+    Classify instances as new or old based on launch specification.
+
+    Args:
+        props: ASG properties including instances and instance facts
+        check_enabled: Whether to check launch spec or use initial_instances
+        initial_instances: List of initial instance IDs (used when check_enabled is False)
+        is_using_current_spec: Function to determine if instance uses current spec
+
+    Returns:
+        tuple: (new_instances, old_instances) lists
+    """
     new_instances = []
     old_instances = []
-    # old instances are those that have the old launch config
-    if lc_check:
+
+    if check_enabled:
         for i in props["instances"]:
-            # Check if migrating from launch_template to launch_config first
-            if "launch_template" in props["instance_facts"][i]:
-                old_instances.append(i)
-            elif props["instance_facts"][i].get("launch_config_name") == props["launch_config_name"]:
+            if is_using_current_spec(i, props):
                 new_instances.append(i)
             else:
                 old_instances.append(i)
-
     else:
         module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
         for i in props["instances"]:
@@ -1981,64 +2202,106 @@ def get_instances_by_launch_config(props, lc_check, initial_instances):
     module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
 
     return new_instances, old_instances
+
+
+def get_instances_by_launch_config(props, lc_check, initial_instances):
+    return _get_instances_by_launch_spec(props, lc_check, initial_instances, _is_instance_using_launch_config)
 
 
 def get_instances_by_launch_template(props, lt_check, initial_instances):
-    new_instances = []
-    old_instances = []
-    # old instances are those that have the old launch template or version of the same launch template
-    if lt_check:
-        for i in props["instances"]:
-            # Check if migrating from launch_config_name to launch_template_name first
-            if "launch_config_name" in props["instance_facts"][i]:
-                old_instances.append(i)
-            elif props["instance_facts"][i].get("launch_template") == props["launch_template"]:
-                new_instances.append(i)
-            else:
-                old_instances.append(i)
-    else:
-        module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
-        for i in props["instances"]:
-            if i not in initial_instances:
-                new_instances.append(i)
-            else:
-                old_instances.append(i)
+    return _get_instances_by_launch_spec(props, lt_check, initial_instances, _is_instance_using_launch_template)
 
-    module.debug(f"New instances: {len(new_instances)}, {(*new_instances,)}")
-    module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
 
-    return new_instances, old_instances
+def _should_terminate_instance_for_launch_config(
+    instance_id: str, props: dict[str, Any], lc_check: bool, initial_instances: list[str]
+) -> bool:
+    """
+    Determine if an instance should be terminated based on launch configuration.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts
+        lc_check: Whether to check if instance has current launch config
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        bool: True if instance should be terminated
+    """
+    if not lc_check:
+        return instance_id in initial_instances
+
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Terminate if migrating from launch template to launch config
+    if "launch_template" in instance_facts:
+        return True
+
+    # Terminate if instance has different launch config
+    if instance_facts.get("launch_config_name") != props.get("launch_config_name"):
+        return True
+
+    return False
+
+
+def _should_terminate_instance_for_launch_template(
+    instance_id: str, props: dict[str, Any], lt_check: bool, initial_instances: list[str]
+) -> bool:
+    """
+    Determine if an instance should be terminated based on launch template.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts
+        lt_check: Whether to check if instance has current launch template
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        bool: True if instance should be terminated
+    """
+    if not lt_check:
+        return instance_id in initial_instances
+
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Terminate if migrating from launch config to launch template
+    if "launch_config_name" in instance_facts:
+        return True
+
+    # Terminate if instance has different launch template
+    if instance_facts.get("launch_template") != props.get("launch_template"):
+        return True
+
+    return False
 
 
 def list_purgeable_instances(props, lc_check, lt_check, replace_instances, initial_instances):
+    """
+    Identify instances that should be terminated during replacement.
+
+    Args:
+        props: ASG properties including instance facts
+        lc_check: Whether to check launch config matches
+        lt_check: Whether to check launch template matches
+        replace_instances: List of instance IDs to potentially replace
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        list: Instance IDs that should be terminated
+    """
     instances_to_terminate = []
-    instances = (inst_id for inst_id in replace_instances if inst_id in props["instances"])
-    # check to make sure instances given are actually in the given ASG
-    # and they have a non-current launch config
+    # Filter to only instances that are actually in the ASG
+    instances = [inst_id for inst_id in replace_instances if inst_id in props["instances"]]
+
     if "launch_config_name" in module.params:
-        if lc_check:
-            for i in instances:
-                if (
-                    "launch_template" in props["instance_facts"][i]
-                    or props["instance_facts"][i]["launch_config_name"] != props["launch_config_name"]
-                ):
-                    instances_to_terminate.append(i)
-        else:
-            for i in instances:
-                if i in initial_instances:
-                    instances_to_terminate.append(i)
+        instances_to_terminate = [
+            i for i in instances if _should_terminate_instance_for_launch_config(i, props, lc_check, initial_instances)
+        ]
     elif "launch_template" in module.params:
-        if lt_check:
-            for i in instances:
-                if (
-                    "launch_config_name" in props["instance_facts"][i]
-                    or props["instance_facts"][i]["launch_template"] != props["launch_template"]
-                ):
-                    instances_to_terminate.append(i)
-        else:
-            for i in instances:
-                if i in initial_instances:
-                    instances_to_terminate.append(i)
+        instances_to_terminate = [
+            i
+            for i in instances
+            if _should_terminate_instance_for_launch_template(i, props, lt_check, initial_instances)
+        ]
 
     return instances_to_terminate
 
@@ -2054,8 +2317,7 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     break_loop = False
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
 
     props = get_properties(as_group)
     desired_size = as_group["MinSize"]
@@ -2077,8 +2339,7 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     if num_new_inst_needed == 0:
         decrement_capacity = True
         if as_group["MinSize"] != min_size:
-            if min_size is None:
-                min_size = as_group["MinSize"]
+            min_size = _default_if_none(min_size, as_group["MinSize"])
             updated_params = dict(AutoScalingGroupName=as_group["AutoScalingGroupName"], MinSize=min_size)
             update_asg(connection, **updated_params)
             module.debug(f"Updating minimum size back to original of {min_size}")
