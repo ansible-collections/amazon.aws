@@ -15,9 +15,7 @@ try:
 except ImportError:
     HAS_BOTOCORE = False
 
-from ansible_collections.amazon.aws.plugins.module_utils._elbv2.waiters import (
-    DynamicTargetGroupHealthWaiterFactory,
-)
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.waiters import DynamicTargetGroupHealthWaiterFactory
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.waiters import get_waiter_with_min_targets
 
 if not HAS_BOTOCORE:
