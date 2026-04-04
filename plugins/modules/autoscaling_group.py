@@ -4,6 +4,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: autoscaling_group
@@ -685,25 +687,51 @@ metrics_collection:
 """
 
 import time
+import typing
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+if typing.TYPE_CHECKING:
+    from typing import Any
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+from ansible.module_utils.common.text.converters import to_native
 
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_autoscaling_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_min_viable_instances_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.elb import get_elb_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.elb import get_min_healthy_instances_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_min_healthy_targets_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.waiter import custom_waiter_config
 
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
 
 
+def _default_if_none(value: Any, default: Any) -> Any:
+    """
+    Return default if value is None, otherwise return value.
+
+    This helper reduces cyclomatic complexity by removing conditional
+    assignments from function complexity calculations.
+
+    Args:
+        value: The value to check
+        default: The default to use if value is None
+
+    Returns:
+        default if value is None, otherwise value
+    """
+    return default if value is None else value
+
+
+@AutoScalingErrorHandler.list_error_handler("describe auto scaling groups", [])
 @AWSRetry.jittered_backoff(**backoff_params)
 def describe_autoscaling_groups(connection, group_name):
     pg = connection.get_paginator("describe_auto_scaling_groups")
@@ -730,16 +758,19 @@ def describe_target_health(connection, target_group_arn, instances):
     return connection.describe_target_health(TargetGroupArn=target_group_arn, Targets=instances)
 
 
+@AutoScalingErrorHandler.common_error_handler("suspend processes")
 @AWSRetry.jittered_backoff(**backoff_params)
 def suspend_asg_processes(connection, asg_name, processes):
     connection.suspend_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
+@AutoScalingErrorHandler.common_error_handler("resume processes")
 @AWSRetry.jittered_backoff(**backoff_params)
 def resume_asg_processes(connection, asg_name, processes):
     connection.resume_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
+@AutoScalingErrorHandler.list_error_handler("describe launch configurations", {})
 @AWSRetry.jittered_backoff(**backoff_params)
 def describe_launch_configurations(connection, launch_config_name):
     pg = connection.get_paginator("describe_launch_configurations")
@@ -762,11 +793,13 @@ def describe_launch_templates(connection, launch_template):
             module.fail_json(msg=f"No launch template found matching: {launch_template}")
 
 
+@AutoScalingErrorHandler.common_error_handler("create auto scaling group")
 @AWSRetry.jittered_backoff(**backoff_params)
 def create_asg(connection, **params):
     connection.create_auto_scaling_group(**params)
 
 
+@AutoScalingErrorHandler.common_error_handler("configure notifications")
 @AWSRetry.jittered_backoff(**backoff_params)
 def put_notification_config(connection, asg_name, topic_arn, notification_types):
     connection.put_notification_configuration(
@@ -774,41 +807,61 @@ def put_notification_config(connection, asg_name, topic_arn, notification_types)
     )
 
 
+@AutoScalingErrorHandler.deletion_error_handler("delete notification configuration")
 @AWSRetry.jittered_backoff(**backoff_params)
 def del_notification_config(connection, asg_name, topic_arn):
     connection.delete_notification_configuration(AutoScalingGroupName=asg_name, TopicARN=topic_arn)
 
 
+@AutoScalingErrorHandler.common_error_handler("attach load balancers")
 @AWSRetry.jittered_backoff(**backoff_params)
 def attach_load_balancers(connection, asg_name, load_balancers):
     connection.attach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
+@AutoScalingErrorHandler.common_error_handler("detach load balancers")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_load_balancers(connection, asg_name, load_balancers):
     connection.detach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
+@AutoScalingErrorHandler.common_error_handler("attach target groups")
 @AWSRetry.jittered_backoff(**backoff_params)
 def attach_lb_target_groups(connection, asg_name, target_group_arns):
     connection.attach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
 
 
+@AutoScalingErrorHandler.common_error_handler("detach target groups")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_lb_target_groups(connection, asg_name, target_group_arns):
     connection.detach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
 
 
+@AutoScalingErrorHandler.common_error_handler("delete tags")
+@AWSRetry.jittered_backoff(**backoff_params)
+def delete_asg_tags(connection, tags):
+    connection.delete_tags(Tags=tags)
+
+
+@AutoScalingErrorHandler.common_error_handler("create or update tags")
+@AWSRetry.jittered_backoff(**backoff_params)
+def create_or_update_asg_tags(connection, tags):
+    connection.create_or_update_tags(Tags=tags)
+
+
+@AutoScalingErrorHandler.common_error_handler("update auto scaling group")
 @AWSRetry.jittered_backoff(**backoff_params)
 def update_asg(connection, **params):
     connection.update_auto_scaling_group(**params)
 
 
+@AutoScalingErrorHandler.deletion_error_handler("delete auto scaling group")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=["ScalingActivityInProgress"], **backoff_params)
 def delete_asg(connection, asg_name, force_delete):
     connection.delete_auto_scaling_group(AutoScalingGroupName=asg_name, ForceDelete=force_delete)
 
 
+@AutoScalingErrorHandler.common_error_handler("terminate instance")
 @AWSRetry.jittered_backoff(**backoff_params)
 def terminate_asg_instance(connection, instance_id, decrement_capacity):
     connection.terminate_instance_in_auto_scaling_group(
@@ -816,6 +869,7 @@ def terminate_asg_instance(connection, instance_id, decrement_capacity):
     )
 
 
+@AutoScalingErrorHandler.common_error_handler("detach instances")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_asg_instances(connection, instance_ids, as_group_name, decrement_capacity):
     connection.detach_instances(
@@ -837,6 +891,85 @@ def enforce_required_arguments_for_create():
         module.fail_json(msg=f"Missing required arguments for autoscaling group create: {','.join(missing_args)}")
 
 
+def _build_instance_facts(instance: dict[str, Any]) -> dict[str, Any]:
+    """
+    Build instance facts dictionary from ASG instance data.
+
+    Args:
+        instance: Instance data from ASG
+
+    Returns:
+        dict: Instance facts including health, lifecycle, and launch spec
+    """
+    facts = {
+        "health_status": instance["HealthStatus"],
+        "lifecycle_state": instance["LifecycleState"],
+    }
+
+    if "LaunchConfigurationName" in instance:
+        facts["launch_config_name"] = instance["LaunchConfigurationName"]
+    elif "LaunchTemplate" in instance:
+        facts["launch_template"] = instance["LaunchTemplate"]
+
+    return facts
+
+
+def _update_instance_counts(instance: dict[str, Any], counts: dict[str, int]) -> None:
+    """
+    Update instance count statistics based on instance state.
+
+    Args:
+        instance: Instance data from ASG
+        counts: Dictionary of count statistics to update in-place
+    """
+    health_status = instance["HealthStatus"]
+    lifecycle_state = instance["LifecycleState"]
+
+    # Count viable instances (healthy and in service)
+    if health_status == "Healthy" and lifecycle_state == "InService":
+        counts["viable_instances"] += 1
+
+    # Count by health status
+    if health_status == "Healthy":
+        counts["healthy_instances"] += 1
+    else:
+        counts["unhealthy_instances"] += 1
+
+    # Count by lifecycle state
+    if lifecycle_state == "InService":
+        counts["in_service_instances"] += 1
+    elif lifecycle_state == "Terminating":
+        counts["terminating_instances"] += 1
+    elif lifecycle_state == "Pending":
+        counts["pending_instances"] += 1
+
+
+def _resolve_target_group_names(target_group_arns: list[str]) -> list[str]:
+    """
+    Resolve target group ARNs to names in chunks.
+
+    Args:
+        target_group_arns: List of target group ARNs
+
+    Returns:
+        list: Target group names
+    """
+    if not target_group_arns:
+        return []
+
+    elbv2_connection = module.client("elbv2")
+    target_group_names = []
+
+    # Process in chunks of 20 (API limit)
+    # https://github.com/ansible-collections/amazon.aws/pull/1593
+    for chunk in chunks(target_group_arns, 20):
+        target_group_names.extend(
+            [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
+        )
+
+    return target_group_names
+
+
 def get_properties(autoscaling_group):
     properties = dict(
         healthy_instances=0,
@@ -851,30 +984,10 @@ def get_properties(autoscaling_group):
 
     if autoscaling_group_instances:
         properties["instances"] = [i["InstanceId"] for i in autoscaling_group_instances]
-        for i in autoscaling_group_instances:
-            instance_facts[i["InstanceId"]] = {
-                "health_status": i["HealthStatus"],
-                "lifecycle_state": i["LifecycleState"],
-            }
-            if "LaunchConfigurationName" in i:
-                instance_facts[i["InstanceId"]]["launch_config_name"] = i["LaunchConfigurationName"]
-            elif "LaunchTemplate" in i:
-                instance_facts[i["InstanceId"]]["launch_template"] = i["LaunchTemplate"]
-
-            if i["HealthStatus"] == "Healthy" and i["LifecycleState"] == "InService":
-                properties["viable_instances"] += 1
-
-            if i["HealthStatus"] == "Healthy":
-                properties["healthy_instances"] += 1
-            else:
-                properties["unhealthy_instances"] += 1
-
-            if i["LifecycleState"] == "InService":
-                properties["in_service_instances"] += 1
-            if i["LifecycleState"] == "Terminating":
-                properties["terminating_instances"] += 1
-            if i["LifecycleState"] == "Pending":
-                properties["pending_instances"] += 1
+        for instance in autoscaling_group_instances:
+            instance_id = instance["InstanceId"]
+            instance_facts[instance_id] = _build_instance_facts(instance)
+            _update_instance_counts(instance, properties)
     else:
         properties["instances"] = []
 
@@ -912,221 +1025,232 @@ def get_properties(autoscaling_group):
         metrics.sort(key=lambda x: x["Metric"])
     properties["metrics_collection"] = metrics
 
-    if properties["target_group_arns"]:
-        elbv2_connection = module.client("elbv2")
-        # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
-        tg_chunk_size = 20
-        properties["target_group_names"] = []
-        tg_chunks = [
-            properties["target_group_arns"][i: i + tg_chunk_size]
-            for i in range(0, len(properties["target_group_arns"]), tg_chunk_size)
-        ]  # fmt: skip
-        for chunk in tg_chunks:
-            properties["target_group_names"].extend(
-                [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
-            )
-    else:
-        properties["target_group_names"] = []
+    properties["target_group_names"] = _resolve_target_group_names(properties["target_group_arns"])
 
     return properties
 
 
+def _build_launch_template_spec(lt_data: dict[str, Any], requested_version: str | None) -> dict[str, Any]:
+    """
+    Build launch template specification from template data.
+
+    Args:
+        lt_data: Launch template data from AWS
+        requested_version: Requested version or None for latest
+
+    Returns:
+        dict: Launch template specification with ID and version
+    """
+    version = requested_version if requested_version is not None else str(lt_data["LatestVersionNumber"])
+    return {"LaunchTemplateId": lt_data["LaunchTemplateId"], "Version": version}
+
+
+def _build_mixed_instances_policy(
+    launch_template_spec: dict[str, Any], mixed_instances_policy: dict[str, Any]
+) -> dict[str, Any]:
+    """
+    Build mixed instances policy from parameters.
+
+    Args:
+        launch_template_spec: Launch template specification
+        mixed_instances_policy: Mixed instances policy parameters
+
+    Returns:
+        dict: Complete mixed instances policy
+    """
+    policy = {"LaunchTemplate": {"LaunchTemplateSpecification": launch_template_spec}}
+
+    instance_types = mixed_instances_policy.get("instance_types", [])
+    if instance_types:
+        policy["LaunchTemplate"]["Overrides"] = [{"InstanceType": it} for it in instance_types]
+
+    instances_distribution = mixed_instances_policy.get("instances_distribution", {})
+    if instances_distribution:
+        instances_distribution_params = scrub_none_parameters(instances_distribution)
+        policy["InstancesDistribution"] = snake_dict_to_camel_dict(instances_distribution_params, capitalize_first=True)
+
+    return policy
+
+
 def get_launch_object(connection, ec2_connection):
-    launch_object = dict()
     launch_config_name = module.params.get("launch_config_name")
     launch_template = module.params.get("launch_template")
     mixed_instances_policy = module.params.get("mixed_instances_policy")
-    if launch_config_name is None and launch_template is None:
-        return launch_object
-    elif launch_config_name:
-        try:
-            launch_configs = describe_launch_configurations(connection, launch_config_name)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to describe launch configurations")
-        if len(launch_configs["LaunchConfigurations"]) == 0:
-            module.fail_json(msg=f"No launch config found with name {launch_config_name}")
-        launch_object = {
-            "LaunchConfigurationName": launch_configs["LaunchConfigurations"][0]["LaunchConfigurationName"]
-        }
-        return launch_object
-    elif launch_template:
-        lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
-        if launch_template["version"] is not None:
-            launch_object = {
-                "LaunchTemplate": {"LaunchTemplateId": lt["LaunchTemplateId"], "Version": launch_template["version"]}
-            }
-        else:
-            launch_object = {
-                "LaunchTemplate": {
-                    "LaunchTemplateId": lt["LaunchTemplateId"],
-                    "Version": str(lt["LatestVersionNumber"]),
-                }
-            }
 
-        if mixed_instances_policy:
-            instance_types = mixed_instances_policy.get("instance_types", [])
-            instances_distribution = mixed_instances_policy.get("instances_distribution", {})
-            policy = {"LaunchTemplate": {"LaunchTemplateSpecification": launch_object["LaunchTemplate"]}}
-            if instance_types:
-                policy["LaunchTemplate"]["Overrides"] = []
-                for instance_type in instance_types:
-                    instance_type_dict = {"InstanceType": instance_type}
-                    policy["LaunchTemplate"]["Overrides"].append(instance_type_dict)
-            if instances_distribution:
-                instances_distribution_params = scrub_none_parameters(instances_distribution)
-                policy["InstancesDistribution"] = snake_dict_to_camel_dict(
-                    instances_distribution_params, capitalize_first=True
-                )
-            launch_object["MixedInstancesPolicy"] = policy
-        return launch_object
+    if launch_config_name is None and launch_template is None:
+        return {}
+
+    if launch_config_name:
+        launch_configs = describe_launch_configurations(connection, launch_config_name)
+        if len(launch_configs["LaunchConfigurations"]) == 0:
+            raise AnsibleAWSError(f"No launch config found with name {launch_config_name}")
+        return {"LaunchConfigurationName": launch_configs["LaunchConfigurations"][0]["LaunchConfigurationName"]}
+
+    # launch_template path
+    lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
+    launch_template_spec = _build_launch_template_spec(lt, launch_template["version"])
+    launch_object = {"LaunchTemplate": launch_template_spec}
+
+    if mixed_instances_policy:
+        launch_object["MixedInstancesPolicy"] = _build_mixed_instances_policy(
+            launch_template_spec, mixed_instances_policy
+        )
+
+    return launch_object
+
+
+@AutoScalingErrorHandler.common_error_handler("wait for ELB deregistration")
+def _wait_for_elb_deregistration(elb_connection: str, lb_names: list[str], instance_id: str, timeout: int) -> None:
+    """
+    Wait for an instance to be deregistered from all load balancers.
+
+    Args:
+        elb_connection: ELB connection
+        lb_names: List of load balancer names
+        instance_id: Instance ID to wait for
+        timeout: Wait timeout in seconds
+
+    Raises:
+        AnsibleAWSError: If timeout is reached
+    """
+    waiter_config = custom_waiter_config(timeout=timeout, default_pause=10)
+    waiter = get_elb_waiter(elb_connection, "instance_deregistered")
+    for lb_name in lb_names:
+        waiter.wait(LoadBalancerName=lb_name, Instances=[{"InstanceId": instance_id}], WaiterConfig=waiter_config)
 
 
 def elb_dreg(asg_connection, group_name, instance_id):
     as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
     wait_timeout = module.params.get("wait_timeout")
-    count = 1
-    if as_group["LoadBalancerNames"] and as_group["HealthCheckType"] == "ELB":
-        elb_connection = module.client("elb")
-    else:
+
+    # Early return if no ELB health checking
+    if not (as_group["LoadBalancerNames"] and as_group["HealthCheckType"] == "ELB"):
         return
 
+    elb_connection = module.client("elb")
+
+    # Deregister from all load balancers
     for lb in as_group["LoadBalancerNames"]:
         deregister_lb_instances(elb_connection, lb, instance_id)
         module.debug(f"De-registering {instance_id} from ELB {lb}")
 
-    wait_timeout = time.time() + wait_timeout
-    while wait_timeout > time.time() and count > 0:
-        count = 0
-        for lb in as_group["LoadBalancerNames"]:
-            lb_instances = describe_instance_health(elb_connection, lb, [])
-            for i in lb_instances["InstanceStates"]:
-                if i["InstanceId"] == instance_id and i["State"] == "InService":
-                    count += 1
-                    module.debug(f"{i['InstanceId']}: {i['State']}, {i['Description']}")
-        time.sleep(10)
-
-    if wait_timeout <= time.time():
-        # waiting took too long
-        module.fail_json(msg=f"Waited too long for instance to deregister. {time.asctime()}")
+    # Wait for deregistration to complete
+    _wait_for_elb_deregistration(elb_connection, as_group["LoadBalancerNames"], instance_id, wait_timeout)
 
 
-def elb_healthy(asg_connection, elb_connection, group_name):
-    healthy_instances = set()
-    as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
-    props = get_properties(as_group)
-    # get healthy, inservice instances from ASG
-    instances = []
-    for instance, settings in props["instance_facts"].items():
-        if settings["lifecycle_state"] == "InService" and settings["health_status"] == "Healthy":
-            instances.append(dict(InstanceId=instance))
-    module.debug(f"ASG considers the following instances InService and Healthy: {instances}")
-    module.debug("ELB instance status:")
-    lb_instances = list()
-    for lb in as_group.get("LoadBalancerNames"):
-        # we catch a race condition that sometimes happens if the instance exists in the ASG
-        # but has not yet show up in the ELB
-        try:
-            lb_instances = describe_instance_health(elb_connection, lb, instances)
-        except is_boto3_error_code("InvalidInstance"):
-            return None
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to get load balancer.")
-
-        for i in lb_instances.get("InstanceStates"):
-            if i["State"] == "InService":
-                healthy_instances.add(i["InstanceId"])
-            module.debug(f"ELB Health State {i['InstanceId']}: {i['State']}")
-    return len(healthy_instances)
-
-
-def tg_healthy(asg_connection, elbv2_connection, group_name):
-    healthy_instances = set()
-    as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
-    props = get_properties(as_group)
-    # get healthy, inservice instances from ASG
-    instances = []
-    for instance, settings in props["instance_facts"].items():
-        if settings["lifecycle_state"] == "InService" and settings["health_status"] == "Healthy":
-            instances.append(dict(Id=instance))
-    module.debug(f"ASG considers the following instances InService and Healthy: {instances}")
-    module.debug("Target Group instance status:")
-    tg_instances = list()
-    for tg in as_group.get("TargetGroupARNs"):
-        # we catch a race condition that sometimes happens if the instance exists in the ASG
-        # but has not yet show up in the ELB
-        try:
-            tg_instances = describe_target_health(elbv2_connection, tg, instances)
-        except is_boto3_error_code("InvalidInstance"):
-            return None
-        except (
-            botocore.exceptions.ClientError,
-            botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to get target group.")
-
-        for i in tg_instances.get("TargetHealthDescriptions"):
-            if i["TargetHealth"]["State"] == "healthy":
-                healthy_instances.add(i["Target"]["Id"])
-            module.debug(f"Target Group Health State {i['Target']['Id']}: {i['TargetHealth']['State']}")
-    return len(healthy_instances)
-
-
+@AutoScalingErrorHandler.common_error_handler("wait for ELB health")
 def wait_for_elb(asg_connection, group_name):
-    wait_timeout = module.params.get("wait_timeout")
+    """
+    Wait for instances to be healthy on all attached ELBs.
 
-    # if the health_check_type is ELB, we want to query the ELBs directly for instance
-    # status as to avoid health_check_grace period that is awarded to ASG instances
+    Waits until at least MinSize instances are healthy across all load balancers.
+
+    Args:
+        asg_connection: AutoScaling connection
+        group_name: Name of the ASG
+    """
+    wait_timeout = module.params.get("wait_timeout")
     as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
 
-    if as_group.get("LoadBalancerNames") and as_group.get("HealthCheckType") == "ELB":
-        module.debug("Waiting for ELB to consider instances healthy.")
-        elb_connection = module.client("elb")
+    # Only wait if using ELB health checks and ELBs are attached
+    if not (as_group.get("LoadBalancerNames") and as_group.get("HealthCheckType") == "ELB"):
+        return
 
-        wait_timeout = time.time() + wait_timeout
-        healthy_instances = elb_healthy(asg_connection, elb_connection, group_name)
+    module.debug("Waiting for ELB to consider instances healthy.")
+    elb_connection = module.client("elb")
+    min_size = as_group.get("MinSize")
 
-        while healthy_instances < as_group.get("MinSize") and wait_timeout > time.time():
-            healthy_instances = elb_healthy(asg_connection, elb_connection, group_name)
-            module.debug(f"ELB thinks {healthy_instances} instances are healthy.")
-            time.sleep(10)
-        if wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg=f"Waited too long for ELB instances to be healthy. {time.asctime()}")
-        module.debug(f"Waiting complete. ELB thinks {healthy_instances} instances are healthy.")
+    # Get viable instances from ASG (Healthy + InService)
+    props = get_properties(as_group)
+    viable_instance_ids = [
+        instance_id
+        for instance_id, facts in props["instance_facts"].items()
+        if facts["lifecycle_state"] == "InService" and facts["health_status"] == "Healthy"
+    ]
+
+    if not viable_instance_ids:
+        module.debug("No viable instances in ASG yet")
+        return
+
+    instances_param = [{"InstanceId": iid} for iid in viable_instance_ids]
+
+    # Track elapsed time to avoid exceeding total timeout across multiple ELBs
+    start_time = time.time()
+
+    # Wait for each ELB to have MinSize healthy instances
+    for lb_name in as_group.get("LoadBalancerNames"):
+        # Calculate remaining timeout, ensuring at least 1 second
+        elapsed = time.time() - start_time
+        remaining_timeout = max(1, int(wait_timeout - elapsed))
+
+        module.debug(f"Waiting for {min_size} instances to be healthy on ELB {lb_name} (timeout: {remaining_timeout}s)")
+        waiter_config = custom_waiter_config(timeout=remaining_timeout, default_pause=10)
+        waiter = get_min_healthy_instances_waiter(elb_connection, min_size)
+        waiter.wait(LoadBalancerName=lb_name, Instances=instances_param, WaiterConfig=waiter_config)
+
+    module.debug(f"ELBs have at least {min_size} healthy instances")
 
 
+@AutoScalingErrorHandler.common_error_handler("wait for target group health")
 def wait_for_target_group(asg_connection, group_name):
-    wait_timeout = module.params.get("wait_timeout")
+    """
+    Wait for instances to be healthy in all attached target groups.
 
-    # if the health_check_type is ELB, we want to query the ELBs directly for instance
-    # status as to avoid health_check_grace period that is awarded to ASG instances
+    Waits until at least MinSize instances are healthy across all target groups.
+
+    Args:
+        asg_connection: AutoScaling connection
+        group_name: Name of the ASG
+    """
+    wait_timeout = module.params.get("wait_timeout")
     as_group = describe_autoscaling_groups(asg_connection, group_name)[0]
 
-    if as_group.get("TargetGroupARNs") and as_group.get("HealthCheckType") == "ELB":
-        module.debug("Waiting for Target Group to consider instances healthy.")
-        elbv2_connection = module.client("elbv2")
+    # Only wait if using ELB health checks and target groups are attached
+    if not (as_group.get("TargetGroupARNs") and as_group.get("HealthCheckType") == "ELB"):
+        return
 
-        wait_timeout = time.time() + wait_timeout
-        healthy_instances = tg_healthy(asg_connection, elbv2_connection, group_name)
+    module.debug("Waiting for Target Group to consider instances healthy.")
+    elbv2_connection = module.client("elbv2")
+    min_size = as_group.get("MinSize")
 
-        while healthy_instances < as_group.get("MinSize") and wait_timeout > time.time():
-            healthy_instances = tg_healthy(asg_connection, elbv2_connection, group_name)
-            module.debug(f"Target Group thinks {healthy_instances} instances are healthy.")
-            time.sleep(10)
-        if wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg=f"Waited too long for ELB instances to be healthy. {time.asctime()}")
-        module.debug(f"Waiting complete. Target Group thinks {healthy_instances} instances are healthy.")
+    # Get viable instances from ASG (Healthy + InService)
+    props = get_properties(as_group)
+    viable_instance_ids = [
+        instance_id
+        for instance_id, facts in props["instance_facts"].items()
+        if facts["lifecycle_state"] == "InService" and facts["health_status"] == "Healthy"
+    ]
+
+    if not viable_instance_ids:
+        module.debug("No viable instances in ASG yet")
+        return
+
+    targets_param = [{"Id": iid} for iid in viable_instance_ids]
+
+    # Track elapsed time to avoid exceeding total timeout across multiple target groups
+    start_time = time.time()
+
+    # Wait for each target group to have MinSize healthy targets
+    for tg_arn in as_group.get("TargetGroupARNs"):
+        # Calculate remaining timeout, ensuring at least 1 second
+        elapsed = time.time() - start_time
+        remaining_timeout = max(1, int(wait_timeout - elapsed))
+
+        module.debug(
+            f"Waiting for {min_size} targets to be healthy in target group {tg_arn} (timeout: {remaining_timeout}s)"
+        )
+        waiter_config = custom_waiter_config(timeout=remaining_timeout, default_pause=10)
+        waiter = get_min_healthy_targets_waiter(elbv2_connection, min_size)
+        waiter.wait(TargetGroupArn=tg_arn, Targets=targets_param, WaiterConfig=waiter_config)
+
+    module.debug(f"Target groups have at least {min_size} healthy targets")
 
 
 def suspend_processes(ec2_connection, as_group):
     processes_to_suspend = set(module.params.get("suspend_processes"))
 
     try:
-        suspended_processes = set([p["ProcessName"] for p in as_group["SuspendedProcesses"]])
+        suspended_processes = {p["ProcessName"] for p in as_group["SuspendedProcesses"]}
     except AttributeError:
         # New ASG being created, no suspended_processes defined yet
         suspended_processes = set()
@@ -1144,16 +1268,445 @@ def suspend_processes(ec2_connection, as_group):
     return True
 
 
-def create_autoscaling_group(connection):
-    group_name = module.params.get("name")
+def build_asg_tags(set_tags: list[dict[str, Any]], group_name: str) -> list[dict[str, Any]]:
+    """
+    Convert user-provided tags to ASG tag format.
+
+    Args:
+        set_tags: List of tag dictionaries from module params
+        group_name: Name of the autoscaling group
+
+    Returns:
+        List of tags formatted for AWS ASG API
+    """
+    asg_tags = []
+    for tag in set_tags:
+        for k, v in tag.items():
+            if k != "propagate_at_launch":
+                asg_tags.append(
+                    {
+                        "Key": k,
+                        "Value": to_native(v),
+                        "PropagateAtLaunch": bool(tag.get("propagate_at_launch", True)),
+                        "ResourceType": "auto-scaling-group",
+                        "ResourceId": group_name,
+                    }
+                )
+    return asg_tags
+
+
+def compare_asg_tags(
+    have_tags: list[dict[str, Any]] | None, want_tags: list[dict[str, Any]] | None, purge_tags: bool
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]] | None]:
+    """
+    Compare current and desired ASG tags to determine changes.
+
+    Compares full tag dictionaries including Key, Value, PropagateAtLaunch, etc.
+
+    Args:
+        have_tags: Current tags on the ASG (AWS format)
+        want_tags: Desired tags (AWS format)
+        purge_tags: Whether to remove tags not in want_tags
+
+    Returns:
+        tuple: (tags_to_delete, tags_to_set)
+            - tags_to_delete: List of tag dicts to delete (empty if not purge_tags)
+            - tags_to_set: List of tag dicts to create/update (or None if no changes)
+    """
+    # Sort for comparison
+    have_sorted = sorted(have_tags or [], key=lambda x: x["Key"])
+    want_sorted = sorted(want_tags or [], key=lambda x: x["Key"])
+
+    # Find tags to delete
+    have_keys = {tag["Key"] for tag in have_sorted}
+    want_keys = {tag["Key"] for tag in want_sorted}
+    keys_to_delete = have_keys - want_keys
+
+    tags_to_delete = []
+    if keys_to_delete and purge_tags:
+        tags_to_delete = [tag for tag in have_sorted if tag["Key"] in keys_to_delete]
+
+    # Compare remaining tags (including PropagateAtLaunch)
+    have_remaining = [tag for tag in have_sorted if tag["Key"] not in keys_to_delete]
+    tags_changed = have_remaining != want_sorted
+
+    # Determine tags to set
+    tags_to_set = want_sorted if tags_changed else None
+
+    return tags_to_delete, tags_to_set
+
+
+def apply_asg_tag_changes(
+    connection: Any,
+    as_group_name: str,
+    tags_to_delete: list[dict[str, Any]],
+    tags_to_set: list[dict[str, Any]] | None,
+) -> bool:
+    """
+    Apply tag changes to an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        as_group_name: Name of the autoscaling group
+        tags_to_delete: List of tag dicts to delete
+        tags_to_set: List of tag dicts to create/update (or None if no changes)
+
+    Returns:
+        bool: True if changes were applied, False otherwise
+    """
+    if not tags_to_delete and tags_to_set is None:
+        return False
+
+    if tags_to_delete:
+        # Format for delete_tags API
+        delete_tags = [
+            {
+                "ResourceId": as_group_name,
+                "ResourceType": "auto-scaling-group",
+                "Key": tag["Key"],
+            }
+            for tag in tags_to_delete
+        ]
+        delete_asg_tags(connection, delete_tags)
+
+    if tags_to_set is not None:
+        create_or_update_asg_tags(connection, tags_to_set)
+
+    return True
+
+
+def update_load_balancers(
+    connection: Any, group_name: str, current_elbs: list[str], desired_elbs: list[str] | None
+) -> bool:
+    """
+    Update load balancers attached to an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the autoscaling group
+        current_elbs: Currently attached load balancer names
+        desired_elbs: Desired load balancer names (None means no change)
+
+    Returns:
+        True if changes were made, False otherwise
+    """
+    # If desired_elbs is None, no change requested
+    if desired_elbs is None:
+        return False
+
+    changed = False
+    current_set = set(current_elbs)
+    desired_set = set(desired_elbs)
+
+    # Detach load balancers no longer wanted
+    elbs_to_detach = current_set - desired_set
+    if elbs_to_detach:
+        detach_load_balancers(connection, group_name, list(elbs_to_detach))
+        changed = True
+
+    # Attach new load balancers
+    elbs_to_attach = desired_set - current_set
+    if elbs_to_attach:
+        attach_load_balancers(connection, group_name, list(elbs_to_attach))
+        changed = True
+
+    return changed
+
+
+def update_target_groups(
+    connection: Any, group_name: str, current_tgs: list[str], desired_tgs: list[str] | None
+) -> bool:
+    """
+    Update target groups attached to an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the autoscaling group
+        current_tgs: Currently attached target group ARNs
+        desired_tgs: Desired target group ARNs (None means no change)
+
+    Returns:
+        True if changes were made, False otherwise
+    """
+    # If desired_tgs is None, no change requested
+    if desired_tgs is None:
+        return False
+
+    changed = False
+    current_set = set(current_tgs)
+    desired_set = set(desired_tgs)
+
+    # Detach target groups no longer wanted
+    tgs_to_detach = current_set - desired_set
+    if tgs_to_detach:
+        detach_lb_target_groups(connection, group_name, list(tgs_to_detach))
+        changed = True
+
+    # Attach new target groups
+    tgs_to_attach = desired_set - current_set
+    if tgs_to_attach:
+        attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
+        changed = True
+
+    return changed
+
+
+def build_launch_config_params(launch_object: dict[str, Any], as_group: dict[str, Any] | None = None) -> dict[str, Any]:
+    """
+    Build launch configuration parameters for ASG create/update.
+
+    Args:
+        launch_object: Launch object from get_launch_object()
+        as_group: Existing ASG (for updates) or None (for creates)
+
+    Returns:
+        dict: Parameters to add to ASG create/update call
+
+    Raises:
+        AnsibleAWSError: If no launch configuration or template is available
+    """
+    if "LaunchConfigurationName" in launch_object:
+        return {"LaunchConfigurationName": launch_object["LaunchConfigurationName"]}
+
+    if "LaunchTemplate" in launch_object:
+        if "MixedInstancesPolicy" in launch_object:
+            return {"MixedInstancesPolicy": launch_object["MixedInstancesPolicy"]}
+        return {"LaunchTemplate": launch_object["LaunchTemplate"]}
+
+    # For updates when no launch object provided, use existing
+    if as_group:
+        if "LaunchConfigurationName" in as_group:
+            return {"LaunchConfigurationName": as_group["LaunchConfigurationName"]}
+        if "LaunchTemplate" in as_group:
+            # Use existing launch template
+            launch_template = as_group["LaunchTemplate"]
+            # Prefer LaunchTemplateId over Name as it's more specific
+            return {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": launch_template["LaunchTemplateId"],
+                    "Version": launch_template["Version"],
+                }
+            }
+
+    raise AnsibleAWSError(message="Missing LaunchConfigurationName or LaunchTemplate")
+
+
+def build_base_asg_params(
+    group_name: str,
+    min_size: int,
+    max_size: int,
+    desired_capacity: int,
+    health_check_period: int,
+    health_check_type: str,
+    default_cooldown: int,
+    termination_policies: list[str],
+    protected_from_scale_in: bool,
+    vpc_zone_identifier: str | None = None,
+    availability_zones: list[str] | None = None,
+    max_instance_lifetime: int | None = None,
+) -> dict[str, Any]:
+    """
+    Build base ASG parameters common to both create and update operations.
+
+    Args:
+        group_name: Name of the AutoScaling Group
+        min_size: Minimum number of instances
+        max_size: Maximum number of instances
+        desired_capacity: Desired number of instances
+        health_check_period: Health check grace period in seconds
+        health_check_type: Health check type (EC2 or ELB)
+        default_cooldown: Default cooldown period in seconds
+        termination_policies: List of termination policies
+        protected_from_scale_in: Whether instances are protected from scale-in
+        vpc_zone_identifier: Comma-separated subnet IDs (optional)
+        availability_zones: List of availability zones (optional)
+        max_instance_lifetime: Maximum instance lifetime in seconds (optional)
+
+    Returns:
+        dict: Base parameters for ASG create/update
+    """
+    params = {
+        "AutoScalingGroupName": group_name,
+        "MinSize": min_size,
+        "MaxSize": max_size,
+        "DesiredCapacity": desired_capacity,
+        "HealthCheckGracePeriod": health_check_period,
+        "HealthCheckType": health_check_type,
+        "DefaultCooldown": default_cooldown,
+        "TerminationPolicies": termination_policies,
+        "NewInstancesProtectedFromScaleIn": protected_from_scale_in,
+    }
+
+    if vpc_zone_identifier:
+        params["VPCZoneIdentifier"] = vpc_zone_identifier
+    if availability_zones:
+        params["AvailabilityZones"] = availability_zones
+    if max_instance_lifetime is not None:
+        params["MaxInstanceLifetime"] = max_instance_lifetime
+
+    return params
+
+
+def build_create_only_params(
+    tags: list[dict[str, Any]],
+    placement_group: str | None = None,
+    load_balancers: list[str] | None = None,
+    target_group_arns: list[str] | None = None,
+) -> dict[str, Any]:
+    """
+    Build parameters that can only be set during ASG creation.
+
+    Args:
+        tags: List of tags (always required for create)
+        placement_group: Placement group name (optional, create-only)
+        load_balancers: List of classic ELB names (optional, create-only)
+        target_group_arns: List of target group ARNs (optional, create-only)
+
+    Returns:
+        dict: Create-only parameters for ASG
+    """
+    params = {"Tags": tags}
+
+    if placement_group:
+        params["PlacementGroup"] = placement_group
+    if load_balancers:
+        params["LoadBalancerNames"] = load_balancers
+    if target_group_arns:
+        params["TargetGroupARNs"] = target_group_arns
+
+    return params
+
+
+def _create_new_asg(connection: Any, group_name: str, ec2_connection: Any) -> tuple[bool, dict[str, Any]]:
+    """
+    Create a new AutoScaling Group.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG to create
+        ec2_connection: EC2 connection for launch template lookups
+
+    Returns:
+        tuple: (changed=True, asg_properties)
+    """
     load_balancers = module.params["load_balancers"]
     target_group_arns = module.params["target_group_arns"]
     availability_zones = module.params["availability_zones"]
-    launch_template = module.params.get("launch_template")
     min_size = module.params["min_size"]
     max_size = module.params["max_size"]
     max_instance_lifetime = module.params.get("max_instance_lifetime")
     placement_group = module.params.get("placement_group")
+    desired_capacity = module.params.get("desired_capacity")
+    vpc_zone_identifier = module.params.get("vpc_zone_identifier")
+    set_tags = module.params.get("tags")
+    protected_from_scale_in = module.params.get("protected_from_scale_in")
+    health_check_period = module.params.get("health_check_period")
+    health_check_type = module.params.get("health_check_type")
+    default_cooldown = module.params.get("default_cooldown")
+    wait_for_instances = module.params.get("wait_for_instances")
+    wait_timeout = module.params.get("wait_timeout")
+    termination_policies = module.params.get("termination_policies")
+    notification_topic = module.params.get("notification_topic")
+    notification_types = module.params.get("notification_types")
+    metrics_collection = module.params.get("metrics_collection")
+    metrics_granularity = module.params.get("metrics_granularity")
+    metrics_list = module.params.get("metrics_list")
+
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have created AutoScalingGroup if not in check_mode.")
+
+    if vpc_zone_identifier:
+        vpc_zone_identifier = ",".join(vpc_zone_identifier)
+
+    if not vpc_zone_identifier and not availability_zones:
+        availability_zones = module.params["availability_zones"] = [
+            zone["ZoneName"] for zone in ec2_connection.describe_availability_zones()["AvailabilityZones"]
+        ]
+
+    enforce_required_arguments_for_create()
+
+    desired_capacity = _default_if_none(desired_capacity, min_size)
+    protected_from_scale_in = _default_if_none(protected_from_scale_in, False)
+
+    asg_tags = build_asg_tags(set_tags, group_name)
+
+    ag = build_base_asg_params(
+        group_name=group_name,
+        min_size=min_size,
+        max_size=max_size,
+        desired_capacity=desired_capacity,
+        health_check_period=health_check_period,
+        health_check_type=health_check_type,
+        default_cooldown=default_cooldown,
+        termination_policies=termination_policies,
+        protected_from_scale_in=protected_from_scale_in,
+        vpc_zone_identifier=vpc_zone_identifier,
+        availability_zones=availability_zones,
+        max_instance_lifetime=max_instance_lifetime,
+    )
+
+    ag.update(
+        build_create_only_params(
+            tags=asg_tags,
+            placement_group=placement_group,
+            load_balancers=load_balancers,
+            target_group_arns=target_group_arns,
+        )
+    )
+
+    launch_object = get_launch_object(connection, ec2_connection)
+    ag.update(build_launch_config_params(launch_object, None))
+
+    create_asg(connection, **ag)
+
+    if metrics_collection:
+        connection.enable_metrics_collection(
+            AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
+        )
+
+    all_ag = describe_autoscaling_groups(connection, group_name)
+    if len(all_ag) == 0:
+        module.fail_json(msg=f"No auto scaling group found with the name {group_name}")
+
+    as_group = all_ag[0]
+    suspend_processes(connection, as_group)
+
+    if wait_for_instances:
+        wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
+        if load_balancers:
+            wait_for_elb(connection, group_name)
+        if target_group_arns:
+            wait_for_target_group(connection, group_name)
+
+    if notification_topic:
+        put_notification_config(connection, group_name, notification_topic, notification_types)
+
+    as_group = describe_autoscaling_groups(connection, group_name)[0]
+    asg_properties = get_properties(as_group)
+    return True, asg_properties
+
+
+def _update_existing_asg(
+    connection: Any, group_name: str, ec2_connection: Any, as_group: dict[str, Any]
+) -> tuple[bool, dict[str, Any]]:
+    """
+    Update an existing AutoScaling Group.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG to update
+        ec2_connection: EC2 connection for launch template lookups
+        as_group: Existing ASG configuration
+
+    Returns:
+        tuple: (changed, asg_properties)
+    """
+    load_balancers = module.params["load_balancers"]
+    target_group_arns = module.params["target_group_arns"]
+    availability_zones = module.params["availability_zones"]
+    min_size = module.params["min_size"]
+    max_size = module.params["max_size"]
+    max_instance_lifetime = module.params.get("max_instance_lifetime")
     desired_capacity = module.params.get("desired_capacity")
     vpc_zone_identifier = module.params.get("vpc_zone_identifier")
     set_tags = module.params.get("tags")
@@ -1171,306 +1724,151 @@ def create_autoscaling_group(connection):
     metrics_granularity = module.params.get("metrics_granularity")
     metrics_list = module.params.get("metrics_list")
 
-    try:
-        as_groups = describe_autoscaling_groups(connection, group_name)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe auto scaling groups.")
-
-    ec2_connection = module.client("ec2")
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have modified AutoScalingGroup if required if not in check_mode.")
 
     if vpc_zone_identifier:
         vpc_zone_identifier = ",".join(vpc_zone_identifier)
 
-    asg_tags = []
-    for tag in set_tags:
-        for k, v in tag.items():
-            if k != "propagate_at_launch":
-                asg_tags.append(
-                    dict(
-                        Key=k,
-                        Value=to_native(v),
-                        PropagateAtLaunch=bool(tag.get("propagate_at_launch", True)),
-                        ResourceType="auto-scaling-group",
-                        ResourceId=group_name,
-                    )
-                )
-    if not as_groups:
-        if module.check_mode:
-            module.exit_json(changed=True, msg="Would have created AutoScalingGroup if not in check_mode.")
+    initial_asg_properties = get_properties(as_group)
+    changed = False
 
-        if not vpc_zone_identifier and not availability_zones:
-            availability_zones = module.params["availability_zones"] = [
-                zone["ZoneName"] for zone in ec2_connection.describe_availability_zones()["AvailabilityZones"]
-            ]
+    changed |= suspend_processes(connection, as_group)
 
-        enforce_required_arguments_for_create()
+    # Process tag changes
+    asg_tags = build_asg_tags(set_tags, group_name)
+    tags_to_delete, tags_to_set = compare_asg_tags(as_group.get("Tags"), asg_tags, purge_tags)
+    changed |= apply_asg_tag_changes(connection, as_group["AutoScalingGroupName"], tags_to_delete, tags_to_set)
 
-        if desired_capacity is None:
-            desired_capacity = min_size
-        ag = dict(
-            AutoScalingGroupName=group_name,
-            MinSize=min_size,
-            MaxSize=max_size,
-            DesiredCapacity=desired_capacity,
-            Tags=asg_tags,
-            HealthCheckGracePeriod=health_check_period,
-            HealthCheckType=health_check_type,
-            DefaultCooldown=default_cooldown,
-            TerminationPolicies=termination_policies,
+    # Handle load balancer and target group attachments/detachments
+    changed |= update_load_balancers(connection, group_name, as_group["LoadBalancerNames"], load_balancers)
+    changed |= update_target_groups(connection, group_name, as_group["TargetGroupARNs"], target_group_arns)
+
+    # Use existing ASG values as defaults if not specified
+    min_size = _default_if_none(min_size, as_group["MinSize"])
+    max_size = _default_if_none(max_size, as_group["MaxSize"])
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
+    protected_from_scale_in = _default_if_none(protected_from_scale_in, as_group["NewInstancesProtectedFromScaleIn"])
+
+    ag = build_base_asg_params(
+        group_name=group_name,
+        min_size=min_size,
+        max_size=max_size,
+        desired_capacity=desired_capacity,
+        health_check_period=health_check_period,
+        health_check_type=health_check_type,
+        default_cooldown=default_cooldown,
+        termination_policies=termination_policies,
+        protected_from_scale_in=protected_from_scale_in,
+        vpc_zone_identifier=vpc_zone_identifier,
+        availability_zones=availability_zones,
+        max_instance_lifetime=max_instance_lifetime,
+    )
+
+    # Get the launch object (config or template) if one is provided in args or use the existing one attached to ASG if not.
+    launch_object = get_launch_object(connection, ec2_connection)
+    ag.update(build_launch_config_params(launch_object, as_group))
+
+    update_asg(connection, **ag)
+
+    if metrics_collection:
+        connection.enable_metrics_collection(
+            AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
         )
-        if vpc_zone_identifier:
-            ag["VPCZoneIdentifier"] = vpc_zone_identifier
-        if availability_zones:
-            ag["AvailabilityZones"] = availability_zones
-        if placement_group:
-            ag["PlacementGroup"] = placement_group
-        if load_balancers:
-            ag["LoadBalancerNames"] = load_balancers
-        if target_group_arns:
-            ag["TargetGroupARNs"] = target_group_arns
-        if max_instance_lifetime:
-            ag["MaxInstanceLifetime"] = max_instance_lifetime
-        if protected_from_scale_in is None:
-            ag["NewInstancesProtectedFromScaleIn"] = False
-        else:
-            ag["NewInstancesProtectedFromScaleIn"] = bool(protected_from_scale_in)
-        launch_object = get_launch_object(connection, ec2_connection)
-        if "LaunchConfigurationName" in launch_object:
-            ag["LaunchConfigurationName"] = launch_object["LaunchConfigurationName"]
-        elif "LaunchTemplate" in launch_object:
-            if "MixedInstancesPolicy" in launch_object:
-                ag["MixedInstancesPolicy"] = launch_object["MixedInstancesPolicy"]
-            else:
-                ag["LaunchTemplate"] = launch_object["LaunchTemplate"]
-        else:
-            module.fail_json(msg="Missing LaunchConfigurationName or LaunchTemplate")
-
-        try:
-            create_asg(connection, **ag)
-            if metrics_collection:
-                connection.enable_metrics_collection(
-                    AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
-                )
-
-            all_ag = describe_autoscaling_groups(connection, group_name)
-            if len(all_ag) == 0:
-                module.fail_json(msg=f"No auto scaling group found with the name {group_name}")
-            as_group = all_ag[0]
-            suspend_processes(connection, as_group)
-            if wait_for_instances:
-                wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
-                if load_balancers:
-                    wait_for_elb(connection, group_name)
-                # Wait for target group health if target group(s)defined
-                if target_group_arns:
-                    wait_for_target_group(connection, group_name)
-            if notification_topic:
-                put_notification_config(connection, group_name, notification_topic, notification_types)
-            as_group = describe_autoscaling_groups(connection, group_name)[0]
-            asg_properties = get_properties(as_group)
-            changed = True
-            return changed, asg_properties
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to create Autoscaling Group.")
     else:
-        if module.check_mode:
-            module.exit_json(changed=True, msg="Would have modified AutoScalingGroup if required if not in check_mode.")
+        connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
 
+    if notification_topic:
+        put_notification_config(connection, group_name, notification_topic, notification_types)
+
+    if wait_for_instances:
+        wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
+        if load_balancers:
+            module.debug("\tWAITING FOR ELB HEALTH")
+            wait_for_elb(connection, group_name)
+        if target_group_arns:
+            module.debug("\tWAITING FOR TG HEALTH")
+            wait_for_target_group(connection, group_name)
+
+    as_group = describe_autoscaling_groups(connection, group_name)[0]
+    asg_properties = get_properties(as_group)
+
+    if asg_properties != initial_asg_properties:
+        changed = True
+
+    return changed, asg_properties
+
+
+def create_autoscaling_group(connection):
+    """
+    Create or update an AutoScaling Group.
+
+    Dispatcher function that checks if ASG exists and delegates to
+    _create_new_asg() or _update_existing_asg() accordingly.
+
+    Args:
+        connection: AutoScaling connection
+
+    Returns:
+        tuple: (changed, asg_properties)
+    """
+    group_name = module.params.get("name")
+    as_groups = describe_autoscaling_groups(connection, group_name)
+    ec2_connection = module.client("ec2")
+
+    if not as_groups:
+        return _create_new_asg(connection, group_name, ec2_connection)
+    else:
         as_group = as_groups[0]
-        initial_asg_properties = get_properties(as_group)
-        changed = False
+        return _update_existing_asg(connection, group_name, ec2_connection, as_group)
 
-        if suspend_processes(connection, as_group):
-            changed = True
 
-        # process tag changes
-        have_tags = as_group.get("Tags")
-        want_tags = asg_tags
-        if purge_tags and not want_tags and have_tags:
-            connection.delete_tags(Tags=list(have_tags))
+@AutoScalingErrorHandler.common_error_handler("wait for ASG instances to terminate")
+def _wait_for_asg_instances_to_terminate(connection: str, group_name: str, timeout: int) -> None:
+    """
+    Wait for all instances in an ASG to terminate.
 
-        if len(set_tags) > 0:
-            if have_tags:
-                have_tags.sort(key=lambda x: x["Key"])
-            if want_tags:
-                want_tags.sort(key=lambda x: x["Key"])
-            dead_tags = []
-            have_tag_keyvals = [x["Key"] for x in have_tags]
-            want_tag_keyvals = [x["Key"] for x in want_tags]
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        timeout: Wait timeout in seconds
 
-            for dead_tag in set(have_tag_keyvals).difference(want_tag_keyvals):
-                changed = True
-                if purge_tags:
-                    dead_tags.append(
-                        dict(
-                            ResourceId=as_group["AutoScalingGroupName"], ResourceType="auto-scaling-group", Key=dead_tag
-                        )
-                    )
-                have_tags = [have_tag for have_tag in have_tags if have_tag["Key"] != dead_tag]
+    Raises:
+        Fails the module if timeout is reached
+    """
+    waiter_config = custom_waiter_config(timeout=timeout, default_pause=10)
+    waiter = get_autoscaling_waiter(connection, "group_instances_terminated")
+    waiter.wait(AutoScalingGroupNames=[group_name], WaiterConfig=waiter_config)
 
-            if dead_tags:
-                connection.delete_tags(Tags=dead_tags)
 
-            zipped = zip(have_tags, want_tags)
-            if len(have_tags) != len(want_tags) or not all(x == y for x, y in zipped):
-                changed = True
-                connection.create_or_update_tags(Tags=asg_tags)
+@AutoScalingErrorHandler.common_error_handler("wait for ASG to delete")
+def _wait_for_asg_to_delete(connection: str, group_name: str, timeout: int) -> None:
+    """
+    Wait for an ASG to be fully deleted.
 
-        # Handle load balancer attachments/detachments
-        # Attach load balancers if they are specified but none currently exist
-        if load_balancers and not as_group["LoadBalancerNames"]:
-            changed = True
-            try:
-                attach_load_balancers(connection, group_name, load_balancers)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update Autoscaling Group.")
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        timeout: Wait timeout in seconds
 
-        # Update load balancers if they are specified and one or more already exists
-        elif as_group["LoadBalancerNames"]:
-            change_load_balancers = load_balancers is not None
-            # Get differences
-            if not load_balancers:
-                load_balancers = list()
-            wanted_elbs = set(load_balancers)
+    Raises:
+        Fails the module if timeout is reached
+    """
+    waiter_config = custom_waiter_config(timeout=timeout, default_pause=5)
+    waiter = get_autoscaling_waiter(connection, "group_not_exists")
+    waiter.wait(AutoScalingGroupNames=[group_name], WaiterConfig=waiter_config)
 
-            has_elbs = set(as_group["LoadBalancerNames"])
-            # check if all requested are already existing
-            if has_elbs - wanted_elbs and change_load_balancers:
-                # if wanted contains less than existing, then we need to delete some
-                elbs_to_detach = has_elbs.difference(wanted_elbs)
-                if elbs_to_detach:
-                    changed = True
-                    try:
-                        detach_load_balancers(connection, group_name, list(elbs_to_detach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg=f"Failed to detach load balancers {elbs_to_detach}")
-            if wanted_elbs - has_elbs:
-                # if has contains less than wanted, then we need to add some
-                elbs_to_attach = wanted_elbs.difference(has_elbs)
-                if elbs_to_attach:
-                    changed = True
-                    try:
-                        attach_load_balancers(connection, group_name, list(elbs_to_attach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg=f"Failed to attach load balancers {elbs_to_attach}")
 
-        # Handle target group attachments/detachments
-        # Attach target groups if they are specified but none currently exist
-        if target_group_arns and not as_group["TargetGroupARNs"]:
-            changed = True
-            try:
-                attach_lb_target_groups(connection, group_name, target_group_arns)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update Autoscaling Group.")
-        # Update target groups if they are specified and one or more already exists
-        elif target_group_arns is not None and as_group["TargetGroupARNs"]:
-            # Get differences
-            wanted_tgs = set(target_group_arns)
-            has_tgs = set(as_group["TargetGroupARNs"])
+def _scale_asg_to_zero(connection: str, group_name: str) -> None:
+    """
+    Scale an ASG to zero instances before deletion.
 
-            tgs_to_detach = has_tgs.difference(wanted_tgs)
-            if tgs_to_detach:
-                changed = True
-                try:
-                    detach_lb_target_groups(connection, group_name, list(tgs_to_detach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, msg=f"Failed to detach load balancer target groups {tgs_to_detach}")
-
-            tgs_to_attach = wanted_tgs.difference(has_tgs)
-            if tgs_to_attach:
-                changed = True
-                try:
-                    attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-                    module.fail_json(msg=f"Failed to attach load balancer target groups {tgs_to_attach}")
-
-        # check for attributes that aren't required for updating an existing ASG
-        # check if min_size/max_size/desired capacity have been specified and if not use ASG values
-        if min_size is None:
-            min_size = as_group["MinSize"]
-        if max_size is None:
-            max_size = as_group["MaxSize"]
-        if desired_capacity is None:
-            desired_capacity = as_group["DesiredCapacity"]
-        if protected_from_scale_in is None:
-            protected_from_scale_in = as_group["NewInstancesProtectedFromScaleIn"]
-        ag = dict(
-            AutoScalingGroupName=group_name,
-            MinSize=min_size,
-            MaxSize=max_size,
-            DesiredCapacity=desired_capacity,
-            NewInstancesProtectedFromScaleIn=protected_from_scale_in,
-            HealthCheckGracePeriod=health_check_period,
-            HealthCheckType=health_check_type,
-            DefaultCooldown=default_cooldown,
-            TerminationPolicies=termination_policies,
-        )
-
-        # Get the launch object (config or template) if one is provided in args or use the existing one attached to ASG if not.
-        launch_object = get_launch_object(connection, ec2_connection)
-        if "LaunchConfigurationName" in launch_object:
-            ag["LaunchConfigurationName"] = launch_object["LaunchConfigurationName"]
-        elif "LaunchTemplate" in launch_object:
-            if "MixedInstancesPolicy" in launch_object:
-                ag["MixedInstancesPolicy"] = launch_object["MixedInstancesPolicy"]
-            else:
-                ag["LaunchTemplate"] = launch_object["LaunchTemplate"]
-        else:
-            try:
-                ag["LaunchConfigurationName"] = as_group["LaunchConfigurationName"]
-            except KeyError:
-                launch_template = as_group["LaunchTemplate"]
-                # Prefer LaunchTemplateId over Name as it's more specific.  Only one can be used for update_asg.
-                ag["LaunchTemplate"] = {
-                    "LaunchTemplateId": launch_template["LaunchTemplateId"],
-                    "Version": launch_template["Version"],
-                }
-
-        if availability_zones:
-            ag["AvailabilityZones"] = availability_zones
-        if vpc_zone_identifier:
-            ag["VPCZoneIdentifier"] = vpc_zone_identifier
-        if max_instance_lifetime is not None:
-            ag["MaxInstanceLifetime"] = max_instance_lifetime
-
-        try:
-            update_asg(connection, **ag)
-
-            if metrics_collection:
-                connection.enable_metrics_collection(
-                    AutoScalingGroupName=group_name, Granularity=metrics_granularity, Metrics=metrics_list
-                )
-            else:
-                connection.disable_metrics_collection(AutoScalingGroupName=group_name, Metrics=metrics_list)
-
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to update autoscaling group")
-
-        if notification_topic:
-            try:
-                put_notification_config(connection, group_name, notification_topic, notification_types)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update Autoscaling Group notifications.")
-        if wait_for_instances:
-            wait_for_new_inst(connection, group_name, wait_timeout, desired_capacity, "viable_instances")
-            # Wait for ELB health if ELB(s)defined
-            if load_balancers:
-                module.debug("\tWAITING FOR ELB HEALTH")
-                wait_for_elb(connection, group_name)
-            # Wait for target group health if target group(s)defined
-
-            if target_group_arns:
-                module.debug("\tWAITING FOR TG HEALTH")
-                wait_for_target_group(connection, group_name)
-
-        try:
-            as_group = describe_autoscaling_groups(connection, group_name)[0]
-            asg_properties = get_properties(as_group)
-            if asg_properties != initial_asg_properties:
-                changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to read existing Autoscaling Groups.")
-        return changed, asg_properties
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+    """
+    updated_params = dict(AutoScalingGroupName=group_name, MinSize=0, MaxSize=0, DesiredCapacity=0)
+    update_asg(connection, **updated_params)
 
 
 def delete_autoscaling_group(connection):
@@ -1481,43 +1879,25 @@ def delete_autoscaling_group(connection):
 
     if notification_topic:
         del_notification_config(connection, group_name, notification_topic)
+
     groups = describe_autoscaling_groups(connection, group_name)
-    if groups:
-        if module.check_mode:
-            module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
-        wait_timeout = time.time() + wait_timeout
-        if not wait_for_instances:
-            delete_asg(connection, group_name, force_delete=True)
-        else:
-            updated_params = dict(AutoScalingGroupName=group_name, MinSize=0, MaxSize=0, DesiredCapacity=0)
-            update_asg(connection, **updated_params)
-            instances = True
-            while instances and wait_for_instances and wait_timeout >= time.time():
-                tmp_groups = describe_autoscaling_groups(connection, group_name)
-                if tmp_groups:
-                    tmp_group = tmp_groups[0]
-                    if not tmp_group.get("Instances"):
-                        instances = False
-                time.sleep(10)
+    if not groups:
+        return False
 
-            if wait_timeout <= time.time():
-                # waiting took too long
-                module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
 
-            delete_asg(connection, group_name, force_delete=False)
-        while describe_autoscaling_groups(connection, group_name) and wait_timeout >= time.time():
-            time.sleep(5)
-        if wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg=f"Waited too long for ASG to delete. {time.asctime()}")
-        return True
+    # Scale to zero and wait for instances to terminate if requested
+    if wait_for_instances:
+        _scale_asg_to_zero(connection, group_name)
+        _wait_for_asg_instances_to_terminate(connection, group_name, wait_timeout)
+        delete_asg(connection, group_name, force_delete=False)
+    else:
+        delete_asg(connection, group_name, force_delete=True)
 
-    return False
-
-
-def get_chunks(objects, chunk_size):
-    for i in range(0, len(objects), chunk_size):
-        yield objects[i:i + chunk_size]  # fmt: skip
+    # Wait for ASG to be fully deleted
+    _wait_for_asg_to_delete(connection, group_name, wait_timeout)
+    return True
 
 
 def update_size(connection, group, max_size, min_size, dc, protected_from_scale_in):
@@ -1535,6 +1915,38 @@ def update_size(connection, group, max_size, min_size, dc, protected_from_scale_
     update_asg(connection, **updated_group)
 
 
+def _get_launch_spec_check_flags() -> tuple[bool, bool]:
+    """
+    Determine if launch config/template checks should be performed.
+
+    Returns:
+        tuple: (lc_check, lt_check) flags
+    """
+    launch_config_name = module.params.get("launch_config_name")
+    launch_template = module.params.get("launch_template")
+
+    # Required to maintain the default value being set to 'true'
+    lc_check = module.params.get("lc_check") if launch_config_name else False
+    lt_check = module.params.get("lt_check") if launch_template else False
+
+    return lc_check, lt_check
+
+
+def _wait_for_replacement_instances(connection: str, group_name: str, wait_timeout: int, desired_size: int) -> None:
+    """
+    Wait for replacement instances to be viable and registered with load balancers.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        wait_timeout: Timeout in seconds
+        desired_size: Number of viable instances to wait for
+    """
+    wait_for_new_inst(connection, group_name, wait_timeout, desired_size, "viable_instances")
+    wait_for_elb(connection, group_name)
+    wait_for_target_group(connection, group_name)
+
+
 def replace(connection):
     batch_size = module.params.get("replace_batch_size")
     wait_timeout = module.params.get("wait_timeout")
@@ -1545,24 +1957,14 @@ def replace(connection):
     protected_from_scale_in = module.params.get("protected_from_scale_in")
     desired_capacity = module.params.get("desired_capacity")
     launch_config_name = module.params.get("launch_config_name")
-
-    # Required to maintain the default value being set to 'true'
-    if launch_config_name:
-        lc_check = module.params.get("lc_check")
-    else:
-        lc_check = False
-    # Mirror above behavior for Launch Templates
     launch_template = module.params.get("launch_template")
-    if launch_template:
-        lt_check = module.params.get("lt_check")
-    else:
-        lt_check = False
     replace_instances = module.params.get("replace_instances")
     replace_all_instances = module.params.get("replace_all_instances")
 
+    lc_check, lt_check = _get_launch_spec_check_flags()
+
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
 
     if wait_for_instances:
         wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"], "viable_instances")
@@ -1603,10 +2005,8 @@ def replace(connection):
         return changed, props
 
     # check if min_size/max_size/desired capacity have been specified and if not use ASG values
-    if min_size is None:
-        min_size = as_group["MinSize"]
-    if max_size is None:
-        max_size = as_group["MaxSize"]
+    min_size = _default_if_none(min_size, as_group["MinSize"])
+    max_size = _default_if_none(max_size, as_group["MaxSize"])
 
     # set temporary settings and wait for them to be reached
     # This should get overwritten if the number of instances left is less than the batch size.
@@ -1622,9 +2022,7 @@ def replace(connection):
     )
 
     if wait_for_instances:
-        wait_for_new_inst(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size, "viable_instances")
-        wait_for_elb(connection, group_name)
-        wait_for_target_group(connection, group_name)
+        _wait_for_replacement_instances(connection, group_name, wait_timeout, as_group["MinSize"] + batch_size)
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     props = get_properties(as_group)
@@ -1633,15 +2031,13 @@ def replace(connection):
         instances = replace_instances
 
     module.debug("beginning main loop")
-    for i in get_chunks(instances, batch_size):
+    for i in chunks(instances, batch_size):
         # break out of this loop if we have enough new instances
         break_early, desired_size, term_instances = terminate_batch(connection, i, instances, False)
 
         if wait_for_instances:
             wait_for_term_inst(connection, term_instances)
-            wait_for_new_inst(connection, group_name, wait_timeout, desired_size, "viable_instances")
-            wait_for_elb(connection, group_name)
-            wait_for_target_group(connection, group_name)
+            _wait_for_replacement_instances(connection, group_name, wait_timeout, desired_size)
 
         if break_early:
             module.debug("breaking loop")
@@ -1684,29 +2080,82 @@ def detach(connection):
             )
 
     if instances_to_detach:
-        try:
-            detach_asg_instances(connection, instances_to_detach, group_name, decrement_desired_capacity)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to detach instances from AutoScaling Group")
+        detach_asg_instances(connection, instances_to_detach, group_name, decrement_desired_capacity)
 
     asg_properties = get_properties(as_group)
     return True, asg_properties
 
 
-def get_instances_by_launch_config(props, lc_check, initial_instances):
+def _is_instance_using_launch_config(instance_id: str, props: dict[str, Any]) -> bool:
+    """
+    Check if an instance is using the current launch configuration.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts and launch config name
+
+    Returns:
+        bool: True if instance uses current launch config, False otherwise
+    """
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Migration check - instance has launch template instead of launch config
+    if "launch_template" in instance_facts:
+        return False
+
+    # Match check - instance has the current launch config
+    if instance_facts.get("launch_config_name") == props["launch_config_name"]:
+        return True
+
+    return False
+
+
+def _is_instance_using_launch_template(instance_id: str, props: dict[str, Any]) -> bool:
+    """
+    Check if an instance is using the current launch template.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts and launch template
+
+    Returns:
+        bool: True if instance uses current launch template, False otherwise
+    """
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Migration check - instance has launch config instead of launch template
+    if "launch_config_name" in instance_facts:
+        return False
+
+    # Match check - instance has the current launch template
+    if instance_facts.get("launch_template") == props["launch_template"]:
+        return True
+
+    return False
+
+
+def _get_instances_by_launch_spec(props, check_enabled, initial_instances, is_using_current_spec):
+    """
+    Classify instances as new or old based on launch specification.
+
+    Args:
+        props: ASG properties including instances and instance facts
+        check_enabled: Whether to check launch spec or use initial_instances
+        initial_instances: List of initial instance IDs (used when check_enabled is False)
+        is_using_current_spec: Function to determine if instance uses current spec
+
+    Returns:
+        tuple: (new_instances, old_instances) lists
+    """
     new_instances = []
     old_instances = []
-    # old instances are those that have the old launch config
-    if lc_check:
+
+    if check_enabled:
         for i in props["instances"]:
-            # Check if migrating from launch_template to launch_config first
-            if "launch_template" in props["instance_facts"][i]:
-                old_instances.append(i)
-            elif props["instance_facts"][i].get("launch_config_name") == props["launch_config_name"]:
+            if is_using_current_spec(i, props):
                 new_instances.append(i)
             else:
                 old_instances.append(i)
-
     else:
         module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
         for i in props["instances"]:
@@ -1719,64 +2168,106 @@ def get_instances_by_launch_config(props, lc_check, initial_instances):
     module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
 
     return new_instances, old_instances
+
+
+def get_instances_by_launch_config(props, lc_check, initial_instances):
+    return _get_instances_by_launch_spec(props, lc_check, initial_instances, _is_instance_using_launch_config)
 
 
 def get_instances_by_launch_template(props, lt_check, initial_instances):
-    new_instances = []
-    old_instances = []
-    # old instances are those that have the old launch template or version of the same launch template
-    if lt_check:
-        for i in props["instances"]:
-            # Check if migrating from launch_config_name to launch_template_name first
-            if "launch_config_name" in props["instance_facts"][i]:
-                old_instances.append(i)
-            elif props["instance_facts"][i].get("launch_template") == props["launch_template"]:
-                new_instances.append(i)
-            else:
-                old_instances.append(i)
-    else:
-        module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
-        for i in props["instances"]:
-            if i not in initial_instances:
-                new_instances.append(i)
-            else:
-                old_instances.append(i)
+    return _get_instances_by_launch_spec(props, lt_check, initial_instances, _is_instance_using_launch_template)
 
-    module.debug(f"New instances: {len(new_instances)}, {(*new_instances,)}")
-    module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
 
-    return new_instances, old_instances
+def _should_terminate_instance_for_launch_config(
+    instance_id: str, props: dict[str, Any], lc_check: bool, initial_instances: list[str]
+) -> bool:
+    """
+    Determine if an instance should be terminated based on launch configuration.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts
+        lc_check: Whether to check if instance has current launch config
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        bool: True if instance should be terminated
+    """
+    if not lc_check:
+        return instance_id in initial_instances
+
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Terminate if migrating from launch template to launch config
+    if "launch_template" in instance_facts:
+        return True
+
+    # Terminate if instance has different launch config
+    if instance_facts.get("launch_config_name") != props.get("launch_config_name"):
+        return True
+
+    return False
+
+
+def _should_terminate_instance_for_launch_template(
+    instance_id: str, props: dict[str, Any], lt_check: bool, initial_instances: list[str]
+) -> bool:
+    """
+    Determine if an instance should be terminated based on launch template.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts
+        lt_check: Whether to check if instance has current launch template
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        bool: True if instance should be terminated
+    """
+    if not lt_check:
+        return instance_id in initial_instances
+
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Terminate if migrating from launch config to launch template
+    if "launch_config_name" in instance_facts:
+        return True
+
+    # Terminate if instance has different launch template
+    if instance_facts.get("launch_template") != props.get("launch_template"):
+        return True
+
+    return False
 
 
 def list_purgeable_instances(props, lc_check, lt_check, replace_instances, initial_instances):
+    """
+    Identify instances that should be terminated during replacement.
+
+    Args:
+        props: ASG properties including instance facts
+        lc_check: Whether to check launch config matches
+        lt_check: Whether to check launch template matches
+        replace_instances: List of instance IDs to potentially replace
+        initial_instances: List of initial instance IDs
+
+    Returns:
+        list: Instance IDs that should be terminated
+    """
     instances_to_terminate = []
-    instances = (inst_id for inst_id in replace_instances if inst_id in props["instances"])
-    # check to make sure instances given are actually in the given ASG
-    # and they have a non-current launch config
+    # Filter to only instances that are actually in the ASG
+    instances = [inst_id for inst_id in replace_instances if inst_id in props["instances"]]
+
     if "launch_config_name" in module.params:
-        if lc_check:
-            for i in instances:
-                if (
-                    "launch_template" in props["instance_facts"][i]
-                    or props["instance_facts"][i]["launch_config_name"] != props["launch_config_name"]
-                ):
-                    instances_to_terminate.append(i)
-        else:
-            for i in instances:
-                if i in initial_instances:
-                    instances_to_terminate.append(i)
+        instances_to_terminate = [
+            i for i in instances if _should_terminate_instance_for_launch_config(i, props, lc_check, initial_instances)
+        ]
     elif "launch_template" in module.params:
-        if lt_check:
-            for i in instances:
-                if (
-                    "launch_config_name" in props["instance_facts"][i]
-                    or props["instance_facts"][i]["launch_template"] != props["launch_template"]
-                ):
-                    instances_to_terminate.append(i)
-        else:
-            for i in instances:
-                if i in initial_instances:
-                    instances_to_terminate.append(i)
+        instances_to_terminate = [
+            i
+            for i in instances
+            if _should_terminate_instance_for_launch_template(i, props, lt_check, initial_instances)
+        ]
 
     return instances_to_terminate
 
@@ -1792,8 +2283,7 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     break_loop = False
 
     as_group = describe_autoscaling_groups(connection, group_name)[0]
-    if desired_capacity is None:
-        desired_capacity = as_group["DesiredCapacity"]
+    desired_capacity = _default_if_none(desired_capacity, as_group["DesiredCapacity"])
 
     props = get_properties(as_group)
     desired_size = as_group["MinSize"]
@@ -1815,8 +2305,7 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
     if num_new_inst_needed == 0:
         decrement_capacity = True
         if as_group["MinSize"] != min_size:
-            if min_size is None:
-                min_size = as_group["MinSize"]
+            min_size = _default_if_none(min_size, as_group["MinSize"])
             updated_params = dict(AutoScalingGroupName=as_group["AutoScalingGroupName"], MinSize=min_size)
             update_asg(connection, **updated_params)
             module.debug(f"Updating minimum size back to original of {min_size}")
@@ -1851,7 +2340,6 @@ def terminate_batch(connection, replace_instances, initial_instances, leftovers=
 def wait_for_term_inst(connection, term_instances):
     wait_timeout = module.params.get("wait_timeout")
     group_name = module.params.get("name")
-    as_group = describe_autoscaling_groups(connection, group_name)[0]
     count = 1
     wait_timeout = time.time() + wait_timeout
     while wait_timeout > time.time() and count > 0:
@@ -1874,22 +2362,29 @@ def wait_for_term_inst(connection, term_instances):
         module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
 
 
+@AutoScalingErrorHandler.common_error_handler("wait for viable instances")
 def wait_for_new_inst(connection, group_name, wait_timeout, desired_size, prop):
-    # make sure we have the latest stats after that last loop.
+    """
+    Wait for a minimum number of viable instances in an ASG.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        wait_timeout: Wait timeout in seconds
+        desired_size: Minimum number of viable instances required
+        prop: Property to wait for (always "viable_instances")
+
+    Returns:
+        dict: ASG properties after waiting completes
+    """
+    module.debug(f"Waiting for {prop} >= {desired_size}")
+    waiter_config = custom_waiter_config(timeout=wait_timeout, default_pause=10)
+    waiter = get_min_viable_instances_waiter(connection, desired_size)
+    waiter.wait(AutoScalingGroupNames=[group_name], WaiterConfig=waiter_config)
+
     as_group = describe_autoscaling_groups(connection, group_name)[0]
     props = get_properties(as_group)
-    module.debug(f"Waiting for {prop} = {desired_size}, currently {props[prop]}")
-    # now we make sure that we have enough instances in a viable state
-    wait_timeout = time.time() + wait_timeout
-    while wait_timeout > time.time() and desired_size > props[prop]:
-        module.debug(f"Waiting for {prop} = {desired_size}, currently {props[prop]}")
-        time.sleep(10)
-        as_group = describe_autoscaling_groups(connection, group_name)[0]
-        props = get_properties(as_group)
-    if wait_timeout <= time.time():
-        # waiting took too long
-        module.fail_json(msg=f"Waited too long for new instances to become viable. {time.asctime()}")
-    module.debug(f"Reached {prop}: {desired_size}")
+    module.debug(f"Reached {prop}: {props[prop]}")
     return props
 
 
