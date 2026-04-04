@@ -1954,20 +1954,76 @@ def detach(connection):
     return True, asg_properties
 
 
-def get_instances_by_launch_config(props, lc_check, initial_instances):
+def _is_instance_using_launch_config(instance_id: str, props: dict[str, Any]) -> bool:
+    """
+    Check if an instance is using the current launch configuration.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts and launch config name
+
+    Returns:
+        bool: True if instance uses current launch config, False otherwise
+    """
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Migration check - instance has launch template instead of launch config
+    if "launch_template" in instance_facts:
+        return False
+
+    # Match check - instance has the current launch config
+    if instance_facts.get("launch_config_name") == props["launch_config_name"]:
+        return True
+
+    return False
+
+
+def _is_instance_using_launch_template(instance_id: str, props: dict[str, Any]) -> bool:
+    """
+    Check if an instance is using the current launch template.
+
+    Args:
+        instance_id: Instance ID to check
+        props: ASG properties including instance facts and launch template
+
+    Returns:
+        bool: True if instance uses current launch template, False otherwise
+    """
+    instance_facts = props["instance_facts"][instance_id]
+
+    # Migration check - instance has launch config instead of launch template
+    if "launch_config_name" in instance_facts:
+        return False
+
+    # Match check - instance has the current launch template
+    if instance_facts.get("launch_template") == props["launch_template"]:
+        return True
+
+    return False
+
+
+def _get_instances_by_launch_spec(props, check_enabled, initial_instances, is_using_current_spec):
+    """
+    Classify instances as new or old based on launch specification.
+
+    Args:
+        props: ASG properties including instances and instance facts
+        check_enabled: Whether to check launch spec or use initial_instances
+        initial_instances: List of initial instance IDs (used when check_enabled is False)
+        is_using_current_spec: Function to determine if instance uses current spec
+
+    Returns:
+        tuple: (new_instances, old_instances) lists
+    """
     new_instances = []
     old_instances = []
-    # old instances are those that have the old launch config
-    if lc_check:
+
+    if check_enabled:
         for i in props["instances"]:
-            # Check if migrating from launch_template to launch_config first
-            if "launch_template" in props["instance_facts"][i]:
-                old_instances.append(i)
-            elif props["instance_facts"][i].get("launch_config_name") == props["launch_config_name"]:
+            if is_using_current_spec(i, props):
                 new_instances.append(i)
             else:
                 old_instances.append(i)
-
     else:
         module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
         for i in props["instances"]:
@@ -1980,33 +2036,14 @@ def get_instances_by_launch_config(props, lc_check, initial_instances):
     module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
 
     return new_instances, old_instances
+
+
+def get_instances_by_launch_config(props, lc_check, initial_instances):
+    return _get_instances_by_launch_spec(props, lc_check, initial_instances, _is_instance_using_launch_config)
 
 
 def get_instances_by_launch_template(props, lt_check, initial_instances):
-    new_instances = []
-    old_instances = []
-    # old instances are those that have the old launch template or version of the same launch template
-    if lt_check:
-        for i in props["instances"]:
-            # Check if migrating from launch_config_name to launch_template_name first
-            if "launch_config_name" in props["instance_facts"][i]:
-                old_instances.append(i)
-            elif props["instance_facts"][i].get("launch_template") == props["launch_template"]:
-                new_instances.append(i)
-            else:
-                old_instances.append(i)
-    else:
-        module.debug(f"Comparing initial instances with current: {(*initial_instances,)}")
-        for i in props["instances"]:
-            if i not in initial_instances:
-                new_instances.append(i)
-            else:
-                old_instances.append(i)
-
-    module.debug(f"New instances: {len(new_instances)}, {(*new_instances,)}")
-    module.debug(f"Old instances: {len(old_instances)}, {(*old_instances,)}")
-
-    return new_instances, old_instances
+    return _get_instances_by_launch_spec(props, lt_check, initial_instances, _is_instance_using_launch_template)
 
 
 def _should_terminate_instance_for_launch_config(
