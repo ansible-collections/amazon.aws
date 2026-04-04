@@ -41,6 +41,16 @@ def _no_instances(result):
     return dict(state=result, matcher="path", expected=True, argument="length(AutoScalingInstances[]) == `0`")
 
 
+def _asg_no_instances(result):
+    """Check if ASG has zero instances."""
+    return dict(
+        state=result,
+        matcher="path",
+        expected=True,
+        argument="length(AutoScalingGroups[0].Instances[]) == `0`",
+    )
+
+
 class AutoscalingWaiterFactory(BaseWaiterFactory):
     @property
     def _waiter_model_data(self):
@@ -128,6 +138,52 @@ class AutoscalingWaiterFactory(BaseWaiterFactory):
                 acceptors=[
                     _success_on_instance_lifecycle_states("Terminated"),
                     _no_instances("success"),
+                ],
+            ),
+            group_exists=dict(
+                operation="DescribeAutoScalingGroups",
+                delay=5,
+                maxAttempts=40,
+                acceptors=[
+                    dict(
+                        state="success",
+                        matcher="path",
+                        expected=True,
+                        argument="length(AutoScalingGroups[]) > `0`",
+                    ),
+                    dict(
+                        state="retry",
+                        matcher="path",
+                        expected=True,
+                        argument="length(AutoScalingGroups[]) == `0`",
+                    ),
+                ],
+            ),
+            group_not_exists=dict(
+                operation="DescribeAutoScalingGroups",
+                delay=5,
+                maxAttempts=40,
+                acceptors=[
+                    dict(
+                        state="success",
+                        matcher="path",
+                        expected=True,
+                        argument="length(AutoScalingGroups[]) == `0`",
+                    ),
+                    dict(
+                        state="retry",
+                        matcher="path",
+                        expected=True,
+                        argument="length(AutoScalingGroups[]) > `0`",
+                    ),
+                ],
+            ),
+            group_instances_terminated=dict(
+                operation="DescribeAutoScalingGroups",
+                delay=10,
+                maxAttempts=60,
+                acceptors=[
+                    _asg_no_instances("success"),
                 ],
             ),
         )
