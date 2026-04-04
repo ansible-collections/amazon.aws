@@ -697,9 +697,9 @@ except ImportError:
 if typing.TYPE_CHECKING:
     from typing import Any
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_autoscaling_waiter
@@ -1080,7 +1080,7 @@ def get_launch_object(connection, ec2_connection):
     mixed_instances_policy = module.params.get("mixed_instances_policy")
 
     if launch_config_name is None and launch_template is None:
-        return dict()
+        return {}
 
     if launch_config_name:
         launch_configs = describe_launch_configurations(connection, launch_config_name)
