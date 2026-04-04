@@ -705,6 +705,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import Auto
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
@@ -872,6 +873,85 @@ def enforce_required_arguments_for_create():
         module.fail_json(msg=f"Missing required arguments for autoscaling group create: {','.join(missing_args)}")
 
 
+def _build_instance_facts(instance: dict[str, Any]) -> dict[str, Any]:
+    """
+    Build instance facts dictionary from ASG instance data.
+
+    Args:
+        instance: Instance data from ASG
+
+    Returns:
+        dict: Instance facts including health, lifecycle, and launch spec
+    """
+    facts = {
+        "health_status": instance["HealthStatus"],
+        "lifecycle_state": instance["LifecycleState"],
+    }
+
+    if "LaunchConfigurationName" in instance:
+        facts["launch_config_name"] = instance["LaunchConfigurationName"]
+    elif "LaunchTemplate" in instance:
+        facts["launch_template"] = instance["LaunchTemplate"]
+
+    return facts
+
+
+def _update_instance_counts(instance: dict[str, Any], counts: dict[str, int]) -> None:
+    """
+    Update instance count statistics based on instance state.
+
+    Args:
+        instance: Instance data from ASG
+        counts: Dictionary of count statistics to update in-place
+    """
+    health_status = instance["HealthStatus"]
+    lifecycle_state = instance["LifecycleState"]
+
+    # Count viable instances (healthy and in service)
+    if health_status == "Healthy" and lifecycle_state == "InService":
+        counts["viable_instances"] += 1
+
+    # Count by health status
+    if health_status == "Healthy":
+        counts["healthy_instances"] += 1
+    else:
+        counts["unhealthy_instances"] += 1
+
+    # Count by lifecycle state
+    if lifecycle_state == "InService":
+        counts["in_service_instances"] += 1
+    elif lifecycle_state == "Terminating":
+        counts["terminating_instances"] += 1
+    elif lifecycle_state == "Pending":
+        counts["pending_instances"] += 1
+
+
+def _resolve_target_group_names(target_group_arns: list[str]) -> list[str]:
+    """
+    Resolve target group ARNs to names in chunks.
+
+    Args:
+        target_group_arns: List of target group ARNs
+
+    Returns:
+        list: Target group names
+    """
+    if not target_group_arns:
+        return []
+
+    elbv2_connection = module.client("elbv2")
+    target_group_names = []
+
+    # Process in chunks of 20 (API limit)
+    # https://github.com/ansible-collections/amazon.aws/pull/1593
+    for chunk in chunks(target_group_arns, 20):
+        target_group_names.extend(
+            [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
+        )
+
+    return target_group_names
+
+
 def get_properties(autoscaling_group):
     properties = dict(
         healthy_instances=0,
@@ -886,30 +966,10 @@ def get_properties(autoscaling_group):
 
     if autoscaling_group_instances:
         properties["instances"] = [i["InstanceId"] for i in autoscaling_group_instances]
-        for i in autoscaling_group_instances:
-            instance_facts[i["InstanceId"]] = {
-                "health_status": i["HealthStatus"],
-                "lifecycle_state": i["LifecycleState"],
-            }
-            if "LaunchConfigurationName" in i:
-                instance_facts[i["InstanceId"]]["launch_config_name"] = i["LaunchConfigurationName"]
-            elif "LaunchTemplate" in i:
-                instance_facts[i["InstanceId"]]["launch_template"] = i["LaunchTemplate"]
-
-            if i["HealthStatus"] == "Healthy" and i["LifecycleState"] == "InService":
-                properties["viable_instances"] += 1
-
-            if i["HealthStatus"] == "Healthy":
-                properties["healthy_instances"] += 1
-            else:
-                properties["unhealthy_instances"] += 1
-
-            if i["LifecycleState"] == "InService":
-                properties["in_service_instances"] += 1
-            if i["LifecycleState"] == "Terminating":
-                properties["terminating_instances"] += 1
-            if i["LifecycleState"] == "Pending":
-                properties["pending_instances"] += 1
+        for instance in autoscaling_group_instances:
+            instance_id = instance["InstanceId"]
+            instance_facts[instance_id] = _build_instance_facts(instance)
+            _update_instance_counts(instance, properties)
     else:
         properties["instances"] = []
 
@@ -947,21 +1007,7 @@ def get_properties(autoscaling_group):
         metrics.sort(key=lambda x: x["Metric"])
     properties["metrics_collection"] = metrics
 
-    if properties["target_group_arns"]:
-        elbv2_connection = module.client("elbv2")
-        # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
-        tg_chunk_size = 20
-        properties["target_group_names"] = []
-        tg_chunks = [
-            properties["target_group_arns"][i: i + tg_chunk_size]
-            for i in range(0, len(properties["target_group_arns"]), tg_chunk_size)
-        ]  # fmt: skip
-        for chunk in tg_chunks:
-            properties["target_group_names"].extend(
-                [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
-            )
-    else:
-        properties["target_group_names"] = []
+    properties["target_group_names"] = _resolve_target_group_names(properties["target_group_arns"])
 
     return properties
 
