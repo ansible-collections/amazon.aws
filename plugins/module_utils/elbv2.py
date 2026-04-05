@@ -18,6 +18,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+# Not intended for general re-use / re-import
+from ._elbv2 import transformations as _transformations
 from .ec2 import get_ec2_security_group_ids_from_names
 from .elb_utils import AnsibleELBv2Error
 from .elb_utils import add_listener_certificates
@@ -48,6 +50,9 @@ from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
 from .transformation import scrub_none_parameters
 from .waiters import get_waiter
+
+# Expose transformation functions
+normalize_application_load_balancer = _transformations.normalize_application_load_balancer
 
 
 def _simple_forward_config_arn(config: Dict[str, Any], parent_arn: Optional[str]) -> Optional[str]:

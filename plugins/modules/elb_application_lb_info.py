@@ -405,14 +405,13 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_listeners
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancer_attributes
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancers
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_tags
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import normalize_application_load_balancer
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
@@ -453,19 +452,19 @@ def list_load_balancers(connection, module: AnsibleAWSModule) -> None:
 
             # Get the listeners for each alb
             if include_listeners or include_listener_rules:
-                load_balancer["listeners"] = describe_listeners(
+                load_balancer["Listeners"] = describe_listeners(
                     connection, load_balancer_arn=load_balancer["LoadBalancerArn"]
                 )
 
             # For each listener, get listener rules
             if include_listener_rules:
-                for listener in load_balancer["listeners"]:
-                    listener["rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
+                for listener in load_balancer["Listeners"]:
+                    listener["Rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
 
-        # Turn the boto3 result in to ansible_friendly_snaked_names
-        snaked_load_balancers = [camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers]
+        # Normalize each load balancer (convert to snake_case, sort rules, convert tags)
+        snaked_load_balancers = [normalize_application_load_balancer(lb) for lb in load_balancers]
 
-        # Get tags for each load balancer
+        # Get tags for each load balancer (not included in the boto3 describe_load_balancers response)
         for snaked_load_balancer in snaked_load_balancers:
             snaked_load_balancer["tags"] = get_load_balancer_tags(connection, snaked_load_balancer["load_balancer_arn"])
     except AnsibleELBv2Error as e:
