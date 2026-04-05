@@ -3,6 +3,7 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _normalize_attributes
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _normalize_listener_rules
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _normalize_listeners
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import (
@@ -11,6 +12,33 @@ from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations 
 
 # The various normalize_ functions are based upon ..transformation.boto3_resource_to_ansible_dict
 # As such these tests will be relatively light touch.
+
+
+class TestNormalizeAttributes:
+    def test_normalize_attributes_converts_format(self):
+        """Test that attributes are converted from boto3 format to dict with underscored keys"""
+        INPUT = [
+            {"Key": "access_logs.s3.enabled", "Value": "true"},
+            {"Key": "access_logs.s3.bucket", "Value": "my-bucket"},
+            {"Key": "deletion_protection.enabled", "Value": "false"},
+            {"Key": "idle_timeout.timeout_seconds", "Value": "60"},
+        ]
+        OUTPUT = {
+            "access_logs_s3_enabled": "true",
+            "access_logs_s3_bucket": "my-bucket",
+            "deletion_protection_enabled": "false",
+            "idle_timeout_timeout_seconds": "60",
+        }
+
+        assert OUTPUT == _normalize_attributes(INPUT)
+
+    def test_normalize_attributes_handles_empty_list(self):
+        """Test that empty attributes list returns empty dict"""
+        assert {} == _normalize_attributes([])
+
+    def test_normalize_attributes_handles_none(self):
+        """Test that None attributes returns empty dict"""
+        assert {} == _normalize_attributes(None)
 
 
 class TestNormalizeListenerRules:
@@ -205,3 +233,54 @@ class TestNormalizeApplicationLoadBalancer:
     def test_normalize_none_alb(self):
         """Test that None ALB is handled correctly"""
         assert normalize_application_load_balancer(None) is None
+
+    def test_normalize_alb_with_attributes(self):
+        """Test ALB normalization with attributes are flattened and converted"""
+        INPUT = {
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "LoadBalancerName": "test-alb",
+            "Attributes": [
+                {"Key": "access_logs.s3.enabled", "Value": "true"},
+                {"Key": "access_logs.s3.bucket", "Value": "my-bucket"},
+                {"Key": "deletion_protection.enabled", "Value": "false"},
+            ],
+        }
+        OUTPUT = {
+            "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "load_balancer_name": "test-alb",
+            "tags": {},
+            "access_logs_s3_enabled": "true",
+            "access_logs_s3_bucket": "my-bucket",
+            "deletion_protection_enabled": "false",
+        }
+
+        assert OUTPUT == normalize_application_load_balancer(INPUT)
+
+    def test_normalize_alb_without_attributes(self):
+        """Test ALB normalization without Attributes key"""
+        INPUT = {
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "LoadBalancerName": "test-alb",
+        }
+        OUTPUT = {
+            "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "load_balancer_name": "test-alb",
+            "tags": {},
+        }
+
+        assert OUTPUT == normalize_application_load_balancer(INPUT)
+
+    def test_normalize_alb_with_empty_attributes(self):
+        """Test ALB normalization with empty Attributes list"""
+        INPUT = {
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "LoadBalancerName": "test-alb",
+            "Attributes": [],
+        }
+        OUTPUT = {
+            "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "load_balancer_name": "test-alb",
+            "tags": {},
+        }
+
+        assert OUTPUT == normalize_application_load_balancer(INPUT)
