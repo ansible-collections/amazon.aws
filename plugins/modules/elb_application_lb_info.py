@@ -406,29 +406,11 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_listeners
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancer_attributes
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancers
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_tags
-from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import normalize_application_load_balancer
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import build_application_load_balancer_description
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
-
-def get_load_balancer_attributes(connection, module: AnsibleAWSModule, load_balancer_arn: str) -> Dict[str, str]:
-    try:
-        attributes = describe_load_balancer_attributes(connection, load_balancer_arn)
-    except AnsibleELBv2Error as e:
-        module.fail_json_aws(e, msg="Failed to describe load balancer attributes")
-    load_balancer_attributes = boto3_tag_list_to_ansible_dict(attributes)
-
-    # Replace '.' with '_' in attribute key names to make it more Ansibley
-    for k, v in list(load_balancer_attributes.items()):
-        load_balancer_attributes[k.replace(".", "_")] = v
-        del load_balancer_attributes[k]
-
-    return load_balancer_attributes
 
 
 def get_load_balancer_tags(connection, load_balancer_arn: str) -> Dict[str, str]:
@@ -445,24 +427,18 @@ def list_load_balancers(connection, module: AnsibleAWSModule) -> None:
 
     try:
         load_balancers = describe_load_balancers(connection, load_balancer_arns=load_balancer_arns, names=names)
-        for load_balancer in load_balancers:
-            # Get the attributes for each alb
-            if include_attributes:
-                load_balancer.update(get_load_balancer_attributes(connection, module, load_balancer["LoadBalancerArn"]))
 
-            # Get the listeners for each alb
-            if include_listeners or include_listener_rules:
-                load_balancer["Listeners"] = describe_listeners(
-                    connection, load_balancer_arn=load_balancer["LoadBalancerArn"]
-                )
-
-            # For each listener, get listener rules
-            if include_listener_rules:
-                for listener in load_balancer["Listeners"]:
-                    listener["Rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
-
-        # Normalize each load balancer (convert to snake_case, sort rules, convert tags)
-        snaked_load_balancers = [normalize_application_load_balancer(lb) for lb in load_balancers]
+        # Build complete ALB descriptions with normalization
+        snaked_load_balancers = [
+            build_application_load_balancer_description(
+                connection,
+                lb,
+                include_attributes=include_attributes,
+                include_listeners=include_listeners,
+                include_listener_rules=include_listener_rules,
+            )
+            for lb in load_balancers
+        ]
 
         # Get tags for each load balancer (not included in the boto3 describe_load_balancers response)
         for snaked_load_balancer in snaked_load_balancers:

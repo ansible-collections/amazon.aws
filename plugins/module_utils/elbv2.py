@@ -55,6 +55,54 @@ from .waiters import get_waiter
 normalize_application_load_balancer = _transformations.normalize_application_load_balancer
 
 
+def build_application_load_balancer_description(
+    connection: Any,
+    load_balancer: Dict[str, Any],
+    include_attributes: bool = True,
+    include_listeners: bool = True,
+    include_listener_rules: bool = True,
+) -> Dict[str, Any]:
+    """
+    Build a complete ALB description with optional attributes, listeners, and rules.
+
+    Takes a base load balancer dict from describe_load_balancers and enriches it with
+    additional information based on the include_* parameters, then normalizes the result.
+
+    Args:
+        connection: boto3 elbv2 connection
+        load_balancer: Base ALB dict from describe_load_balancers (in CamelCase boto3 format)
+        include_attributes: Whether to fetch and attach load balancer attributes
+        include_listeners: Whether to fetch and attach listeners
+        include_listener_rules: Whether to fetch and attach rules to each listener
+
+    Returns:
+        Normalized ALB dict in snake_case Ansible format
+
+    Note:
+        This function does not fetch tags. Tags should be handled separately by the caller
+        as they require a separate API call and may be added before or after normalization
+        depending on the use case.
+    """
+    # Make a copy to avoid modifying the original
+    alb = load_balancer.copy()
+
+    # Optionally add attributes (in raw boto3 format, normalization will convert them)
+    if include_attributes:
+        alb["Attributes"] = describe_load_balancer_attributes(connection, alb["LoadBalancerArn"])
+
+    # Optionally add listeners
+    if include_listeners or include_listener_rules:
+        alb["Listeners"] = describe_listeners(connection, load_balancer_arn=alb["LoadBalancerArn"])
+
+        # Optionally add rules to each listener
+        if include_listener_rules:
+            for listener in alb["Listeners"]:
+                listener["Rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
+
+    # Normalize the entire ALB object (convert to snake_case, sort rules, convert tags)
+    return normalize_application_load_balancer(alb)
+
+
 def _simple_forward_config_arn(config: Dict[str, Any], parent_arn: Optional[str]) -> Optional[str]:
     config = deepcopy(config)
 
