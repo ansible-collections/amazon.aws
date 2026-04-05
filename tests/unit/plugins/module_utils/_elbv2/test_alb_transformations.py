@@ -4,8 +4,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _normalize_attributes
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _normalize_listener_actions
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _normalize_listener_rules
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _normalize_listeners
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import _sort_actions
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2.transformations import (
     normalize_application_load_balancer,
 )
@@ -39,6 +41,84 @@ class TestNormalizeAttributes:
     def test_normalize_attributes_handles_none(self):
         """Test that None attributes returns empty dict"""
         assert {} == _normalize_attributes(None)
+
+
+class TestSortActions:
+    def test_sort_actions_by_order(self):
+        """Test that actions are sorted by Order field"""
+        INPUT = [
+            {"Order": 3, "Type": "forward"},
+            {"Order": 1, "Type": "authenticate-oidc"},
+            {"Order": 2, "Type": "forward"},
+        ]
+        OUTPUT = [
+            {"Order": 1, "Type": "authenticate-oidc"},
+            {"Order": 2, "Type": "forward"},
+            {"Order": 3, "Type": "forward"},
+        ]
+
+        assert OUTPUT == _sort_actions(INPUT)
+
+    def test_sort_actions_by_order_and_type(self):
+        """Test that actions with same Order are sorted by Type for stability"""
+        INPUT = [
+            {"Order": 1, "Type": "forward"},
+            {"Order": 1, "Type": "authenticate-oidc"},
+            {"Order": 1, "Type": "fixed-response"},
+        ]
+        OUTPUT = [
+            {"Order": 1, "Type": "authenticate-oidc"},
+            {"Order": 1, "Type": "fixed-response"},
+            {"Order": 1, "Type": "forward"},
+        ]
+
+        assert OUTPUT == _sort_actions(INPUT)
+
+    def test_sort_actions_with_default_order(self):
+        """Test that actions without Order default to 0"""
+        INPUT = [
+            {"Type": "forward", "TargetGroupArn": "arn:aws:..."},
+            {"Order": 2, "Type": "authenticate-oidc"},
+            {"Order": 1, "Type": "fixed-response"},
+        ]
+        OUTPUT = [
+            {"Type": "forward", "TargetGroupArn": "arn:aws:..."},
+            {"Order": 1, "Type": "fixed-response"},
+            {"Order": 2, "Type": "authenticate-oidc"},
+        ]
+
+        assert OUTPUT == _sort_actions(INPUT)
+
+    def test_sort_actions_empty_list(self):
+        """Test that empty actions list is handled correctly"""
+        assert [] == _sort_actions([])
+
+    def test_sort_actions_none(self):
+        """Test that None actions list is handled correctly"""
+        assert _sort_actions(None) is None
+
+
+class TestNormalizeListenerActions:
+    def test_normalize_listener_actions_sorts_and_converts(self):
+        """Test that listener actions are sorted and converted to snake_case"""
+        INPUT = [
+            {"Order": 2, "Type": "forward", "TargetGroupArn": "arn:aws:...2"},
+            {"Order": 1, "Type": "authenticate-oidc", "AuthenticateOidcConfig": {}},
+        ]
+        OUTPUT = [
+            {"order": 1, "type": "authenticate-oidc", "authenticate_oidc_config": {}},
+            {"order": 2, "type": "forward", "target_group_arn": "arn:aws:...2"},
+        ]
+
+        assert OUTPUT == _normalize_listener_actions(INPUT)
+
+    def test_normalize_listener_actions_empty_list(self):
+        """Test that empty actions list is handled correctly"""
+        assert [] == _normalize_listener_actions([])
+
+    def test_normalize_listener_actions_none(self):
+        """Test that None actions list is handled correctly"""
+        assert _normalize_listener_actions(None) is None
 
 
 class TestNormalizeListenerRules:
@@ -127,6 +207,74 @@ class TestNormalizeListeners:
                 "listener_arn": "arn:aws:elasticloadbalancing:::listener/1",
                 "port": 443,
                 "protocol": "HTTPS",
+            }
+        ]
+
+        assert OUTPUT == _normalize_listeners(INPUT)
+
+    def test_normalize_listeners_with_default_actions(self):
+        """Test that DefaultActions are sorted by Order and Type"""
+        INPUT = [
+            {
+                "ListenerArn": "arn:aws:elasticloadbalancing:::listener/1",
+                "Port": 80,
+                "Protocol": "HTTP",
+                "DefaultActions": [
+                    {"Order": 2, "Type": "forward", "TargetGroupArn": "arn:aws:..."},
+                    {"Order": 1, "Type": "authenticate-oidc", "AuthenticateOidcConfig": {}},
+                ],
+            }
+        ]
+        OUTPUT = [
+            {
+                "listener_arn": "arn:aws:elasticloadbalancing:::listener/1",
+                "port": 80,
+                "protocol": "HTTP",
+                "default_actions": [
+                    {"order": 1, "type": "authenticate-oidc", "authenticate_oidc_config": {}},
+                    {"order": 2, "type": "forward", "target_group_arn": "arn:aws:..."},
+                ],
+            }
+        ]
+
+        assert OUTPUT == _normalize_listeners(INPUT)
+
+    def test_normalize_listeners_with_rules_containing_actions(self):
+        """Test that Actions within Rules are sorted by Order and Type"""
+        INPUT = [
+            {
+                "ListenerArn": "arn:aws:elasticloadbalancing:::listener/1",
+                "Port": 80,
+                "Protocol": "HTTP",
+                "Rules": [
+                    {
+                        "RuleArn": "arn:aws:elasticloadbalancing:::rule/1",
+                        "Priority": "1",
+                        "IsDefault": False,
+                        "Actions": [
+                            {"Order": 2, "Type": "forward", "TargetGroupArn": "arn:aws:..."},
+                            {"Order": 1, "Type": "authenticate-oidc", "AuthenticateOidcConfig": {}},
+                        ],
+                    },
+                ],
+            }
+        ]
+        OUTPUT = [
+            {
+                "listener_arn": "arn:aws:elasticloadbalancing:::listener/1",
+                "port": 80,
+                "protocol": "HTTP",
+                "rules": [
+                    {
+                        "rule_arn": "arn:aws:elasticloadbalancing:::rule/1",
+                        "priority": "1",
+                        "is_default": False,
+                        "actions": [
+                            {"order": 1, "type": "authenticate-oidc", "authenticate_oidc_config": {}},
+                            {"order": 2, "type": "forward", "target_group_arn": "arn:aws:..."},
+                        ],
+                    },
+                ],
             }
         ]
 

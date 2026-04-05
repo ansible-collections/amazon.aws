@@ -46,18 +46,67 @@ def _normalize_attributes(attributes: BotoResourceList) -> Dict[str, str]:
     return {k.replace(".", "_"): v for k, v in attrs_dict.items()}
 
 
+def _sort_actions(actions: BotoResourceList) -> BotoResourceList:
+    """
+    Sort ELB listener actions by Order and Type.
+
+    Sorts actions by Order field (defaulting to 0), then by Type for stability.
+    This ensures consistent ordering and avoids comparing dict/None which causes TypeError.
+
+    Parameters:
+        actions (list): List of action dicts from boto3
+
+    Returns:
+        List of actions sorted by Order and Type
+    """
+    if not actions:
+        return actions
+
+    return sorted(
+        actions,
+        key=lambda x: (
+            x.get("Order", 0),
+            x.get("Type", ""),
+        ),
+    )
+
+
+def _normalize_listener_actions(actions: BotoResourceList) -> AnsibleAWSResourceList:
+    """
+    Normalize and sort ELB listener actions by Order and Type.
+
+    Converts actions from the CamelCase boto3 format to the snake_case Ansible format
+    and sorts them by Order (defaulting to 0) then Type for stability.
+
+    Parameters:
+        actions (list): List of listener actions from boto3
+
+    Returns:
+        List of actions in Ansible format, sorted by Order and Type
+    """
+    if not actions:
+        return actions
+
+    # Sort actions before conversion
+    sorted_actions = _sort_actions(actions)
+
+    # Convert to Ansible dict format (force_tags=False to prevent automatic tags field)
+    return boto3_resource_list_to_ansible_dict(sorted_actions, force_tags=False)
+
+
 def _normalize_listener_rules(rules: BotoResourceList) -> AnsibleAWSResourceList:
     """
     Normalize and sort ELB listener rules by priority.
 
     Converts listener rules from the CamelCase boto3 format to the snake_case Ansible format
     and sorts them numerically by priority, with the "default" rule appearing last.
+    Actions within each rule are also sorted by Order and Type.
 
     Parameters:
         rules (list): List of listener rules from boto3
 
     Returns:
-        List of rules in Ansible format, sorted by priority
+        List of rules in Ansible format, sorted by priority with sorted actions
     """
     if not rules:
         return rules
@@ -76,27 +125,36 @@ def _normalize_listener_rules(rules: BotoResourceList) -> AnsibleAWSResourceList
 
     sorted_rules = sorted(rules, key=sort_key)
 
-    # Convert to Ansible dict format (force_tags=False to prevent automatic tags field)
-    return boto3_resource_list_to_ansible_dict(sorted_rules, force_tags=False)
+    # Convert to Ansible dict format, also sorting Actions within each rule
+    # (force_tags=False to prevent automatic tags field)
+    transforms = {"Actions": _normalize_listener_actions}
+    return [
+        boto3_resource_to_ansible_dict(rule, nested_transforms=transforms, force_tags=False) for rule in sorted_rules
+    ]
 
 
 def _normalize_listeners(listeners: BotoResourceList) -> AnsibleAWSResourceList:
     """
     Normalize ELB listeners.
 
-    Converts listeners from boto3 format to Ansible format, applying rule sorting.
+    Converts listeners from boto3 format to Ansible format, applying action and rule sorting.
+    DefaultActions are sorted by Order and Type for consistent output.
 
     Parameters:
         listeners (list): List of listeners from boto3
 
     Returns:
-        List of listeners in Ansible format with sorted rules
+        List of listeners in Ansible format with sorted default actions and sorted rules
     """
     if not listeners:
         return listeners
 
-    # Transform each listener, applying nested transforms to Rules (force_tags=False to prevent automatic tags field)
-    transforms = {"Rules": _normalize_listener_rules}
+    # Transform each listener, applying nested transforms to DefaultActions and Rules
+    # (force_tags=False to prevent automatic tags field)
+    transforms = {
+        "DefaultActions": _normalize_listener_actions,
+        "Rules": _normalize_listener_rules,
+    }
     return [
         boto3_resource_to_ansible_dict(listener, nested_transforms=transforms, force_tags=False)
         for listener in listeners
