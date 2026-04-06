@@ -950,6 +950,9 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
     # Add ip address type
     alb["IpAddressType"] = alb_obj.get_elb_ip_address_type()
 
+    # Add tags (not included in describe_load_balancers response)
+    alb["Tags"] = alb_obj.get_elb_tags()
+
     # Normalize the entire ALB object (convert to snake_case, sort rules, convert tags)
     snaked_alb = normalize_application_load_balancer(alb)
 

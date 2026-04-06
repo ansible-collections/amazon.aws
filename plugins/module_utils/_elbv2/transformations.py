@@ -189,8 +189,9 @@ def normalize_application_load_balancer(alb: BotoResource) -> AnsibleAWSResource
         attributes = _normalize_attributes(alb_copy.pop("Attributes"))
 
     # Transform the ALB, applying nested transforms to Listeners
+    # force_tags=False because tags require a separate API call and should be added by caller
     transforms = {"Listeners": _normalize_listeners}
-    result = boto3_resource_to_ansible_dict(alb_copy, nested_transforms=transforms)
+    result = boto3_resource_to_ansible_dict(alb_copy, nested_transforms=transforms, force_tags=False)
 
     # Merge normalized attributes as flat fields
     if attributes:

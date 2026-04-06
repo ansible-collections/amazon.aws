@@ -344,7 +344,6 @@ class TestNormalizeApplicationLoadBalancer:
             "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
             "load_balancer_name": "test-alb",
             "ip_address_type": "dualstack",
-            "tags": {},
         }
 
         assert OUTPUT == normalize_application_load_balancer(INPUT)
@@ -364,8 +363,29 @@ class TestNormalizeApplicationLoadBalancer:
 
         assert OUTPUT == normalize_application_load_balancer(INPUT)
 
+    def test_normalize_alb_with_tags(self):
+        """Test ALB normalization with tags are properly converted"""
+        INPUT = {
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "LoadBalancerName": "test-alb",
+            "Tags": [
+                {"Key": "Name", "Value": "test-alb"},
+                {"Key": "Environment", "Value": "production"},
+            ],
+        }
+        OUTPUT = {
+            "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "load_balancer_name": "test-alb",
+            "tags": {
+                "Name": "test-alb",
+                "Environment": "production",
+            },
+        }
+
+        assert OUTPUT == normalize_application_load_balancer(INPUT)
+
     def test_normalize_alb_without_tags(self):
-        """Test ALB normalization without Tags key"""
+        """Test ALB normalization without Tags key - tags should not be added"""
         INPUT = {
             "LoadBalancerArn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
             "LoadBalancerName": "test-alb",
@@ -373,7 +393,6 @@ class TestNormalizeApplicationLoadBalancer:
         OUTPUT = {
             "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
             "load_balancer_name": "test-alb",
-            "tags": {},
         }
 
         assert OUTPUT == normalize_application_load_balancer(INPUT)
@@ -396,10 +415,36 @@ class TestNormalizeApplicationLoadBalancer:
         OUTPUT = {
             "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
             "load_balancer_name": "test-alb",
-            "tags": {},
             "access_logs_s3_enabled": "true",
             "access_logs_s3_bucket": "my-bucket",
             "deletion_protection_enabled": "false",
+        }
+
+        assert OUTPUT == normalize_application_load_balancer(INPUT)
+
+    def test_normalize_alb_with_attributes_and_tags(self):
+        """Test ALB normalization with both attributes and tags"""
+        INPUT = {
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "LoadBalancerName": "test-alb",
+            "Attributes": [
+                {"Key": "access_logs.s3.enabled", "Value": "true"},
+                {"Key": "deletion_protection.enabled", "Value": "false"},
+            ],
+            "Tags": [
+                {"Key": "Name", "Value": "test-alb"},
+                {"Key": "Owner", "Value": "devops"},
+            ],
+        }
+        OUTPUT = {
+            "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
+            "load_balancer_name": "test-alb",
+            "access_logs_s3_enabled": "true",
+            "deletion_protection_enabled": "false",
+            "tags": {
+                "Name": "test-alb",
+                "Owner": "devops",
+            },
         }
 
         assert OUTPUT == normalize_application_load_balancer(INPUT)
@@ -413,7 +458,6 @@ class TestNormalizeApplicationLoadBalancer:
         OUTPUT = {
             "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
             "load_balancer_name": "test-alb",
-            "tags": {},
         }
 
         assert OUTPUT == normalize_application_load_balancer(INPUT)
@@ -428,7 +472,6 @@ class TestNormalizeApplicationLoadBalancer:
         OUTPUT = {
             "load_balancer_arn": "arn:aws:elasticloadbalancing:::loadbalancer/app/test/123",
             "load_balancer_name": "test-alb",
-            "tags": {},
         }
 
         assert OUTPUT == normalize_application_load_balancer(INPUT)
