@@ -355,6 +355,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import transform_autoscaling_group
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -511,39 +513,20 @@ def find_asgs(conn, module, name=None, tags=None):
             matched_tags = True
 
         if matched_name and matched_tags:
-            asg = camel_dict_to_snake_dict(asg)
-            # compatibility with autoscaling_group module
-            if "launch_configuration_name" in asg:
-                asg["launch_config_name"] = asg["launch_configuration_name"]
-            # workaround for https://github.com/ansible/ansible/pull/25015
-            if "target_group_ar_ns" in asg:
-                asg["target_group_arns"] = asg["target_group_ar_ns"]
-                del asg["target_group_ar_ns"]
-            if asg.get("target_group_arns"):
-                if elbv2:
-                    try:
-                        # Limit of 20 similar to https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
-                        tg_chunk_size = 20
-                        asg["target_group_names"] = []
-                        tg_chunks = [
-                            asg["target_group_arns"][i: i + tg_chunk_size]
-                            for i in range(0, len(asg["target_group_arns"]), tg_chunk_size)
-                        ]  # fmt: skip
-                        for chunk in tg_chunks:
-                            asg["target_group_names"].extend(
-                                [tg["TargetGroupName"] for tg in describe_target_groups(elbv2, TargetGroupArns=chunk)]
-                            )
-                    except AnsibleELBv2Error as e:
-                        module.fail_json_aws(e, msg="Failed to describe Target Groups")
-            else:
-                asg["target_group_names"] = []
-            # get asg lifecycle hooks if any
-            try:
-                asg_lifecyclehooks = conn.describe_lifecycle_hooks(AutoScalingGroupName=asg["auto_scaling_group_name"])
-                asg["lifecycle_hooks"] = asg_lifecyclehooks["LifecycleHooks"]
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to fetch information about ASG lifecycle hooks")
-            matched_asgs.append(asg)
+            # Enrich ASG with additional data before transformation
+            target_group_names = _resolve_target_group_names(elbv2, asg.get("TargetGroupARNs", []))
+            lifecycle_hooks = _describe_lifecycle_hooks(conn, asg["AutoScalingGroupName"])
+
+            # Create enriched copy with additional data
+            enriched_asg = asg.copy()
+            enriched_asg["TargetGroupNames"] = target_group_names
+            enriched_asg["LifecycleHooks"] = lifecycle_hooks
+
+            # Transform using shared logic from module_utils
+            # Use instances_as_ids=False to get full instance details in instances field
+            transformed_asg = transform_autoscaling_group(enriched_asg, instances_as_ids=False)
+
+            matched_asgs.append(transformed_asg)
 
     return matched_asgs
 

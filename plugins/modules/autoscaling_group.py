@@ -697,18 +697,27 @@ except ImportError:
 if typing.TYPE_CHECKING:
     from typing import Any
 
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
+
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_autoscaling_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_min_viable_instances_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import transform_autoscaling_group
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_launch_templates
+from ansible_collections.amazon.aws.plugins.module_utils.elb import get_elb_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.elb import get_min_healthy_instances_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import boto3_resource_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 backoff_params = dict(retries=10, delay=3, backoff=1.5)
@@ -891,59 +900,6 @@ def enforce_required_arguments_for_create():
         module.fail_json(msg=f"Missing required arguments for autoscaling group create: {','.join(missing_args)}")
 
 
-def _build_instance_facts(instance: dict[str, Any]) -> dict[str, Any]:
-    """
-    Build instance facts dictionary from ASG instance data.
-
-    Args:
-        instance: Instance data from ASG
-
-    Returns:
-        dict: Instance facts including health, lifecycle, and launch spec
-    """
-    facts = {
-        "health_status": instance["HealthStatus"],
-        "lifecycle_state": instance["LifecycleState"],
-    }
-
-    if "LaunchConfigurationName" in instance:
-        facts["launch_config_name"] = instance["LaunchConfigurationName"]
-    elif "LaunchTemplate" in instance:
-        facts["launch_template"] = instance["LaunchTemplate"]
-
-    return facts
-
-
-def _update_instance_counts(instance: dict[str, Any], counts: dict[str, int]) -> None:
-    """
-    Update instance count statistics based on instance state.
-
-    Args:
-        instance: Instance data from ASG
-        counts: Dictionary of count statistics to update in-place
-    """
-    health_status = instance["HealthStatus"]
-    lifecycle_state = instance["LifecycleState"]
-
-    # Count viable instances (healthy and in service)
-    if health_status == "Healthy" and lifecycle_state == "InService":
-        counts["viable_instances"] += 1
-
-    # Count by health status
-    if health_status == "Healthy":
-        counts["healthy_instances"] += 1
-    else:
-        counts["unhealthy_instances"] += 1
-
-    # Count by lifecycle state
-    if lifecycle_state == "InService":
-        counts["in_service_instances"] += 1
-    elif lifecycle_state == "Terminating":
-        counts["terminating_instances"] += 1
-    elif lifecycle_state == "Pending":
-        counts["pending_instances"] += 1
-
-
 def _resolve_target_group_names(target_group_arns: list[str]) -> list[str]:
     """
     Resolve target group ARNs to names in chunks.
@@ -970,64 +926,27 @@ def _resolve_target_group_names(target_group_arns: list[str]) -> list[str]:
     return target_group_names
 
 
-def get_properties(autoscaling_group):
-    properties = dict(
-        healthy_instances=0,
-        in_service_instances=0,
-        unhealthy_instances=0,
-        pending_instances=0,
-        viable_instances=0,
-        terminating_instances=0,
-    )
-    instance_facts = dict()
-    autoscaling_group_instances = autoscaling_group.get("Instances")
+def get_properties(autoscaling_group: dict[str, Any]) -> dict[str, Any]:
+    """
+    Convert ASG from boto3 CamelCase format to Ansible snake_case format.
 
-    if autoscaling_group_instances:
-        properties["instances"] = [i["InstanceId"] for i in autoscaling_group_instances]
-        for instance in autoscaling_group_instances:
-            instance_id = instance["InstanceId"]
-            instance_facts[instance_id] = _build_instance_facts(instance)
-            _update_instance_counts(instance, properties)
-    else:
-        properties["instances"] = []
+    Resolves target group names via API, then transforms the enriched ASG data.
 
-    properties["auto_scaling_group_name"] = autoscaling_group.get("AutoScalingGroupName")
-    properties["auto_scaling_group_arn"] = autoscaling_group.get("AutoScalingGroupARN")
-    properties["availability_zones"] = autoscaling_group.get("AvailabilityZones")
-    properties["created_time"] = autoscaling_group.get("CreatedTime")
-    properties["instance_facts"] = instance_facts
-    properties["load_balancers"] = autoscaling_group.get("LoadBalancerNames")
-    if "LaunchConfigurationName" in autoscaling_group:
-        properties["launch_config_name"] = autoscaling_group.get("LaunchConfigurationName")
-    else:
-        properties["launch_template"] = autoscaling_group.get("LaunchTemplate")
-    properties["tags"] = autoscaling_group.get("Tags")
-    properties["max_instance_lifetime"] = autoscaling_group.get("MaxInstanceLifetime")
-    properties["min_size"] = autoscaling_group.get("MinSize")
-    properties["max_size"] = autoscaling_group.get("MaxSize")
-    properties["desired_capacity"] = autoscaling_group.get("DesiredCapacity")
-    properties["default_cooldown"] = autoscaling_group.get("DefaultCooldown")
-    properties["healthcheck_grace_period"] = autoscaling_group.get("HealthCheckGracePeriod")
-    properties["healthcheck_type"] = autoscaling_group.get("HealthCheckType")
-    properties["termination_policies"] = autoscaling_group.get("TerminationPolicies")
-    properties["target_group_arns"] = autoscaling_group.get("TargetGroupARNs")
-    properties["vpc_zone_identifier"] = autoscaling_group.get("VPCZoneIdentifier")
-    properties["protected_from_scale_in"] = autoscaling_group.get("NewInstancesProtectedFromScaleIn")
-    raw_mixed_instance_object = autoscaling_group.get("MixedInstancesPolicy")
-    if raw_mixed_instance_object:
-        properties["mixed_instances_policy_full"] = camel_dict_to_snake_dict(raw_mixed_instance_object)
-        properties["mixed_instances_policy"] = [
-            x["InstanceType"] for x in raw_mixed_instance_object.get("LaunchTemplate").get("Overrides")
-        ]
+    Args:
+        autoscaling_group: Raw ASG data from boto3 describe_auto_scaling_groups
 
-    metrics = autoscaling_group.get("EnabledMetrics")
-    if metrics:
-        metrics.sort(key=lambda x: x["Metric"])
-    properties["metrics_collection"] = metrics
+    Returns:
+        dict: Transformed ASG properties in snake_case with additional computed fields
+    """
+    # Resolve target group ARNs to names - API call (done first)
+    target_group_names = _resolve_target_group_names(autoscaling_group.get("TargetGroupARNs", []))
 
-    properties["target_group_names"] = _resolve_target_group_names(properties["target_group_arns"])
+    # Create enriched autoscaling_group with target group names
+    enriched_asg = autoscaling_group.copy()
+    enriched_asg["TargetGroupNames"] = target_group_names
 
-    return properties
+    # Pass to pure transformation function from module_utils
+    return transform_autoscaling_group(enriched_asg)
 
 
 def _build_launch_template_spec(lt_data: dict[str, Any], requested_version: str | None) -> dict[str, Any]:

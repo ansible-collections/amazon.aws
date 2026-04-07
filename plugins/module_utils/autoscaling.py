@@ -33,6 +33,7 @@ if typing.TYPE_CHECKING:
 AnsibleAutoScalingError = _common.AnsibleAutoScalingError
 AutoScalingErrorHandler = _common.AutoScalingErrorHandler
 WAITER_MAP = _waiters.WAITER_MAP
+transform_autoscaling_group = _transformations.transform_autoscaling_group
 
 
 def get_autoscaling_groups(
