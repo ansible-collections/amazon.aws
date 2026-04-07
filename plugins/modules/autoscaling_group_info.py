@@ -4,6 +4,8 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: autoscaling_group_info
@@ -347,6 +349,12 @@ results:
 """
 
 import re
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Any
+
+    from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
@@ -408,7 +416,7 @@ def _resolve_target_group_names(elbv2_connection: ClientType | None, target_grou
     return target_group_names
 
 
-def match_asg_tags(tags_to_match, asg):
+def match_asg_tags(tags_to_match: dict[str, Any], asg: dict[str, Any]) -> bool:
     for key, value in tags_to_match.items():
         for tag in asg["Tags"]:
             if key == tag["Key"] and value == tag["Value"]:
@@ -418,7 +426,9 @@ def match_asg_tags(tags_to_match, asg):
     return True
 
 
-def find_asgs(conn, module, name=None, tags=None):
+def find_asgs(
+    conn: ClientType, module: Any, name: str | None = None, tags: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     """
     Args:
         conn (boto3.AutoScaling.Client): Valid Boto3 ASG client.
@@ -568,7 +578,7 @@ def find_asgs(conn, module, name=None, tags=None):
     return matched_asgs
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         name=dict(type="str", aliases=["group_name"]),
         tags=dict(type="dict"),
