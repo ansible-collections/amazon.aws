@@ -702,7 +702,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import Auto
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_autoscaling_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import get_min_viable_instances_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import transform_autoscaling_group
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_launch_templates
 from ansible_collections.amazon.aws.plugins.module_utils.elb import get_elb_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.elb import get_min_healthy_instances_waiter
@@ -782,20 +781,16 @@ def describe_launch_configurations(connection, launch_config_name):
     return pg.paginate(LaunchConfigurationNames=[launch_config_name]).build_full_result()
 
 
-@AWSRetry.jittered_backoff(**backoff_params)
-def describe_launch_templates(connection, launch_template):
+def _describe_launch_templates(connection: ClientType, launch_template: dict[str, Any]) -> list[dict[str, Any]]:
+    """
+    Describe launch templates by ID or name.
+
+    Wrapper around ec2.describe_launch_templates that accepts the module's launch_template dict.
+    """
     if launch_template["launch_template_id"] is not None:
-        try:
-            lt = connection.describe_launch_templates(LaunchTemplateIds=[launch_template["launch_template_id"]])
-            return lt
-        except is_boto3_error_code("InvalidLaunchTemplateName.NotFoundException"):
-            module.fail_json(msg=f"No launch template found matching: {launch_template}")
+        return describe_launch_templates(connection, launch_template_ids=[launch_template["launch_template_id"]])
     else:
-        try:
-            lt = connection.describe_launch_templates(LaunchTemplateNames=[launch_template["launch_template_name"]])
-            return lt
-        except is_boto3_error_code("InvalidLaunchTemplateName.NotFoundException"):
-            module.fail_json(msg=f"No launch template found matching: {launch_template}")
+        return describe_launch_templates(connection, launch_template_names=[launch_template["launch_template_name"]])
 
 
 @AutoScalingErrorHandler.common_error_handler("create auto scaling group")
@@ -1002,7 +997,10 @@ def get_launch_object(connection, ec2_connection):
         return {"LaunchConfigurationName": launch_configs["LaunchConfigurations"][0]["LaunchConfigurationName"]}
 
     # launch_template path
-    lt = describe_launch_templates(ec2_connection, launch_template)["LaunchTemplates"][0]
+    launch_templates = _describe_launch_templates(ec2_connection, launch_template)
+    if not launch_templates:
+        raise AnsibleAWSError(f"No launch template found matching: {launch_template}")
+    lt = launch_templates[0]
     launch_template_spec = _build_launch_template_spec(lt, launch_template["version"])
     launch_object = {"LaunchTemplate": launch_template_spec}
 

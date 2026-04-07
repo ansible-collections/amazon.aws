@@ -348,18 +348,64 @@ results:
 
 import re
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import AutoScalingErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.autoscaling import transform_autoscaling_group
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+backoff_params = dict(retries=10, delay=3, backoff=1.5)
+
+
+@AutoScalingErrorHandler.list_error_handler("describe auto scaling groups", {"AutoScalingGroups": []})
+@AWSRetry.jittered_backoff(**backoff_params)
+def _describe_autoscaling_groups(connection: ClientType) -> dict[str, Any]:
+    """Describe all AutoScaling Groups using pagination."""
+    paginator = connection.get_paginator("describe_auto_scaling_groups")
+    return paginator.paginate().build_full_result()
+
+
+@AutoScalingErrorHandler.list_error_handler("describe lifecycle hooks", [])
+@AWSRetry.jittered_backoff(**backoff_params)
+def _describe_lifecycle_hooks(connection: ClientType, asg_name: str) -> list[dict[str, Any]]:
+    """Describe lifecycle hooks for a specific AutoScaling Group."""
+    result = connection.describe_lifecycle_hooks(AutoScalingGroupName=asg_name)
+    return result.get("LifecycleHooks", [])
+
+
+def _resolve_target_group_names(elbv2_connection: ClientType | None, target_group_arns: list[str]) -> list[str]:
+    """
+    Resolve target group ARNs to names in chunks.
+
+    Args:
+        elbv2_connection: ELBv2 connection (None if unavailable)
+        target_group_arns: List of target group ARNs
+
+    Returns:
+        Target group names (empty list if no connection or no ARNs)
+    """
+    if not target_group_arns:
+        return []
+
+    target_group_names = []
+    # Process in chunks of 20 (API limit)
+    # https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeLoadBalancers.html
+    for chunk in chunks(target_group_arns, 20):
+        try:
+            target_group_names.extend(
+                [tg["TargetGroupName"] for tg in describe_target_groups(elbv2_connection, TargetGroupArns=chunk)]
+            )
+        except AnsibleAWSError:
+            # If we can't get target group names, that's not fatal - return what we have
+            # The calling code will have the ARNs in the output already
+            break
+
+    return target_group_names
 
 
 def match_asg_tags(tags_to_match, asg):
@@ -480,21 +526,12 @@ def find_asgs(conn, module, name=None, tags=None):
             }
         ]
     """
+    asgs = _describe_autoscaling_groups(conn)
 
-    try:
-        asgs_paginator = conn.get_paginator("describe_auto_scaling_groups")
-        asgs = asgs_paginator.paginate().build_full_result()
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe AutoScalingGroups")
+    if not asgs.get("AutoScalingGroups"):
+        return []
 
-    if not asgs:
-        return asgs
-
-    try:
-        elbv2 = module.client("elbv2")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        # This is nice to have, not essential
-        elbv2 = None
+    elbv2 = module.client("elbv2")
     matched_asgs = []
 
     if name is not None:
@@ -547,7 +584,11 @@ def main():
 
     autoscaling = module.client("autoscaling")
 
-    results = find_asgs(autoscaling, module, name=asg_name, tags=asg_tags)
+    try:
+        results = find_asgs(autoscaling, module, name=asg_name, tags=asg_tags)
+    except AnsibleAWSError as e:
+        module.fail_json_aws_error(e)
+
     module.exit_json(results=results)
 
 
