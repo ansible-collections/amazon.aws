@@ -867,7 +867,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.waiter import custom_waiter_config
 
-backoff_params = dict(retries=10, delay=3, backoff=1.5)
+backoff_params = {"retries": 10, "delay": 3, "backoff": 1.5}
 
 
 def _default_if_none(value: Any, default: Any) -> Any:
@@ -1912,7 +1912,7 @@ def _update_existing_asg(
     if asg_properties != initial_asg_properties:
         changed = True
         differences = {}
-        for key in set(list(asg_properties.keys()) + list(initial_asg_properties.keys())):
+        for key in {*asg_properties, *initial_asg_properties}:
             initial_val = initial_asg_properties.get(key)
             final_val = asg_properties.get(key)
             if initial_val != final_val:

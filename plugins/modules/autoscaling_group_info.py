@@ -468,7 +468,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
-backoff_params = dict(retries=10, delay=3, backoff=1.5)
+backoff_params = {"retries": 10, "delay": 3, "backoff": 1.5}
 
 
 @AutoScalingErrorHandler.list_error_handler("describe auto scaling groups", {"AutoScalingGroups": []})
