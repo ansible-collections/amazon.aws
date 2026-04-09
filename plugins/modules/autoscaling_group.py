@@ -1545,7 +1545,7 @@ def update_metrics_collection(
         True if changes were made, False otherwise
     """
     # Extract current metric names
-    current_metric_names = set(m["Metric"] for m in current_metrics)
+    current_metric_names = {m["Metric"] for m in current_metrics}
     desired_metric_names = set(metrics_list) if metrics_collection else set()
 
     # No change needed if current matches desired
