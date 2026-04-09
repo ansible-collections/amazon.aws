@@ -2079,6 +2079,44 @@ def _wait_for_replacement_instances(connection: str, group_name: str, wait_timeo
     wait_for_target_group(connection, group_name)
 
 
+def _terminate_and_replace_in_batches(
+    connection: ClientType,
+    group_name: str,
+    instances: list[str],
+    initial_instances: list[str],
+    batch_size: int,
+    wait_for_instances: bool,
+    wait_timeout: int,
+) -> None:
+    """
+    Process instance replacement in batches with optional waiting.
+
+    Terminates instances in batches, optionally waiting for termination
+    and replacement instances to become viable between batches.
+
+    Args:
+        connection: AutoScaling connection
+        group_name: Name of the ASG
+        instances: List of instance IDs to process in batches
+        initial_instances: Original instance list for comparison
+        batch_size: Number of instances per batch
+        wait_for_instances: Whether to wait between batches
+        wait_timeout: Timeout for waiting operations
+    """
+    module.debug("beginning main loop")
+    for i in chunks(instances, batch_size):
+        # break out of this loop if we have enough new instances
+        break_early, desired_size, term_instances = terminate_batch(connection, i, initial_instances, False)
+
+        if wait_for_instances:
+            wait_for_term_inst(connection, term_instances)
+            _wait_for_replacement_instances(connection, group_name, wait_timeout, desired_size)
+
+        if break_early:
+            module.debug("breaking loop")
+            return
+
+
 def replace(connection: ClientType) -> tuple[bool, dict[str, Any]]:
     batch_size = module.params.get("replace_batch_size")
     wait_timeout = module.params.get("wait_timeout")
@@ -2162,18 +2200,9 @@ def replace(connection: ClientType) -> tuple[bool, dict[str, Any]]:
     if replace_instances:
         instances = replace_instances
 
-    module.debug("beginning main loop")
-    for i in chunks(instances, batch_size):
-        # break out of this loop if we have enough new instances
-        break_early, desired_size, term_instances = terminate_batch(connection, i, instances, False)
-
-        if wait_for_instances:
-            wait_for_term_inst(connection, term_instances)
-            _wait_for_replacement_instances(connection, group_name, wait_timeout, desired_size)
-
-        if break_early:
-            module.debug("breaking loop")
-            break
+    _terminate_and_replace_in_batches(
+        connection, group_name, instances, instances, batch_size, wait_for_instances, wait_timeout
+    )
 
     update_size(connection, as_group, max_size, min_size, desired_capacity, protected_from_scale_in)
     as_group = describe_autoscaling_groups(connection, group_name)[0]
