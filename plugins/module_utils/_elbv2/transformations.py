@@ -1,0 +1,200 @@
+# -*- coding: utf-8 -*-
+
+# Copyright: Contributors to the Ansible project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import annotations
+
+import typing
+
+if typing.TYPE_CHECKING:
+    from typing import Dict
+    from typing import List
+
+    from ..transformation import AnsibleAWSResource
+    from ..transformation import AnsibleAWSResourceList
+    from ..transformation import BotoResource
+    from ..transformation import BotoResourceList
+
+from ..tagging import boto3_tag_list_to_ansible_dict
+from ..transformation import boto3_resource_list_to_ansible_dict
+from ..transformation import boto3_resource_to_ansible_dict
+
+
+def _normalize_attributes(attributes: BotoResourceList) -> Dict[str, str]:
+    """
+    Normalize ELB load balancer attributes from boto3 format to Ansible format.
+
+    Converts attributes from the list of Key/Value dicts returned by
+    describe_load_balancer_attributes to a flat dict with underscored keys.
+
+    Parameters:
+        attributes (list): List of attribute dicts from boto3, format:
+            [{"Key": "access_logs.s3.enabled", "Value": "true"}, ...]
+
+    Returns:
+        Dict with underscored keys and string values:
+            {"access_logs_s3_enabled": "true", ...}
+    """
+    if not attributes:
+        return {}
+
+    # Convert from boto3 format [{"Key": "...", "Value": "..."}] to dict
+    attrs_dict = boto3_tag_list_to_ansible_dict(attributes)
+
+    # Replace '.' with '_' in attribute keys to make it more Ansibley
+    return {k.replace(".", "_"): v for k, v in attrs_dict.items()}
+
+
+def _sort_actions(actions: BotoResourceList) -> BotoResourceList:
+    """
+    Sort ELB listener actions by Order and Type.
+
+    Sorts actions by Order field (defaulting to 0), then by Type for stability.
+    This ensures consistent ordering and avoids comparing dict/None which causes TypeError.
+
+    Parameters:
+        actions (list): List of action dicts from boto3
+
+    Returns:
+        List of actions sorted by Order and Type
+    """
+    if not actions:
+        return actions
+
+    return sorted(
+        actions,
+        key=lambda x: (
+            x.get("Order", 0),
+            x.get("Type", ""),
+        ),
+    )
+
+
+def _normalize_listener_actions(actions: BotoResourceList) -> AnsibleAWSResourceList:
+    """
+    Normalize and sort ELB listener actions by Order and Type.
+
+    Converts actions from the CamelCase boto3 format to the snake_case Ansible format
+    and sorts them by Order (defaulting to 0) then Type for stability.
+
+    Parameters:
+        actions (list): List of listener actions from boto3
+
+    Returns:
+        List of actions in Ansible format, sorted by Order and Type
+    """
+    if not actions:
+        return actions
+
+    # Sort actions before conversion
+    sorted_actions = _sort_actions(actions)
+
+    # Convert to Ansible dict format (force_tags=False to prevent automatic tags field)
+    return boto3_resource_list_to_ansible_dict(sorted_actions, force_tags=False)
+
+
+def _normalize_listener_rules(rules: BotoResourceList) -> AnsibleAWSResourceList:
+    """
+    Normalize and sort ELB listener rules by priority.
+
+    Converts listener rules from the CamelCase boto3 format to the snake_case Ansible format
+    and sorts them numerically by priority, with the "default" rule appearing last.
+    Actions within each rule are also sorted by Order and Type.
+
+    Parameters:
+        rules (list): List of listener rules from boto3
+
+    Returns:
+        List of rules in Ansible format, sorted by priority with sorted actions
+    """
+    if not rules:
+        return rules
+
+    # First sort the rules by Priority (while still in CamelCase)
+    def sort_key(rule):
+        priority = rule.get("Priority", "default")
+        if priority == "default":
+            # Put default rule last by using a very large number
+            return float("inf")
+        try:
+            return int(priority)
+        except (ValueError, TypeError):
+            # Fallback for unexpected priority values
+            return float("inf")
+
+    sorted_rules = sorted(rules, key=sort_key)
+
+    # Convert to Ansible dict format, also sorting Actions within each rule
+    # (force_tags=False to prevent automatic tags field)
+    transforms = {"Actions": _normalize_listener_actions}
+    return [
+        boto3_resource_to_ansible_dict(rule, nested_transforms=transforms, force_tags=False) for rule in sorted_rules
+    ]
+
+
+def _normalize_listeners(listeners: BotoResourceList) -> AnsibleAWSResourceList:
+    """
+    Normalize ELB listeners.
+
+    Converts listeners from boto3 format to Ansible format, applying action and rule sorting.
+    DefaultActions are sorted by Order and Type for consistent output.
+
+    Parameters:
+        listeners (list): List of listeners from boto3
+
+    Returns:
+        List of listeners in Ansible format with sorted default actions and sorted rules
+    """
+    if not listeners:
+        return listeners
+
+    # Transform each listener, applying nested transforms to DefaultActions and Rules
+    # (force_tags=False to prevent automatic tags field)
+    transforms = {
+        "DefaultActions": _normalize_listener_actions,
+        "Rules": _normalize_listener_rules,
+    }
+    return [
+        boto3_resource_to_ansible_dict(listener, nested_transforms=transforms, force_tags=False)
+        for listener in listeners
+    ]
+
+
+def normalize_application_load_balancer(alb: BotoResource) -> AnsibleAWSResource:
+    """
+    Normalize an Application Load Balancer from boto3 format to Ansible format.
+
+    Handles conversion of the ALB and its nested listeners and rules. Listener rules
+    are sorted by priority with the "default" rule appearing last.
+
+    If the ALB dict contains an "Attributes" key (from describe_load_balancer_attributes),
+    the attributes will be converted and merged as flat fields into the result.
+
+    Parameters:
+        alb (dict): Application Load Balancer dict in boto3 format
+
+    Returns:
+        Normalized ALB dict in Ansible format
+    """
+    if not alb:
+        return alb
+
+    # Make a copy to avoid modifying the original
+    alb_copy = alb.copy()
+
+    # Extract and normalize attributes separately (they get flattened into the result)
+    attributes = None
+    if "Attributes" in alb_copy:
+        attributes = _normalize_attributes(alb_copy.pop("Attributes"))
+
+    # Transform the ALB, applying nested transforms to Listeners
+    # force_tags=False because tags require a separate API call and should be added by caller
+    transforms = {"Listeners": _normalize_listeners}
+    result = boto3_resource_to_ansible_dict(alb_copy, nested_transforms=transforms, force_tags=False)
+
+    # Merge normalized attributes as flat fields
+    if attributes:
+        result.update(attributes)
+
+    return result

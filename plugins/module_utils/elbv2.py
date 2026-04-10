@@ -18,6 +18,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+# Not intended for general re-use / re-import
+from ._elbv2 import transformations as _transformations
 from .ec2 import get_ec2_security_group_ids_from_names
 from .elb_utils import AnsibleELBv2Error
 from .elb_utils import add_listener_certificates
@@ -48,6 +50,57 @@ from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
 from .transformation import scrub_none_parameters
 from .waiters import get_waiter
+
+# Expose transformation functions
+normalize_application_load_balancer = _transformations.normalize_application_load_balancer
+
+
+def build_application_load_balancer_description(
+    connection: Any,
+    load_balancer: Dict[str, Any],
+    include_attributes: bool = True,
+    include_listeners: bool = True,
+    include_listener_rules: bool = True,
+) -> Dict[str, Any]:
+    """
+    Build a complete ALB description with optional attributes, listeners, and rules.
+
+    Takes a base load balancer dict from describe_load_balancers and enriches it with
+    additional information based on the include_* parameters, then normalizes the result.
+
+    Args:
+        connection: boto3 elbv2 connection
+        load_balancer: Base ALB dict from describe_load_balancers (in CamelCase boto3 format)
+        include_attributes: Whether to fetch and attach load balancer attributes
+        include_listeners: Whether to fetch and attach listeners
+        include_listener_rules: Whether to fetch and attach rules to each listener
+
+    Returns:
+        Normalized ALB dict in snake_case Ansible format
+
+    Note:
+        This function does not fetch tags. Tags should be handled separately by the caller
+        as they require a separate API call and may be added before or after normalization
+        depending on the use case.
+    """
+    # Make a copy to avoid modifying the original
+    alb = load_balancer.copy()
+
+    # Optionally add attributes (in raw boto3 format, normalization will convert them)
+    if include_attributes:
+        alb["Attributes"] = describe_load_balancer_attributes(connection, alb["LoadBalancerArn"])
+
+    # Optionally add listeners
+    if include_listeners or include_listener_rules:
+        alb["Listeners"] = describe_listeners(connection, load_balancer_arn=alb["LoadBalancerArn"])
+
+        # Optionally add rules to each listener
+        if include_listener_rules:
+            for listener in alb["Listeners"]:
+                listener["Rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
+
+    # Normalize the entire ALB object (convert to snake_case, sort rules, convert tags)
+    return normalize_application_load_balancer(alb)
 
 
 def _simple_forward_config_arn(config: Dict[str, Any], parent_arn: Optional[str]) -> Optional[str]:
@@ -153,22 +206,6 @@ def _append_use_existing_client_secretn(action: Dict[str, Any]) -> Dict[str, Any
     action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = True
 
     return action
-
-
-def _sort_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    return sorted(actions, key=lambda x: x.get("Order", 0))
-
-
-def _sort_listener_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    # Sort by Order field (defaulting to 0), then by Type for stability.
-    # This avoids comparing dict/None which causes TypeError.
-    return sorted(
-        actions,
-        key=lambda x: (
-            x.get("Order", 0),
-            x.get("Type", ""),
-        ),
-    )
 
 
 class ElasticLoadBalancerV2:
@@ -1069,8 +1106,8 @@ def _compare_rule_actions(current_actions: List[Dict[str, Any]], new_actions: Li
 
     # if actions have just one element, compare the contents and then update if
     # they're different
-    current_actions_sorted = _sort_actions(current_actions)
-    new_actions_sorted = _sort_actions(deepcopy(new_actions))
+    current_actions_sorted = _transformations._sort_actions(current_actions)
+    new_actions_sorted = _transformations._sort_actions(deepcopy(new_actions))
 
     new_current_actions_sorted = [_append_use_existing_client_secretn(i) for i in current_actions_sorted]
     new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
