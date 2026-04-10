@@ -773,66 +773,113 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
-def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
-    """Create ALB or modify main attributes. json_exit here"""
-    if alb_obj.elb:
-        # ALB exists so check subnets, security groups and tags match what has been passed
-        # Subnets
-        if not alb_obj.compare_subnets():
-            if alb_obj.check_mode:
-                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
-            alb_obj.modify_subnets()
+def _exit_if_check_mode(alb_obj: ApplicationLoadBalancer, action: str = "updated") -> None:
+    """
+    Exit with changed=True if in check mode.
 
-        # Security Groups
-        if not alb_obj.compare_security_groups():
-            if alb_obj.check_mode:
-                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
-            alb_obj.modify_security_groups()
+    Args:
+        alb_obj: ApplicationLoadBalancer object
+        action: Action description for the message (e.g., "created", "updated", "deleted")
+    """
+    if alb_obj.check_mode:
+        alb_obj.exit_json(changed=True, msg=f"Would have {action} ALB if not in check mode.")
 
-        # ALB attributes
-        if not alb_obj.compare_elb_attributes():
-            if alb_obj.check_mode:
-                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
-            alb_obj.update_elb_attributes()
-            alb_obj.modify_elb_attributes()
 
-        # Tags - only need to play with tags if tags parameter has been set to something
-        if alb_obj.tags is not None:
-            tags_need_modify, tags_to_delete = compare_aws_tags(
-                boto3_tag_list_to_ansible_dict(alb_obj.elb["tags"]),
-                boto3_tag_list_to_ansible_dict(alb_obj.tags),
-                alb_obj.purge_tags,
-            )
+def _update_alb_tags(alb_obj: ApplicationLoadBalancer) -> None:
+    """
+    Update ALB tags if tags parameter is specified.
 
-            # Exit on check_mode
-            if alb_obj.check_mode and (tags_need_modify or tags_to_delete):
-                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+    Handles check_mode and exits early if changes would be made.
 
-            # Delete necessary tags
-            if tags_to_delete:
-                alb_obj.delete_tags(tags_to_delete)
+    Args:
+        alb_obj: ApplicationLoadBalancer object
+    """
+    if alb_obj.tags is None:
+        return
 
-            # Add/update tags
-            if tags_need_modify:
-                alb_obj.modify_tags()
+    tags_need_modify, tags_to_delete = compare_aws_tags(
+        boto3_tag_list_to_ansible_dict(alb_obj.elb["tags"]),
+        boto3_tag_list_to_ansible_dict(alb_obj.tags),
+        alb_obj.purge_tags,
+    )
 
-    else:
-        # Create load balancer
-        if alb_obj.check_mode:
-            alb_obj.exit_json(changed=True, msg="Would have created ALB if not in check mode.")
-        alb_obj.create_elb()
+    # Exit on check_mode
+    if tags_need_modify or tags_to_delete:
+        _exit_if_check_mode(alb_obj)
 
-        # Add ALB attributes
+    # Delete necessary tags
+    if tags_to_delete:
+        alb_obj.delete_tags(tags_to_delete)
+
+    # Add/update tags
+    if tags_need_modify:
+        alb_obj.modify_tags()
+
+
+def _update_existing_alb_properties(alb_obj: ApplicationLoadBalancer) -> None:
+    """
+    Update properties of an existing ALB (subnets, security groups, attributes, tags).
+
+    Handles check_mode and exits early if changes would be made.
+
+    Args:
+        alb_obj: ApplicationLoadBalancer object for an existing ALB
+    """
+    # Subnets
+    if not alb_obj.compare_subnets():
+        _exit_if_check_mode(alb_obj)
+        alb_obj.modify_subnets()
+
+    # Security Groups
+    if not alb_obj.compare_security_groups():
+        _exit_if_check_mode(alb_obj)
+        alb_obj.modify_security_groups()
+
+    # ALB attributes
+    if not alb_obj.compare_elb_attributes():
+        _exit_if_check_mode(alb_obj)
         alb_obj.update_elb_attributes()
         alb_obj.modify_elb_attributes()
 
-    # Listeners
+    # Tags
+    _update_alb_tags(alb_obj)
+
+
+def _create_new_alb(alb_obj: ApplicationLoadBalancer) -> None:
+    """
+    Create a new ALB and set initial attributes.
+
+    Handles check_mode and exits early if ALB would be created.
+
+    Args:
+        alb_obj: ApplicationLoadBalancer object for a new ALB
+    """
+    _exit_if_check_mode(alb_obj, action="created")
+    alb_obj.create_elb()
+
+    # Add ALB attributes
+    alb_obj.update_elb_attributes()
+    alb_obj.modify_elb_attributes()
+
+
+def _manage_alb_listeners(alb_obj: ApplicationLoadBalancer) -> ELBListeners:
+    """
+    Manage ALB listeners (add, modify, delete).
+
+    Handles check_mode and exits early if changes would be made.
+
+    Args:
+        alb_obj: ApplicationLoadBalancer object
+
+    Returns:
+        ELBListeners object with current state
+    """
     listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
     listeners_to_add, listeners_to_modify, listeners_to_delete = listeners_obj.compare_listeners()
 
     # Exit on check_mode
-    if alb_obj.check_mode and (listeners_to_add or listeners_to_modify or listeners_to_delete):
-        alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+    if listeners_to_add or listeners_to_modify or listeners_to_delete:
+        _exit_if_check_mode(alb_obj)
 
     # Delete listeners
     for listener_to_delete in listeners_to_delete:
@@ -861,7 +908,19 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
         alb_obj.changed = True
         listeners_obj.update()
 
-    # Rules of each listener
+    return listeners_obj
+
+
+def _manage_listener_rules(alb_obj: ApplicationLoadBalancer, listeners_obj: ELBListeners) -> None:
+    """
+    Manage rules for all listeners that have rules defined.
+
+    Handles check_mode and exits early if changes would be made.
+
+    Args:
+        alb_obj: ApplicationLoadBalancer object
+        listeners_obj: ELBListeners object containing listener definitions
+    """
     for listener in listeners_obj.listeners:
         if "Rules" in listener:
             rules_obj = ELBListenerRules(
@@ -873,13 +932,13 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
             rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete = rules_obj.compare_rules()
 
             # Exit on check_mode
-            if alb_obj.check_mode and (
+            if (
                 rules_to_add
                 or rules_to_modify
                 or rules_to_set_priority
                 or (alb_obj.params["purge_rules"] and rules_to_delete)
             ):
-                alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
+                _exit_if_check_mode(alb_obj)
 
             # Create/Update/Delete Listener Rules
             rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module)
@@ -887,18 +946,34 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
                 rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete
             )
 
-    # Update ALB ip address type only if option has been provided
-    if alb_obj.params.get("ip_address_type") and alb_obj.elb_ip_addr_type != alb_obj.params.get("ip_address_type"):
-        # Exit on check_mode
-        if alb_obj.check_mode:
-            alb_obj.exit_json(changed=True, msg="Would have updated ALB if not in check mode.")
 
+def _update_alb_ip_address_type(alb_obj: ApplicationLoadBalancer) -> None:
+    """
+    Update ALB IP address type if specified and different from current.
+
+    Handles check_mode and exits early if changes would be made.
+
+    Args:
+        alb_obj: ApplicationLoadBalancer object
+    """
+    if alb_obj.params.get("ip_address_type") and alb_obj.elb_ip_addr_type != alb_obj.params.get("ip_address_type"):
+        _exit_if_check_mode(alb_obj)
         alb_obj.modify_ip_address_type(alb_obj.params.get("ip_address_type"))
 
-    # Exit on check_mode - no changes
-    if alb_obj.check_mode:
-        alb_obj.exit_json(changed=False, msg="IN CHECK MODE - no changes to make to ALB specified.")
 
+def _build_alb_response(alb_obj: ApplicationLoadBalancer, listeners_obj: ELBListeners) -> dict:
+    """
+    Build the complete ALB response with all current state.
+
+    Fetches fresh data from AWS and normalizes it.
+
+    Args:
+        alb_obj: ApplicationLoadBalancer object
+        listeners_obj: ELBListeners object
+
+    Returns:
+        Normalized ALB dict in snake_case
+    """
     # Get the ALB again
     alb_obj.update()
 
@@ -926,8 +1001,32 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
     alb["Tags"] = alb_obj.get_elb_tags()
 
     # Normalize the entire ALB object (convert to snake_case, sort rules, convert tags)
-    snaked_alb = normalize_application_load_balancer(alb)
+    return normalize_application_load_balancer(alb)
 
+
+def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
+    """Create or update an Application Load Balancer."""
+    # Create new ALB or update existing ALB properties
+    if alb_obj.elb:
+        _update_existing_alb_properties(alb_obj)
+    else:
+        _create_new_alb(alb_obj)
+
+    # Manage listeners (add, modify, delete)
+    listeners_obj = _manage_alb_listeners(alb_obj)
+
+    # Manage listener rules
+    _manage_listener_rules(alb_obj, listeners_obj)
+
+    # Update IP address type if needed
+    _update_alb_ip_address_type(alb_obj)
+
+    # Exit on check_mode - no changes
+    if alb_obj.check_mode:
+        alb_obj.exit_json(changed=False, msg="IN CHECK MODE - no changes to make to ALB specified.")
+
+    # Build complete response and exit
+    snaked_alb = _build_alb_response(alb_obj, listeners_obj)
     alb_obj.exit_json(changed=alb_obj.changed, **snaked_alb)
 
 
