@@ -208,22 +208,6 @@ def _append_use_existing_client_secretn(action: Dict[str, Any]) -> Dict[str, Any
     return action
 
 
-def _sort_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    return sorted(actions, key=lambda x: x.get("Order", 0))
-
-
-def _sort_listener_actions(actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    # Sort by Order field (defaulting to 0), then by Type for stability.
-    # This avoids comparing dict/None which causes TypeError.
-    return sorted(
-        actions,
-        key=lambda x: (
-            x.get("Order", 0),
-            x.get("Type", ""),
-        ),
-    )
-
-
 class ElasticLoadBalancerV2:
     def __init__(self, connection: Any, module: AnsibleAWSModule) -> None:
         self.connection = connection
@@ -1122,8 +1106,8 @@ def _compare_rule_actions(current_actions: List[Dict[str, Any]], new_actions: Li
 
     # if actions have just one element, compare the contents and then update if
     # they're different
-    current_actions_sorted = _sort_actions(current_actions)
-    new_actions_sorted = _sort_actions(deepcopy(new_actions))
+    current_actions_sorted = _transformations._sort_actions(current_actions)
+    new_actions_sorted = _transformations._sort_actions(deepcopy(new_actions))
 
     new_current_actions_sorted = [_append_use_existing_client_secretn(i) for i in current_actions_sorted]
     new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
