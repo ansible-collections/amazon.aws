@@ -126,3 +126,45 @@ class TestAWSListHandler:
         assert isinstance(raised.exception, botocore.exceptions.ClientError)
         assert "do something" in raised.message
         assert "Something bad" in str(raised.exception)
+
+    def test_format_string_with_params(self):
+        self.counter = 0
+        err_response = {"Error": {"Code": "MalformedPolicyDocument"}}
+
+        @AWSErrorHandler.list_error_handler("list policies for role {role_name}")
+        def raise_client_error(client, role_name):
+            self.counter += 1
+            raise botocore.exceptions.ClientError(err_response, "Something bad")
+
+        with pytest.raises(AnsibleAWSError) as e_info:
+            raise_client_error(None, "test-role")
+        assert self.counter == 1
+        raised = e_info.value
+        assert isinstance(raised.exception, botocore.exceptions.ClientError)
+        assert "list policies for role test-role" in raised.message
+
+    def test_format_string_missing_entity(self):
+        self.counter = 0
+        err_response = {"Error": {"Code": "NoSuchEntity"}}
+
+        @AWSExampleErrorHandler.list_error_handler("list policies for role {role_name}")
+        def raise_client_error(client, role_name):
+            self.counter += 1
+            raise botocore.exceptions.ClientError(err_response, "Role not found")
+
+        ret_val = raise_client_error(None, "missing-role")
+        assert self.counter == 1
+        assert ret_val is None
+
+    def test_format_string_missing_entity_custom_default(self):
+        self.counter = 0
+        err_response = {"Error": {"Code": "NoSuchEntity"}}
+
+        @AWSExampleErrorHandler.list_error_handler("get role {name}", default_value=[])
+        def raise_client_error(name):
+            self.counter += 1
+            raise botocore.exceptions.ClientError(err_response, "Role not found")
+
+        ret_val = raise_client_error("missing-role")
+        assert self.counter == 1
+        assert ret_val == []
