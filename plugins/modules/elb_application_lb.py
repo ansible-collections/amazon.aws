@@ -1031,25 +1031,19 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
 
 
 def delete_alb(alb_obj: ApplicationLoadBalancer) -> None:
-    if alb_obj.elb:
-        # Exit on check_mode
-        if alb_obj.check_mode:
-            alb_obj.exit_json(changed=True, msg="Would have deleted ALB if not in check mode.")
+    if not alb_obj.elb:
+        alb_obj.exit_json(changed=False)
 
-        listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
-        for listener_to_delete in [i["ListenerArn"] for i in listeners_obj.current_listeners]:
-            listener_obj = ELBListener(
-                alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb["LoadBalancerArn"]
-            )
-            listener_obj.delete()
+    _exit_if_check_mode(alb_obj, action="deleted")
 
-        alb_obj.delete()
+    listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb["LoadBalancerArn"])
+    for listener_to_delete in [i["ListenerArn"] for i in listeners_obj.current_listeners]:
+        listener_obj = ELBListener(
+            alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb["LoadBalancerArn"]
+        )
+        listener_obj.delete()
 
-    else:
-        # Exit on check_mode - no changes
-        if alb_obj.check_mode:
-            alb_obj.exit_json(changed=False, msg="IN CHECK MODE - ALB already absent.")
-
+    alb_obj.delete()
     alb_obj.exit_json(changed=alb_obj.changed)
 
 
