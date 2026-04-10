@@ -1,2 +1,2 @@
 minor_changes:
-  - module_utils/errors - Add support for f-string style parameter interpolation in error handler descriptions to provide more detailed error messages (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - module_utils/errors - Add support for f-string style parameter interpolation in error handler descriptions to provide more detailed error messages (https://github.com/ansible-collections/amazon.aws/pull/2944).
