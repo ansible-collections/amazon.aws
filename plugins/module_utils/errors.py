@@ -4,6 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import functools
+import inspect
 
 try:
     import botocore
@@ -32,17 +33,33 @@ class AWSErrorHandler:
                             Exception raised will include a message of
                             f"Timeout trying to {description}" or
                             f"Failed to {description}"
+                            Supports format string placeholders matching function parameters,
+                            e.g., "get role {name}" will interpolate the 'name' parameter.
         """
 
         def wrapper(func):
+            # Unwrap nested decorators to find the original function signature
+            original_func = func
+            while hasattr(original_func, "__wrapped__"):
+                original_func = original_func.__wrapped__
+            sig = inspect.signature(original_func)
+
             @functools.wraps(func)
             def handler(*args, **kwargs):
                 try:
+                    bound = sig.bind(*args, **kwargs)
+                    bound.apply_defaults()
+                    desc = description.format(**bound.arguments)
+                except (KeyError, ValueError, AttributeError) as format_error:
+                    # Formatting failed - append a note to help debug the issue
+                    desc = f"{description} (error formatting message: {format_error})"
+
+                try:
                     return func(*args, **kwargs)
                 except botocore.exceptions.WaiterError as e:
-                    raise cls._CUSTOM_EXCEPTION(message=f"Timeout trying to {description}", exception=e) from e
+                    raise cls._CUSTOM_EXCEPTION(message=f"Timeout trying to {desc}", exception=e) from e
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    raise cls._CUSTOM_EXCEPTION(message=f"Failed to {description}", exception=e) from e
+                    raise cls._CUSTOM_EXCEPTION(message=f"Failed to {desc}", exception=e) from e
 
             return handler
 
@@ -59,13 +76,15 @@ class AWSErrorHandler:
                             Exception raised will include a message of
                             f"Timeout trying to {description}" or
                             f"Failed to {description}"
+                            Supports format string placeholders matching function parameters,
+                            e.g., "get role {name}" will interpolate the 'name' parameter.
         param: default_value: the value to return if no matching
                             resources are returned.  Defaults to None
         """
 
         def wrapper(func):
-            @functools.wraps(func)
             @cls.common_error_handler(description)
+            @functools.wraps(func)
             def handler(*args, **kwargs):
                 try:
                     return func(*args, **kwargs)
@@ -87,11 +106,13 @@ class AWSErrorHandler:
                             Exception raised will include a message of
                             f"Timeout trying to {description}" or
                             f"Failed to {description}"
+                            Supports format string placeholders matching function parameters,
+                            e.g., "delete role {name}" will interpolate the 'name' parameter.
         """
 
         def wrapper(func):
-            @functools.wraps(func)
             @cls.common_error_handler(description)
+            @functools.wraps(func)
             def handler(*args, **kwargs):
                 try:
                     return func(*args, **kwargs)
