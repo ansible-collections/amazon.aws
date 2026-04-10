@@ -335,12 +335,7 @@ class ElasticLoadBalancerV2:
 
         :return:
         """
-
-        try:
-            elb_tags = describe_tags(self.connection, resource_arns=[self.elb["LoadBalancerArn"]])[0]["Tags"]
-        except AnsibleELBv2Error as e:
-            self.module.fail_json_aws(e)
-        return elb_tags
+        return describe_tags(self.connection, resource_arns=[self.elb["LoadBalancerArn"]])[0]["Tags"]
 
     def delete_tags(self, tags_to_delete: List[str]) -> None:
         """
@@ -348,11 +343,7 @@ class ElasticLoadBalancerV2:
 
         :return:
         """
-
-        try:
-            self.changed = remove_tags(self.connection, [self.elb["LoadBalancerArn"]], tags_to_delete)
-        except AnsibleELBv2Error as e:
-            self.module.fail_json_aws(e)
+        self.changed |= remove_tags(self.connection, [self.elb["LoadBalancerArn"]], tags_to_delete)
 
     def modify_tags(self) -> None:
         """
@@ -360,22 +351,14 @@ class ElasticLoadBalancerV2:
 
         :return:
         """
-
-        try:
-            self.changed = add_tags(self.connection, [self.elb["LoadBalancerArn"]], self.tags)
-        except AnsibleELBv2Error as e:
-            self.module.fail_json_aws(e)
+        self.changed |= add_tags(self.connection, [self.elb["LoadBalancerArn"]], self.tags)
 
     def delete(self) -> None:
         """
         Delete elb
         :return:
         """
-
-        try:
-            self.changed = delete_load_balancer(self.connection, self.elb["LoadBalancerArn"])
-        except AnsibleELBv2Error as e:
-            self.module.fail_json_aws(e)
+        self.changed |= delete_load_balancer(self.connection, self.elb["LoadBalancerArn"])
         if self.changed:
             self.wait_for_deletion(self.elb["LoadBalancerArn"])
 
@@ -696,11 +679,11 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
             try:
                 modify_load_balancer_attributes(self.connection, self.elb["LoadBalancerArn"], update_attributes)
                 self.changed = True
-            except AnsibleELBv2Error as e:
+            except AnsibleELBv2Error:
                 # Something went wrong setting attributes. If this ELB was created during this task, delete it to leave a consistent state
                 if self.new_load_balancer:
                     delete_load_balancer(self.connection, self.elb["LoadBalancerArn"])
-                self.fail_json_aws(e)
+                raise
 
     def compare_security_groups(self) -> bool:
         """
@@ -777,11 +760,11 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
             try:
                 modify_load_balancer_attributes(self.connection, self.elb["LoadBalancerArn"], update_attributes)
                 self.changed = True
-            except AnsibleELBv2Error as e:
+            except AnsibleELBv2Error:
                 # Something went wrong setting attributes. If this ELB was created during this task, delete it to leave a consistent state
                 if self.new_load_balancer:
                     delete_load_balancer(self.connection, LoadBalancerArn=self.elb["LoadBalancerArn"])
-                self.fail_json_aws(e)
+                raise
 
     def modify_subnets(self):
         """

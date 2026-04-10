@@ -758,12 +758,7 @@ waf_fail_open_enabled:
     sample: "false"
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
-
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_security_groups
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ApplicationLoadBalancer
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListener
@@ -771,17 +766,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListene
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListenerRules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListeners
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import normalize_application_load_balancer
+from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-
-
-@AWSRetry.jittered_backoff()
-def describe_sgs_with_backoff(connection, **params):
-    paginator = connection.get_paginator("describe_security_groups")
-    return paginator.paginate(**params).build_full_result()["SecurityGroups"]
 
 
 def find_default_sg(connection, module, vpc_id):
@@ -789,10 +778,7 @@ def find_default_sg(connection, module, vpc_id):
     Finds the default security group for the given VPC ID.
     """
     filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "group-name": "default"})
-    try:
-        sg = describe_sgs_with_backoff(connection, Filters=filters)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg=f"No default security group found for VPC {vpc_id}")
+    sg = describe_security_groups(connection, Filters=filters)
     if len(sg) == 1:
         return sg[0]["GroupId"]
     elif len(sg) == 0:
@@ -1057,7 +1043,7 @@ def main():
             create_or_update_alb(alb)
         elif state == "absent":
             delete_alb(alb)
-    except AnsibleELBv2Error as e:
+    except AnsibleAWSError as e:
         module.fail_json_aws_error(e)
 
 
