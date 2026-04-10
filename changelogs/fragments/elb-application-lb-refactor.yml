@@ -1,0 +1,2 @@
+minor_changes:
+  - elb_application_lb - Refactor module to reduce cognitive complexity and improve code maintainability (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
