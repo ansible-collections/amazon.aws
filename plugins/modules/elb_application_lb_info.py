@@ -147,11 +147,31 @@ load_balancers:
             description: The date and time the load balancer was created.
             type: str
             sample: "2015-02-12T02:14:02+00:00"
+        client_keep_alive_seconds:
+            description: The client keep alive value, in seconds.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "3600"
+        connection_logs_s3_bucket:
+            description: The name of the S3 bucket for the connection logs.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: ""
+        connection_logs_s3_enabled:
+            description: Indicates whether connection logs are enabled.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "false"
+        connection_logs_s3_prefix:
+            description: The prefix for the location in the S3 bucket for the connection logs.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: ""
         deletion_protection_enabled:
             description: Indicates whether deletion protection is enabled.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: true
+            type: str
+            sample: "true"
         dns_name:
             description: The public DNS name of the load balancer.
             type: str
@@ -159,12 +179,17 @@ load_balancers:
         idle_timeout_timeout_seconds:
             description: The idle timeout value, in seconds.
             returned: when O(include_attributes=true)
-            type: int
-            sample: 60
+            type: str
+            sample: "60"
         ip_address_type:
             description: The type of IP addresses used by the subnets for the load balancer.
             type: str
             sample: "ipv4"
+        ipv6_deny_all_igw_traffic:
+            description: Locks internet gateway (IGW) access to the load balancer.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "false"
         listeners:
             description: Information about the listeners.
             returned: when O(include_listeners=true) or O(include_listener_rules=true)
@@ -346,6 +371,13 @@ load_balancers:
             returned: when O(include_attributes=true)
             type: str
             sample: "false"
+        routing_http_preserve_host_header_enabled:
+            description:
+              - Indicates whether the Application Load Balancer should preserve the Host header in the HTTP request and send it to the target without any
+                change.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "false"
         routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
             description: Indicates whether the two headers are added to the client request before sending it to the target.
             returned: when O(include_attributes=true)
@@ -356,6 +388,13 @@ load_balancers:
             returned: when O(include_attributes=true)
             type: str
             sample: "false"
+        routing_http_xff_header_processing_mode:
+            description:
+              - Enables you to modify, preserve, or remove the X-Forwarded-For header in the HTTP request before the Application Load Balancer sends the
+                request to the target.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "append"
         scheme:
             description: Internet-facing or internal load balancer.
             type: str
@@ -405,31 +444,12 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_listeners
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancer_attributes
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancers
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_tags
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import build_application_load_balancer_description
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
-
-def get_load_balancer_attributes(connection, module: AnsibleAWSModule, load_balancer_arn: str) -> Dict[str, str]:
-    try:
-        attributes = describe_load_balancer_attributes(connection, load_balancer_arn)
-    except AnsibleELBv2Error as e:
-        module.fail_json_aws(e, msg="Failed to describe load balancer attributes")
-    load_balancer_attributes = boto3_tag_list_to_ansible_dict(attributes)
-
-    # Replace '.' with '_' in attribute key names to make it more Ansibley
-    for k, v in list(load_balancer_attributes.items()):
-        load_balancer_attributes[k.replace(".", "_")] = v
-        del load_balancer_attributes[k]
-
-    return load_balancer_attributes
 
 
 def get_load_balancer_tags(connection, load_balancer_arn: str) -> Dict[str, str]:
@@ -446,26 +466,20 @@ def list_load_balancers(connection, module: AnsibleAWSModule) -> None:
 
     try:
         load_balancers = describe_load_balancers(connection, load_balancer_arns=load_balancer_arns, names=names)
-        for load_balancer in load_balancers:
-            # Get the attributes for each alb
-            if include_attributes:
-                load_balancer.update(get_load_balancer_attributes(connection, module, load_balancer["LoadBalancerArn"]))
 
-            # Get the listeners for each alb
-            if include_listeners or include_listener_rules:
-                load_balancer["listeners"] = describe_listeners(
-                    connection, load_balancer_arn=load_balancer["LoadBalancerArn"]
-                )
+        # Build complete ALB descriptions with normalization
+        snaked_load_balancers = [
+            build_application_load_balancer_description(
+                connection,
+                lb,
+                include_attributes=include_attributes,
+                include_listeners=include_listeners,
+                include_listener_rules=include_listener_rules,
+            )
+            for lb in load_balancers
+        ]
 
-            # For each listener, get listener rules
-            if include_listener_rules:
-                for listener in load_balancer["listeners"]:
-                    listener["rules"] = describe_rules(connection, ListenerArn=listener["ListenerArn"])
-
-        # Turn the boto3 result in to ansible_friendly_snaked_names
-        snaked_load_balancers = [camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers]
-
-        # Get tags for each load balancer
+        # Get tags for each load balancer (not included in the boto3 describe_load_balancers response)
         for snaked_load_balancer in snaked_load_balancers:
             snaked_load_balancer["tags"] = get_load_balancer_tags(connection, snaked_load_balancer["load_balancer_arn"])
     except AnsibleELBv2Error as e:

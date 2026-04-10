@@ -763,8 +763,6 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ApplicationLoadBalancer
@@ -772,6 +770,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListene
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListenerRule
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListenerRules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListeners
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import normalize_application_load_balancer
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -937,20 +936,25 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
     # Update the ALB attributes
     alb_obj.update_elb_attributes()
 
-    # Convert to snake_case and merge in everything we want to return to the user
-    snaked_alb = camel_dict_to_snake_dict(alb_obj.elb)
-    snaked_alb.update(camel_dict_to_snake_dict(alb_obj.elb_attributes))
-    snaked_alb["listeners"] = []
+    # Build the complete ALB object in CamelCase format
+    alb = alb_obj.elb.copy()
+    alb.update(alb_obj.elb_attributes)
+
+    # Attach listeners with their rules
+    alb["Listeners"] = []
     for listener in listeners_obj.current_listeners:
-        # For each listener, get listener rules
-        listener["rules"] = get_elb_listener_rules(alb_obj.connection, alb_obj.module, listener["ListenerArn"])
-        snaked_alb["listeners"].append(camel_dict_to_snake_dict(listener))
+        # For each listener, get listener rules (in CamelCase)
+        listener["Rules"] = get_elb_listener_rules(alb_obj.connection, alb_obj.module, listener["ListenerArn"])
+        alb["Listeners"].append(listener)
 
-    # Change tags to ansible friendly dict
-    snaked_alb["tags"] = boto3_tag_list_to_ansible_dict(snaked_alb["tags"])
+    # Add ip address type
+    alb["IpAddressType"] = alb_obj.get_elb_ip_address_type()
 
-    # ip address type
-    snaked_alb["ip_address_type"] = alb_obj.get_elb_ip_address_type()
+    # Add tags (not included in describe_load_balancers response)
+    alb["Tags"] = alb_obj.get_elb_tags()
+
+    # Normalize the entire ALB object (convert to snake_case, sort rules, convert tags)
+    snaked_alb = normalize_application_load_balancer(alb)
 
     alb_obj.exit_json(changed=alb_obj.changed, **snaked_alb)
 
