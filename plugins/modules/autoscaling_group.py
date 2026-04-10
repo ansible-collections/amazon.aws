@@ -887,7 +887,7 @@ def _default_if_none(value: Any, default: Any) -> Any:
     return default if value is None else value
 
 
-@AutoScalingErrorHandler.list_error_handler("describe auto scaling groups", [])
+@AutoScalingErrorHandler.list_error_handler("describe auto scaling group {group_name}", [])
 @AWSRetry.jittered_backoff(**backoff_params)
 def describe_autoscaling_groups(connection: ClientType, group_name: str) -> list[dict[str, Any]]:
     pg = connection.get_paginator("describe_auto_scaling_groups")
@@ -916,19 +916,19 @@ def describe_target_health(
     return connection.describe_target_health(TargetGroupArn=target_group_arn, Targets=instances)
 
 
-@AutoScalingErrorHandler.common_error_handler("suspend processes")
+@AutoScalingErrorHandler.common_error_handler("suspend processes for auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def suspend_asg_processes(connection: ClientType, asg_name: str, processes: list[str]) -> None:
     connection.suspend_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
-@AutoScalingErrorHandler.common_error_handler("resume processes")
+@AutoScalingErrorHandler.common_error_handler("resume processes for auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def resume_asg_processes(connection: ClientType, asg_name: str, processes: list[str]) -> None:
     connection.resume_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
-@AutoScalingErrorHandler.list_error_handler("describe launch configurations", {})
+@AutoScalingErrorHandler.list_error_handler("describe launch configuration {launch_config_name}", {})
 @AWSRetry.jittered_backoff(**backoff_params)
 def describe_launch_configurations(connection: ClientType, launch_config_name: str) -> dict[str, Any]:
     pg = connection.get_paginator("describe_launch_configurations")
@@ -953,7 +953,7 @@ def create_asg(connection: ClientType, **params: Any) -> None:
     connection.create_auto_scaling_group(**params)
 
 
-@AutoScalingErrorHandler.common_error_handler("configure notifications")
+@AutoScalingErrorHandler.common_error_handler("configure notifications for auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def put_notification_config(
     connection: ClientType, asg_name: str, topic_arn: str, notification_types: list[str]
@@ -963,31 +963,31 @@ def put_notification_config(
     )
 
 
-@AutoScalingErrorHandler.deletion_error_handler("delete notification configuration")
+@AutoScalingErrorHandler.deletion_error_handler("delete notification configuration for auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def del_notification_config(connection: ClientType, asg_name: str, topic_arn: str) -> None:
     connection.delete_notification_configuration(AutoScalingGroupName=asg_name, TopicARN=topic_arn)
 
 
-@AutoScalingErrorHandler.common_error_handler("attach load balancers")
+@AutoScalingErrorHandler.common_error_handler("attach load balancers to auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def attach_load_balancers(connection: ClientType, asg_name: str, load_balancers: list[str]) -> None:
     connection.attach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
-@AutoScalingErrorHandler.common_error_handler("detach load balancers")
+@AutoScalingErrorHandler.common_error_handler("detach load balancers from auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_load_balancers(connection: ClientType, asg_name: str, load_balancers: list[str]) -> None:
     connection.detach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
-@AutoScalingErrorHandler.common_error_handler("attach target groups")
+@AutoScalingErrorHandler.common_error_handler("attach target groups to auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def attach_lb_target_groups(connection: ClientType, asg_name: str, target_group_arns: list[str]) -> None:
     connection.attach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
 
 
-@AutoScalingErrorHandler.common_error_handler("detach target groups")
+@AutoScalingErrorHandler.common_error_handler("detach target groups from auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_lb_target_groups(connection: ClientType, asg_name: str, target_group_arns: list[str]) -> None:
     connection.detach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
@@ -1011,13 +1011,13 @@ def update_asg(connection: ClientType, **params: Any) -> None:
     connection.update_auto_scaling_group(**params)
 
 
-@AutoScalingErrorHandler.deletion_error_handler("delete auto scaling group")
+@AutoScalingErrorHandler.deletion_error_handler("delete auto scaling group {asg_name}")
 @AWSRetry.jittered_backoff(catch_extra_error_codes=["ScalingActivityInProgress"], **backoff_params)
 def delete_asg(connection: ClientType, asg_name: str, force_delete: bool) -> None:
     connection.delete_auto_scaling_group(AutoScalingGroupName=asg_name, ForceDelete=force_delete)
 
 
-@AutoScalingErrorHandler.common_error_handler("terminate instance")
+@AutoScalingErrorHandler.common_error_handler("terminate instance {instance_id} in auto scaling group")
 @AWSRetry.jittered_backoff(**backoff_params)
 def terminate_asg_instance(connection: ClientType, instance_id: str, decrement_capacity: bool) -> None:
     connection.terminate_instance_in_auto_scaling_group(
@@ -1025,7 +1025,7 @@ def terminate_asg_instance(connection: ClientType, instance_id: str, decrement_c
     )
 
 
-@AutoScalingErrorHandler.common_error_handler("detach instances")
+@AutoScalingErrorHandler.common_error_handler("detach instances from auto scaling group {as_group_name}")
 @AWSRetry.jittered_backoff(**backoff_params)
 def detach_asg_instances(
     connection: ClientType, instance_ids: list[str], as_group_name: str, decrement_capacity: bool
@@ -1170,7 +1170,7 @@ def get_launch_object(connection: ClientType, ec2_connection: ClientType) -> dic
     return launch_object
 
 
-@AutoScalingErrorHandler.common_error_handler("wait for ELB deregistration")
+@AutoScalingErrorHandler.common_error_handler("wait for instance {instance_id} to deregister from ELBs")
 def _wait_for_elb_deregistration(elb_connection: str, lb_names: list[str], instance_id: str, timeout: int) -> None:
     """
     Wait for an instance to be deregistered from all load balancers.
@@ -1209,7 +1209,7 @@ def elb_dreg(asg_connection: ClientType, group_name: str, instance_id: str) -> N
     _wait_for_elb_deregistration(elb_connection, as_group["LoadBalancerNames"], instance_id, wait_timeout)
 
 
-@AutoScalingErrorHandler.common_error_handler("wait for ELB health")
+@AutoScalingErrorHandler.common_error_handler("wait for ELB health of auto scaling group {group_name}")
 def wait_for_elb(asg_connection: ClientType, group_name: str) -> None:
     """
     Wait for instances to be healthy on all attached ELBs.
@@ -1262,7 +1262,7 @@ def wait_for_elb(asg_connection: ClientType, group_name: str) -> None:
     module.debug(f"ELBs have at least {min_size} healthy instances")
 
 
-@AutoScalingErrorHandler.common_error_handler("wait for target group health")
+@AutoScalingErrorHandler.common_error_handler("wait for target group health of auto scaling group {group_name}")
 def wait_for_target_group(asg_connection: ClientType, group_name: str) -> None:
     """
     Wait for instances to be healthy in all attached target groups.
@@ -1948,7 +1948,7 @@ def create_autoscaling_group(connection: ClientType) -> tuple[bool, dict[str, An
         return _update_existing_asg(connection, group_name, ec2_connection, as_group)
 
 
-@AutoScalingErrorHandler.common_error_handler("wait for ASG instances to terminate")
+@AutoScalingErrorHandler.common_error_handler("wait for auto scaling group {group_name} instances to terminate")
 def _wait_for_asg_instances_to_terminate(connection: str, group_name: str, timeout: int) -> None:
     """
     Wait for all instances in an ASG to terminate.
@@ -1966,7 +1966,7 @@ def _wait_for_asg_instances_to_terminate(connection: str, group_name: str, timeo
     waiter.wait(AutoScalingGroupNames=[group_name], WaiterConfig=waiter_config)
 
 
-@AutoScalingErrorHandler.common_error_handler("wait for ASG to delete")
+@AutoScalingErrorHandler.common_error_handler("wait for auto scaling group {group_name} to delete")
 def _wait_for_asg_to_delete(connection: str, group_name: str, timeout: int) -> None:
     """
     Wait for an ASG to be fully deleted.
@@ -2533,7 +2533,9 @@ def wait_for_term_inst(connection: ClientType, term_instances: list[str]) -> Non
         module.fail_json(msg=f"Waited too long for old instances to terminate. {time.asctime()}")
 
 
-@AutoScalingErrorHandler.common_error_handler("wait for viable instances")
+@AutoScalingErrorHandler.common_error_handler(
+    "wait for {desired_size} viable instances in auto scaling group {group_name}"
+)
 def wait_for_new_inst(
     connection: ClientType, group_name: str, wait_timeout: int, desired_size: int, prop: str
 ) -> dict[str, Any]:

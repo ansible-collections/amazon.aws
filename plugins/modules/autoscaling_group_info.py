@@ -479,7 +479,7 @@ def _describe_autoscaling_groups(connection: ClientType) -> dict[str, Any]:
     return paginator.paginate().build_full_result()
 
 
-@AutoScalingErrorHandler.list_error_handler("describe lifecycle hooks", [])
+@AutoScalingErrorHandler.list_error_handler("describe lifecycle hooks for auto scaling group {asg_name}", [])
 @AWSRetry.jittered_backoff(**backoff_params)
 def _describe_lifecycle_hooks(connection: ClientType, asg_name: str) -> list[dict[str, Any]]:
     """Describe lifecycle hooks for a specific AutoScaling Group."""
