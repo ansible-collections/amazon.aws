@@ -354,12 +354,6 @@ options:
       - Whether to stop or terminate an instance upon shutdown.
     choices: ['stop', 'terminate']
     type: str
-  tenancy:
-    description:
-      - What type of tenancy to allow an instance to use. Default is V(shared) tenancy. Dedicated tenancy will incur additional charges.
-      - This field is deprecated and will be removed in a release after 2025-12-01, use O(placement) instead.
-    choices: ['dedicated', 'default']
-    type: str
   termination_protection:
     description:
       - Whether to enable termination protection.
@@ -422,11 +416,6 @@ options:
       - If no full ARN is provided, the role with a matching name will be used from the active AWS account.
     type: str
     aliases: ['instance_role']
-  placement_group:
-    description:
-      - The placement group that needs to be assigned to the instance.
-      - This field is deprecated and will be removed in a release after 2025-12-01, use O(placement) instead.
-    type: str
   placement:
     description:
       - The location where the instance launched, if applicable.
@@ -460,7 +449,7 @@ options:
       tenancy:
         description:
           - Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.
-          - Support for O(tenancy=host) was added in amazon.aws 7.6.0.
+          - Support for O(placement.tenancy=host) was added in amazon.aws 7.6.0.
         type: str
         required: false
         choices: ['dedicated', 'default', 'host']
@@ -1712,13 +1701,6 @@ def build_top_level_options(module: AnsibleAWSModule) -> Dict[str, Any]:
         spec["Monitoring"] = {"Enabled": True}
     if params.get("cpu_credit_specification") is not None:
         spec["CreditSpecification"] = {"CpuCredits": params.get("cpu_credit_specification")}
-    if params.get("tenancy") is not None:
-        spec["Placement"] = {"Tenancy": params.get("tenancy")}
-    if params.get("placement_group"):
-        if "Placement" in spec:
-            spec["Placement"]["GroupName"] = str(params.get("placement_group"))
-        else:
-            spec.setdefault("Placement", {"GroupName": str(params.get("placement_group"))})
     if params.get("placement") is not None:
         spec["Placement"] = {}
         if params.get("placement").get("availability_zone") is not None:
@@ -2730,8 +2712,6 @@ def main():
                 threads_per_core=dict(type="int", choices=[1, 2], required=True),
             ),
         ),
-        tenancy=dict(type="str", choices=["dedicated", "default"]),
-        placement_group=dict(type="str"),
         placement=dict(
             type="dict",
             options=dict(
@@ -2802,8 +2782,6 @@ def main():
             ["image_id", "image"],
             ["exact_count", "count"],
             ["exact_count", "instance_ids"],
-            ["tenancy", "placement"],
-            ["placement_group", "placement"],
             ["network", "network_interfaces"],
             ["network", "network_interfaces_ids"],
             ["security_group", "network_interfaces_ids"],
@@ -2832,20 +2810,6 @@ def main():
             module.warn(
                 "the source_dest_check option has been set therefore network.source_dest_check will be ignored."
             )
-
-    if module.params.get("placement_group"):
-        module.deprecate(
-            "The placement_group parameter has been deprecated, please use placement.group_name instead.",
-            date="2025-12-01",
-            collection_name="amazon.aws",
-        )
-
-    if module.params.get("tenancy"):
-        module.deprecate(
-            "The tenancy parameter has been deprecated, please use placement.tenancy instead.",
-            date="2025-12-01",
-            collection_name="amazon.aws",
-        )
 
     state = module.params.get("state")
 
