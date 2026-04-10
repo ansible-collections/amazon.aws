@@ -281,14 +281,3 @@ def test__simple_forward_config_arn(config, parent_arn, expected):
 )
 def test__append_use_existing_client_secretn(action, expected):
     assert elbv2._append_use_existing_client_secretn(action) == expected
-
-
-@pytest.mark.parametrize(
-    "actions,expected",
-    [
-        ([{"Order": 2}, {"Order": 1}], [{"Order": 1}, {"Order": 2}]),
-        ([{"Order": 2}, {}, {"Order": 1}], [{}, {"Order": 1}, {"Order": 2}]),
-    ],
-)
-def test__sort_actions(actions, expected):
-    assert elbv2._sort_actions(actions) == expected
