@@ -147,11 +147,31 @@ load_balancers:
             description: The date and time the load balancer was created.
             type: str
             sample: "2015-02-12T02:14:02+00:00"
+        client_keep_alive_seconds:
+            description: The client keep alive value, in seconds.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "3600"
+        connection_logs_s3_bucket:
+            description: The name of the S3 bucket for the connection logs.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: ""
+        connection_logs_s3_enabled:
+            description: Indicates whether connection logs are enabled.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "false"
+        connection_logs_s3_prefix:
+            description: The prefix for the location in the S3 bucket for the connection logs.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: ""
         deletion_protection_enabled:
             description: Indicates whether deletion protection is enabled.
             returned: when O(include_attributes=true)
-            type: bool
-            sample: true
+            type: str
+            sample: "true"
         dns_name:
             description: The public DNS name of the load balancer.
             type: str
@@ -159,12 +179,17 @@ load_balancers:
         idle_timeout_timeout_seconds:
             description: The idle timeout value, in seconds.
             returned: when O(include_attributes=true)
-            type: int
-            sample: 60
+            type: str
+            sample: "60"
         ip_address_type:
             description: The type of IP addresses used by the subnets for the load balancer.
             type: str
             sample: "ipv4"
+        ipv6_deny_all_igw_traffic:
+            description: Locks internet gateway (IGW) access to the load balancer.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "false"
         listeners:
             description: Information about the listeners.
             returned: when O(include_listeners=true) or O(include_listener_rules=true)
@@ -346,6 +371,13 @@ load_balancers:
             returned: when O(include_attributes=true)
             type: str
             sample: "false"
+        routing_http_preserve_host_header_enabled:
+            description:
+              - Indicates whether the Application Load Balancer should preserve the Host header in the HTTP request and send it to the target without any
+                change.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "false"
         routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
             description: Indicates whether the two headers are added to the client request before sending it to the target.
             returned: when O(include_attributes=true)
@@ -356,6 +388,13 @@ load_balancers:
             returned: when O(include_attributes=true)
             type: str
             sample: "false"
+        routing_http_xff_header_processing_mode:
+            description:
+              - Enables you to modify, preserve, or remove the X-Forwarded-For header in the HTTP request before the Application Load Balancer sends the
+                request to the target.
+            returned: when O(include_attributes=true)
+            type: str
+            sample: "append"
         scheme:
             description: Internet-facing or internal load balancer.
             type: str
