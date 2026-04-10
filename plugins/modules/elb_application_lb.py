@@ -758,7 +758,7 @@ waf_fail_open_enabled:
     sample: "false"
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_security_groups
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_default_security_group_id
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ApplicationLoadBalancer
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListener
@@ -766,25 +766,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListene
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListenerRules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListeners
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import normalize_application_load_balancer
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import validate_listener_https_requirements
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
-
-
-def find_default_sg(connection, module, vpc_id):
-    """
-    Finds the default security group for the given VPC ID.
-    """
-    filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "group-name": "default"})
-    sg = describe_security_groups(connection, Filters=filters)
-    if len(sg) == 1:
-        return sg[0]["GroupId"]
-    elif len(sg) == 0:
-        module.fail_json(msg=f"No default security group found for VPC {vpc_id}")
-    else:
-        module.fail_json(msg=f'Multiple security groups named "default" found for VPC {vpc_id}')
 
 
 def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
@@ -968,8 +954,9 @@ def delete_alb(alb_obj: ApplicationLoadBalancer) -> None:
     alb_obj.exit_json(changed=alb_obj.changed)
 
 
-def main():
-    argument_spec = dict(
+def build_argument_spec():
+    """Build the argument specification for the elb_application_lb module."""
+    return dict(
         access_logs_enabled=dict(type="bool"),
         access_logs_s3_bucket=dict(type="str"),
         access_logs_s3_prefix=dict(type="str"),
@@ -1007,24 +994,17 @@ def main():
         ip_address_type=dict(type="str", choices=["ipv4", "dualstack"]),
     )
 
+
+def main():
     module = AnsibleAWSModule(
-        argument_spec=argument_spec,
+        argument_spec=build_argument_spec(),
         required_if=[("state", "present", ["subnets", "security_groups"])],
         required_together=[["access_logs_enabled", "access_logs_s3_bucket"]],
         supports_check_mode=True,
     )
 
     # Quick check of listeners parameters
-    listeners = module.params.get("listeners")
-    if listeners is not None:
-        for listener in listeners:
-            for key in listener.keys():
-                if key == "Protocol" and listener[key] == "HTTPS":
-                    if listener.get("SslPolicy") is None:
-                        module.fail_json(msg="'SslPolicy' is a required listener dict key when Protocol = HTTPS")
-
-                    if listener.get("Certificates") is None:
-                        module.fail_json(msg="'Certificates' is a required listener dict key when Protocol = HTTPS")
+    validate_listener_https_requirements(module.params.get("listeners"))
 
     connection = module.client("elbv2")
     connection_ec2 = module.client("ec2")
@@ -1036,7 +1016,7 @@ def main():
 
         # Update security group if default is specified
         if alb.elb and module.params.get("security_groups") == []:
-            module.params["security_groups"] = [find_default_sg(connection_ec2, module, alb.elb["VpcId"])]
+            module.params["security_groups"] = [get_default_security_group_id(connection_ec2, alb.elb["VpcId"])]
             alb = ApplicationLoadBalancer(connection, connection_ec2, module)
 
         if state == "present":
