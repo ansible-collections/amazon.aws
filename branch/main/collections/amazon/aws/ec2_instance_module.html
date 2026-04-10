@@ -922,7 +922,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <a class="ansibleOptionLink" href="#parameter-placement/tenancy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Type of tenancy to allow an instance to use. Default is shared tenancy. Dedicated tenancy will incur additional charges.</p>
-<p>Support for <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-tenancy"><span class="std std-ref"><span class="pre">tenancy=host</span></span></a></code> was added in amazon.aws 7.6.0.</p>
+<p>Support for <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-tenancy"><span class="std std-ref"><span class="pre">placement.tenancy=host</span></span></a></code> was added in amazon.aws 7.6.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;dedicated&quot;</span></code></p></li>
@@ -932,14 +932,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-placement_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-placement-group"><strong>placement_group</strong></p>
-<a class="ansibleOptionLink" href="#parameter-placement_group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>The placement group that needs to be assigned to the instance.</p>
-<p>This field is deprecated and will be removed in a release after 2025-12-01, use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-placement"><span class="std std-ref"><span class="pre">placement</span></span></a></strong></code> instead.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-profile"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-profile"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aws-profile"></span><strong>profile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
@@ -951,7 +943,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>session_token</em> options.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-purge_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-purge-tags"><strong>purge_tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-purge_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -965,7 +957,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-region"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aws-region"></span><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_region</span></p>
@@ -977,7 +969,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>See the Amazon AWS documentation for more information <a class="reference external" href="http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region">http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_secret_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-secret-key"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aws-secret-key"></span><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
@@ -991,7 +983,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>The <em>aws_secret_access_key</em> alias was added in release 5.1.0 for consistency with the AWS botocore SDK.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-security_group"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-security-group"><strong>security_group</strong></p>
 <a class="ansibleOptionLink" href="#parameter-security_group" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1000,7 +992,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-network-interfaces-ids"><span class="std std-ref"><span class="pre">network_interfaces_ids</span></span></a></strong></code>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-security_groups"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-security-groups"><strong>security_groups</strong></p>
 <a class="ansibleOptionLink" href="#parameter-security_groups" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -1010,7 +1002,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-session_token"></div>
 <div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-session-token"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-aws-session-token"></span><strong>session_token</strong></p>
 <a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token</span></p>
@@ -1022,7 +1014,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <p>The <em>session_token</em> and <em>profile</em> options are mutually exclusive.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-source_dest_check"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-source-dest-check"><strong>source_dest_check</strong></p>
 <a class="ansibleOptionLink" href="#parameter-source_dest_check" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 8.2.0</em></p>
@@ -1035,7 +1027,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -1061,7 +1053,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tags"></div>
 <div class="ansibleOptionAnchor" id="parameter-resource_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tags"><span id="ansible-collections-amazon-aws-ec2-instance-module-parameter-resource-tags"></span><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: resource_tags</span></p>
@@ -1069,19 +1061,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 </div></td>
 <td><div class="ansible-option-cell"><p>A dictionary representing the tags to be applied to the resource.</p>
 <p>If the <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-tags"><span class="std std-ref"><span class="pre">tags</span></span></a></strong></code> parameter is not set then tags will not be modified.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-tenancy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-instance-module-parameter-tenancy"><strong>tenancy</strong></p>
-<a class="ansibleOptionLink" href="#parameter-tenancy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>What type of tenancy to allow an instance to use. Default is <code class="ansible-value docutils literal notranslate"><span class="pre">shared</span></code> tenancy. Dedicated tenancy will incur additional charges.</p>
-<p>This field is deprecated and will be removed in a release after 2025-12-01, use <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-ec2-instance-module-parameter-placement"><span class="std std-ref"><span class="pre">placement</span></span></a></strong></code> instead.</p>
-<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
-<ul class="simple">
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;dedicated&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
-</ul>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
