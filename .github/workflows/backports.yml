@@ -16,7 +16,7 @@ on:
 
 jobs:
   changelog-labeller:
-    uses: ansible-network/github_actions/.github/workflows/backport-labeller.yml@main
+    uses: ansible-network/github_actions/.github/workflows/backport-labeller.yml@446d4586bcde8bf6e1a9c085983bf172b59bd7b2 # @main as of 2026-03-25
     with:
       label_minor_release: backport-10
       label_bugfix_release: backport-9

@@ -5,7 +5,7 @@ on: [workflow_call] # allow this workflow to be called from other workflows
 
 jobs:
   unit-source:
-    uses: ansible-network/github_actions/.github/workflows/unit_source.yml@main
+    uses: ansible-network/github_actions/.github/workflows/unit_source.yml@446d4586bcde8bf6e1a9c085983bf172b59bd7b2 # @main as of 2026-03-25
     with:
       matrix_exclude: >-
           [
