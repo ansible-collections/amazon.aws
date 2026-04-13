@@ -1096,15 +1096,14 @@ def main():
         supports_check_mode=True,
     )
 
-    # Quick check of listeners parameters
-    validate_listener_https_requirements(module.params.get("listeners"))
-
     connection = module.client("elbv2")
     connection_ec2 = module.client("ec2")
 
     state = module.params.get("state")
 
     try:
+        # Quick check of listeners parameters
+        validate_listener_https_requirements(module.params.get("listeners"))
         alb = ApplicationLoadBalancer(connection, connection_ec2, module)
 
         # Update security group if default is specified
