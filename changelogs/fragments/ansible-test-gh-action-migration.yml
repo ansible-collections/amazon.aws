@@ -1,0 +1,2 @@
+trivial:
+  - Migrate CI workflows to use ansible-community/ansible-test-gh-action for unified sanity and unit testing (https://github.com/ansible-collections/amazon.aws/pull/2927).

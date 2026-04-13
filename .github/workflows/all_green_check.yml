@@ -23,11 +23,8 @@ jobs:
   linters:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/linters.yml
-  sanity:
-    if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/sanity.yml
-  units:
-    uses: ./.github/workflows/units.yml
+  ansible-test:
+    uses: ./.github/workflows/ansible-test.yml
   coverage:
     name: Unit test coverage
     runs-on: ubuntu-latest
@@ -73,18 +70,17 @@ jobs:
     if: ${{ always() }}
     needs:
       - linters
-      - sanity
-      - units
+      - ansible-test
       - coverage
     runs-on: ubuntu-latest
     steps:
       - run: |
           python -c "
-          required = ['units', 'coverage']
+          required = ['ansible-test', 'coverage']
           if '${{ github.event_name }}' == 'pull_request':
-            required = ['linters', 'sanity', 'units', 'coverage']
-          results = {'linters': '${{ needs.linters.result }}', 'sanity': '${{ needs.sanity.result }}',
-                     'units': '${{ needs.units.result }}', 'coverage': '${{ needs.coverage.result }}'}
+            required = ['linters', 'ansible-test', 'coverage']
+          results = {'linters': '${{ needs.linters.result }}', 'ansible-test': '${{ needs.ansible-test.result }}',
+                     'coverage': '${{ needs.coverage.result }}'}
           ok = all(results[j] == 'success' for j in required)
           skipped_ok = all(results[j] in ('success', 'skipped') for j in results)
           assert ok and skipped_ok, f'required={required} results={results}'
