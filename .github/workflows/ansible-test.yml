@@ -1,0 +1,122 @@
+# Ansible collection testing with ansible-test-gh-action
+#
+# Note: Integration tests are handled separately via Zuul due to their
+# complexity and duration.
+
+name: ansible-test
+
+on: [workflow_call]  # allow this workflow to be called from other workflows
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-core-version:
+          - stable-2.17
+          - stable-2.18
+          - stable-2.19
+          - stable-2.20
+          - milestone
+          - devel
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+        exclude:
+          # devel and milestone don't support older Python versions
+          - ansible-core-version: devel
+            python-version: "3.10"
+          - ansible-core-version: devel
+            python-version: "3.11"
+          - ansible-core-version: milestone
+            python-version: "3.10"
+          - ansible-core-version: milestone
+            python-version: "3.11"
+          # stable-2.20 excludes
+          - ansible-core-version: stable-2.20
+            python-version: "3.10"
+          - ansible-core-version: stable-2.20
+            python-version: "3.11"
+          # stable-2.19 excludes
+          - ansible-core-version: stable-2.19
+            python-version: "3.10"
+          - ansible-core-version: stable-2.19
+            python-version: "3.14"
+          # stable-2.18 excludes
+          - ansible-core-version: stable-2.18
+            python-version: "3.10"
+          - ansible-core-version: stable-2.18
+            python-version: "3.14"
+          # stable-2.17 excludes
+          - ansible-core-version: stable-2.17
+            python-version: "3.13"
+          - ansible-core-version: stable-2.17
+            python-version: "3.14"
+    steps:
+      - name: Perform sanity testing
+        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e # v1.17.0
+        with:
+          ansible-core-version: ${{ matrix.ansible-core-version }}
+          testing-type: sanity
+          target-python-version: ${{ matrix.python-version }}
+
+  units:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-core-version:
+          - stable-2.17
+          - stable-2.18
+          - stable-2.19
+          - stable-2.20
+          - milestone
+          - devel
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+        exclude:
+          # devel and milestone don't support older Python versions
+          - ansible-core-version: devel
+            python-version: "3.10"
+          - ansible-core-version: devel
+            python-version: "3.11"
+          - ansible-core-version: milestone
+            python-version: "3.10"
+          - ansible-core-version: milestone
+            python-version: "3.11"
+          # stable-2.20 excludes
+          - ansible-core-version: stable-2.20
+            python-version: "3.10"
+          - ansible-core-version: stable-2.20
+            python-version: "3.11"
+          # stable-2.19 excludes
+          - ansible-core-version: stable-2.19
+            python-version: "3.10"
+          - ansible-core-version: stable-2.19
+            python-version: "3.14"
+          # stable-2.18 excludes
+          - ansible-core-version: stable-2.18
+            python-version: "3.10"
+          - ansible-core-version: stable-2.18
+            python-version: "3.14"
+          # stable-2.17 excludes
+          - ansible-core-version: stable-2.17
+            python-version: "3.13"
+          - ansible-core-version: stable-2.17
+            python-version: "3.14"
+    steps:
+      - name: Perform unit testing
+        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e # v1.17.0
+        with:
+          ansible-core-version: ${{ matrix.ansible-core-version }}
+          testing-type: units
+          target-python-version: ${{ matrix.python-version }}
+          # test-deps: -r tests/unit/requirements.txt

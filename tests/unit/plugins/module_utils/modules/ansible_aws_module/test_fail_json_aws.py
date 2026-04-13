@@ -13,10 +13,22 @@ try:
 except ImportError:
     pass
 
+from ansible.module_utils.ansible_release import __version__ as ANSIBLE_VERSION
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+
+
+def _ansible_version_at_least(version_str):
+    """Check if running Ansible version is at least the specified version."""
+    try:
+        current = tuple(int(p) for p in ANSIBLE_VERSION.split(".")[:2])
+        required = tuple(int(p) for p in version_str.split(".")[:2])
+        return current >= required
+    except Exception:
+        return False
+
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_fail_json_aws.py requires the python modules 'boto3' and 'botocore'")
@@ -80,10 +92,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("msg") == self.EXAMPLE_MSG
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert return_val.get("response_metadata") == self.CAMEL_RESPONSE
         assert return_val.get("error") == self.CAMEL_ERROR
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws a ClientError and a message
@@ -107,10 +123,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.EXAMPLE_MSG
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert return_val.get("response_metadata") == self.CAMEL_RESPONSE
         assert return_val.get("error") == self.CAMEL_ERROR
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws a ClientError and a message as a positional argument
@@ -134,10 +154,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.EXAMPLE_MSG
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert return_val.get("response_metadata") == self.CAMEL_RESPONSE
         assert return_val.get("error") == self.CAMEL_ERROR
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws a ClientError and an arbitrary key
@@ -162,10 +186,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("extra_key") == "Some Value"
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert return_val.get("response_metadata") == self.CAMEL_RESPONSE
         assert return_val.get("error") == self.CAMEL_ERROR
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws a ClientError, and arbitraty key and a message
@@ -190,10 +218,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("extra_key") == "Some Value"
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert return_val.get("response_metadata") == self.CAMEL_RESPONSE
         assert return_val.get("error") == self.CAMEL_ERROR
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws nothing more than a BotoCoreError
@@ -217,10 +249,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("msg") == self.DEFAULT_CORE_MSG
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert "response_metadata" not in return_val
         assert "error" not in return_val
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws BotoCoreError and a message
@@ -244,10 +280,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.DEFAULT_CORE_MSG
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert "response_metadata" not in return_val
         assert "error" not in return_val
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws BotoCoreError and a message as a positional
@@ -272,10 +312,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.DEFAULT_CORE_MSG
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert "response_metadata" not in return_val
         assert "error" not in return_val
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws a BotoCoreError and an arbitrary key
@@ -300,10 +344,14 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("extra_key") == "Some Value"
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert "response_metadata" not in return_val
         assert "error" not in return_val
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
 
     # ========================================================
     #   Passing fail_json_aws BotoCoreError, an arbitry key and a message
@@ -328,7 +376,11 @@ class TestFailJsonAwsTestSuite:
         assert return_val.get("extra_key") == "Some Value"
         assert return_val.get("boto3_version") == "1.2.4"
         assert return_val.get("botocore_version") == "1.2.3"
-        assert return_val.get("exception") is not None
         assert return_val.get("failed")
         assert "response_metadata" not in return_val
         assert "error" not in return_val
+        # Ansible-core 2.19+ changed exception handling in fail_json
+        # See: https://github.com/ansible-collections/amazon.aws/issues/2929
+        if _ansible_version_at_least("2.19"):
+            pytest.xfail("exception field not populated in ansible-core >= 2.19")
+        assert return_val.get("exception") is not None
