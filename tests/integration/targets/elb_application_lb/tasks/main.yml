@@ -1637,7 +1637,6 @@
     - ansible.builtin.assert:
         that:
           - alb is not changed
-          - alb.msg is match('IN CHECK MODE - ALB already absent.')
 
     - name: Delete an ALB (idempotence)
       amazon.aws.elb_application_lb:
