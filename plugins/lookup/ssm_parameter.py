@@ -139,24 +139,18 @@ EXAMPLES = r"""
   ansible.builtin.debug: msg="{{ lookup('amazon.aws.aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AWSLookupBase
-
 from ansible.errors import AnsibleLookupError
-from ansible.module_utils._text import to_native
-from ansible.utils.display import Display
+from ansible.module_utils.common.text.converters import to_native
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import AWSLookupBase
-
-display = Display()
+from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupErrorHandler
+from ansible_collections.amazon.aws.plugins.plugin_utils.lookup import LookupResourceNotFoundError
 
 
 class LookupModule(AWSLookupBase):
+    _SERVICE = "ssm"
+
     def run(self, terms, variables, **kwargs):
         """
         :arg terms: a list of lookups to run.
@@ -167,103 +161,103 @@ class LookupModule(AWSLookupBase):
 
         super().run(terms, variables, **kwargs)
 
-        on_missing = self.get_option("on_missing")
-        on_denied = self.get_option("on_denied")
+        self._validate_options()
 
-        # validate arguments 'on_missing' and 'on_denied'
-        if on_missing is not None and (
-            not isinstance(on_missing, str) or on_missing.lower() not in ["error", "warn", "skip"]
-        ):
+        ssm_dict = {"WithDecryption": self.get_option("decrypt")}
+
+        if self.get_option("bypath"):
+            return self._lookup_by_path(ssm_dict, terms)
+        else:
+            return self._lookup_by_name(ssm_dict, terms)
+
+    def _validate_options(self):
+        """Validate on_missing, on_denied, shortnames and droppath options"""
+        if self.on_missing.lower() not in ["error", "warn", "skip"]:
             raise AnsibleLookupError(
-                f'"on_missing" must be a string and one of "error", "warn" or "skip", not {on_missing}'
+                f'"on_missing" must be a string and one of "error", "warn" or "skip", not {self.on_missing}'
             )
-        if on_denied is not None and (
-            not isinstance(on_denied, str) or on_denied.lower() not in ["error", "warn", "skip"]
-        ):
+        if self.on_denied.lower() not in ["error", "warn", "skip"]:
             raise AnsibleLookupError(
-                f'"on_denied" must be a string and one of "error", "warn" or "skip", not {on_denied}'
+                f'"on_denied" must be a string and one of "error", "warn" or "skip", not {self.on_denied}'
             )
 
         if self.get_option("shortnames") and self.get_option("droppath"):
             raise AnsibleLookupError("shortnames and droppath are mutually exclusive. They cannot both be set to true.")
 
+    def _process_parameter_names(self, paramlist, path):
+        """Process parameter names based on shortnames/droppath options"""
+        if self.get_option("shortnames"):
+            for param in paramlist:
+                param["Name"] = param["Name"][param["Name"].rfind("/") + 1:]  # fmt: skip
+
+        if self.get_option("droppath"):
+            for param in paramlist:
+                param["Name"] = param["Name"].replace(path, "")
+
+    def _lookup_by_path(self, ssm_dict, terms):
+        """Lookup SSM parameters by path"""
+        ssm_dict["Recursive"] = self.get_option("recursive")
         ret = []
-        ssm_dict = {}
 
-        client = self.client("ssm", AWSRetry.jittered_backoff())
+        for term in terms:
+            self.v_log(3, f"AWS_ssm path lookup term: {term} in region: {self.region}")
 
-        ssm_dict["WithDecryption"] = self.get_option("decrypt")
+            paramlist = self.get_path_parameters(term, ssm_dict)
+            self._process_parameter_names(paramlist, term)
 
-        # Lookup by path
-        if self.get_option("bypath"):
-            ssm_dict["Recursive"] = self.get_option("recursive")
-            for term in terms:
-                display.vvv(f"AWS_ssm path lookup term: {term} in region: {self.region}")
+            self.v_log(4, f"aws_ssm path lookup returned: {to_native(paramlist)}")
 
-                paramlist = self.get_path_parameters(client, ssm_dict, term, on_missing.lower(), on_denied.lower())
-                # Shorten parameter names. Yes, this will return
-                # duplicate names with different values.
-                if self.get_option("shortnames"):
-                    for x in paramlist:
-                        x["Name"] = x["Name"][x["Name"].rfind("/") + 1:]  # fmt: skip
+            ret.append(boto3_tag_list_to_ansible_dict(paramlist, tag_name_key_name="Name", tag_value_key_name="Value"))
 
-                if self.get_option("droppath"):
-                    for x in paramlist:
-                        x["Name"] = x["Name"].replace(ssm_dict["Path"], "")
-
-                display.vvvv(f"aws_ssm path lookup returned: {to_native(paramlist)}")
-
-                ret.append(
-                    boto3_tag_list_to_ansible_dict(paramlist, tag_name_key_name="Name", tag_value_key_name="Value")
-                )
-        # Lookup by parameter name - always returns a list with one or
-        # no entry.
-        else:
-            display.vvv(f"aws_ssm name lookup term: {terms}")
-            for term in terms:
-                ret.append(self.get_parameter_value(client, ssm_dict, term, on_missing.lower(), on_denied.lower()))
-        display.vvvv(f"aws_ssm path lookup returning: {to_native(ret)} ")
+        self.v_log(4, f"aws_ssm path lookup returning: {to_native(ret)} ")
         return ret
 
-    def get_path_parameters(self, client, ssm_dict, term, on_missing, on_denied):
-        ssm_dict["Path"] = term
-        paginator = client.get_paginator("get_parameters_by_path")
-        try:
-            paramlist = paginator.paginate(**ssm_dict).build_full_result()["Parameters"]
-        except is_boto3_error_code("AccessDeniedException"):
-            if on_denied == "error":
-                raise AnsibleLookupError(f"Failed to access SSM parameter path {term} (AccessDenied)")
-            elif on_denied == "warn":
-                self.warn(f"Skipping, access denied for SSM parameter path {term}")
-                paramlist = [{}]
-            elif on_denied == "skip":
-                paramlist = [{}]
-        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            raise AnsibleLookupError(f"SSM lookup exception: {to_native(e)}")
+    def _lookup_by_name(self, ssm_dict, terms):
+        """Lookup SSM parameters by name"""
+        self.v_log(3, f"aws_ssm name lookup term: {terms}")
+        ret = []
 
-        if not len(paramlist):
-            if on_missing == "error":
-                raise AnsibleLookupError(f"Failed to find SSM parameter path {term} (ResourceNotFound)")
-            elif on_missing == "warn":
-                self.warn(f"Skipping, did not find SSM parameter path {term}")
+        for term in terms:
+            value = self.get_parameter_value(term, ssm_dict)
+            ret.append(value)
+
+        # Filter out None values only if ALL values are None
+        # This handles the case where all parameters are missing/denied with on_missing=skip/on_denied=skip
+        if ret and all(v is None for v in ret):
+            ret = []
+
+        self.v_log(4, f"aws_ssm name lookup returning: {to_native(ret)} ")
+        return ret
+
+    @LookupErrorHandler.handle_lookup_errors("SSM parameter path", default_value=[{}])
+    def get_path_parameters(self, term, ssm_dict):
+        """
+        Retrieve SSM parameters by path.
+
+        Note: on_missing and on_denied are read by the decorator from self.on_missing/self.on_denied properties.
+        """
+        ssm_dict["Path"] = term
+        paginator = self.aws_client.get_paginator("get_parameters_by_path")
+        paramlist = paginator.paginate(**ssm_dict).build_full_result()["Parameters"]
+
+        # Handle empty results (API call succeeded but no parameters found)
+        if not paramlist:
+            raise LookupResourceNotFoundError(
+                path=term,
+                error_template="Failed to find SSM parameter path {term} (ResourceNotFound)",
+                warn_template="Skipping, did not find SSM parameter path {term}",
+                default_value=[],
+            )
 
         return paramlist
 
-    def get_parameter_value(self, client, ssm_dict, term, on_missing, on_denied):
+    @LookupErrorHandler.handle_lookup_errors("SSM parameter")
+    def get_parameter_value(self, term, ssm_dict):
+        """
+        Retrieve a single SSM parameter value.
+
+        Note: on_missing and on_denied are read by the decorator from self.on_missing/self.on_denied properties.
+        """
         ssm_dict["Name"] = term
-        try:
-            response = client.get_parameter(aws_retry=True, **ssm_dict)
-            return response["Parameter"]["Value"]
-        except is_boto3_error_code("ParameterNotFound"):
-            if on_missing == "error":
-                raise AnsibleLookupError(f"Failed to find SSM parameter {term} (ResourceNotFound)")
-            elif on_missing == "warn":
-                self.warn(f"Skipping, did not find SSM parameter {term}")
-        except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
-            if on_denied == "error":
-                raise AnsibleLookupError(f"Failed to access SSM parameter {term} (AccessDenied)")
-            elif on_denied == "warn":
-                self.warn(f"Skipping, access denied for SSM parameter {term}")
-        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            raise AnsibleLookupError(f"SSM lookup exception: {to_native(e)}")
-        return None
+        response = self.aws_client.get_parameter(aws_retry=True, **ssm_dict)
+        return response["Parameter"]["Value"]

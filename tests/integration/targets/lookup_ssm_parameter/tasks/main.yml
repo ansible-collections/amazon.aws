@@ -59,7 +59,8 @@
       register: lookup_missing
     - ansible.builtin.assert:
         that:
-          - lookup_value is none
+          - lookup_value is defined
+          - lookup_value | list | length == 0
 
     - name: Lookup a single missing key (skip)
       ansible.builtin.set_fact:
@@ -67,7 +68,8 @@
       register: lookup_missing
     - ansible.builtin.assert:
         that:
-          - lookup_value is none
+          - lookup_value is defined
+          - lookup_value | list | length == 0
 
     - name: Create key/value pair in aws parameter store
       community.aws.ssm_parameter:
