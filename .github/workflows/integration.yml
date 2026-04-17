@@ -1,0 +1,133 @@
+---
+name: integration
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - main
+      - stable-*
+jobs:
+  splitter:
+    name: ansible test splitter
+    permissions:
+      pull-requests: read
+    env:
+      amazon_dir: "./amazon_aws"
+      community_dir: "./community_aws"
+    outputs:
+      jobs: ${{ steps.compute.outputs.jobs }}
+      targets: ${{ steps.compute.outputs.targets }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source collection
+        uses: actions/checkout@v6
+        with:
+          path: "${{ env.amazon_dir }}"
+          fetch-depth: 0
+
+      - name: Checkout community.aws collection
+        uses: actions/checkout@v6
+        with:
+          repository: ansible-collections/community.aws
+          path: "${{ env.community_dir }}"
+          fetch-depth: 0
+
+      - name: list changes for pull request
+        id: compute
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_test_splitter@0b891487c4170ef856f02313c66cb1c776814c42
+        with:
+          collections_to_test: "${{ env.amazon_dir}}, ${{ env.community_dir }}"
+          total_jobs: 24
+          base_ref: ${{ github.event.pull_request.base.ref }}
+
+  run-tests:
+    needs: splitter
+    permissions:
+      pull-requests: read
+    env:
+      amazon_dir: "./amazon_aws"
+      community_dir: "./community_aws"
+      all_targets: "${{ needs.splitter.outputs.targets }}"
+      ansible_version: milestone
+      python_version: 3.12
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        job-id: ${{ fromJson(needs.splitter.outputs.jobs) }}
+    name: "${{ matrix.job-id }}"
+    steps:
+      - name: Checkout the source collection
+        uses: actions/checkout@v6
+        with:
+          path: "${{ env.amazon_dir }}"
+
+      - name: Checkout community.aws collection
+        uses: actions/checkout@v6
+        with:
+          repository: ansible-collections/community.aws
+          path: "${{ env.community_dir }}"
+
+      - name: Read job targets
+        id: read-targets
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_read_targets@0b891487c4170ef856f02313c66cb1c776814c42
+        with:
+          job_id: "${{ matrix.job-id }}"
+          all_targets: "${{ env.all_targets }}"
+
+      - name: Build and install the source collection
+        id: install-amazon
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@446d4586bcde8bf6e1a9c085983bf172b59bd7b2
+        with:
+          install_python_dependencies: false
+          source_path: ${{ env.amazon_dir }}
+
+      - name: Build and install the community.aws collection
+        id: install-community
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@446d4586bcde8bf6e1a9c085983bf172b59bd7b2
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.community_dir }}
+      
+      - name: Set up Python ${{ env.python_version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.python_version }}
+
+      - name: Install collections dependencies for the source collection
+        run: ansible-galaxy collection install -r tests/integration/requirements.yml
+        working-directory: ${{ env.amazon_dir }}
+  
+      - name: Install collections dependencies for the community collection
+        run: ansible-galaxy collection install -r tests/integration/requirements.yml
+        working-directory: ${{ env.community_dir }}
+
+      - name: Determine Collection Path
+        id: set-path
+        run: |
+          if [[ "${{ matrix.job-id }}" == *"amazon.aws"* ]]; then
+            echo "collection_path=${{ steps.install-amazon.outputs.collection_path }}" >> $GITHUB_OUTPUT
+          else
+            echo "collection_path=${{ steps.install-community.outputs.collection_path }}" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
+
+      - name: Run integration tests
+        uses: ansible-network/github_actions/.github/actions/ansible_test_integration@446d4586bcde8bf6e1a9c085983bf172b59bd7b2
+        with:
+          collection_path: ${{ steps.set-path.outputs.collection_path }}
+          python_version: ${{ env.python_version }}
+          ansible_version: ${{ env.ansible_version }}
+          ansible_test_targets: ${{ steps.read-targets.outputs.job_targets }}
+          ansible_test_requirement_files: "tests/integration/requirements.txt"
