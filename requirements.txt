@@ -3,6 +3,5 @@
 # - tests/integration/constraints.txt
 botocore>=1.38.0
 boto3>=1.38.0
-# aiobotocore doesn't play nice:
-# - it's got very specific botocore requirements and rarely supports a.b.0
-# aiobotocore>=2.14.0
+# required for eda event source plugins
+aiobotocore[botocore]>=2.23.0

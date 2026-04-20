@@ -3,6 +3,8 @@ botocore
 boto3
 
 placebo
+# For testing eda event source plugins
+aiobotocore[botocore]
 
 asyncmock
 pytest-asyncio
