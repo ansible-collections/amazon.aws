@@ -27,6 +27,12 @@ jobs:
     outputs:
       jobs: ${{ steps.compute.outputs.jobs }}
       targets: ${{ steps.compute.outputs.targets }}
+    if: |
+      contains(fromJSON('["opened", "reopened", "synchronize"]'), github.event.action) ||
+      (
+        contains(fromJSON('["labeled", "unlabeled"]'), github.event.action) && 
+        github.event.label.name == 'test-all-the-targets'
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source collection
