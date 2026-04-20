@@ -1,0 +1,36 @@
+---
+name: integration
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - main
+      - stable-*
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  build-ansible-collection:
+    uses: abikouo/cloud-content-ci-automation/.github/workflows/build-collection.yml@build_ansible_collection
+    with:
+      required_collections: >-
+        ansible-collections/ansible.utils,
+        ansible-collections/amazon.aws,
+        ansible-collections/ansible.netcommon,
+        ansible-collections/community.aws,
+        ansible-collections/community.general,
+        ansible-collections/community.crypto,
+        ansible-collections/ansible.windows
+  integration:
+    uses: ./.github/workflows/integration.yml

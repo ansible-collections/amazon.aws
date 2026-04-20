@@ -6,16 +6,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - labeled
-      - unlabeled
-      - synchronize
-    branches:
-      - main
-      - stable-*
+  - workflow_call
+
 jobs:
   splitter:
     name: ansible test splitter
@@ -28,6 +20,11 @@ jobs:
       jobs: ${{ steps.compute.outputs.jobs }}
       targets: ${{ steps.compute.outputs.targets }}
     if: |
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request && 
+        github.event.comment.body == 'recheck'
+      ) ||
       contains(fromJSON('["opened", "reopened", "synchronize"]'), github.event.action) ||
       (
         contains(fromJSON('["labeled", "unlabeled"]'), github.event.action) && 
@@ -35,11 +32,20 @@ jobs:
       )
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the source collection
+      - name: Checkout the source collection (on issue comment)
         uses: actions/checkout@v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
+          ref: refs/pull/${{ github.event.issue.number }}/head
+        if: ${{ github.event_name == 'issue_comment' }}
+      
+      - name: Checkout the source collection (on other triggering method)
+        uses: actions/checkout@v6
+        with:
+          path: "${{ env.amazon_dir }}"
+          fetch-depth: 0
+        if: ${{ github.event_name != 'issue_comment' }}
 
       - name: Checkout community.aws collection
         uses: actions/checkout@v6
@@ -54,7 +60,7 @@ jobs:
         with:
           collections_to_test: "${{ env.amazon_dir}}, ${{ env.community_dir }}"
           total_jobs: 24
-          base_ref: ${{ github.event.pull_request.base.ref }}
+          base_ref: refs/pull/${{ github.event.issue.number }}/base
 
   run-tests:
     needs: splitter
