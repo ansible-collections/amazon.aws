@@ -7,4 +7,4 @@ aiobotocore==2.23.0
 
 # AWS CLI has `botocore==` dependencies, provide the one that matches botocore
 # to avoid needing to download over a years worth of awscli wheels.
-awscli==1.39.0
+awscli==1.40.22
