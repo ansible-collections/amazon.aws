@@ -73,12 +73,14 @@ options:
         The source plugin should wait for the response to come
         back on this queue before it picks the next event from
         SQS queue.
+    version_added: 11.3.0
   feedback_timeout:
     type: int
     default: 120
     description:
       - Timeout in seconds to wait for feedback from the rule engine
         before raising an exception. Only applies when feedback is enabled.
+    version_added: 11.3.0
   eda_feedback_queue:
     description:
       - Provided automatically by ansible-rulebook when the feedback
@@ -86,6 +88,7 @@ options:
         It allows the system to wait for confirmation that an event has
         been safely persisted in the database before removing it from the
         event queue. Users do not need to provide a value for this manually.
+    version_added: 11.3.0
 """
 
 EXAMPLES = r"""
