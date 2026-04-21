@@ -472,8 +472,8 @@ def test_summary_get_origin_access_identity_list(cloudfront_facts_service, origi
     cloudfront_facts_service.list_origin_access_identities = MagicMock()
     cloudfront_facts_service.list_origin_access_identities.return_value = origin_access_identities
     cloudfront_facts_service.get_origin_access_identity = MagicMock()
-    cloudfront_facts_service.get_origin_access_identity.side_effect = lambda x: [
-        o["response"] for o in origin_access_identities if o["Id"] == x
+    cloudfront_facts_service.get_origin_access_identity.side_effect = lambda id: [
+        o["response"] for o in origin_access_identities if o["Id"] == id
     ][0]
 
     assert {"origin_access_identities": expected} == cloudfront_facts_service.summary_get_origin_access_identity_list()

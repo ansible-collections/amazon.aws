@@ -1,0 +1,2 @@
+bugfixes:
+  - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property (https://github.com/ansible-collections/community.aws/issues/1915).
