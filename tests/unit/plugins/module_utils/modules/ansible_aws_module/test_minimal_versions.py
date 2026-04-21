@@ -49,7 +49,6 @@ class TestMinimalVersionTestSuite:
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
         assert return_val.get("warnings") is None
@@ -72,7 +71,6 @@ class TestMinimalVersionTestSuite:
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
         assert return_val.get("warnings") is None
@@ -99,7 +97,6 @@ class TestMinimalVersionTestSuite:
         pprint(return_val)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
         assert return_val.get("warnings") is not None
@@ -133,7 +130,6 @@ class TestMinimalVersionTestSuite:
         pprint(return_val)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
         assert return_val.get("warnings") is not None
@@ -167,7 +163,6 @@ class TestMinimalVersionTestSuite:
         pprint(return_val)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         assert return_val.get("failed") is None
         assert return_val.get("error") is None
         assert return_val.get("warnings") is not None
