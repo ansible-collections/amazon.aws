@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - amazon.aws.cloudformation - Fixed an issue where creating a changeset in check mode would fail if the stack is not in a ready state (e.g., UPDATE_IN_PROGRESS). The module now waits for the stack to be in a ready state (UPDATE_COMPLETE) before creating the changeset (https://github.com/ansible-collections/amazon.aws/pull/1910)
