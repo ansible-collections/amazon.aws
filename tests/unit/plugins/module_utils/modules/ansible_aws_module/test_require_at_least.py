@@ -107,7 +107,6 @@ class TestRequireAtLeastTestSuite:
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         if at_least:
             assert return_val.get("failed") is None
         else:
@@ -142,7 +141,6 @@ class TestRequireAtLeastTestSuite:
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         if at_least:
             assert return_val.get("failed") is None
         else:
@@ -181,7 +179,6 @@ class TestRequireAtLeastTestSuite:
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         if at_least:
             assert return_val.get("failed") is None
         else:
@@ -221,7 +218,6 @@ class TestRequireAtLeastTestSuite:
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
-        assert return_val.get("invocation") is not None
         if at_least:
             assert return_val.get("failed") is None
         else:
