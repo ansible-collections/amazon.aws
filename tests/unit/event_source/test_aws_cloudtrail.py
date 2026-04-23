@@ -5,7 +5,6 @@ import pytest
 from asyncmock import AsyncMock
 from mock import MagicMock
 
-
 from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail import _cloudtrail_event_to_dict
 from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail import _get_events
 from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_cloudtrail import connection_args
