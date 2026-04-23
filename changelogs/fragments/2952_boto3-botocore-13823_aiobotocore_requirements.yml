@@ -1,0 +1,5 @@
+breaking_changes:
+  - Collection - Minimum supported boto3 version is now 1.38.23 (https://github.com/ansible-collections/amazon.aws/pull/2952).
+  - Collection - Minimum supported botocore version is now 1.38.23 (https://github.com/ansible-collections/amazon.aws/pull/2952).
+minor_changes:
+  - Collection - Add aiobotocore version 2.23.0 as a dependency for the event source plugins (https://github.com/ansible-collections/amazon.aws/pull/2952).

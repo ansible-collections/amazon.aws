@@ -26,8 +26,8 @@ class TestMinimalVersionTestSuite:
     # Prepare some data for use in our testing
     # ========================================================
     def setup_method(self):
-        self.MINIMAL_BOTO3 = "1.38.0"
-        self.MINIMAL_BOTOCORE = "1.38.0"
+        self.MINIMAL_BOTO3 = "1.38.23"
+        self.MINIMAL_BOTOCORE = "1.38.23"
         self.OLD_BOTO3 = "1.37.999"
         self.OLD_BOTOCORE = "1.37.999"
 

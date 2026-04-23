@@ -16,3 +16,4 @@ jq
 # Used for event source AWS integration tests
 ansible-rulebook
 ansible-runner
+aiobotocore[botocore]
