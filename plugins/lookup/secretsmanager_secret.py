@@ -125,7 +125,7 @@ except ImportError:
     pass  # Handled by AWSLookupBase
 
 from ansible.errors import AnsibleLookupError
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
