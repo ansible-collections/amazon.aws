@@ -216,8 +216,6 @@
           ResourcePrefix: "{{ resource_prefix }}"
       check_mode: true
       register: volume4_check_mode
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Check task return attributes
       ansible.builtin.assert:
@@ -235,8 +233,6 @@
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: volume4
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
     - name: Check task return attributes
       ansible.builtin.assert:

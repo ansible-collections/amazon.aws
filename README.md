@@ -11,23 +11,25 @@ The Ansible Amazon AWS collection includes a variety of Ansible content to help 
 
 ## Contents
 
-- [Description](#description)
-- [Communication](#communication)
-- [Requirements](#requirements)
-  - [Ansible version compatibility](#ansible-version-compatibility)
-  - [Python version compatibility](#python-version-compatibility)
-  - [AWS SDK version compatibility](#aws-sdk-version-compatibility)
-  - [Event source plugin compatibility](#event-source-plugin-compatibility)
-- [Included content](#included-content)
-- [Installation](#installation)
-- [Use Cases](#use-cases)
-- [Testing](#testing)
-- [Contributing to this collection](#contributing-to-this-collection)
-  - [More information about contributing](#more-information-about-contributing)
-- [Support](#support)
-- [Release notes](#release-notes)
-- [Related Information](#related-information)
-- [License Information](#license-information)
+- [Amazon AWS Collection](#amazon-aws-collection)
+  - [Contents](#contents)
+  - [Description](#description)
+  - [Communication](#communication)
+  - [Requirements](#requirements)
+    - [Ansible version compatibility](#ansible-version-compatibility)
+    - [Python version compatibility](#python-version-compatibility)
+    - [AWS SDK version compatibility](#aws-sdk-version-compatibility)
+    - [Event source plugin compatibility](#event-source-plugin-compatibility)
+  - [Included content](#included-content)
+  - [Installation](#installation)
+  - [Use Cases](#use-cases)
+  - [Testing](#testing)
+  - [Contributing to this collection](#contributing-to-this-collection)
+    - [More information about contributing](#more-information-about-contributing)
+  - [Support](#support)
+  - [Release notes](#release-notes)
+  - [Related Information](#related-information)
+  - [License Information](#license-information)
 
 ## Description
 
@@ -87,7 +89,7 @@ As such, support for Python versions below 3.10 will be removed in a release aft
 
 Starting with the 2.0.0 releases of amazon.aws and community.aws, the collection's policy is generally to support the versions of `botocore` and `boto3` that were released within 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
 
-Version 12.0.0 of this collection supports `boto3 >= 1.38.0` and `botocore >= 1.38.0`
+Version 12.0.0 of this collection supports `boto3 >= 1.38.23` and `botocore >= 1.38.23`
 
 All support for the original AWS SDK `boto` was removed in release 4.0.0.
 

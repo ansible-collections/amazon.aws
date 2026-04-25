@@ -3,8 +3,6 @@ from unittest.mock import patch
 import pytest
 from asyncmock import AsyncMock
 
-pytest.importorskip("aiobotocore")
-
 from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
 from ansible_collections.amazon.aws.tests.unit.utils.event import ListQueue
 

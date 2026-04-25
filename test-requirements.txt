@@ -19,3 +19,4 @@ cryptography
 # For testing event source plugins
 asyncmock
 pytest-asyncio
+aiobotocore[botocore]
