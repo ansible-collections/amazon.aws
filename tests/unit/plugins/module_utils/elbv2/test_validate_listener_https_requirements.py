@@ -6,7 +6,6 @@
 import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import AnsibleELBv2Error
 
 
 class TestValidateListenerHttpsRequirements:
@@ -45,7 +44,7 @@ class TestValidateListenerHttpsRequirements:
         elbv2.validate_listener_https_requirements(listeners)
 
     def test_https_listener_missing_ssl_policy(self):
-        """Test HTTPS listener without SslPolicy - should raise AnsibleELBv2Error"""
+        """Test HTTPS listener without SslPolicy - should raise elbv2.AnsibleELBv2Error"""
         listeners = [
             {
                 "Protocol": "HTTPS",
@@ -55,12 +54,12 @@ class TestValidateListenerHttpsRequirements:
             }
         ]
         with pytest.raises(
-            AnsibleELBv2Error, match="'SslPolicy' is a required listener dict key when Protocol = HTTPS"
+            elbv2.AnsibleELBv2Error, match="'SslPolicy' is a required listener dict key when Protocol = HTTPS"
         ):
             elbv2.validate_listener_https_requirements(listeners)
 
     def test_https_listener_missing_certificates(self):
-        """Test HTTPS listener without Certificates - should raise AnsibleELBv2Error"""
+        """Test HTTPS listener without Certificates - should raise elbv2.AnsibleELBv2Error"""
         listeners = [
             {
                 "Protocol": "HTTPS",
@@ -70,12 +69,12 @@ class TestValidateListenerHttpsRequirements:
             }
         ]
         with pytest.raises(
-            AnsibleELBv2Error, match="'Certificates' is a required listener dict key when Protocol = HTTPS"
+            elbv2.AnsibleELBv2Error, match="'Certificates' is a required listener dict key when Protocol = HTTPS"
         ):
             elbv2.validate_listener_https_requirements(listeners)
 
     def test_https_listener_missing_both(self):
-        """Test HTTPS listener without both SslPolicy and Certificates - should raise AnsibleELBv2Error for SslPolicy first"""
+        """Test HTTPS listener without both SslPolicy and Certificates - should raise elbv2.AnsibleELBv2Error for SslPolicy first"""
         listeners = [
             {
                 "Protocol": "HTTPS",
@@ -84,7 +83,7 @@ class TestValidateListenerHttpsRequirements:
             }
         ]
         with pytest.raises(
-            AnsibleELBv2Error, match="'SslPolicy' is a required listener dict key when Protocol = HTTPS"
+            elbv2.AnsibleELBv2Error, match="'SslPolicy' is a required listener dict key when Protocol = HTTPS"
         ):
             elbv2.validate_listener_https_requirements(listeners)
 
@@ -104,7 +103,7 @@ class TestValidateListenerHttpsRequirements:
             },
         ]
         with pytest.raises(
-            AnsibleELBv2Error, match="'SslPolicy' is a required listener dict key when Protocol = HTTPS"
+            elbv2.AnsibleELBv2Error, match="'SslPolicy' is a required listener dict key when Protocol = HTTPS"
         ):
             elbv2.validate_listener_https_requirements(listeners)
 

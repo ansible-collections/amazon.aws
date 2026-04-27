@@ -6,12 +6,6 @@
 import traceback
 from copy import deepcopy
 
-try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass
-
 from typing import Any
 from typing import Dict
 from typing import List
@@ -19,9 +13,11 @@ from typing import Optional
 from typing import Tuple
 
 # Not intended for general re-use / re-import
+from ._elbv2 import common as _common
 from ._elbv2 import transformations as _transformations
+from ._elbv2 import waiters as _waiters
 from .ec2 import get_ec2_security_group_ids_from_names
-from .elb_utils import AnsibleELBv2Error
+from .exceptions import AnsibleAWSError
 from .elb_utils import add_listener_certificates
 from .elb_utils import add_tags
 from .elb_utils import convert_tg_name_to_arn
@@ -49,10 +45,49 @@ from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
 from .transformation import scrub_none_parameters
-from .waiters import get_waiter
+
+# Expose error handling classes
+AnsibleELBv2Error = _common.AnsibleELBv2Error
+ELBv2ErrorHandler = _common.ELBv2ErrorHandler
 
 # Expose transformation functions
 normalize_application_load_balancer = _transformations.normalize_application_load_balancer
+
+
+def get_elbv2_waiter(client: Any, waiter_name: str):
+    """
+    Get an ELBv2 waiter with improved error handling.
+
+    Args:
+        client: Boto3 ELBv2 client
+        waiter_name: Name of the waiter to retrieve
+
+    Returns:
+        Waiter instance configured for the specified operation
+
+    Raises:
+        AnsibleELBv2Error: If waiter creation or operation fails
+    """
+    factory = _waiters.ELBv2WaiterFactory()
+    return factory.get_waiter(client, waiter_name)
+
+
+@ELBv2ErrorHandler.common_error_handler("wait for load balancer")
+@AWSRetry.jittered_backoff(retries=10)
+def wait_for_load_balancer(client: Any, waiter_name: str, **params) -> None:
+    """
+    Wait for a load balancer operation to complete.
+
+    Args:
+        client: Boto3 ELBv2 client
+        waiter_name: Name of the waiter to use
+        **params: Parameters to pass to the waiter
+
+    Raises:
+        AnsibleELBv2Error: If the wait operation fails
+    """
+    waiter = get_elbv2_waiter(client, waiter_name)
+    waiter.wait(**params)
 
 
 def build_application_load_balancer_description(
@@ -286,9 +321,8 @@ class ElasticLoadBalancerV2:
             return
 
         try:
-            waiter = get_waiter(self.connection, waiter_names.get(ip_type))
-            waiter.wait(LoadBalancerArns=[elb_arn])
-        except (BotoCoreError, ClientError) as e:
+            wait_for_load_balancer(self.connection, waiter_names.get(ip_type), LoadBalancerArns=[elb_arn])
+        except AnsibleELBv2Error as e:
             self.module.fail_json_aws(e)
 
     def wait_for_status(self, elb_arn: str) -> None:
@@ -303,9 +337,8 @@ class ElasticLoadBalancerV2:
             return
 
         try:
-            waiter = get_waiter(self.connection, "load_balancer_available")
-            waiter.wait(LoadBalancerArns=[elb_arn])
-        except (BotoCoreError, ClientError) as e:
+            wait_for_load_balancer(self.connection, "load_balancer_available", LoadBalancerArns=[elb_arn])
+        except AnsibleELBv2Error as e:
             self.module.fail_json_aws(e)
 
     def wait_for_deletion(self, elb_arn: str) -> None:
@@ -318,9 +351,8 @@ class ElasticLoadBalancerV2:
 
         if self.wait:
             try:
-                waiter = get_waiter(self.connection, "load_balancers_deleted")
-                waiter.wait(LoadBalancerArns=[elb_arn])
-            except (BotoCoreError, ClientError) as e:
+                wait_for_load_balancer(self.connection, "load_balancers_deleted", LoadBalancerArns=[elb_arn])
+            except AnsibleELBv2Error as e:
                 self.module.fail_json_aws(e)
 
     def get_elb_attributes(self) -> Dict[str, Any]:
@@ -508,7 +540,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
                 )
             except ValueError as e:
                 self.fail_json(msg=str(e), exception=traceback.format_exc())
-            except (BotoCoreError, ClientError) as e:
+            except AnsibleAWSError as e:
                 self.fail_json_aws(e)
         else:
             self.security_groups = module.params.get("security_groups")
