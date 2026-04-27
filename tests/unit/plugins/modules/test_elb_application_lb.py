@@ -21,9 +21,7 @@ class TestExitIfCheckMode:
 
         elb_application_lb._exit_if_check_mode(alb_obj, action="created")
 
-        alb_obj.exit_json.assert_called_once_with(
-            changed=True, msg="Would have created ALB if not in check mode."
-        )
+        alb_obj.exit_json.assert_called_once_with(changed=True, msg="Would have created ALB if not in check mode.")
 
     def test_does_not_exit_when_not_check_mode(self):
         """Should not exit when not in check mode"""
@@ -42,9 +40,7 @@ class TestExitIfCheckMode:
 
         elb_application_lb._exit_if_check_mode(alb_obj)
 
-        alb_obj.exit_json.assert_called_once_with(
-            changed=True, msg="Would have updated ALB if not in check mode."
-        )
+        alb_obj.exit_json.assert_called_once_with(changed=True, msg="Would have updated ALB if not in check mode.")
 
     def test_custom_action_message(self):
         """Should use custom action in message"""
@@ -53,9 +49,7 @@ class TestExitIfCheckMode:
 
         elb_application_lb._exit_if_check_mode(alb_obj, action="deleted")
 
-        alb_obj.exit_json.assert_called_once_with(
-            changed=True, msg="Would have deleted ALB if not in check mode."
-        )
+        alb_obj.exit_json.assert_called_once_with(changed=True, msg="Would have deleted ALB if not in check mode.")
 
 
 class TestUpdateAlbTags:
