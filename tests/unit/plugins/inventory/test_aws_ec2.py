@@ -37,6 +37,8 @@ from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_a
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _prepare_host_vars
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _remove_trailing_dot
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryAWSError
+from ansible_collections.amazon.aws.plugins.plugin_utils.inventory import AnsibleInventoryPermissionsError
 
 
 @pytest.fixture(name="inventory")
@@ -258,15 +260,16 @@ def test_sanitize_hostname_legacy(inventory):
 
 
 @pytest.mark.parametrize(
-    "hostvars_prefix,hostvars_suffix,use_contrib_script_compatible_ec2_tag_keys,expectation",
+    "hostvars_prefix,hostvars_suffix,use_contrib_script_compatible_ec2_tag_keys,availability_zone_ids,expectation",
     [
         (
             None,
             None,
             False,
+            {"us-east-1a": "use1-az1"},
             {
                 "my_var": 1,
-                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1"},
+                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1", "availability_zone_id": "use1-az1"},
                 "ec2_tags": {"Name": "my-name"},
                 "tags": {"Name": "my-name"},
             },
@@ -275,11 +278,13 @@ def test_sanitize_hostname_legacy(inventory):
             "pre",
             "post",
             False,
+            {"us-east-1a": "use1-az1"},
             {
                 "premy_varpost": 1,
                 "preplacementpost": {
                     "availability_zone": "us-east-1a",
                     "region": "us-east-1",
+                    "availability_zone_id": "use1-az1",
                 },
                 "preec2_tagspost": {"Name": "my-name"},
                 "pretagspost": {"Name": "my-name"},
@@ -289,10 +294,23 @@ def test_sanitize_hostname_legacy(inventory):
             None,
             None,
             True,
+            {"us-east-1a": "use1-az1"},
             {
                 "my_var": 1,
                 "ec2_tag_Name": "my-name",
-                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1"},
+                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1", "availability_zone_id": "use1-az1"},
+                "ec2_tags": {"Name": "my-name"},
+                "tags": {"Name": "my-name"},
+            },
+        ),
+        (
+            None,
+            None,
+            False,
+            {},
+            {
+                "my_var": 1,
+                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1", "availability_zone_id": None},
                 "ec2_tags": {"Name": "my-name"},
                 "tags": {"Name": "my-name"},
             },
@@ -303,6 +321,7 @@ def test_prepare_host_vars(
     hostvars_prefix,
     hostvars_suffix,
     use_contrib_script_compatible_ec2_tag_keys,
+    availability_zone_ids,
     expectation,
 ):
     original_host_vars = {
@@ -313,6 +332,7 @@ def test_prepare_host_vars(
     assert (
         _prepare_host_vars(
             original_host_vars,
+            availability_zone_ids,
             hostvars_prefix,
             hostvars_suffix,
             use_contrib_script_compatible_ec2_tag_keys,
@@ -338,17 +358,21 @@ def test_iter_entry(inventory):
         },
     ]
 
-    entries = list(inventory.iter_entry(hosts, hostnames=[]))
+    availability_zone_ids = {"us-east-1a": "use1-az1"}
+
+    entries = list(inventory.iter_entry(hosts, hostnames=[], availability_zone_ids=availability_zone_ids))
     assert len(entries) == 2
     assert entries[0][0] == "first_host___"
     assert entries[1][0] == "second-host"
     assert entries[1][1]["ec2_tags"]["Name"] == "my-name"
     assert entries[1][1]["tags"]["Name"] == "my-name"
+    assert entries[1][1]["placement"]["availability_zone_id"] == "use1-az1"
 
     entries = list(
         inventory.iter_entry(
             hosts,
             hostnames=[],
+            availability_zone_ids=availability_zone_ids,
             hostvars_prefix="a_",
             hostvars_suffix="_b",
             use_contrib_script_compatible_ec2_tag_keys=True,
@@ -358,6 +382,7 @@ def test_iter_entry(inventory):
     assert entries[0][0] == "first_host___"
     assert entries[1][1]["a_ec2_tags_b"]["Name"] == "my-name"
     assert entries[1][1]["a_tags_b"]["Name"] == "my-name"
+    assert entries[1][1]["a_placement_b"]["availability_zone_id"] == "use1-az1"
 
 
 @pytest.mark.parametrize(
@@ -536,38 +561,41 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
 @pytest.mark.parametrize(
     "error",
     [
-        botocore.exceptions.ClientError(
-            {"Error": {"Code": 1, "Message": "Something went wrong"}, "ResponseMetadata": {"HTTPStatusCode": 404}},
-            "some_botocore_client_error",
+        AnsibleInventoryAWSError(
+            message="Failed to describe EC2 instances",
+            exception=botocore.exceptions.ClientError(
+                {"Error": {"Code": 1, "Message": "Something went wrong"}, "ResponseMetadata": {"HTTPStatusCode": 404}},
+                "some_botocore_client_error",
+            ),
         ),
-        botocore.exceptions.ClientError(
-            {
-                "Error": {"Code": "UnauthorizedOperation", "Message": "Something went wrong"},
-                "ResponseMetadata": {"HTTPStatusCode": 403},
-            },
-            "some_botocore_client_error",
+        AnsibleInventoryPermissionsError(
+            message="Failed to describe EC2 instances (permission denied)",
+            exception=botocore.exceptions.ClientError(
+                {
+                    "Error": {"Code": "UnauthorizedOperation", "Message": "Something went wrong"},
+                    "ResponseMetadata": {"HTTPStatusCode": 403},
+                },
+                "some_botocore_client_error",
+            ),
         ),
-        botocore.exceptions.PaginationError(message="some pagination error"),
+        AnsibleInventoryAWSError(
+            message="Timeout trying to describe EC2 instances",
+            exception=botocore.exceptions.PaginationError(message="some pagination error"),
+        ),
     ],
 )
 @patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._describe_ec2_instances")
 def test_inventory_get_instances_by_region_failures(m_describe_ec2_instances, inventory, strict, error):
     inventory.all_clients = MagicMock()
     inventory.all_clients.return_value = [(MagicMock(), "us-west-2")]
-    inventory.fail_aws = MagicMock()
-    inventory.fail_aws.side_effect = SystemExit(1)
 
     m_describe_ec2_instances.side_effect = error
     regions = ["us-east-2", "us-east-4"]
 
-    if (
-        isinstance(error, botocore.exceptions.ClientError)
-        and error.response["ResponseMetadata"]["HTTPStatusCode"] == 403
-        and not strict
-    ):
+    if isinstance(error, AnsibleInventoryPermissionsError) and not strict:
         assert inventory._get_instances_by_region(regions, [], strict) == []
     else:
-        with pytest.raises(SystemExit):
+        with pytest.raises((AnsibleInventoryAWSError, AnsibleInventoryPermissionsError)):
             inventory._get_instances_by_region(regions, [], strict)
 
 
@@ -793,3 +821,121 @@ def test__get_instance_route53_hostnames(inventory, instance, hostnames):
     }
     result = inventory._get_instance_route53_hostnames(instance)
     assert sorted(hostnames) == sorted(result)
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.describe_availability_zones")
+def test_describe_azs_by_region(m_describe_availability_zones, inventory):
+    mock_client = MagicMock()
+    inventory.client = MagicMock(return_value=mock_client)
+
+    m_describe_availability_zones.return_value = [
+        {"ZoneName": "us-east-1a", "ZoneId": "use1-az1", "State": "available"},
+        {"ZoneName": "us-east-1b", "ZoneId": "use1-az2", "State": "available"},
+        {"ZoneName": "us-east-1c", "ZoneId": "use1-az3", "State": "available"},
+    ]
+
+    result = inventory._describe_azs_by_region("us-east-1")
+
+    assert result == {
+        "us-east-1a": {"ZoneName": "us-east-1a", "ZoneId": "use1-az1", "State": "available"},
+        "us-east-1b": {"ZoneName": "us-east-1b", "ZoneId": "use1-az2", "State": "available"},
+        "us-east-1c": {"ZoneName": "us-east-1c", "ZoneId": "use1-az3", "State": "available"},
+    }
+    inventory.client.assert_called_once_with("ec2", region="us-east-1")
+    m_describe_availability_zones.assert_called_once_with(mock_client)
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.describe_availability_zones")
+def test_describe_azs_by_region_caching(m_describe_availability_zones, inventory):
+    mock_client = MagicMock()
+    inventory.client = MagicMock(return_value=mock_client)
+
+    m_describe_availability_zones.return_value = [
+        {"ZoneName": "us-east-1a", "ZoneId": "use1-az1", "State": "available"},
+    ]
+
+    # First call
+    result1 = inventory._describe_azs_by_region("us-east-1")
+    # Second call should use cache
+    result2 = inventory._describe_azs_by_region("us-east-1")
+
+    assert result1 == result2
+    # describe_availability_zones should only be called once due to caching
+    m_describe_availability_zones.assert_called_once()
+    inventory.client.assert_called_once()
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.describe_availability_zones")
+def test_get_availability_zone_ids(m_describe_availability_zones, inventory):
+    inventory.all_clients = MagicMock()
+    inventory.all_clients.return_value = [
+        (MagicMock(), "us-east-1"),
+        (MagicMock(), "us-west-2"),
+    ]
+
+    m_describe_availability_zones.side_effect = [
+        [
+            {"ZoneName": "us-east-1a", "ZoneId": "use1-az1"},
+            {"ZoneName": "us-east-1b", "ZoneId": "use1-az2"},
+        ],
+        [
+            {"ZoneName": "us-west-2a", "ZoneId": "usw2-az1"},
+            {"ZoneName": "us-west-2b", "ZoneId": "usw2-az2"},
+        ],
+    ]
+
+    inventory.client = MagicMock(side_effect=lambda service, region: MagicMock())
+
+    result = inventory._get_availability_zone_ids(strict_permissions=False)
+
+    assert result == {
+        "us-east-1a": "use1-az1",
+        "us-east-1b": "use1-az2",
+        "us-west-2a": "usw2-az1",
+        "us-west-2b": "usw2-az2",
+    }
+    inventory.all_clients.assert_called_once_with("ec2")
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.describe_availability_zones")
+def test_get_availability_zone_ids_with_permissions_error(m_describe_availability_zones, inventory):
+    inventory.all_clients = MagicMock()
+    inventory.all_clients.return_value = [
+        (MagicMock(), "us-east-1"),
+        (MagicMock(), "us-west-2"),
+    ]
+
+    # First region succeeds, second fails with permissions error
+    def describe_side_effect(client):
+        if not hasattr(describe_side_effect, "call_count"):
+            describe_side_effect.call_count = 0
+        describe_side_effect.call_count += 1
+
+        if describe_side_effect.call_count == 1:
+            return [{"ZoneName": "us-east-1a", "ZoneId": "use1-az1"}]
+        else:
+            raise AnsibleInventoryPermissionsError(
+                message="Failed to describe availability zones (permission denied)",
+                exception=botocore.exceptions.ClientError(
+                    {
+                        "Error": {"Code": "UnauthorizedOperation", "Message": "Not authorized"},
+                        "ResponseMetadata": {"HTTPStatusCode": 403},
+                    },
+                    "describe_availability_zones",
+                ),
+            )
+
+    m_describe_availability_zones.side_effect = describe_side_effect
+    inventory.client = MagicMock(side_effect=lambda service, region: MagicMock())
+
+    # With strict_permissions=False, should continue on permissions errors
+    result = inventory._get_availability_zone_ids(strict_permissions=False)
+    assert result == {"us-east-1a": "use1-az1"}
+
+    # With strict_permissions=True, should raise
+    # Clear cache and reset side effect
+    inventory._availability_zone_cache = {}
+    m_describe_availability_zones.side_effect = describe_side_effect
+    describe_side_effect.call_count = 0
+    with pytest.raises(AnsibleInventoryPermissionsError):
+        inventory._get_availability_zone_ids(strict_permissions=True)
