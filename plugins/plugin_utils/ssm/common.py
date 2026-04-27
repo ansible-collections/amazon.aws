@@ -9,7 +9,7 @@ from typing import Any
 from typing import TypedDict
 
 from ansible.errors import AnsibleConnectionFailure
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_text
 
 
 def ssm_retry(func: Any) -> Any:
