@@ -21,8 +21,8 @@ try:
 except ImportError:
     pass
 
-from ansible.module_utils._text import to_bytes
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.text.converters import to_bytes
 
 from .botocore import is_boto3_error_code
 from .retries import AWSRetry
