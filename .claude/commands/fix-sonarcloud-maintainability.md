@@ -1,0 +1,1 @@
+Use the `sonarcloud-fixes` skill to fetch maintainability issues (code smells) from SonarCloud, analyse them by severity and type, suggest fixes, and create focused PRs for maintainability improvements.
