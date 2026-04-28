@@ -194,11 +194,11 @@ jobs:
           collection-root: ''
           target: ${{ steps.read-targets.outputs.job_targets }}
           test-deps: >-
-            ansible-collections/ansible.utils
-            ansible-collections/ansible.netcommon
-            ansible-collections/community.general
-            ansible-collections/community.crypto
-            ansible-collections/ansible.windows
+            ansible.utils
+            ansible.netcommon
+            community.general
+            community.crypto
+            ansible.windows
             ${{ steps.set-path.outputs.collection_dep }}
           pre-test-cmd: |
             python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
