@@ -1,0 +1,161 @@
+---
+name: integration
+
+on:
+  - workflow_call
+
+jobs:
+  retrieve-pr-info:
+    name: retrieve base ref
+    outputs:
+      base_ref: ${{ steps.retrieve-pr-info.outputs.base_ref }}
+      head_ref: ${{ steps.retrieve-pr-info.outputs.checkout_sha }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve pull request base ref
+        id: retrieve-pr-info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number, // The issue number from the trigger
+            });
+
+            const baseBranch = pr.data.base.ref;
+            // The specific commit hash of the PR
+            const checkoutSha = pr.data.head.sha;
+
+            // This sets the output for other jobs
+            core.setOutput('base_ref', baseBranch);
+            core.info(`Successfully set output 'base_ref' to: ${baseBranch}`);
+            core.setOutput('checkout_sha', checkoutSha);
+            core.info(`Successfully set output 'checkout_sha' to: ${checkoutSha}`);
+
+  splitter:
+    needs:
+      - retrieve-pr-info
+    name: ansible test splitter
+    permissions:
+      pull-requests: read
+    env:
+      amazon_dir: "./amazon_aws"
+      community_dir: "./community_aws"
+    outputs:
+      jobs: ${{ steps.compute.outputs.jobs }}
+      targets: ${{ steps.compute.outputs.targets }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source collection (on issue comment)
+        uses: actions/checkout@v6
+        with:
+          path: "${{ env.amazon_dir }}"
+          fetch-depth: 0
+          ref: ${{ needs.retrieve-pr-info.outputs.head_ref }}
+        if: ${{ github.event_name == 'issue_comment' }}
+
+      - name: Checkout the source collection (on other triggering method)
+        uses: actions/checkout@v6
+        with:
+          path: "${{ env.amazon_dir }}"
+          fetch-depth: 0
+        if: ${{ github.event_name != 'issue_comment' }}
+
+      - name: Checkout community.aws collection
+        uses: actions/checkout@v6
+        with:
+          repository: ansible-collections/community.aws
+          path: "${{ env.community_dir }}"
+          fetch-depth: 0
+          ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
+
+      - name: list changes for pull request
+        id: compute
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_test_splitter@0b891487c4170ef856f02313c66cb1c776814c42
+        with:
+          collections_to_test: "${{ env.amazon_dir}}, ${{ env.community_dir }}"
+          total_jobs: 24
+          base_ref: '${{ needs.retrieve-pr-info.outputs.base_ref }}'
+
+  run-tests:
+    needs:
+      - retrieve-pr-info 
+      - splitter
+    permissions:
+      pull-requests: read
+    env:
+      amazon_dir: "./amazon_aws"
+      community_dir: "./community_aws"
+      all_targets: "${{ needs.splitter.outputs.targets }}"
+      tarball_dir: "./tarballs"
+      ansible_version: milestone
+      python_version: 3.12
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        job-id: ${{ fromJson(needs.splitter.outputs.jobs) }}
+    name: "${{ matrix.job-id }}"
+    steps:
+      - name: Checkout the source collection (on issue comment)
+        uses: actions/checkout@v6
+        with:
+          path: "${{ env.amazon_dir }}"
+          fetch-depth: 0
+          ref: ${{ needs.retrieve-pr-info.outputs.head_ref }}
+        if: ${{ github.event_name == 'issue_comment' }}
+
+      - name: Checkout the source collection (on other triggering method)
+        uses: actions/checkout@v6
+        with:
+          path: "${{ env.amazon_dir }}"
+          fetch-depth: 0
+        if: ${{ github.event_name != 'issue_comment' }}
+
+      - name: Checkout community.aws collection
+        uses: actions/checkout@v6
+        with:
+          repository: ansible-collections/community.aws
+          path: "${{ env.community_dir }}"
+          fetch-depth: 0
+          ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
+
+      - name: Read job targets
+        id: read-targets
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_read_targets@0b891487c4170ef856f02313c66cb1c776814c42
+        with:
+          job_id: "${{ matrix.job-id }}"
+          all_targets: "${{ env.all_targets }}"
+
+      - name: Determine Collection Path
+        id: set-path
+        run: |
+          if [[ "${{ matrix.job-id }}" == *"amazon.aws"* ]]; then
+            echo "collection_path=${{ env.amazon_dir }}" >> $GITHUB_OUTPUT
+            echo "collection_dep=${{ env.community_dir }}" >> $GITHUB_OUTPUT
+          else
+            echo "collection_path=${{ env.community_dir }}" >> $GITHUB_OUTPUT
+            echo "collection_dep=${{ env.amazon_dir }}" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
+
+      - name: Run integration tests
+        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e
+        with:
+          ansible-core-version: ${{ env.ansible_version }}
+          origin-python-version: ${{ env.python_version }}
+          testing-type: integration
+          collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
+          collection-root: ''
+          target: ${{ steps.read-targets.outputs.job_targets }}
+          test-deps: >-
+            ansible.utils
+            ansible.netcommon
+            community.general
+            community.crypto
+            ansible.windows
+            ${{ steps.set-path.outputs.collection_dep }}
+          pre-test-cmd: |
+            python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt

@@ -13,7 +13,7 @@ private_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24
 private_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.2.0/24
 public_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.3.0/24
 public_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.4.0/24
-s3_bucket_name: alb-test-{{ resource_short }}
+s3_bucket_name: alb-ansible-test-{{ resource_short }}
 
 local_certs:
   - priv_key: "{{ remote_tmp_dir }}/private-1.pem"
