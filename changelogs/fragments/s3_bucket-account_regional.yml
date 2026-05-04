@@ -1,0 +1,2 @@
+minor_changes:
+  - s3_bucket - Added O(account_regional) parameter to support creating buckets in the account-regional namespace. Requires at least botocore version 1.42.67 (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
