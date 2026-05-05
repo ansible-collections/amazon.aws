@@ -1,2 +1,2 @@
 ---
-s3_bucket_name: "{{ resource_prefix }}"
+s3_bucket_name: "{{ tiny_prefix }}-s3-bucket"

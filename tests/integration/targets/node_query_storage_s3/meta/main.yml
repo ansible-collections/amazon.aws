@@ -1,0 +1,4 @@
+---
+dependencies:
+  # Ensure that the role is available in the restricted docker environment
+  - role: setup_node_query

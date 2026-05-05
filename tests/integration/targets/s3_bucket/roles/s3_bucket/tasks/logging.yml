@@ -1,0 +1,277 @@
+---
+- module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - ansible.builtin.set_fact:
+        local_bucket_name: "{{ s3_bucket_name | hash('md5') }}-logging-source"
+        local_target_bucket_name: "{{ s3_bucket_name | hash('md5') }}-logging-target"
+
+    # ============================================================
+    # Create target bucket for logs
+    # ============================================================
+
+    - name: Create target bucket for logging
+      amazon.aws.s3_bucket:
+        name: "{{ local_target_bucket_name }}"
+        state: present
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+
+    - name: Set bucket policy on target bucket to allow S3 logging service
+      amazon.aws.s3_bucket:
+        name: "{{ local_target_bucket_name }}"
+        state: present
+        policy: "{{ lookup('template', 'logging_policy.json.j2') }}"
+      vars:
+        logging_target_bucket: "{{ local_target_bucket_name }}"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+
+    # ============================================================
+    # Test enabling logging
+    # ============================================================
+
+    - name: Create source bucket with logging enabled
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: "logs/"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == "logs/"
+
+    - name: Create source bucket with logging enabled (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: "logs/"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == "logs/"
+
+    # ============================================================
+    # Test modifying logging configuration
+    # ============================================================
+
+    - name: Update logging prefix
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: "new-logs/"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == "new-logs/"
+
+    - name: Update logging prefix (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: "new-logs/"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == "new-logs/"
+
+    # ============================================================
+    # Test logging with empty prefix
+    # ============================================================
+
+    - name: Update logging with empty prefix
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: ""
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == ""
+
+    - name: Update logging with empty prefix (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: ""
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == ""
+
+    # ============================================================
+    # Test disabling logging
+    # ============================================================
+
+    - name: Disable bucket logging
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: ""
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.logging is none
+
+    - name: Disable bucket logging (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: ""
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.logging is none
+
+    # ============================================================
+    # Test re-enabling logging after disable
+    # ============================================================
+
+    - name: Re-enable bucket logging
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: "re-enabled/"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == "re-enabled/"
+
+    # ============================================================
+    # Test disabling logging with empty target_bucket
+    # ============================================================
+
+    - name: Disable bucket logging with empty target_bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: ""
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.logging is none
+
+    - name: Disable bucket logging with empty target_bucket (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: ""
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.logging is none
+
+    # ============================================================
+    # Test omitting logging parameter returns current state
+    # ============================================================
+
+    - name: Re-enable logging for final test
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        logging:
+          target_bucket: "{{ local_target_bucket_name }}"
+          target_prefix: "final-test/"
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output.changed
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == "final-test/"
+
+    - name: Get bucket info without specifying logging parameter
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is not changed
+          - output.logging is defined
+          - output.logging.target_bucket == local_target_bucket_name
+          - output.logging.target_prefix == "final-test/"
+
+  always:
+    # ============================================================
+    # Cleanup
+    # ============================================================
+
+    - name: Delete source bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: absent
+        force: true
+      ignore_errors: true
+
+    - name: Delete target bucket
+      amazon.aws.s3_bucket:
+        name: "{{ local_target_bucket_name }}"
+        state: absent
+        force: true
+      ignore_errors: true
