@@ -1,0 +1,102 @@
+---
+- name: Run account-regional bucket tests
+  vars:
+    ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+  block:
+    - name: Get AWS caller identity
+      amazon.aws.aws_caller_info:
+      register: caller_info
+
+    - ansible.builtin.set_fact:
+        account_regional_bucket_name: "{{ (s3_bucket_name | hash('md5'))[:10] }}-{{ caller_info.account }}-{{ aws_region }}-an"
+        invalid_bucket_name: "{{ (s3_bucket_name | hash('md5'))[:10] }}-invalid-bucket"
+
+    # ============================================================
+    - name: Try to create account-regional bucket with invalid name format
+      amazon.aws.s3_bucket:
+        name: "{{ invalid_bucket_name }}"
+        state: present
+        account_regional: true
+      register: output
+      ignore_errors: true
+
+    - ansible.builtin.assert:
+        that:
+          - output is failed
+          - "'account-regional bucket name must' in output.msg"
+
+    # ============================================================
+    - name: Create a bucket with account-regional namespace
+      amazon.aws.s3_bucket:
+        name: "{{ account_regional_bucket_name }}"
+        state: present
+        account_regional: true
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is success
+          - output is changed
+          - output.name == account_regional_bucket_name
+
+    # ============================================================
+    - name: Re-create account-regional bucket (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ account_regional_bucket_name }}"
+        state: present
+        account_regional: true
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is success
+          - output is not changed
+          - output.name == account_regional_bucket_name
+
+    # ============================================================
+    - name: Update account-regional bucket with tags
+      amazon.aws.s3_bucket:
+        name: "{{ account_regional_bucket_name }}"
+        state: present
+        tags:
+          test: value
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is success
+          - output is changed
+          - output.name == account_regional_bucket_name
+          - output.tags.test == 'value'
+
+    # ============================================================
+    - name: Delete account-regional bucket
+      amazon.aws.s3_bucket:
+        name: "{{ account_regional_bucket_name }}"
+        state: absent
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is success
+          - output is changed
+
+    # ============================================================
+    - name: Re-delete account-regional bucket (idempotency)
+      amazon.aws.s3_bucket:
+        name: "{{ account_regional_bucket_name }}"
+        state: absent
+      register: output
+
+    - ansible.builtin.assert:
+        that:
+          - output is success
+          - output is not changed
+
+  # ============================================================
+  always:
+    - name: Ensure all test buckets are deleted
+      amazon.aws.s3_bucket:
+        name: "{{ account_regional_bucket_name }}"
+        state: absent
+      ignore_errors: true

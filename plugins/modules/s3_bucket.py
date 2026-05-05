@@ -43,6 +43,15 @@ options:
     aliases: ['rgw']
     type: bool
     default: false
+  account_regional:
+    description:
+      - Whether to create the bucket in the account-regional namespace instead of the global namespace.
+      - When V(true), the bucket name must follow the format C(prefix-accountId-region-an).
+      - Can only be set during bucket creation. Cannot be changed for existing buckets.
+      - Not supported for directory buckets.
+      - Requires botocore >= 1.42.67
+    type: bool
+    version_added: 11.3.0
   requester_pays:
     description:
       - With Requester Pays buckets, the requester instead of the bucket owner pays the cost
@@ -286,6 +295,11 @@ EXAMPLES = r"""
     endpoint_url: http://your-ceph-rados-gateway-server.xxx
     ceph: true
 
+# Create a bucket with account-regional namespace
+- amazon.aws.s3_bucket:
+    name: my-bucket-111122223333-us-east-1-an
+    state: present
+    account_regional: true
 # Remove an S3 bucket and any keys it contains
 - amazon.aws.s3_bucket:
     name: mys3bucket
@@ -603,6 +617,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.s3 import put_s3_object
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_acl_to_name
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_bucket_exists
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_account_regional_bucket_name
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
@@ -1191,7 +1206,8 @@ def create_or_update_bucket(s3_client: ClientType, module: AnsibleAWSModule) -> 
     bucket_is_present = s3_bucket_exists(s3_client, name)
 
     if not bucket_is_present:
-        changed = create_bucket(s3_client, name, location, object_lock_enabled)
+        account_regional = module.params.get("account_regional")
+        changed = create_bucket(s3_client, name, location, object_lock_enabled, account_regional)
         waiter = get_s3_waiter(s3_client, "bucket_exists")
         S3ErrorHandler.common_error_handler(f"wait for bucket {name} to be created")(waiter.wait)(Bucket=name)
 
@@ -1279,7 +1295,11 @@ def _create_bucket(s3_client: ClientType, **params) -> bool:
 
 
 def create_bucket(
-    s3_client: ClientType, bucket_name: str, location: str, object_lock_enabled: Optional[bool] = False
+    s3_client: ClientType,
+    bucket_name: str,
+    location: str,
+    object_lock_enabled: Optional[bool] = False,
+    account_regional: Optional[bool] = None,
 ) -> bool:
     """
     Create an S3 bucket.
@@ -1288,6 +1308,7 @@ def create_bucket(
         bucket_name (str): The name of the bucket to create.
         location (str): The AWS region where the bucket should be created. If None, it defaults to "us-east-1".
         object_lock_enabled (bool): Whether to enable object lock for the bucket. Defaults to False.
+        account_regional (bool): Whether to create the bucket in the account-regional namespace. Defaults to None (global namespace).
     Returns:
         True if the bucket was successfully created, False otherwise.
     """
@@ -1302,7 +1323,8 @@ def create_bucket(
 
     if object_lock_enabled is not None:
         params["ObjectLockEnabledForBucket"] = object_lock_enabled
-
+    if account_regional:
+        params["BucketNamespace"] = "account-regional"
     return _create_bucket(s3_client, **params)
 
 
@@ -1705,6 +1727,7 @@ def main():
         dualstack=dict(default=False, type="bool"),
         state=dict(default="present", choices=["present", "absent"]),
         ceph=dict(default=False, type="bool", aliases=["rgw"]),
+        account_regional=dict(type="bool"),
         # ** Warning **
         # we support non-AWS implementations, only force/purge options should have a
         # default set for any top-level option.  We need to be able to identify
@@ -1825,6 +1848,13 @@ def main():
 
     if module.params.get("validate_bucket_name"):
         err = validate_bucket_name(module.params["name"])
+        if err:
+            module.fail_json(msg=err)
+
+    account_regional = module.params.get("account_regional")
+    if account_regional:
+        region = module.params.get("region") or module.region
+        err = validate_account_regional_bucket_name(module.params["name"], region)
         if err:
             module.fail_json(msg=err)
 
