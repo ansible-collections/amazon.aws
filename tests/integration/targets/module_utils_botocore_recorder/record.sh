@@ -2,11 +2,11 @@
 #
 set -eux
 
-if [ -d recording ]; then
+if [[ -d recording ]]; then
     echo "Please check and remove the 'recording' directory."
     exit 1
 fi
-if [ -v ANSIBLE_TEST_PYTHON_VERSION ]; then
+if [[ -v ANSIBLE_TEST_PYTHON_VERSION ]]; then
     echo "Please call ./runme.sh directly without ansible-test"
     exit 1
 fi
