@@ -8,6 +8,8 @@ from __future__ import annotations
 import typing
 
 from ._elbv2 import waiters as _elbv2_waiters
+from ._elbv2.common import AnsibleELBv2Error
+from ._elbv2.common import ELBv2ErrorHandler
 from .botocore import is_boto3_error_code
 from .errors import AWSErrorHandler
 from .exceptions import AnsibleAWSError
@@ -21,19 +23,6 @@ if typing.TYPE_CHECKING:
     from typing import Union
 
     from .botocore import ClientType
-
-
-class AnsibleELBv2Error(AnsibleAWSError):
-    pass
-
-
-# Elastic Load Balancers V2
-class ELBv2ErrorHandler(AWSErrorHandler):
-    _CUSTOM_EXCEPTION = AnsibleELBv2Error
-
-    @classmethod
-    def _is_missing(cls):
-        return is_boto3_error_code("LoadBalancerNotFound")
 
 
 @ELBv2ErrorHandler.common_error_handler("create load balancer")
