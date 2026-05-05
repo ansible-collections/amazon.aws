@@ -1405,6 +1405,50 @@ def validate_bucket_name(name: str) -> Optional[str]:
     return None
 
 
+def validate_account_regional_bucket_name(name: str, region: Optional[str] = None) -> Optional[str]:
+    """
+    Validate S3 bucket name for account-regional namespace.
+
+    Account-regional bucket names must follow the format:
+    prefix-{accountId}-{region}-an
+
+    Parameters:
+        name (str): The bucket name to validate.
+        region (str): The AWS region (optional, used for validation if provided).
+
+    Returns:
+        Error message string if validation fails, or None if valid.
+    """
+    import re
+
+    if len(name) < 3:
+        return "account-regional bucket name must be at least 3 characters"
+    if len(name) > 63:
+        return "account-regional bucket name cannot exceed 63 characters"
+
+    if not name.endswith("-an"):
+        return "account-regional bucket name must end with '-an'"
+
+    pattern = r"^(.+)-(\d{12})-([a-z]{2}-[a-z]+-\d)-an$"
+    match = re.match(pattern, name)
+
+    if not match:
+        return "account-regional bucket name must follow format: prefix-{12-digit-account-id}-{region}-an"
+
+    prefix, account_id, bucket_region = match.groups()
+
+    if not prefix:
+        return "account-regional bucket name must have a prefix before the account ID"
+
+    if len(account_id) != 12:
+        return "account ID in bucket name must be exactly 12 digits"
+
+    if region and bucket_region != region:
+        return f"bucket name region '{bucket_region}' does not match the bucket's configured region '{region}'"
+
+    return None
+
+
 # Spot special case of fakes3.
 def is_fakes3(url: Optional[str]) -> bool:
     """Return True if endpoint_url has scheme fakes3://"""
