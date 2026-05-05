@@ -269,7 +269,11 @@ def test_sanitize_hostname_legacy(inventory):
             {"us-east-1a": "use1-az1"},
             {
                 "my_var": 1,
-                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1", "availability_zone_id": "use1-az1"},
+                "placement": {
+                    "availability_zone": "us-east-1a",
+                    "region": "us-east-1",
+                    "availability_zone_id": "use1-az1",
+                },
                 "ec2_tags": {"Name": "my-name"},
                 "tags": {"Name": "my-name"},
             },
@@ -298,7 +302,11 @@ def test_sanitize_hostname_legacy(inventory):
             {
                 "my_var": 1,
                 "ec2_tag_Name": "my-name",
-                "placement": {"availability_zone": "us-east-1a", "region": "us-east-1", "availability_zone_id": "use1-az1"},
+                "placement": {
+                    "availability_zone": "us-east-1a",
+                    "region": "us-east-1",
+                    "availability_zone_id": "use1-az1",
+                },
                 "ec2_tags": {"Name": "my-name"},
                 "tags": {"Name": "my-name"},
             },
