@@ -1,5 +1,7 @@
 ---
 - name: Run account-regional bucket tests
+  vars:
+    ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
   block:
     - name: Get AWS caller identity
       amazon.aws.aws_caller_info:
