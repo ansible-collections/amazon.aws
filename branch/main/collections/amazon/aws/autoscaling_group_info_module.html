@@ -410,12 +410,48 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/availability_zone_distribution"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-availability-zone-distribution"><strong>availability_zone_distribution</strong></p>
+<a class="ansibleOptionLink" href="#return-results/availability_zone_distribution" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Availability zone distribution settings</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/availability_zone_distribution/capacity_distribution_strategy"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-availability-zone-distribution-capacity-distribution-strategy"><strong>capacity_distribution_strategy</strong></p>
+<a class="ansibleOptionLink" href="#return-results/availability_zone_distribution/capacity_distribution_strategy" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Strategy for distributing capacity across availability zones</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;balanced-best-effort&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/availability_zones"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-availability-zones"><strong>availability_zones</strong></p>
 <a class="ansibleOptionLink" href="#return-results/availability_zones" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of Availability Zones that are enabled for this ASG.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;us-west-2a&quot;,</span> <span class="pre">&quot;us-west-2b&quot;,</span> <span class="pre">&quot;us-west-2a&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/capacity_reservation_specification"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-capacity-reservation-specification"><strong>capacity_reservation_specification</strong></p>
+<a class="ansibleOptionLink" href="#return-results/capacity_reservation_specification" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Capacity reservation preference for instances</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/capacity_reservation_specification/capacity_reservation_preference"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-capacity-reservation-specification-capacity-reservation-preference"><strong>capacity_reservation_preference</strong></p>
+<a class="ansibleOptionLink" href="#return-results/capacity_reservation_specification/capacity_reservation_preference" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Instance capacity reservation preference</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -450,6 +486,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#return-results/enabled_metrics" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The metrics enabled for the group.</p>
+<p>Deprecated, use <code class="docutils literal notranslate"><span class="pre">metrics_collection</span></code> instead.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;granularity&quot;:</span> <span class="pre">&quot;1Minute&quot;,</span> <span class="pre">&quot;metric&quot;:</span> <span class="pre">&quot;GroupAndWarmPoolTotalCapacity&quot;}]</span></code></p>
 </div></td>
@@ -457,24 +494,27 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/enabled_metrics/granularity"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-enabled-metrics-granularity"><strong>granularity</strong></p>
 <a class="ansibleOptionLink" href="#return-results/enabled_metrics/granularity" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The granularity of the metric. The only valid value is 1Minute.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1Minute&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/enabled_metrics/metric"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-enabled-metrics-metric"><strong>metric</strong></p>
 <a class="ansibleOptionLink" href="#return-results/enabled_metrics/metric" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Name of the metric.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;GroupAndWarmPoolTotalCapacity&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/health_check_grace_period"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-health-check-grace-period"><strong>health_check_grace_period</strong></p>
 <a class="ansibleOptionLink" href="#return-results/health_check_grace_period" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
@@ -484,6 +524,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/health_check_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-health-check-type"><strong>health_check_type</strong></p>
 <a class="ansibleOptionLink" href="#return-results/health_check_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The service you want the health status from, one of “EC2” or “ELB”.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
@@ -491,10 +532,66 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/instance_details"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-instance-details"><strong>instance_details</strong></p>
+<a class="ansibleOptionLink" href="#return-results/instance_details" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of detailed information about instances in the ASG</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/instance_details/availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-instance-details-availability-zone"><strong>availability_zone</strong></p>
+<a class="ansibleOptionLink" href="#return-results/instance_details/availability_zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The availability zone the instance is in</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1a&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/instance_details/health_status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-instance-details-health-status"><strong>health_status</strong></p>
+<a class="ansibleOptionLink" href="#return-results/instance_details/health_status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The health status of the instance</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;HEALTHY&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/instance_details/instance_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-instance-details-instance-id"><strong>instance_id</strong></p>
+<a class="ansibleOptionLink" href="#return-results/instance_details/instance_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the instance</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;i-0123456789012&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/instance_details/lifecycle_state"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-instance-details-lifecycle-state"><strong>lifecycle_state</strong></p>
+<a class="ansibleOptionLink" href="#return-results/instance_details/lifecycle_state" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The lifecycle state of the instance</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;InService&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/instance_ids"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-instance-ids"><strong>instance_ids</strong></p>
+<a class="ansibleOptionLink" href="#return-results/instance_ids" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of instance IDs in the ASG</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;i-0123456789012&quot;]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-instances"><strong>instances</strong></p>
 <a class="ansibleOptionLink" href="#return-results/instances" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of EC2 instances associated with ASG and their status.</p>
+<p>Deprecated, use <code class="docutils literal notranslate"><span class="pre">instance_details</span></code> instead.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;availability_zone&quot;:</span> <span class="pre">&quot;us-west-2a&quot;,</span> <span class="pre">&quot;health_status&quot;:</span> <span class="pre">&quot;Healthy&quot;,</span> <span class="pre">&quot;instance_id&quot;:</span> <span class="pre">&quot;i-es22ad25&quot;,</span> <span class="pre">&quot;launch_configuration_name&quot;:</span> <span class="pre">&quot;public-webapp-production-1&quot;,</span> <span class="pre">&quot;launch_template&quot;:</span> <span class="pre">{&quot;launch_template_id&quot;:</span> <span class="pre">&quot;lt-0b19eb00123456789&quot;,</span> <span class="pre">&quot;launch_template_name&quot;:</span> <span class="pre">&quot;test-template&quot;,</span> <span class="pre">&quot;version&quot;:</span> <span class="pre">&quot;1&quot;},</span> <span class="pre">&quot;lifecycle_state&quot;:</span> <span class="pre">&quot;InService&quot;,</span> <span class="pre">&quot;protected_from_scale_in&quot;:</span> <span class="pre">&quot;false&quot;}]</span></code></p>
 </div></td>
@@ -620,12 +717,49 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/max_instance_lifetime"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-max-instance-lifetime"><strong>max_instance_lifetime</strong></p>
+<a class="ansibleOptionLink" href="#return-results/max_instance_lifetime" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The maximum amount of time, in seconds, that an instance can be in service.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when configured</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">604800</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/max_size"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-max-size"><strong>max_size</strong></p>
 <a class="ansibleOptionLink" href="#return-results/max_size" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Maximum size of group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">3</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/metrics_collection"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-metrics-collection"><strong>metrics_collection</strong></p>
+<a class="ansibleOptionLink" href="#return-results/metrics_collection" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>List of enabled AutoScalingGroup metrics (sorted by metric name).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/metrics_collection/granularity"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-metrics-collection-granularity"><strong>granularity</strong></p>
+<a class="ansibleOptionLink" href="#return-results/metrics_collection/granularity" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The frequency at which metrics are collected</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;1Minute&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/metrics_collection/metric"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-metrics-collection-metric"><strong>metric</strong></p>
+<a class="ansibleOptionLink" href="#return-results/metrics_collection/metric" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the metric</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;GroupInServiceInstances&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -640,6 +774,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/new_instances_protected_from_scale_in"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-new-instances-protected-from-scale-in"><strong>new_instances_protected_from_scale_in</strong></p>
 <a class="ansibleOptionLink" href="#return-results/new_instances_protected_from_scale_in" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether or not new instances a protected from automatic scaling in.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
@@ -658,6 +793,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/service_linked_role_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-service-linked-role-arn"><strong>service_linked_role_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-results/service_linked_role_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ARN of the service-linked role that the Auto Scaling group uses to call other Amazon Web Services on your behalf.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
@@ -676,6 +812,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/suspended_processes"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-suspended-processes"><strong>suspended_processes</strong></p>
 <a class="ansibleOptionLink" href="#return-results/suspended_processes" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The suspended processes associated with the group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
@@ -687,7 +824,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#return-results/suspended_processes/process_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The name of the suspended process.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -695,7 +832,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <a class="ansibleOptionLink" href="#return-results/suspended_processes/suspension_reason" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The reason that the process was suspended.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when available</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -726,6 +863,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-results/terminating_instances"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-terminating-instances"><strong>terminating_instances</strong></p>
+<a class="ansibleOptionLink" href="#return-results/terminating_instances" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Number of instances in terminating state</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">0</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/termination_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-termination-policies"><strong>termination_policies</strong></p>
 <a class="ansibleOptionLink" href="#return-results/termination_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -734,32 +881,33 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[&quot;Default&quot;]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/traffic_sources"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-traffic-sources"><strong>traffic_sources</strong></p>
 <a class="ansibleOptionLink" href="#return-results/traffic_sources" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The traffic sources associated with this Auto Scaling group.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;identifier&quot;:</span> <span class="pre">&quot;arn:aws:elasticloadbalancing:us-west-2:721234567890:targetgroup/Check-Exter-A4XXXXXXXXXX/8aXXXXXXXXXXXXXX&quot;,</span> <span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;elbv2&quot;}]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/traffic_sources/identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-traffic-sources-identifier"><strong>identifier</strong></p>
 <a class="ansibleOptionLink" href="#return-results/traffic_sources/identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Identifies the traffic source.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/traffic_sources/type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-traffic-sources-type"><strong>type</strong></p>
 <a class="ansibleOptionLink" href="#return-results/traffic_sources/type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Provides additional context for the value of Identifier.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-results/vpc_zone_identifier"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-autoscaling-group-info-module-return-results-vpc-zone-identifier"><strong>vpc_zone_identifier</strong></p>
 <a class="ansibleOptionLink" href="#return-results/vpc_zone_identifier" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
