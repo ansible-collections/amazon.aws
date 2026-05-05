@@ -1,2 +1,7 @@
 ---
-dependencies: []
+dependencies:
+# Beware this is actually needed in roles/s3_bucket/meta too
+  - role: setup_botocore_pip
+    vars:
+      boto3_version: "1.42.67"
+      botocore_version: "1.42.67"
