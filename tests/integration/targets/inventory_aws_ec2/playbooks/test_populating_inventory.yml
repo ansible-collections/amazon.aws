@@ -11,3 +11,13 @@
           - "'aws_ec2' in groups"
           - groups.aws_ec2 | length == 1
           - groups.aws_ec2.0 == resource_prefix
+
+    - name: Assert placement data is populated including availability zone ID
+      ansible.builtin.assert:
+        that:
+          - hostvars[resource_prefix]['placement'] is defined
+          - hostvars[resource_prefix]['placement']['availability_zone'] is defined
+          - hostvars[resource_prefix]['placement']['region'] is defined
+          - hostvars[resource_prefix]['placement']['availability_zone_id'] is defined
+          - hostvars[resource_prefix]['placement']['availability_zone_id'] is string
+          - hostvars[resource_prefix]['placement']['availability_zone_id'] | length > 0

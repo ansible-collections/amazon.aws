@@ -45,3 +45,35 @@
           vars:
             vars_prefix: "{{ hostvars_prefix | default('') }}"
             vars_suffix: "{{ hostvars_suffix | default('') }}"
+
+        - name: Assert placement data includes availability zone ID
+          ansible.builtin.assert:
+            that:
+              - hostvars[resource_prefix+'_1'][vars_prefix+'placement'+vars_suffix]['availability_zone'] is defined
+              - hostvars[resource_prefix+'_1'][vars_prefix+'placement'+vars_suffix]['availability_zone_id'] is defined
+              - hostvars[resource_prefix+'_1'][vars_prefix+'placement'+vars_suffix]['availability_zone_id'] is string
+              - hostvars[resource_prefix+'_1'][vars_prefix+'placement'+vars_suffix]['availability_zone_id'] | length > 0
+          vars:
+            vars_prefix: "{{ hostvars_prefix | default('') }}"
+            vars_suffix: "{{ hostvars_suffix | default('') }}"
+
+        - name: Get AZ information from AWS to verify correctness
+          amazon.aws.aws_az_info:
+            filters:
+              zone-name: "{{ hostvars[resource_prefix+'_1'][vars_prefix+'placement'+vars_suffix]['availability_zone'] }}"
+          register: az_info
+          vars:
+            vars_prefix: "{{ hostvars_prefix | default('') }}"
+            vars_suffix: "{{ hostvars_suffix | default('') }}"
+
+        - name: Assert availability zone ID matches AWS API
+          ansible.builtin.assert:
+            that:
+              - az_info['availability_zones'] | length == 1
+              - hostvars[resource_prefix+'_1'][vars_prefix+'placement'+vars_suffix]['availability_zone_id'] == az_info['availability_zones'][0]['zone_id']
+            fail_msg: >-
+              Expected AZ ID {{ az_info['availability_zones'][0]['zone_id'] }}
+              but got {{ hostvars[resource_prefix+'_1'][vars_prefix+'placement'+vars_suffix]['availability_zone_id'] }}
+          vars:
+            vars_prefix: "{{ hostvars_prefix | default('') }}"
+            vars_suffix: "{{ hostvars_suffix | default('') }}"
