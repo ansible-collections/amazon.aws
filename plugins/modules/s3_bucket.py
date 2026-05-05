@@ -49,6 +49,7 @@ options:
       - When V(true), the bucket name must follow the format C(prefix-accountId-region-an).
       - Can only be set during bucket creation. Cannot be changed for existing buckets.
       - Not supported for directory buckets.
+      - Requires botocore >= 1.42.67
     type: bool
     version_added: 11.3.0
   requester_pays:
