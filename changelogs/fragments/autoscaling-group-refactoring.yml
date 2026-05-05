@@ -1,0 +1,5 @@
+minor_changes:
+  - autoscaling_group - Standardised return values with autoscaling_group_info by extracting shared transformation logic to module_utils (https://github.com/ansible-collections/amazon.aws/pull/2938).
+  - autoscaling_group_info - Standardised return values with autoscaling_group by extracting shared transformation logic to module_utils (https://github.com/ansible-collections/amazon.aws/pull/2938).
+  - autoscaling_group - Refactored module to reduce code complexity, improve error handling, and replace manual wait loops with waiter-based implementations (https://github.com/ansible-collections/amazon.aws/pull/2938).
+  - autoscaling_group_info - Refactored module to reduce code complexity, improve error handling, and replace manual wait loops with waiter-based implementations (https://github.com/ansible-collections/amazon.aws/pull/2938).

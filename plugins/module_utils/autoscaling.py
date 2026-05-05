@@ -33,6 +33,7 @@ if typing.TYPE_CHECKING:
 AnsibleAutoScalingError = _common.AnsibleAutoScalingError
 AutoScalingErrorHandler = _common.AutoScalingErrorHandler
 WAITER_MAP = _waiters.WAITER_MAP
+transform_autoscaling_group = _transformations.transform_autoscaling_group
 
 
 def get_autoscaling_groups(
@@ -63,6 +64,20 @@ def get_autoscaling_instances(
 
 def get_autoscaling_waiter(client: RetryingBotoClientWrapper, waiter_name: str) -> Any:
     return _waiters.waiter_factory.get_waiter(client, waiter_name)
+
+
+def get_min_viable_instances_waiter(client: RetryingBotoClientWrapper, min_count: int) -> Any:
+    """
+    Get a waiter that waits for a minimum number of viable instances in an ASG.
+
+    Args:
+        client: boto3 AutoScaling client
+        min_count: Minimum number of viable instances (Healthy + InService) required
+
+    Returns:
+        Waiter instance
+    """
+    return _waiters.get_waiter_with_min_viable_instances(client, min_count)
 
 
 # ====================================

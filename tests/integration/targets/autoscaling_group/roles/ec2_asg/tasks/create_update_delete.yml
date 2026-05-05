@@ -258,7 +258,7 @@
     - name: Ensure max_instance_lifetime is not set
       ansible.builtin.assert:
         that:
-          - not output.max_instance_lifetime
+          - "'max_instance_lifetime' not in output or not output.max_instance_lifetime"
 
     # ============================================================
 
@@ -456,6 +456,7 @@
       register: output
     - ansible.builtin.assert:
         that:
+          - "'mixed_instances_policy_full' in output"
           - output.mixed_instances_policy_full['launch_template']['overrides'][0]['instance_type'] == 't3.micro'
           - output.mixed_instances_policy_full['launch_template']['overrides'][1]['instance_type'] == 't2.nano'
           - output.mixed_instances_policy_full['instances_distribution']['on_demand_percentage_above_base_capacity'] == 0
