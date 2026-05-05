@@ -283,7 +283,7 @@ options:
         description: A prefix for all log object keys.
         type: str
         default: ""
-    version_added: 11.2.0
+    version_added: 11.3.0
 extends_documentation_fragment:
   - amazon.aws.common.modules
   - amazon.aws.region.modules
