@@ -45,12 +45,12 @@ options:
     default: false
   account_regional:
     description:
-      - Whether to create the bucket in the account-regional namespace instead of the global namespace.                          
-      - When V(true), the bucket name must follow the format C(prefix-accountId-region-an).                                      
-      - Can only be set during bucket creation. Cannot be changed for existing buckets.                                          
-      - Not supported for directory buckets.                                                                                     
-    type: bool                                                                                                                   
-    version_added: 11.3.0           
+      - Whether to create the bucket in the account-regional namespace instead of the global namespace.
+      - When V(true), the bucket name must follow the format C(prefix-accountId-region-an).
+      - Can only be set during bucket creation. Cannot be changed for existing buckets.
+      - Not supported for directory buckets.
+    type: bool
+    version_added: 11.3.0
   requester_pays:
     description:
       - With Requester Pays buckets, the requester instead of the bucket owner pays the cost
@@ -294,12 +294,11 @@ EXAMPLES = r"""
     endpoint_url: http://your-ceph-rados-gateway-server.xxx
     ceph: true
 
-# Create a bucket with account-regional namespace                                                                              
-  - amazon.aws.s3_bucket:                                                                                                        
-      name: my-bucket-111122223333-us-east-1-an                                                                                  
-      state: present                                                                                                             
-      account_regional: true
-      
+# Create a bucket with account-regional namespace
+- amazon.aws.s3_bucket:
+    name: my-bucket-111122223333-us-east-1-an
+    state: present
+    account_regional: true
 # Remove an S3 bucket and any keys it contains
 - amazon.aws.s3_bucket:
     name: mys3bucket
@@ -1295,7 +1294,11 @@ def _create_bucket(s3_client: ClientType, **params) -> bool:
 
 
 def create_bucket(
-    s3_client: ClientType, bucket_name: str, location: str, object_lock_enabled: Optional[bool] = False, account_regional: Optional[bool] = None
+    s3_client: ClientType,
+    bucket_name: str,
+    location: str,
+    object_lock_enabled: Optional[bool] = False,
+    account_regional: Optional[bool] = None,
 ) -> bool:
     """
     Create an S3 bucket.
