@@ -279,5 +279,5 @@ def test__simple_forward_config_arn(config, parent_arn, expected):
         ),
     ],
 )
-def test__append_use_existing_client_secretn(action, expected):
-    assert elbv2._append_use_existing_client_secretn(action) == expected
+def test__append_use_existing_client_secret(action, expected):
+    assert elbv2._append_use_existing_client_secret(action) == expected

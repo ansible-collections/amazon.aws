@@ -169,7 +169,7 @@ def _compare_rule_actions(current_actions: List[Dict[str, Any]], new_actions: Li
     current_actions_sorted = _transformations._sort_actions(current_actions)
     new_actions_sorted = _transformations._sort_actions(deepcopy(new_actions))
 
-    new_current_actions_sorted = [_actions._append_use_existing_client_secretn(i) for i in current_actions_sorted]
+    new_current_actions_sorted = [_actions._append_use_existing_client_secret(i) for i in current_actions_sorted]
     new_actions_sorted_no_secret = [_actions._prune_secret(i) for i in new_actions_sorted]
 
     return [_actions._prune_ForwardConfig(i) for i in new_current_actions_sorted] == [

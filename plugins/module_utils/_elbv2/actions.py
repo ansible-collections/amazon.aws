@@ -154,7 +154,7 @@ def _prune_secret(action: Dict[str, Any]) -> Dict[str, Any]:
     return action
 
 
-def _append_use_existing_client_secretn(action: Dict[str, Any]) -> Dict[str, Any]:
+def _append_use_existing_client_secret(action: Dict[str, Any]) -> Dict[str, Any]:
     """
     Add UseExistingClientSecret flag to OIDC authentication config for comparison.
 

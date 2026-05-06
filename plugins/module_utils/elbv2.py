@@ -64,7 +64,7 @@ _group_rules = _rules._group_rules
 _simple_forward_config_arn = _actions._simple_forward_config_arn
 _prune_ForwardConfig = _actions._prune_ForwardConfig
 _prune_secret = _actions._prune_secret
-_append_use_existing_client_secretn = _actions._append_use_existing_client_secretn
+_append_use_existing_client_secret = _actions._append_use_existing_client_secret
 
 
 def get_elbv2_waiter(client: Any, waiter_name: str):
