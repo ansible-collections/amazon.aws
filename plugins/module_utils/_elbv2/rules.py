@@ -24,14 +24,10 @@ if typing.TYPE_CHECKING:
 
     from ..modules import AnsibleAWSModule
 
-from ..elb_utils import convert_tg_name_to_arn
-from ..elb_utils import create_rule
-from ..elb_utils import delete_rule
-from ..elb_utils import describe_rules
-from ..elb_utils import modify_rule
-from ..elb_utils import set_rule_priorities
 from . import actions as _actions
+from . import api as _api
 from . import transformations as _transformations
+from ..elb_utils import convert_tg_name_to_arn
 
 
 def _normalize_condition_values(condition: Dict[str, Any]) -> Dict[str, Any]:
@@ -352,7 +348,7 @@ class ELBListenerRules:
         self.changed = False
 
         self.listener_arn = listener_arn
-        self.current_rules = describe_rules(self.connection, ListenerArn=listener_arn)
+        self.current_rules = _api.describe_rules(self.connection, ListenerArn=listener_arn)
 
     def _ensure_rules_action_has_arn(self, rules: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -424,7 +420,7 @@ class ELBListenerRule:
         priority = rule.pop("Priority")
         actions = rule.pop("Actions")
         tags = rule.pop("Tags", None)
-        create_rule(
+        _api.create_rule(
             self.connection,
             listener_arn=listener_arn,
             conditions=conditions,
@@ -440,7 +436,7 @@ class ELBListenerRule:
         :return:
         """
         rule_arn = rule.pop("RuleArn")
-        modify_rule(self.connection, rule_arn=rule_arn, **rule)
+        _api.modify_rule(self.connection, rule_arn=rule_arn, **rule)
 
     def delete(self, rule_arn: str) -> None:
         """
@@ -448,7 +444,7 @@ class ELBListenerRule:
 
         :return:
         """
-        delete_rule(self.connection, rule_arn)
+        _api.delete_rule(self.connection, rule_arn)
 
     def set_rule_priorities(self, rules: List[Dict[str, Any]]) -> None:
         """
@@ -456,7 +452,7 @@ class ELBListenerRule:
 
         :return:
         """
-        set_rule_priorities(
+        _api.set_rule_priorities(
             self.connection, [{"RuleArn": rule["RuleArn"], "Priority": rule["Priority"]} for rule in rules]
         )
 

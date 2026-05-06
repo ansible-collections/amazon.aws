@@ -18,20 +18,36 @@ from ._elbv2 import transformations as _transformations
 from ._elbv2 import waiters as _waiters
 from .ec2 import get_ec2_security_group_ids_from_names
 
-# Ultimately these should probably move into elbv2 for consistency with the API naming
-from .elb_utils import add_tags
-from .elb_utils import create_load_balancer
-from .elb_utils import delete_load_balancer
-from .elb_utils import describe_listeners
-from .elb_utils import describe_load_balancer_attributes
-from .elb_utils import describe_rules
-from .elb_utils import describe_tags
+# Re-export API wrapper functions from _elbv2.api
+from ._elbv2 import api as _api
+
+add_listener_certificates = _api.add_listener_certificates
+add_tags = _api.add_tags
+create_listener = _api.create_listener
+create_load_balancer = _api.create_load_balancer
+create_rule = _api.create_rule
+delete_listener = _api.delete_listener
+delete_load_balancer = _api.delete_load_balancer
+delete_rule = _api.delete_rule
+describe_listeners = _api.describe_listeners
+describe_load_balancer_attributes = _api.describe_load_balancer_attributes
+describe_load_balancers = _api.describe_load_balancers
+describe_rules = _api.describe_rules
+describe_tags = _api.describe_tags
+describe_target_groups = _api.describe_target_groups
+modify_listener = _api.modify_listener
+modify_load_balancer_attributes = _api.modify_load_balancer_attributes
+modify_rule = _api.modify_rule
+remove_tags = _api.remove_tags
+set_ip_address_type = _api.set_ip_address_type
+set_rule_priorities = _api.set_rule_priorities
+set_security_groups = _api.set_security_groups
+set_subnets = _api.set_subnets
+
+# Re-export helper functions from elb_utils
+from .elb_utils import convert_tg_name_to_arn
 from .elb_utils import get_elb
-from .elb_utils import modify_load_balancer_attributes
-from .elb_utils import remove_tags
-from .elb_utils import set_ip_address_type
-from .elb_utils import set_security_groups
-from .elb_utils import set_subnets
+from .elb_utils import get_elb_listener_rules
 from .exceptions import AnsibleAWSError
 from .modules import AnsibleAWSModule
 from .retries import AWSRetry
@@ -41,6 +57,9 @@ from .tagging import boto3_tag_list_to_ansible_dict
 # Expose error handling classes
 AnsibleELBv2Error = _common.AnsibleELBv2Error
 ELBv2ErrorHandler = _common.ELBv2ErrorHandler
+ELBv2ListenerErrorHandler = _common.ELBv2ListenerErrorHandler
+ELBv2RuleErrorHandler = _common.ELBv2RuleErrorHandler
+ELBv2TargetGroupErrorHandler = _common.ELBv2TargetGroupErrorHandler
 
 # Expose transformation functions
 normalize_application_load_balancer = _transformations.normalize_application_load_balancer

@@ -17,10 +17,40 @@ class AnsibleELBv2Error(AnsibleAWSError):
 
 
 class ELBv2ErrorHandler(AWSErrorHandler):
-    """Error handler for ELBv2 operations."""
+    """Error handler for ELBv2 load balancer operations."""
 
     _CUSTOM_EXCEPTION = AnsibleELBv2Error
 
     @classmethod
     def _is_missing(cls):
         return is_boto3_error_code("LoadBalancerNotFound")
+
+
+class ELBv2ListenerErrorHandler(AWSErrorHandler):
+    """Error handler for ELBv2 listener operations."""
+
+    _CUSTOM_EXCEPTION = AnsibleELBv2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("ListenerNotFound")
+
+
+class ELBv2RuleErrorHandler(AWSErrorHandler):
+    """Error handler for ELBv2 rule operations."""
+
+    _CUSTOM_EXCEPTION = AnsibleELBv2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("RuleNotFound")
+
+
+class ELBv2TargetGroupErrorHandler(AWSErrorHandler):
+    """Error handler for ELBv2 target group operations."""
+
+    _CUSTOM_EXCEPTION = AnsibleELBv2Error
+
+    @classmethod
+    def _is_missing(cls):
+        return is_boto3_error_code("TargetGroupNotFound")

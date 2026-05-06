@@ -362,7 +362,7 @@ def test__prepare_listeners__target_group_name_multiple_name(m_convert_tg_name_t
     m_convert_tg_name_to_arn.assert_has_calls([call(connection, module, tg_name1), call(connection, module, tg_name2)])
 
 
-@patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners.describe_listeners")
+@patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.api.describe_listeners")
 @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners._prepare_listeners")
 def testELBListenersInit(
     m__prepare_listeners,

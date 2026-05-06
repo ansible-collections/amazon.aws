@@ -24,14 +24,10 @@ if typing.TYPE_CHECKING:
 
     from ..modules import AnsibleAWSModule
 
-from ..elb_utils import add_listener_certificates
-from ..elb_utils import convert_tg_name_to_arn
-from ..elb_utils import create_listener
-from ..elb_utils import delete_listener
-from ..elb_utils import describe_listeners
-from ..elb_utils import modify_listener
-from ..transformation import scrub_none_parameters
+from . import api as _api
 from . import rules as _rules
+from ..elb_utils import convert_tg_name_to_arn
+from ..transformation import scrub_none_parameters
 
 
 def _compare_listener(current_listener: Dict[str, Any], new_listener: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -186,7 +182,7 @@ class ELBListeners:
 
         :return:
         """
-        self.current_listeners = describe_listeners(self.connection, load_balancer_arn=self.elb_arn)
+        self.current_listeners = _api.describe_listeners(self.connection, load_balancer_arn=self.elb_arn)
 
     def get_listener_arn_from_listener_port(self, listener_port: int) -> Optional[str]:
         listener_arn = None
@@ -228,7 +224,7 @@ class ELBListener:
         self.elb_arn = elb_arn
 
     def create_listener(self) -> str:
-        return create_listener(self.connection, self.elb_arn, **self.listener)[0]["ListenerArn"]
+        return _api.create_listener(self.connection, self.elb_arn, **self.listener)[0]["ListenerArn"]
 
     def add(self) -> None:
         # handle multiple certs by adding only 1 cert during listener creation and make calls to add_listener_certificates to add other certs
@@ -241,11 +237,11 @@ class ELBListener:
         listener_arn = self.create_listener()
         # only one cert can be specified per call to add_listener_certificates
         for cert in other_certs:
-            add_listener_certificates(self.connection, listener_arn=listener_arn, certificates=[cert])
+            _api.add_listener_certificates(self.connection, listener_arn=listener_arn, certificates=[cert])
 
     def modify(self) -> None:
         listener_arn = self.listener.pop("ListenerArn")
-        modify_listener(self.connection, listener_arn=listener_arn, **self.listener)
+        _api.modify_listener(self.connection, listener_arn=listener_arn, **self.listener)
 
     def delete(self) -> None:
-        delete_listener(self.connection, self.listener)
+        _api.delete_listener(self.connection, self.listener)
