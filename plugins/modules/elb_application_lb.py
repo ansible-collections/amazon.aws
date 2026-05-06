@@ -759,13 +759,12 @@ waf_fail_open_enabled:
 """
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_default_security_group_id
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ApplicationLoadBalancer
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListener
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListenerRule
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListenerRules
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import ELBListeners
-from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import normalize_application_load_balancer
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import build_application_load_balancer_description
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import validate_listener_https_requirements
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -961,47 +960,38 @@ def _update_alb_ip_address_type(alb_obj: ApplicationLoadBalancer) -> None:
         alb_obj.modify_ip_address_type(alb_obj.params.get("ip_address_type"))
 
 
-def _build_alb_response(alb_obj: ApplicationLoadBalancer, listeners_obj: ELBListeners) -> dict:
+def _build_alb_response(alb_obj: ApplicationLoadBalancer) -> dict:
     """
     Build the complete ALB response with all current state.
 
-    Fetches fresh data from AWS and normalizes it.
+    Fetches fresh data from AWS and normalizes it using the shared
+    build_application_load_balancer_description function for consistency
+    with elb_application_lb_info module.
 
     Args:
         alb_obj: ApplicationLoadBalancer object
-        listeners_obj: ELBListeners object
 
     Returns:
         Normalized ALB dict in snake_case
     """
-    # Get the ALB again
+    # Refresh ALB data from AWS to get final state after all changes
     alb_obj.update()
 
-    # Get the ALB listeners again
-    listeners_obj.update()
+    # Build complete description using shared function
+    # This fetches attributes, listeners, and rules from AWS
+    snaked_alb = build_application_load_balancer_description(
+        alb_obj.connection,
+        alb_obj.elb,
+        include_attributes=True,
+        include_listeners=True,
+        include_listener_rules=True,
+    )
 
-    # Update the ALB attributes
-    alb_obj.update_elb_attributes()
+    # Add tags (separate API call, added after normalization)
+    # Convert boto3 tag list to snake_case dict
+    snaked_alb["tags"] = boto3_tag_list_to_ansible_dict(alb_obj.get_elb_tags())
 
-    # Build the complete ALB object in CamelCase format
-    alb = alb_obj.elb.copy()
-    alb.update(alb_obj.elb_attributes)
-
-    # Attach listeners with their rules
-    alb["Listeners"] = []
-    for listener in listeners_obj.current_listeners:
-        # For each listener, get listener rules (in CamelCase)
-        listener["Rules"] = get_elb_listener_rules(alb_obj.connection, alb_obj.module, listener["ListenerArn"])
-        alb["Listeners"].append(listener)
-
-    # Add ip address type
-    alb["IpAddressType"] = alb_obj.get_elb_ip_address_type()
-
-    # Add tags (not included in describe_load_balancers response)
-    alb["Tags"] = alb_obj.get_elb_tags()
-
-    # Normalize the entire ALB object (convert to snake_case, sort rules, convert tags)
-    return normalize_application_load_balancer(alb)
+    return snaked_alb
 
 
 def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
@@ -1026,7 +1016,7 @@ def create_or_update_alb(alb_obj: ApplicationLoadBalancer) -> None:
         alb_obj.exit_json(changed=False, msg="IN CHECK MODE - no changes to make to ALB specified.")
 
     # Build complete response and exit
-    snaked_alb = _build_alb_response(alb_obj, listeners_obj)
+    snaked_alb = _build_alb_response(alb_obj)
     alb_obj.exit_json(changed=alb_obj.changed, **snaked_alb)
 
 

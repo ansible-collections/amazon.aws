@@ -122,6 +122,20 @@ def wait_for_load_balancer(client: Any, waiter_name: str, **params) -> None:
     waiter.wait(**params)
 
 
+def get_min_healthy_targets_waiter(client: Any, min_count: int) -> Any:
+    """
+    Get a waiter that waits for a minimum number of healthy targets in a target group.
+
+    Args:
+        client: boto3 ELBv2 client
+        min_count: Minimum number of targets in healthy state required
+
+    Returns:
+        Waiter instance
+    """
+    return _waiters.get_waiter_with_min_targets(client, min_count)
+
+
 def build_application_load_balancer_description(
     connection: Any,
     load_balancer: Dict[str, Any],
