@@ -8,7 +8,6 @@ from __future__ import annotations
 import typing
 
 from ._elbv2 import api as _elbv2_api
-from ._elbv2 import waiters as _elbv2_waiters
 from ._elbv2.common import AnsibleELBv2Error
 from ._elbv2.common import ELBv2ListenerErrorHandler
 from ._elbv2.common import ELBv2RuleErrorHandler
@@ -98,29 +97,3 @@ def convert_tg_name_to_arn(connection, module, tg_name):
         module.fail_json_aws(e)
 
 
-def get_elbv2_waiter(client: ClientType, waiter_name: str) -> Any:
-    """
-    Get an ELBv2 waiter by name.
-
-    Args:
-        client: boto3 elbv2 client
-        waiter_name: Name of the waiter to retrieve
-
-    Returns:
-        Waiter instance
-    """
-    return _elbv2_waiters.waiter_factory.get_waiter(client, waiter_name)
-
-
-def get_min_healthy_targets_waiter(client: ClientType, min_count: int) -> Any:
-    """
-    Get a waiter that waits for a minimum number of healthy targets in a target group.
-
-    Args:
-        client: boto3 ELBv2 client
-        min_count: Minimum number of targets in healthy state required
-
-    Returns:
-        Waiter instance
-    """
-    return _elbv2_waiters.get_waiter_with_min_targets(client, min_count)
