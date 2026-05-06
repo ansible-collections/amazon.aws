@@ -1367,3 +1367,186 @@ def test__http_header_name_matches(current, target, config_key, expected):
 def test__conditions_match(current_condition, target_condition, expected):
     """Test _conditions_match handles different condition types correctly"""
     assert rules._conditions_match(current_condition, target_condition) is expected
+
+
+class TestProcessExactMatchesAndPriorityChanges:
+    """Tests for _process_exact_matches_and_priority_changes helper function"""
+
+    def test_exact_match_removes_from_rules_to_add(self):
+        """Test that exact matches are removed from rules_to_add"""
+        current_rules = [
+            {
+                "Priority": "1",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "arn:tg1"}],
+                "Conditions": [{"Field": "host-header", "Values": ["example.com"]}],
+            }
+        ]
+        rules_to_add = [
+            {
+                "Priority": "1",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "arn:tg1"}],
+                "Conditions": [{"Field": "host-header", "Values": ["example.com"]}],
+            }
+        ]
+
+        remaining_current, remaining_to_add, priority_changes = rules._process_exact_matches_and_priority_changes(
+            current_rules, rules_to_add
+        )
+
+        assert remaining_current == []
+        assert remaining_to_add == []
+        assert priority_changes == []
+
+    def test_priority_only_change_detected(self):
+        """Test that priority-only changes are detected"""
+        current_rules = [
+            {
+                "Priority": "1",
+                "RuleArn": "arn:rule1",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "arn:tg1"}],
+                "Conditions": [{"Field": "host-header", "Values": ["example.com"]}],
+            }
+        ]
+        rules_to_add = [
+            {
+                "Priority": "2",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "arn:tg1"}],
+                "Conditions": [{"Field": "host-header", "Values": ["example.com"]}],
+            }
+        ]
+
+        remaining_current, remaining_to_add, priority_changes = rules._process_exact_matches_and_priority_changes(
+            current_rules, rules_to_add
+        )
+
+        assert remaining_current == []
+        assert remaining_to_add == []
+        assert len(priority_changes) == 1
+        assert priority_changes[0]["Priority"] == 2
+        assert priority_changes[0]["RuleArn"] == "arn:rule1"
+
+    def test_default_rule_skipped(self):
+        """Test that default rules are skipped"""
+        current_rules = [
+            {"Priority": "default", "IsDefault": True, "Actions": [{"Type": "forward"}]}
+        ]
+        rules_to_add = []
+
+        remaining_current, remaining_to_add, priority_changes = rules._process_exact_matches_and_priority_changes(
+            current_rules, rules_to_add
+        )
+
+        assert remaining_current == []
+        assert remaining_to_add == []
+        assert priority_changes == []
+
+    def test_inputs_not_mutated(self):
+        """Test that input parameters are not mutated"""
+        from copy import deepcopy
+
+        current_rules = [
+            {
+                "Priority": "1",
+                "RuleArn": "arn:rule1",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "arn:tg1"}],
+                "Conditions": [{"Field": "host-header", "Values": ["example.com"]}],
+            }
+        ]
+        rules_to_add = [
+            {
+                "Priority": "2",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "arn:tg1"}],
+                "Conditions": [{"Field": "host-header", "Values": ["example.com"]}],
+            }
+        ]
+
+        original_current = deepcopy(current_rules)
+        original_to_add = deepcopy(rules_to_add)
+
+        rules._process_exact_matches_and_priority_changes(current_rules, rules_to_add)
+
+        assert current_rules == original_current
+        assert rules_to_add == original_to_add
+
+
+class TestProcessPriorityBasedModifications:
+    """Tests for _process_priority_based_modifications helper function"""
+
+    def test_priority_match_creates_modification(self):
+        """Test that rules with matching priority create modifications"""
+        remaining_rules = [
+            {
+                "Priority": "1",
+                "RuleArn": "arn:rule1",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "old"}],
+                "Conditions": [{"Field": "host-header", "Values": ["old.com"]}],
+            }
+        ]
+        rules_to_add = [
+            {
+                "Priority": "1",
+                "Actions": [{"Type": "forward", "TargetGroupArn": "new"}],
+                "Conditions": [{"Field": "host-header", "Values": ["new.com"]}],
+            }
+        ]
+
+        remaining_to_add, modifications, deletions = rules._process_priority_based_modifications(
+            remaining_rules, rules_to_add
+        )
+
+        assert remaining_to_add == []
+        assert len(modifications) == 1
+        assert modifications[0]["RuleArn"] == "arn:rule1"
+        assert modifications[0]["Actions"][0]["TargetGroupArn"] == "new"
+        assert deletions == []
+
+    def test_unmatched_rule_marked_for_deletion(self):
+        """Test that unmatched rules are marked for deletion"""
+        remaining_rules = [
+            {"Priority": "1", "RuleArn": "arn:rule1", "Actions": [], "Conditions": []}
+        ]
+        rules_to_add = [
+            {"Priority": "2", "Actions": [], "Conditions": []}
+        ]
+
+        remaining_to_add, modifications, deletions = rules._process_priority_based_modifications(
+            remaining_rules, rules_to_add
+        )
+
+        assert len(remaining_to_add) == 1
+        assert modifications == []
+        assert deletions == ["arn:rule1"]
+
+    def test_default_rule_not_deleted(self):
+        """Test that default rules are not marked for deletion"""
+        remaining_rules = [
+            {"Priority": "default", "IsDefault": True, "RuleArn": "arn:default", "Actions": [], "Conditions": []}
+        ]
+        rules_to_add = []
+
+        remaining_to_add, modifications, deletions = rules._process_priority_based_modifications(
+            remaining_rules, rules_to_add
+        )
+
+        assert remaining_to_add == []
+        assert modifications == []
+        assert deletions == []
+
+    def test_inputs_not_mutated(self):
+        """Test that input parameters are not mutated"""
+        from copy import deepcopy
+
+        remaining_rules = [
+            {"Priority": "1", "RuleArn": "arn:rule1", "Actions": [], "Conditions": []}
+        ]
+        rules_to_add = [
+            {"Priority": "2", "Actions": [], "Conditions": []}
+        ]
+
+        original_remaining = deepcopy(remaining_rules)
+        original_to_add = deepcopy(rules_to_add)
+
+        rules._process_priority_based_modifications(remaining_rules, rules_to_add)
+
+        assert remaining_rules == original_remaining
+        assert rules_to_add == original_to_add

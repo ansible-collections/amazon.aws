@@ -210,82 +210,130 @@ def _compare_rule(current_rule: Dict[str, Any], new_rule: Dict[str, Any]) -> Dic
     return modified_rule
 
 
-def _group_rules(
-    current_rules: List[Dict[str, Any]], rules: List[Dict[str, Any]]
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
-    """This function compares listener rules from AWS with module provided listener rules and a matrix with the
-    following:
-        - Rules to add: a rule is added when it is part of the module parameters and not currently stored on AWS
-        - Rules to set priority: Any rule with unchanged attributes but with a different priority value
-        - Rules to modify: Any rule on which one the following attribute has changed 'Actions', 'Conditions'
-        - Rules to delete: Any rule currently stored on AWS and not defined in module parameters.
+def _process_exact_matches_and_priority_changes(
+    current_rules: List[Dict[str, Any]], rules_to_add: List[Dict[str, Any]]
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Process current rules to find exact matches and priority-only changes.
 
     Parameters:
-    current_rules: The current listener rules stored in AWS.
-    rules: The new listener rules.
+    current_rules: The current listener rules stored in AWS (will be copied)
+    rules_to_add: List of new rules to add
 
     Returns:
-    A tuple with a list of rules to add, a list of rules to set priority, a list of rules to modify and a list of rules to delete
+    A tuple of (remaining_current_rules, remaining_rules_to_add, rules_to_set_priority)
     """
-
-    rules_to_modify = []
-    rules_to_delete = []
-    rules_to_add = deepcopy(rules)
+    remaining_current_rules = []
+    remaining_rules_to_add = list(rules_to_add)
     rules_to_set_priority = []
 
-    # List rules to update priority, 'Actions' and 'Conditions' remain the same
-    # only the 'Priority' has changed
-    _current_rules = deepcopy(current_rules)
-    remaining_rules = []
-    while _current_rules:
-        current_rule = _current_rules.pop(0)
-        # Skip the default rule, this one can't be modified
+    for current_rule in deepcopy(current_rules):
+        # Skip the default rule, it can't be modified
         if current_rule.get("IsDefault", False):
             continue
-        to_keep = True
-        for new_rule in rules_to_add:
+
+        matched = False
+        for new_rule in remaining_rules_to_add[:]:  # Iterate over a shallow copy
             modified_rule = _compare_rule(current_rule, new_rule)
+
             if not modified_rule:
-                # The current rule has been passed with the same properties to the module
-                # Remove it for later comparison
-                rules_to_add.remove(new_rule)
-                to_keep = False
+                # Exact match - rule unchanged
+                remaining_rules_to_add.remove(new_rule)
+                matched = True
                 break
-            if modified_rule and list(modified_rule.keys()) == ["Priority"]:
-                # if only the Priority has changed
+
+            if list(modified_rule.keys()) == ["Priority"]:
+                # Only priority changed
                 modified_rule["Priority"] = int(new_rule["Priority"])
                 modified_rule["RuleArn"] = current_rule["RuleArn"]
-
                 rules_to_set_priority.append(modified_rule)
-                to_keep = False
-                rules_to_add.remove(new_rule)
+                remaining_rules_to_add.remove(new_rule)
+                matched = True
                 break
-        if to_keep:
-            remaining_rules.append(current_rule)
+
+        if not matched:
+            remaining_current_rules.append(current_rule)
+
+    return remaining_current_rules, remaining_rules_to_add, rules_to_set_priority
+
+
+def _process_priority_based_modifications(
+    remaining_rules: List[Dict[str, Any]], rules_to_add: List[Dict[str, Any]]
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
+    """Process remaining rules to find modifications based on priority matching.
+
+    Parameters:
+    remaining_rules: Rules that didn't match in first pass
+    rules_to_add: List of new rules to add
+
+    Returns:
+    A tuple of (remaining_rules_to_add, rules_to_modify, rules_to_delete)
+    """
+    remaining_rules_to_add = list(rules_to_add)
+    rules_to_modify = []
+    rules_to_delete = []
 
     for current_rule in remaining_rules:
-        current_rule_passed_to_module = False
-        for new_rule in rules_to_add:
+        matched = False
+
+        for new_rule in remaining_rules_to_add[:]:  # Iterate over a shallow copy
             if current_rule["Priority"] == str(new_rule["Priority"]):
-                current_rule_passed_to_module = True
-                # Remove what we match so that what is left can be marked as 'to be added'
-                rules_to_add.remove(new_rule)
+                # Same priority, check what changed
+                remaining_rules_to_add.remove(new_rule)
                 modified_rule = _compare_rule(current_rule, new_rule)
+
                 if modified_rule:
                     modified_rule["Priority"] = int(current_rule["Priority"])
                     modified_rule["RuleArn"] = current_rule["RuleArn"]
                     modified_rule["Actions"] = new_rule["Actions"]
                     modified_rule["Conditions"] = new_rule["Conditions"]
+
                     # You cannot both specify a client secret and set UseExistingClientSecret to true
                     for action in modified_rule.get("Actions", []):
                         if action.get("AuthenticateOidcConfig", {}).get("ClientSecret", False):
                             action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
+
                     rules_to_modify.append(modified_rule)
+
+                matched = True
                 break
 
-        # If the current rule was not matched against passed rules, mark for removal
-        if not current_rule_passed_to_module and not current_rule.get("IsDefault", False):
+        # If not matched and not default rule, mark for deletion
+        if not matched and not current_rule.get("IsDefault", False):
             rules_to_delete.append(current_rule["RuleArn"])
+
+    return remaining_rules_to_add, rules_to_modify, rules_to_delete
+
+
+def _group_rules(
+    current_rules: List[Dict[str, Any]], rules: List[Dict[str, Any]]
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
+    """Compare listener rules from AWS with module provided listener rules.
+
+    Groups rules into four categories:
+        - Rules to add: new rules not currently stored on AWS
+        - Rules to set priority: unchanged rules with different priority value
+        - Rules to modify: rules where Actions or Conditions changed
+        - Rules to delete: current AWS rules not defined in module parameters
+
+    Parameters:
+    current_rules: The current listener rules stored in AWS
+    rules: The new listener rules
+
+    Returns:
+    A tuple of (rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete)
+    """
+    # Make a working copy of new rules
+    rules_to_add = deepcopy(rules)
+
+    # Phase 1: Find exact matches and priority-only changes
+    remaining_current_rules, rules_to_add, rules_to_set_priority = _process_exact_matches_and_priority_changes(
+        current_rules, rules_to_add
+    )
+
+    # Phase 2: Find modifications and deletions based on priority matching
+    rules_to_add, rules_to_modify, rules_to_delete = _process_priority_based_modifications(
+        remaining_current_rules, rules_to_add
+    )
 
     return rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete
 
