@@ -34,8 +34,98 @@ from . import actions as _actions
 from . import transformations as _transformations
 
 
+def _normalize_condition_values(condition: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize condition values by sorting them for comparison.
+
+    Parameters:
+    condition: The condition to normalize
+
+    Returns:
+    A deep copy of the condition with sorted values
+    """
+    compare_keys = (
+        "HostHeaderConfig",
+        "HttpHeaderConfig",
+        "HttpRequestMethodConfig",
+        "SourceIpConfig",
+        "PathPatternConfig",
+    )
+    normalized = deepcopy(condition)
+    for key in compare_keys:
+        if key in normalized:
+            normalized[key]["Values"] = sorted(normalized[key]["Values"])
+    if "Values" in normalized:
+        normalized["Values"] = sorted(normalized["Values"])
+    return normalized
+
+
+def _sorted_values_match(current_config: Dict[str, Any], target_config: Dict[str, Any], config_key: str) -> bool:
+    """Compare sorted Values from two config dictionaries.
+
+    Parameters:
+    current_config: The current condition configuration
+    target_config: The target condition configuration (already normalized)
+    config_key: The configuration key to compare
+
+    Returns:
+    True if sorted values match, False otherwise
+    """
+    return sorted(current_config[config_key]["Values"]) == target_config[config_key]["Values"]
+
+
+def _http_header_name_matches(current_config: Dict[str, Any], target_config: Dict[str, Any], config_key: str) -> bool:
+    """Compare HttpHeaderName from HttpHeaderConfig.
+
+    Parameters:
+    current_config: The current condition configuration
+    target_config: The target condition configuration
+    config_key: The configuration key (should be "HttpHeaderConfig")
+
+    Returns:
+    True if HttpHeaderName values match, False otherwise
+    """
+    return current_config[config_key]["HttpHeaderName"] == target_config[config_key]["HttpHeaderName"]
+
+
+def _conditions_match(current_condition: Dict[str, Any], target_condition: Dict[str, Any]) -> bool:
+    """Compare two conditions to check if they match.
+
+    Parameters:
+    current_condition: The current condition from AWS
+    target_condition: The target condition (already normalized)
+
+    Returns:
+    True if conditions match, False otherwise
+    """
+    # Try config-based comparisons in order of specificity
+    # host-header/path-pattern: current_condition includes both *Config AND Values while
+    # condition can be defined with either format. Only use *Config comparison if both have it.
+    for config_key in ("HostHeaderConfig", "PathPatternConfig"):
+        if current_condition.get(config_key) and target_condition.get(config_key):
+            return _sorted_values_match(current_condition, target_condition, config_key)
+
+    # HttpHeaderConfig requires both Values and HttpHeaderName to match
+    if current_condition.get("HttpHeaderConfig"):
+        return (
+            _sorted_values_match(current_condition, target_condition, "HttpHeaderConfig")
+            and _http_header_name_matches(current_condition, target_condition, "HttpHeaderConfig")
+        )
+
+    # QueryStringConfig uses list of dicts, don't sort
+    if current_condition.get("QueryStringConfig"):
+        return current_condition["QueryStringConfig"]["Values"] == target_condition["QueryStringConfig"]["Values"]
+
+    # Standard config comparisons with sorted values
+    for config_key in ("HttpRequestMethodConfig", "SourceIpConfig"):
+        if current_condition.get(config_key):
+            return _sorted_values_match(current_condition, target_condition, config_key)
+
+    # Fallback: direct Values comparison (legacy host-header/path-pattern format)
+    return sorted(current_condition["Values"]) == target_condition["Values"]
+
+
 def _check_rule_condition(current_conditions: List[Dict[str, Any]], condition: Dict[str, Any]) -> bool:
-    """This function checks if the condition is part of the list of current condition
+    """Check if the condition is part of the list of current conditions.
 
     Parameters:
     current_conditions: The list of conditions
@@ -44,72 +134,17 @@ def _check_rule_condition(current_conditions: List[Dict[str, Any]], condition: D
     Returns:
     True if the condition is part of the list, False if not.
     """
-
-    condition_found = False
-    compare_keys = (
-        "HostHeaderConfig",
-        "HttpHeaderConfig",
-        "HttpRequestMethodConfig",
-        "SourceIpConfig",
-        "PathPatternConfig",
-    )
-    # Do an initial sorting of condition keys
-    s_condition = deepcopy(condition)
-    for key in compare_keys:
-        if key in s_condition:
-            s_condition[key]["Values"] = sorted(s_condition[key]["Values"])
-    if "Values" in s_condition:
-        s_condition["Values"] = sorted(s_condition["Values"])
+    normalized_condition = _normalize_condition_values(condition)
 
     for current_condition in current_conditions:
-        # 'Field' should match for the conditions to be equal, compare it once at the begining
-        if current_condition["Field"] != s_condition["Field"]:
+        # 'Field' should match for the conditions to be equal
+        if current_condition["Field"] != normalized_condition["Field"]:
             continue
-        # host-header: current_condition includes both HostHeaderConfig AND Values while
-        # condition can be defined with either HostHeaderConfig OR Values. Only use
-        # HostHeaderConfig['Values'] comparison if both conditions includes HostHeaderConfig.
-        if current_condition.get("HostHeaderConfig") and s_condition.get("HostHeaderConfig"):
-            if sorted(current_condition["HostHeaderConfig"]["Values"]) == s_condition["HostHeaderConfig"]["Values"]:
-                condition_found = True
-                break
-        elif current_condition.get("HttpHeaderConfig"):
-            if (
-                sorted(current_condition["HttpHeaderConfig"]["Values"]) == s_condition["HttpHeaderConfig"]["Values"]
-                and current_condition["HttpHeaderConfig"]["HttpHeaderName"]
-                == s_condition["HttpHeaderConfig"]["HttpHeaderName"]
-            ):
-                condition_found = True
-                break
-        elif current_condition.get("HttpRequestMethodConfig"):
-            if (
-                sorted(current_condition["HttpRequestMethodConfig"]["Values"])
-                == s_condition["HttpRequestMethodConfig"]["Values"]
-            ):
-                condition_found = True
-                break
-        # path-pattern: current_condition includes both PathPatternConfig AND Values while
-        # condition can be defined with either PathPatternConfig OR Values. Only use
-        # PathPatternConfig['Values'] comparison if both conditions includes PathPatternConfig.
-        elif current_condition.get("PathPatternConfig") and s_condition.get("PathPatternConfig"):
-            if sorted(current_condition["PathPatternConfig"]["Values"]) == s_condition["PathPatternConfig"]["Values"]:
-                condition_found = True
-                break
-        elif current_condition.get("QueryStringConfig"):
-            # QueryString Values is not sorted as it is the only list of dicts (not strings).
-            if current_condition["QueryStringConfig"]["Values"] == s_condition["QueryStringConfig"]["Values"]:
-                condition_found = True
-                break
-        elif current_condition.get("SourceIpConfig"):
-            if sorted(current_condition["SourceIpConfig"]["Values"]) == s_condition["SourceIpConfig"]["Values"]:
-                condition_found = True
-                break
-        # Not all fields are required to have Values list nested within a *Config dict
-        # e.g. fields host-header/path-pattern can directly list Values
-        elif sorted(current_condition["Values"]) == s_condition["Values"]:
-            condition_found = True
-            break
 
-    return condition_found
+        if _conditions_match(current_condition, normalized_condition):
+            return True
+
+    return False
 
 
 def _compare_rule_actions(current_actions: List[Dict[str, Any]], new_actions: List[Dict[str, Any]]) -> bool:

@@ -3,7 +3,10 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import pytest
+
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2 import rules
 
 example_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-targets/73e2d6bc24d8a067"
 example_arn2 = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/other-targets/abcdef0123456789"
@@ -1238,3 +1241,129 @@ def test_compare_rules(elb_listener_rules, current_rules, rules, expected):
 )
 def test__check_rule_condition(current_conditions, condition, expected):
     assert elbv2._check_rule_condition(current_conditions, condition) == expected
+
+
+@pytest.mark.parametrize(
+    "condition,expected_result",
+    [
+        (
+            {"Field": "host-header", "HostHeaderConfig": {"Values": ["z.example.com", "a.example.com"]}},
+            {"Field": "host-header", "HostHeaderConfig": {"Values": ["a.example.com", "z.example.com"]}},
+        ),
+        (
+            {"Field": "path-pattern", "PathPatternConfig": {"Values": ["/z/*", "/a/*"]}},
+            {"Field": "path-pattern", "PathPatternConfig": {"Values": ["/a/*", "/z/*"]}},
+        ),
+        (
+            {"Field": "http-header", "HttpHeaderConfig": {"HttpHeaderName": "X-Custom", "Values": ["z", "a", "m"]}},
+            {"Field": "http-header", "HttpHeaderConfig": {"HttpHeaderName": "X-Custom", "Values": ["a", "m", "z"]}},
+        ),
+        (
+            {"Field": "host-header", "Values": ["z.example.com", "a.example.com"]},
+            {"Field": "host-header", "Values": ["a.example.com", "z.example.com"]},
+        ),
+    ],
+)
+def test__normalize_condition_values(condition, expected_result):
+    """Test _normalize_condition_values sorts values correctly"""
+    result = rules._normalize_condition_values(condition)
+    assert result == expected_result
+    # Verify it's a deep copy
+    assert result is not condition
+
+
+@pytest.mark.parametrize(
+    "current,target,config_key,expected",
+    [
+        (
+            {"HostHeaderConfig": {"Values": ["b.com", "a.com"]}},
+            {"HostHeaderConfig": {"Values": ["a.com", "b.com"]}},
+            "HostHeaderConfig",
+            True,
+        ),
+        (
+            {"HostHeaderConfig": {"Values": ["b.com", "a.com"]}},
+            {"HostHeaderConfig": {"Values": ["c.com", "d.com"]}},
+            "HostHeaderConfig",
+            False,
+        ),
+        (
+            {"PathPatternConfig": {"Values": ["/a/*", "/b/*"]}},
+            {"PathPatternConfig": {"Values": ["/a/*"]}},
+            "PathPatternConfig",
+            False,
+        ),
+        (
+            {"SourceIpConfig": {"Values": ["192.168.1.0/24", "10.0.0.0/8"]}},
+            {"SourceIpConfig": {"Values": ["10.0.0.0/8", "192.168.1.0/24"]}},
+            "SourceIpConfig",
+            True,
+        ),
+    ],
+)
+def test__sorted_values_match(current, target, config_key, expected):
+    """Test _sorted_values_match compares sorted values correctly"""
+    assert rules._sorted_values_match(current, target, config_key) is expected
+
+
+@pytest.mark.parametrize(
+    "current,target,config_key,expected",
+    [
+        (
+            {"HttpHeaderConfig": {"HttpHeaderName": "X-Custom-Header"}},
+            {"HttpHeaderConfig": {"HttpHeaderName": "X-Custom-Header"}},
+            "HttpHeaderConfig",
+            True,
+        ),
+        (
+            {"HttpHeaderConfig": {"HttpHeaderName": "X-Custom-Header"}},
+            {"HttpHeaderConfig": {"HttpHeaderName": "X-Different-Header"}},
+            "HttpHeaderConfig",
+            False,
+        ),
+        (
+            {"HttpHeaderConfig": {"HttpHeaderName": "X-Custom-Header"}},
+            {"HttpHeaderConfig": {"HttpHeaderName": "x-custom-header"}},
+            "HttpHeaderConfig",
+            False,
+        ),
+    ],
+)
+def test__http_header_name_matches(current, target, config_key, expected):
+    """Test _http_header_name_matches compares header names correctly (case-sensitive)"""
+    assert rules._http_header_name_matches(current, target, config_key) is expected
+
+
+@pytest.mark.parametrize(
+    "current_condition,target_condition,expected",
+    [
+        (
+            {"Field": "host-header", "HostHeaderConfig": {"Values": ["example.com"]}},
+            {"Field": "host-header", "HostHeaderConfig": {"Values": ["example.com"]}},
+            True,
+        ),
+        (
+            {"Field": "http-header", "HttpHeaderConfig": {"HttpHeaderName": "X-Custom", "Values": ["value1"]}},
+            {"Field": "http-header", "HttpHeaderConfig": {"HttpHeaderName": "X-Custom", "Values": ["value1"]}},
+            True,
+        ),
+        (
+            {"Field": "http-header", "HttpHeaderConfig": {"HttpHeaderName": "X-Header-A", "Values": ["value1"]}},
+            {"Field": "http-header", "HttpHeaderConfig": {"HttpHeaderName": "X-Header-B", "Values": ["value1"]}},
+            False,
+        ),
+        (
+            {"Field": "query-string", "QueryStringConfig": {"Values": [{"Key": "version", "Value": "1"}]}},
+            {"Field": "query-string", "QueryStringConfig": {"Values": [{"Key": "version", "Value": "1"}]}},
+            True,
+        ),
+        (
+            {"Field": "host-header", "Values": ["example.com", "test.com"]},
+            {"Field": "host-header", "Values": ["example.com", "test.com"]},
+            True,
+        ),
+    ],
+)
+def test__conditions_match(current_condition, target_condition, expected):
+    """Test _conditions_match handles different condition types correctly"""
+    assert rules._conditions_match(current_condition, target_condition) is expected
