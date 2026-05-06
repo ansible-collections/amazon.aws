@@ -444,9 +444,9 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_load_balancers
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_tags
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import AnsibleELBv2Error
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import build_application_load_balancer_description
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict

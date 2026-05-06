@@ -12,7 +12,6 @@ from ._elbv2.common import AnsibleELBv2Error
 from ._elbv2.common import ELBv2ErrorHandler
 from .botocore import is_boto3_error_code
 from .errors import AWSErrorHandler
-from .exceptions import AnsibleAWSError
 from .retries import AWSRetry
 
 if typing.TYPE_CHECKING:
