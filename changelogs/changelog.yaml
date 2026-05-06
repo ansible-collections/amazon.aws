@@ -4011,3 +4011,24 @@ releases:
     - sonarcloud_regex.yml
     - unittests-boto3-credentials.yml
     release_date: '2026-03-16'
+  10.3.1:
+    changes:
+      bugfixes:
+      - autoscaling_group - Fixed duplicate default_cooldown assignment in properties
+        dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - kms_key - Fixed parameter reassignment by using passed alias parameter instead
+        of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property
+        (https://github.com/ansible-collections/community.aws/issues/1915).
+      - s3_object_info - Fixed duplicate dictionary key assignments when retrieving
+        object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      release_summary: This patch release includes bugfixes for the ``s3_object_info``,
+        ``autoscaling_group``, and ``kms_key`` modules, addressing duplicate dictionary
+        key assignments and improving reliability. It also fixes a TypeError in CloudFront
+        module utilities.
+    fragments:
+    - 10.3.1.yml
+    - 1915-cloudfront_distribution_info-TypeError.yml
+    - ansible-test-gh-action-migration.yml
+    - reliability-duplicate-assignments.yml
+    release_date: '2026-05-06'
