@@ -389,5 +389,3 @@ def testELBListenersInit(
     assert elb_listener.elb_arn == elb_arn
     assert elb_listener.module == module
     assert elb_listener.changed is False
-
-

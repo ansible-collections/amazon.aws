@@ -24,10 +24,10 @@ if typing.TYPE_CHECKING:
 
     from ..modules import AnsibleAWSModule
 
+from ..elb_utils import convert_tg_name_to_arn
 from . import actions as _actions
 from . import api as _api
 from . import transformations as _transformations
-from ..elb_utils import convert_tg_name_to_arn
 
 
 def _normalize_condition_values(condition: Dict[str, Any]) -> Dict[str, Any]:
@@ -102,10 +102,9 @@ def _conditions_match(current_condition: Dict[str, Any], target_condition: Dict[
 
     # HttpHeaderConfig requires both Values and HttpHeaderName to match
     if current_condition.get("HttpHeaderConfig"):
-        return (
-            _sorted_values_match(current_condition, target_condition, "HttpHeaderConfig")
-            and _http_header_name_matches(current_condition, target_condition, "HttpHeaderConfig")
-        )
+        return _sorted_values_match(
+            current_condition, target_condition, "HttpHeaderConfig"
+        ) and _http_header_name_matches(current_condition, target_condition, "HttpHeaderConfig")
 
     # QueryStringConfig uses list of dicts, don't sort
     if current_condition.get("QueryStringConfig"):

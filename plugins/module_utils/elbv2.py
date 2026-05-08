@@ -9,17 +9,16 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+# Re-export API wrapper functions from _elbv2.api
 # Not intended for general re-use / re-import
 from ._elbv2 import actions as _actions
+from ._elbv2 import api as _api
 from ._elbv2 import common as _common
 from ._elbv2 import listeners as _listeners
 from ._elbv2 import rules as _rules
 from ._elbv2 import transformations as _transformations
 from ._elbv2 import waiters as _waiters
 from .ec2 import get_ec2_security_group_ids_from_names
-
-# Re-export API wrapper functions from _elbv2.api
-from ._elbv2 import api as _api
 
 add_listener_certificates = _api.add_listener_certificates
 add_tags = _api.add_tags

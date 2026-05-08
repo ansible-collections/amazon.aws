@@ -24,11 +24,11 @@ if typing.TYPE_CHECKING:
 
     from ..modules import AnsibleAWSModule
 
+from ..elb_utils import convert_tg_name_to_arn
+from ..transformation import scrub_none_parameters
 from . import api as _api
 from . import rules as _rules
 from .common import AnsibleELBv2Error
-from ..elb_utils import convert_tg_name_to_arn
-from ..transformation import scrub_none_parameters
 
 
 def validate_listener_https_requirements(listeners: Optional[List[Dict[str, Any]]]) -> None:

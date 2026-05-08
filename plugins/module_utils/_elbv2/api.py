@@ -16,11 +16,11 @@ from __future__ import annotations
 
 import typing
 
+from ..retries import AWSRetry
 from .common import ELBv2ErrorHandler
 from .common import ELBv2ListenerErrorHandler
 from .common import ELBv2RuleErrorHandler
 from .common import ELBv2TargetGroupErrorHandler
-from ..retries import AWSRetry
 
 if typing.TYPE_CHECKING:
     from typing import Any

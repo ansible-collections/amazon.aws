@@ -1418,9 +1418,7 @@ class TestProcessExactMatchesAndPriorityChanges:
 
     def test_default_rule_skipped(self):
         """Test that default rules are skipped"""
-        current_rules = [
-            {"Priority": "default", "IsDefault": True, "Actions": [{"Type": "forward"}]}
-        ]
+        current_rules = [{"Priority": "default", "IsDefault": True, "Actions": [{"Type": "forward"}]}]
         rules_to_add = []
 
         remaining_current, remaining_to_add, priority_changes = rules._process_exact_matches_and_priority_changes(
@@ -1493,12 +1491,8 @@ class TestProcessPriorityBasedModifications:
 
     def test_unmatched_rule_marked_for_deletion(self):
         """Test that unmatched rules are marked for deletion"""
-        remaining_rules = [
-            {"Priority": "1", "RuleArn": "arn:rule1", "Actions": [], "Conditions": []}
-        ]
-        rules_to_add = [
-            {"Priority": "2", "Actions": [], "Conditions": []}
-        ]
+        remaining_rules = [{"Priority": "1", "RuleArn": "arn:rule1", "Actions": [], "Conditions": []}]
+        rules_to_add = [{"Priority": "2", "Actions": [], "Conditions": []}]
 
         remaining_to_add, modifications, deletions = rules._process_priority_based_modifications(
             remaining_rules, rules_to_add
@@ -1527,12 +1521,8 @@ class TestProcessPriorityBasedModifications:
         """Test that input parameters are not mutated"""
         from copy import deepcopy
 
-        remaining_rules = [
-            {"Priority": "1", "RuleArn": "arn:rule1", "Actions": [], "Conditions": []}
-        ]
-        rules_to_add = [
-            {"Priority": "2", "Actions": [], "Conditions": []}
-        ]
+        remaining_rules = [{"Priority": "1", "RuleArn": "arn:rule1", "Actions": [], "Conditions": []}]
+        rules_to_add = [{"Priority": "2", "Actions": [], "Conditions": []}]
 
         original_remaining = deepcopy(remaining_rules)
         original_to_add = deepcopy(rules_to_add)

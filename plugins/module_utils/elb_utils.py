@@ -123,5 +123,3 @@ def convert_tg_name_to_arn(connection: ClientType, module: AnsibleAWSModule, tg_
         return _elbv2_api.get_target_group_arn_by_name(connection, tg_name)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
-
-
