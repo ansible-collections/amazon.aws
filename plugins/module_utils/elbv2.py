@@ -67,6 +67,7 @@ normalize_application_load_balancer = _transformations.normalize_application_loa
 # Expose listener classes and functions
 ELBListeners = _listeners.ELBListeners
 ELBListener = _listeners.ELBListener
+validate_listener_https_requirements = _listeners.validate_listener_https_requirements
 _compare_listener = _listeners._compare_listener
 _group_listeners = _listeners._group_listeners
 _prepare_listeners = _listeners._prepare_listeners
@@ -182,30 +183,6 @@ def build_application_load_balancer_description(
 
     # Normalize the entire ALB object (convert to snake_case, sort rules, convert tags)
     return normalize_application_load_balancer(alb)
-
-
-def validate_listener_https_requirements(listeners: Optional[List[Dict[str, Any]]]) -> None:
-    """
-    Validate that HTTPS listeners have required SSL configuration.
-
-    Checks that listeners using the HTTPS protocol include both SslPolicy
-    and Certificates configuration.
-
-    Args:
-        listeners: List of listener configuration dicts, or None
-
-    Raises:
-        AnsibleELBv2Error: If any HTTPS listener is missing required SslPolicy or Certificates
-    """
-    if listeners is None:
-        return
-
-    for listener in listeners:
-        if listener.get("Protocol") == "HTTPS":
-            if listener.get("SslPolicy") is None:
-                raise AnsibleELBv2Error(message="'SslPolicy' is a required listener dict key when Protocol = HTTPS")
-            if listener.get("Certificates") is None:
-                raise AnsibleELBv2Error(message="'Certificates' is a required listener dict key when Protocol = HTTPS")
 
 
 class ElasticLoadBalancerV2:
