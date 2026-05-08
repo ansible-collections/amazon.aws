@@ -17,6 +17,7 @@ from __future__ import annotations
 import typing
 
 from ..retries import AWSRetry
+from .common import AnsibleELBv2Error
 from .common import ELBv2ErrorHandler
 from .common import ELBv2ListenerErrorHandler
 from .common import ELBv2RuleErrorHandler

@@ -16,10 +16,13 @@ from __future__ import annotations
 import typing
 
 from ._elbv2 import api as _elbv2_api
-from ._elbv2.common import AnsibleELBv2Error
-from ._elbv2.common import ELBv2ListenerErrorHandler
-from ._elbv2.common import ELBv2RuleErrorHandler
-from ._elbv2.common import ELBv2TargetGroupErrorHandler
+from ._elbv2 import common as _elbv2_common
+
+# Re-export for backward compatibility
+AnsibleELBv2Error = _elbv2_common.AnsibleELBv2Error
+ELBv2ListenerErrorHandler = _elbv2_common.ELBv2ListenerErrorHandler
+ELBv2RuleErrorHandler = _elbv2_common.ELBv2RuleErrorHandler
+ELBv2TargetGroupErrorHandler = _elbv2_common.ELBv2TargetGroupErrorHandler
 
 if typing.TYPE_CHECKING:
     from typing import Any

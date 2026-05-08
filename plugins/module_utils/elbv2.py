@@ -44,9 +44,7 @@ set_security_groups = _api.set_security_groups
 set_subnets = _api.set_subnets
 
 # Re-export helper functions from elb_utils
-from .elb_utils import convert_tg_name_to_arn
 from .elb_utils import get_elb
-from .elb_utils import get_elb_listener_rules
 from .exceptions import AnsibleAWSError
 from .modules import AnsibleAWSModule
 from .retries import AWSRetry
