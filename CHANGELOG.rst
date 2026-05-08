@@ -4,6 +4,21 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v10.3.1
+=======
+
+Release Summary
+---------------
+
+This patch release includes bugfixes for the ``s3_object_info``, ``autoscaling_group``, and ``kms_key`` modules, addressing duplicate dictionary key assignments and improving reliability. It also fixes a TypeError in CloudFront module utilities.
+
+Bugfixes
+--------
+
+- autoscaling_group - Fixed duplicate default_cooldown assignment in properties dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
+- kms_key - Fixed parameter reassignment by using passed alias parameter instead of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
+- module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property (https://github.com/ansible-collections/community.aws/issues/1915).
+- s3_object_info - Fixed duplicate dictionary key assignments when retrieving object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
 
 v11.2.0
 =======
@@ -230,7 +245,6 @@ Release Summary
 This major release introduces new support with the ``aws_ssm`` connection plugin, which has been promoted from ``community.aws``, several bugfixes, minor changes and deprecated features.
 Additionally, this release increases the minimum required versions of ``boto3`` and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support for ansible-core < 2.17 has been dropped.
 Due to the AWS SDKs announcing the end of support for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/), support for Python less than 3.8 by this collection was deprecated in 9.0.0 release and is removed in this 10.0.0 release.
-
 
 Major Changes
 -------------
@@ -1154,7 +1168,6 @@ Release Summary
 This release is the last planned minor release of ``amazon.aws`` prior to the release of 7.0.0.
 It includes documentation fixes as well as minor changes and bug fixes for the ``ec2_ami`` and ``elb_application_lb_info`` modules.
 
-
 Minor Changes
 -------------
 
@@ -1486,7 +1499,6 @@ Release Summary
 
 This release brings few bugfixes.
 
-
 Bugfixes
 --------
 
@@ -1506,7 +1518,6 @@ Release Summary
 ---------------
 
 This release contains a number of bugfixes, new features and new modules.  This is the last planned minor release prior to the release of version 6.0.0.
-
 
 Minor Changes
 -------------
@@ -1601,7 +1612,6 @@ Release Summary
 ---------------
 
 A minor release containing bugfixes for the ``ec2_eni_info`` module and the ``aws_rds`` inventory plugin, as well as improvements to the ``rds_instance`` module.
-
 
 Minor Changes
 -------------
@@ -1826,7 +1836,6 @@ Release Summary
 
 This release contains a minor bugfix for the ``ec2_vol`` module, some minor work on the ``ec2_key`` module, and various documentation fixes.  This is the last planned release of the 4.x series.
 
-
 Minor Changes
 -------------
 
@@ -1865,7 +1874,6 @@ Release Summary
 The amazon.aws 4.3.0 release includes a number of minor bug fixes and improvements.
 Following the release of amazon.aws 5.0.0, backports to the 4.x series will be limited to
 security issues and bugfixes.
-
 
 Minor Changes
 -------------
@@ -2020,7 +2028,6 @@ Release Summary
 ---------------
 
 Following the release of amazon.aws 5.0.0, 3.5.0 is a bugfix release and the final planned release for the 3.x series.
-
 
 Minor Changes
 -------------
