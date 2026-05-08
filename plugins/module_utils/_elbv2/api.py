@@ -29,6 +29,8 @@ if typing.TYPE_CHECKING:
     from typing import Optional
     from typing import Union
 
+    from ..botocore import ClientType
+
 
 # Load Balancers
 
@@ -222,3 +224,61 @@ def modify_rule(client, rule_arn: str, **params) -> List[Dict[str, Any]]:
 def describe_target_groups(client, **params) -> List[Dict[str, Any]]:
     load_balancer_paginator = client.get_paginator("describe_target_groups")
     return load_balancer_paginator.paginate(**params).build_full_result()["TargetGroups"]
+
+
+# Helper Functions (exception-based, no module dependency)
+
+
+def get_load_balancer_by_name(connection: ClientType, name: str) -> Optional[Dict[str, Any]]:
+    """
+    Get a load balancer by name.
+
+    Args:
+        connection: boto3 elbv2 client
+        name: Load balancer name
+
+    Returns:
+        Load balancer dict or None if not found
+
+    Raises:
+        AnsibleELBv2Error: On API errors
+    """
+    load_balancers = describe_load_balancers(connection, names=[name])
+    return load_balancers[0] if load_balancers else None
+
+
+def get_listener_rules(connection: ClientType, listener_arn: str) -> List[Dict[str, Any]]:
+    """
+    Get rules for a listener.
+
+    Args:
+        connection: boto3 elbv2 client
+        listener_arn: Listener ARN
+
+    Returns:
+        List of rule dicts
+
+    Raises:
+        AnsibleELBv2Error: On API errors
+    """
+    return describe_rules(connection, ListenerArn=listener_arn)
+
+
+def get_target_group_arn_by_name(connection: ClientType, name: str) -> str:
+    """
+    Get target group ARN by name.
+
+    Args:
+        connection: boto3 elbv2 client
+        name: Target group name
+
+    Returns:
+        Target group ARN
+
+    Raises:
+        AnsibleELBv2Error: If target group not found or on API errors
+    """
+    target_groups = describe_target_groups(connection, Names=[name])
+    if not target_groups:
+        raise AnsibleELBv2Error(f"Target group '{name}' does not exist.")
+    return target_groups[0]["TargetGroupArn"]

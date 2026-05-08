@@ -3,6 +3,14 @@
 # Copyright (c) 2017 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+"""
+Backward compatibility helpers for ELBv2 modules.
+
+This module provides thin wrappers around _elbv2.api functions that handle
+fail_json_aws translation. New code should prefer importing from _elbv2.api
+or elbv2 and handling exceptions directly.
+"""
+
 from __future__ import annotations
 
 import typing
@@ -15,8 +23,12 @@ from ._elbv2.common import ELBv2TargetGroupErrorHandler
 
 if typing.TYPE_CHECKING:
     from typing import Any
+    from typing import Dict
+    from typing import List
+    from typing import Optional
 
     from .botocore import ClientType
+    from .modules import AnsibleAWSModule
 
 # Re-export API wrapper functions
 add_listener_certificates = _elbv2_api.add_listener_certificates
@@ -43,56 +55,72 @@ set_security_groups = _elbv2_api.set_security_groups
 set_subnets = _elbv2_api.set_subnets
 
 
-def get_elb(connection, module, elb_name):
+# Thin fail_json wrappers for backward compatibility
+# New code should import from _elbv2.api and handle exceptions directly
+
+
+def get_elb(connection: ClientType, module: AnsibleAWSModule, elb_name: str) -> Optional[Dict[str, Any]]:
     """
     Get an ELB based on name. If not found, return None.
 
-    :param connection: AWS boto3 elbv2 connection
-    :param module: Ansible module
-    :param elb_name: Name of load balancer to get
-    :return: boto3 ELB dict or None if not found
+    Note: This is a convenience wrapper that calls fail_json_aws on errors.
+    New code should use _elbv2.api.get_load_balancer_by_name() and handle
+    exceptions directly.
+
+    Args:
+        connection: AWS boto3 elbv2 connection
+        module: Ansible module
+        elb_name: Name of load balancer to get
+
+    Returns:
+        boto3 ELB dict or None if not found
     """
-    result = None
     try:
-        load_balancers = describe_load_balancers(connection, names=[elb_name])
-        if load_balancers:
-            result = load_balancers[0]
+        return _elbv2_api.get_load_balancer_by_name(connection, elb_name)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
-    return result
 
 
-def get_elb_listener_rules(connection, module, listener_arn):
+def get_elb_listener_rules(connection: ClientType, module: AnsibleAWSModule, listener_arn: str) -> List[Dict[str, Any]]:
     """
     Get rules for a particular ELB listener using the listener ARN.
 
-    :param connection: AWS boto3 elbv2 connection
-    :param module: Ansible module
-    :param listener_arn: ARN of the ELB listener
-    :return: boto3 ELB rules list
-    """
+    Note: This is a convenience wrapper that calls fail_json_aws on errors.
+    New code should use _elbv2.api.get_listener_rules() and handle
+    exceptions directly.
 
+    Args:
+        connection: AWS boto3 elbv2 connection
+        module: Ansible module
+        listener_arn: ARN of the ELB listener
+
+    Returns:
+        boto3 ELB rules list
+    """
     try:
-        return describe_rules(connection, ListenerArn=listener_arn)
+        return _elbv2_api.get_listener_rules(connection, listener_arn)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
 
 
-def convert_tg_name_to_arn(connection, module, tg_name):
+def convert_tg_name_to_arn(connection: ClientType, module: AnsibleAWSModule, tg_name: str) -> str:
     """
-    Get ARN of a target group using the target group's name
+    Get ARN of a target group using the target group's name.
 
-    :param connection: AWS boto3 elbv2 connection
-    :param module: Ansible module
-    :param tg_name: Name of the target group
-    :return: target group ARN string
+    Note: This is a convenience wrapper that calls fail_json_aws on errors.
+    New code should use _elbv2.api.get_target_group_arn_by_name() and handle
+    exceptions directly.
+
+    Args:
+        connection: AWS boto3 elbv2 connection
+        module: Ansible module
+        tg_name: Name of the target group
+
+    Returns:
+        Target group ARN string
     """
-
     try:
-        target_groups = describe_target_groups(connection, Names=[tg_name])
-        if not target_groups:
-            module.fail_json_aws(msg=f"Target group '{tg_name}' does not exist.")
-        return target_groups[0]["TargetGroupArn"]
+        return _elbv2_api.get_target_group_arn_by_name(connection, tg_name)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
 
