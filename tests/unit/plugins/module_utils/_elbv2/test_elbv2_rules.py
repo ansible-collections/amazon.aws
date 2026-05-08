@@ -453,10 +453,10 @@ class TestCompareRuleActions:
 def fixture_elb_listener_rules(mocker):
     module = MagicMock()
     connection = MagicMock()
-    rules = MagicMock()
+    rules_list = MagicMock()
     listener_arn = MagicMock()
 
-    return elbv2.ELBListenerRules(connection, module, listener_arn, rules)
+    return elbv2.ELBListenerRules(connection, module, listener_arn, rules_list)
 
 
 example_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/nlb-123456789abc/abcdef0123456789"
@@ -1148,9 +1148,9 @@ test_listeners_rules = [
 ]
 
 
-@pytest.mark.parametrize("current_rules,rules,expected", test_listeners_rules)
-def test_compare_rules(elb_listener_rules, current_rules, rules, expected):
-    elb_listener_rules.rules = rules
+@pytest.mark.parametrize("current_rules,desired_rules,expected", test_listeners_rules)
+def test_compare_rules(elb_listener_rules, current_rules, desired_rules, expected):
+    elb_listener_rules.rules = desired_rules
     elb_listener_rules.current_rules = current_rules
     elb_listener_rules.listener_arn = test_listener_arn
     rules_to_add, rules_to_set_priority, rules_to_modify, rules_to_delete = elb_listener_rules.compare_rules()
