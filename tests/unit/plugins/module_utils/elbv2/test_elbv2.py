@@ -465,3 +465,432 @@ class TestInheritedHelperMethods:
 
         nlb._add_attribute_update(update_list, "load_balancing.cross_zone.enabled", False)
         assert update_list == [{"Key": "load_balancing.cross_zone.enabled", "Value": "false"}]
+
+
+class TestBuildElbAttributesUpdateList:
+    """Tests for ApplicationLoadBalancer._build_elb_attributes_update_list method"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_empty_list_when_no_changes(self):
+        """Returns empty list when all attributes match"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "access_logs_s3_enabled": "false",
+            "deletion_protection_enabled": "false",
+        }
+        alb.access_logs_enabled = False
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = False
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert result == []
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_changed_boolean_attributes(self):
+        """Returns update list for changed boolean attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "access_logs_s3_enabled": "false",
+            "deletion_protection_enabled": "false",
+            "routing_http2_enabled": "true",
+        }
+        alb.access_logs_enabled = True  # Changed
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = True  # Changed
+        alb.idle_timeout = None
+        alb.http2 = False  # Changed
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 3
+        assert {"Key": "access_logs.s3.enabled", "Value": "true"} in result
+        assert {"Key": "deletion_protection.enabled", "Value": "true"} in result
+        assert {"Key": "routing.http2.enabled", "Value": "false"} in result
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_changed_string_attributes(self):
+        """Returns update list for changed string attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "access_logs_s3_bucket": "old-bucket",
+            "access_logs_s3_prefix": "old-prefix",
+        }
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = "new-bucket"  # Changed
+        alb.access_logs_s3_prefix = "new-prefix"  # Changed
+        alb.deletion_protection = None
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 2
+        assert {"Key": "access_logs.s3.bucket", "Value": "new-bucket"} in result
+        assert {"Key": "access_logs.s3.prefix", "Value": "new-prefix"} in result
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_changed_integer_attributes(self):
+        """Returns update list for changed integer attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "idle_timeout_timeout_seconds": "60",
+        }
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = None
+        alb.idle_timeout = 120  # Changed
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 1
+        assert {"Key": "idle_timeout.timeout_seconds", "Value": "120"} in result
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_http_routing_attributes(self):
+        """Returns update list for changed HTTP routing attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "routing_http_desync_mitigation_mode": "defensive",
+            "routing_http_drop_invalid_header_fields_enabled": "false",
+            "routing_http_x_amzn_tls_version_and_cipher_suite_enabled": "false",
+            "routing_http_xff_client_port_enabled": "false",
+            "waf_fail_open_enabled": "false",
+        }
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = None
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = "strictest"  # Changed
+        alb.http_drop_invalid_header_fields = True  # Changed
+        alb.http_x_amzn_tls_version_and_cipher_suite = True  # Changed
+        alb.http_xff_client_port = True  # Changed
+        alb.waf_fail_open = True  # Changed
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 5
+        assert {"Key": "routing.http.desync_mitigation_mode", "Value": "strictest"} in result
+        assert {"Key": "routing.http.drop_invalid_header_fields.enabled", "Value": "true"} in result
+        assert {
+            "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled",
+            "Value": "true",
+        } in result
+        assert {"Key": "routing.http.xff_client_port.enabled", "Value": "true"} in result
+        assert {"Key": "waf.fail_open.enabled", "Value": "true"} in result
+
+
+class TestCompareElbAttributes:
+    """Tests for ApplicationLoadBalancer.compare_elb_attributes method"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_attributes_match(self):
+        """Returns True when all attributes match current state"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {"deletion_protection_enabled": "true"}
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = True  # Matches
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb.compare_elb_attributes()
+        assert result is True
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_attributes_differ(self):
+        """Returns False when attributes differ from current state"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {"deletion_protection_enabled": "false"}
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = True  # Different
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb.compare_elb_attributes()
+        assert result is False
+
+
+class TestElbCreateParams:
+    """Tests for ElasticLoadBalancerV2._elb_create_params method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_basic_params(self):
+        """Returns basic required parameters"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = None
+        elb.subnets = None
+        elb.subnet_mappings = None
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result == {"Name": "test-elb", "Type": "application"}
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_optional_ip_address_type(self):
+        """Includes IpAddressType when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = "dualstack"
+        elb.subnets = None
+        elb.subnet_mappings = None
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result["IpAddressType"] == "dualstack"
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_subnets_when_set(self):
+        """Includes Subnets when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = None
+        elb.subnets = ["subnet-12345", "subnet-67890"]
+        elb.subnet_mappings = None
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result["Subnets"] == ["subnet-12345", "subnet-67890"]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_subnet_mappings_when_set(self):
+        """Includes SubnetMappings when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "network"
+        elb.elb_ip_addr_type = None
+        elb.subnets = None
+        elb.subnet_mappings = [{"SubnetId": "subnet-12345", "AllocationId": "eipalloc-abc"}]
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result["SubnetMappings"] == [{"SubnetId": "subnet-12345", "AllocationId": "eipalloc-abc"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_tags_when_set(self):
+        """Includes Tags when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = None
+        elb.subnets = None
+        elb.subnet_mappings = None
+        elb.tags = [{"Key": "Environment", "Value": "test"}]
+
+        result = elb._elb_create_params()
+        assert result["Tags"] == [{"Key": "Environment", "Value": "test"}]
+
+
+class TestAlbElbCreateParams:
+    """Tests for ApplicationLoadBalancer._elb_create_params method"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_security_groups_and_scheme(self):
+        """Adds SecurityGroups and Scheme to base params"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.name = "test-alb"
+        alb.type = "application"
+        alb.scheme = "internet-facing"
+        alb.security_groups = ["sg-12345", "sg-67890"]
+        alb.elb_ip_addr_type = None
+        alb.subnets = ["subnet-12345"]
+        alb.subnet_mappings = None
+        alb.tags = None
+
+        result = alb._elb_create_params()
+        assert result["Name"] == "test-alb"
+        assert result["Type"] == "application"
+        assert result["Scheme"] == "internet-facing"
+        assert result["SecurityGroups"] == ["sg-12345", "sg-67890"]
+        assert result["Subnets"] == ["subnet-12345"]
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_omits_security_groups_when_none(self):
+        """Doesn't include SecurityGroups when None"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.name = "test-alb"
+        alb.type = "application"
+        alb.scheme = "internal"
+        alb.security_groups = None
+        alb.elb_ip_addr_type = None
+        alb.subnets = None
+        alb.subnet_mappings = None
+        alb.tags = None
+
+        result = alb._elb_create_params()
+        assert "SecurityGroups" not in result
+        assert result["Scheme"] == "internal"
+
+
+class TestNlbElbCreateParams:
+    """Tests for NetworkLoadBalancer._elb_create_params method"""
+
+    @patch.object(elbv2.NetworkLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_scheme_to_base_params(self):
+        """Adds Scheme to base params"""
+        nlb = elbv2.NetworkLoadBalancer(None, None)
+        nlb.name = "test-nlb"
+        nlb.type = "network"
+        nlb.scheme = "internet-facing"
+        nlb.elb_ip_addr_type = None
+        nlb.subnets = ["subnet-12345"]
+        nlb.subnet_mappings = None
+        nlb.tags = None
+
+        result = nlb._elb_create_params()
+        assert result["Name"] == "test-nlb"
+        assert result["Type"] == "network"
+        assert result["Scheme"] == "internet-facing"
+        assert result["Subnets"] == ["subnet-12345"]
+
+
+class TestCompareSubnets:
+    """Tests for ElasticLoadBalancerV2.compare_subnets method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_subnets_match(self):
+        """Returns True when subnet list matches current ELB subnets"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = ["subnet-12345", "subnet-67890"]
+        elb.subnet_mappings = None
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_subnets_differ(self):
+        """Returns False when subnet list differs from current ELB subnets"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = ["subnet-12345", "subnet-99999"]  # Different subnet
+        elb.subnet_mappings = None
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_subnet_mappings_match(self):
+        """Returns True when subnet mappings match current ELB"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = None
+        elb.subnet_mappings = [{"SubnetId": "subnet-12345"}, {"SubnetId": "subnet-67890"}]
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_subnet_mappings_with_allocation_ids_match(self):
+        """Returns True when subnet mappings with AllocationIds match"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = None
+        elb.subnet_mappings = [
+            {"SubnetId": "subnet-12345", "AllocationId": "eipalloc-abc123"},
+            {"SubnetId": "subnet-67890"},
+        ]
+        elb.elb = {
+            "AvailabilityZones": [
+                {
+                    "SubnetId": "subnet-12345",
+                    "LoadBalancerAddresses": [{"AllocationId": "eipalloc-abc123"}],
+                },
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_allocation_ids_differ(self):
+        """Returns False when AllocationIds differ"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = None
+        elb.subnet_mappings = [
+            {"SubnetId": "subnet-12345", "AllocationId": "eipalloc-different"},
+            {"SubnetId": "subnet-67890"},
+        ]
+        elb.elb = {
+            "AvailabilityZones": [
+                {
+                    "SubnetId": "subnet-12345",
+                    "LoadBalancerAddresses": [{"AllocationId": "eipalloc-abc123"}],
+                },
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_handles_different_subnet_order(self):
+        """Returns True when subnets match regardless of order"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = ["subnet-67890", "subnet-12345"]  # Reversed order
+        elb.subnet_mappings = None
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True
