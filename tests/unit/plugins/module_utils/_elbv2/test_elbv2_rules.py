@@ -4,6 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -1531,3 +1532,130 @@ class TestProcessPriorityBasedModifications:
 
         assert remaining_rules == original_remaining
         assert rules_to_add == original_to_add
+
+
+class TestFindMatchingNewRuleByPriority:
+    """Tests for _find_matching_new_rule_by_priority helper function"""
+
+    def test_finds_matching_rule(self):
+        current_rule = {"Priority": "5", "RuleArn": "arn:rule5"}
+        new_rules = [
+            {"Priority": 3, "Actions": []},
+            {"Priority": 5, "Actions": []},
+            {"Priority": 7, "Actions": []},
+        ]
+
+        result = rules._find_matching_new_rule_by_priority(current_rule, new_rules)
+        assert result == {"Priority": 5, "Actions": []}
+
+    def test_returns_none_when_no_match(self):
+        current_rule = {"Priority": "10", "RuleArn": "arn:rule10"}
+        new_rules = [
+            {"Priority": 3, "Actions": []},
+            {"Priority": 5, "Actions": []},
+        ]
+
+        result = rules._find_matching_new_rule_by_priority(current_rule, new_rules)
+        assert result is None
+
+    def test_returns_first_match_when_duplicates(self):
+        current_rule = {"Priority": "5", "RuleArn": "arn:rule5"}
+        new_rules = [
+            {"Priority": 5, "Actions": [], "name": "first"},
+            {"Priority": 5, "Actions": [], "name": "second"},
+        ]
+
+        result = rules._find_matching_new_rule_by_priority(current_rule, new_rules)
+        assert result["name"] == "first"
+
+
+class TestBuildModifiedRule:
+    """Tests for _build_modified_rule helper function"""
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules._compare_rule")
+    def test_returns_none_when_no_changes(self, m_compare):
+        m_compare.return_value = None
+        current_rule = {"Priority": "5", "RuleArn": "arn:rule5"}
+        new_rule = {"Priority": 5, "Actions": [], "Conditions": []}
+
+        result = rules._build_modified_rule(current_rule, new_rule)
+        assert result is None
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules._compare_rule")
+    def test_builds_modified_rule_with_metadata(self, m_compare):
+        m_compare.return_value = {"some": "change"}
+        current_rule = {
+            "Priority": "5",
+            "RuleArn": "arn:aws:elasticloadbalancing:us-east-1:123:listener-rule/app/test/abc/def/ghi",
+        }
+        new_rule = {
+            "Priority": 5,
+            "Actions": [{"Type": "forward", "TargetGroupArn": "arn:tg1"}],
+            "Conditions": [{"Field": "path-pattern", "Values": ["/test"]}],
+        }
+
+        result = rules._build_modified_rule(current_rule, new_rule)
+
+        assert result["Priority"] == 5
+        assert result["RuleArn"] == "arn:aws:elasticloadbalancing:us-east-1:123:listener-rule/app/test/abc/def/ghi"
+        assert result["Actions"] == new_rule["Actions"]
+        assert result["Conditions"] == new_rule["Conditions"]
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules._compare_rule")
+    def test_handles_oidc_client_secret(self, m_compare):
+        m_compare.return_value = {"some": "change"}
+        current_rule = {"Priority": "5", "RuleArn": "arn:rule5"}
+        new_rule = {
+            "Priority": 5,
+            "Actions": [
+                {
+                    "Type": "authenticate-oidc",
+                    "AuthenticateOidcConfig": {
+                        "ClientSecret": "secret123",
+                        "Issuer": "https://example.com",
+                    },
+                }
+            ],
+            "Conditions": [],
+        }
+
+        result = rules._build_modified_rule(current_rule, new_rule)
+
+        assert result["Actions"][0]["AuthenticateOidcConfig"]["UseExistingClientSecret"] is False
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules._compare_rule")
+    def test_skips_oidc_flag_when_no_client_secret(self, m_compare):
+        m_compare.return_value = {"some": "change"}
+        current_rule = {"Priority": "5", "RuleArn": "arn:rule5"}
+        new_rule = {
+            "Priority": 5,
+            "Actions": [
+                {
+                    "Type": "authenticate-oidc",
+                    "AuthenticateOidcConfig": {
+                        "Issuer": "https://example.com",
+                    },
+                }
+            ],
+            "Conditions": [],
+        }
+
+        result = rules._build_modified_rule(current_rule, new_rule)
+
+        assert "UseExistingClientSecret" not in result["Actions"][0]["AuthenticateOidcConfig"]
+
+
+class TestShouldDeleteRule:
+    """Tests for _should_delete_rule helper function"""
+
+    def test_returns_true_for_non_default_rule(self):
+        rule = {"Priority": "5", "RuleArn": "arn:rule5"}
+        assert rules._should_delete_rule(rule) is True
+
+    def test_returns_true_when_is_default_false(self):
+        rule = {"Priority": "5", "RuleArn": "arn:rule5", "IsDefault": False}
+        assert rules._should_delete_rule(rule) is True
+
+    def test_returns_false_when_is_default_true(self):
+        rule = {"Priority": "default", "RuleArn": "arn:default", "IsDefault": True}
+        assert rules._should_delete_rule(rule) is False

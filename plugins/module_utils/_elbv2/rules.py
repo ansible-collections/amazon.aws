@@ -167,8 +167,8 @@ def _compare_rule_actions(current_actions: List[Dict[str, Any]], new_actions: Li
     new_current_actions_sorted = [_actions._append_use_existing_client_secret(i) for i in current_actions_sorted]
     new_actions_sorted_no_secret = [_actions._prune_secret(i) for i in new_actions_sorted]
 
-    return [_actions._prune_ForwardConfig(i) for i in new_current_actions_sorted] == [
-        _actions._prune_ForwardConfig(i) for i in new_actions_sorted_no_secret
+    return [_actions._prune_forward_config(i) for i in new_current_actions_sorted] == [
+        _actions._prune_forward_config(i) for i in new_actions_sorted_no_secret
     ]
 
 
@@ -251,6 +251,41 @@ def _process_exact_matches_and_priority_changes(
     return remaining_current_rules, remaining_rules_to_add, rules_to_set_priority
 
 
+def _find_matching_new_rule_by_priority(
+    current_rule: Dict[str, Any], new_rules: List[Dict[str, Any]]
+) -> Optional[Dict[str, Any]]:
+    """Find a new rule that matches the current rule's priority."""
+    current_priority = current_rule["Priority"]
+    for new_rule in new_rules:
+        if current_priority == str(new_rule["Priority"]):
+            return new_rule
+    return None
+
+
+def _build_modified_rule(current_rule: Dict[str, Any], new_rule: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Build a modified rule dict if changes are detected."""
+    modified_rule = _compare_rule(current_rule, new_rule)
+    if not modified_rule:
+        return None
+
+    modified_rule["Priority"] = int(current_rule["Priority"])
+    modified_rule["RuleArn"] = current_rule["RuleArn"]
+    modified_rule["Actions"] = new_rule["Actions"]
+    modified_rule["Conditions"] = new_rule["Conditions"]
+
+    # You cannot both specify a client secret and set UseExistingClientSecret to true
+    for action in modified_rule.get("Actions", []):
+        if action.get("AuthenticateOidcConfig", {}).get("ClientSecret", False):
+            action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
+
+    return modified_rule
+
+
+def _should_delete_rule(current_rule: Dict[str, Any]) -> bool:
+    """Check if a rule should be deleted (not default rule)."""
+    return not current_rule.get("IsDefault", False)
+
+
 def _process_priority_based_modifications(
     remaining_rules: List[Dict[str, Any]], rules_to_add: List[Dict[str, Any]]
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[str]]:
@@ -268,32 +303,14 @@ def _process_priority_based_modifications(
     rules_to_delete = []
 
     for current_rule in remaining_rules:
-        matched = False
+        new_rule = _find_matching_new_rule_by_priority(current_rule, remaining_rules_to_add)
 
-        for new_rule in remaining_rules_to_add[:]:  # Iterate over a shallow copy
-            if current_rule["Priority"] == str(new_rule["Priority"]):
-                # Same priority, check what changed
-                remaining_rules_to_add.remove(new_rule)
-                modified_rule = _compare_rule(current_rule, new_rule)
-
-                if modified_rule:
-                    modified_rule["Priority"] = int(current_rule["Priority"])
-                    modified_rule["RuleArn"] = current_rule["RuleArn"]
-                    modified_rule["Actions"] = new_rule["Actions"]
-                    modified_rule["Conditions"] = new_rule["Conditions"]
-
-                    # You cannot both specify a client secret and set UseExistingClientSecret to true
-                    for action in modified_rule.get("Actions", []):
-                        if action.get("AuthenticateOidcConfig", {}).get("ClientSecret", False):
-                            action["AuthenticateOidcConfig"]["UseExistingClientSecret"] = False
-
-                    rules_to_modify.append(modified_rule)
-
-                matched = True
-                break
-
-        # If not matched and not default rule, mark for deletion
-        if not matched and not current_rule.get("IsDefault", False):
+        if new_rule:
+            remaining_rules_to_add.remove(new_rule)
+            modified_rule = _build_modified_rule(current_rule, new_rule)
+            if modified_rule:
+                rules_to_modify.append(modified_rule)
+        elif _should_delete_rule(current_rule):
             rules_to_delete.append(current_rule["RuleArn"])
 
     return remaining_rules_to_add, rules_to_modify, rules_to_delete

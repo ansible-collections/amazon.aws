@@ -55,6 +55,78 @@ def validate_listener_https_requirements(listeners: Optional[List[Dict[str, Any]
                 raise AnsibleELBv2Error(message="'Certificates' is a required listener dict key when Protocol = HTTPS")
 
 
+def _compare_ssl_policy(current_listener: Dict[str, Any], new_listener: Dict[str, Any]) -> Optional[str]:
+    """Compare SSL policies and return new policy if different."""
+    current_ssl_policy = current_listener.get("SslPolicy")
+    new_ssl_policy = new_listener.get("SslPolicy")
+    if new_ssl_policy and (not current_ssl_policy or current_ssl_policy != new_ssl_policy):
+        return new_ssl_policy
+    return None
+
+
+def _compare_certificates(
+    current_listener: Dict[str, Any], new_listener: Dict[str, Any]
+) -> Optional[List[Dict[str, str]]]:
+    """Compare certificates and return new certificate if different."""
+    new_certificates = new_listener.get("Certificates")
+    current_certificates = current_listener.get("Certificates")
+
+    if not new_certificates:
+        return None
+
+    if not current_certificates:
+        return [{"CertificateArn": new_certificates[0]["CertificateArn"]}]
+
+    if current_certificates[0]["CertificateArn"] != new_certificates[0]["CertificateArn"]:
+        return [{"CertificateArn": new_certificates[0]["CertificateArn"]}]
+
+    return None
+
+
+def _compare_default_actions(
+    current_listener: Dict[str, Any], new_listener: Dict[str, Any]
+) -> Optional[List[Dict[str, Any]]]:
+    """Compare default actions and return new actions if different."""
+    current_default_actions = current_listener.get("DefaultActions")
+    new_default_actions = new_listener.get("DefaultActions")
+
+    if not new_default_actions:
+        return None
+
+    if not current_default_actions:
+        return new_default_actions
+
+    if len(current_default_actions) != len(new_default_actions):
+        return new_default_actions
+
+    # Use the same comparison logic as _compare_rule_actions for consistency
+    if not _rules._compare_rule_actions(current_default_actions, new_default_actions):
+        return new_default_actions
+
+    return None
+
+
+def _compare_alpn_policy(
+    current_listener: Dict[str, Any], new_listener: Dict[str, Any], new_protocol: str
+) -> Optional[List[str]]:
+    """Compare ALPN policy and return new policy if different."""
+    new_alpn_policy = new_listener.get("AlpnPolicy")
+
+    if not new_alpn_policy or new_protocol != "TLS":
+        return None
+
+    current_alpn_policy = current_listener.get("AlpnPolicy")
+    current_protocol = current_listener["Protocol"]
+
+    if current_protocol != "TLS":
+        return new_alpn_policy
+
+    if not current_alpn_policy or current_alpn_policy[0] != new_alpn_policy[0]:
+        return new_alpn_policy
+
+    return None
+
+
 def _compare_listener(current_listener: Dict[str, Any], new_listener: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
     Compare two listeners. We do not check the port as the function is expecting that
@@ -73,52 +145,25 @@ def _compare_listener(current_listener: Dict[str, Any], new_listener: Dict[str, 
     if current_protocol != new_protocol:
         modified_listener["Protocol"] = new_protocol
 
-    # SslPolicy and Certificates are compared if the new listener protocol is
-    # one of the following 'HTTPS', 'TLS'
+    # SslPolicy and Certificates are compared if the new listener protocol is HTTPS or TLS
     if new_protocol in ("HTTPS", "TLS"):
-        # SslPolicy
-        current_ssl_policy = current_listener.get("SslPolicy")
-        new_ssl_policy = new_listener.get("SslPolicy")
-        if new_ssl_policy and any(
-            (not current_ssl_policy, current_ssl_policy and current_ssl_policy != new_ssl_policy)
-        ):
-            modified_listener["SslPolicy"] = new_ssl_policy
+        ssl_policy = _compare_ssl_policy(current_listener, new_listener)
+        if ssl_policy:
+            modified_listener["SslPolicy"] = ssl_policy
 
-        # Certificates
-        new_certificates = new_listener.get("Certificates")
-        current_certificates = current_listener.get("Certificates")
-        if new_certificates and any(
-            (
-                not current_certificates,
-                current_certificates
-                and current_certificates[0]["CertificateArn"] != new_certificates[0]["CertificateArn"],
-            )
-        ):
-            modified_listener["Certificates"] = [{"CertificateArn": new_certificates[0]["CertificateArn"]}]
+        certificates = _compare_certificates(current_listener, new_listener)
+        if certificates:
+            modified_listener["Certificates"] = certificates
 
     # Default actions
-    # If the lengths of the actions are the same, we'll have to verify that the
-    # contents of those actions are the same
-    current_default_actions = current_listener.get("DefaultActions")
-    new_default_actions = new_listener.get("DefaultActions")
-    if new_default_actions:
-        if current_default_actions and len(current_default_actions) == len(new_default_actions):
-            # Use the same comparison logic as _compare_rule_actions for consistency
-            if not _rules._compare_rule_actions(current_default_actions, new_default_actions):
-                modified_listener["DefaultActions"] = new_default_actions
-        # If the action lengths are different, then replace with the new actions
-        else:
-            modified_listener["DefaultActions"] = new_default_actions
+    default_actions = _compare_default_actions(current_listener, new_listener)
+    if default_actions:
+        modified_listener["DefaultActions"] = default_actions
 
     # AlpnPolicy
-    new_alpn_policy = new_listener.get("AlpnPolicy")
-    if new_alpn_policy and new_protocol == "TLS":
-        current_alpn_policy = current_listener.get("AlpnPolicy")
-        if current_listener["Protocol"] != "TLS" or (
-            current_listener["Protocol"] == "TLS"
-            and (not current_alpn_policy or current_alpn_policy[0] != new_alpn_policy[0])
-        ):
-            modified_listener["AlpnPolicy"] = new_alpn_policy
+    alpn_policy = _compare_alpn_policy(current_listener, new_listener, new_protocol)
+    if alpn_policy:
+        modified_listener["AlpnPolicy"] = alpn_policy
 
     return modified_listener
 

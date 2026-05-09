@@ -389,3 +389,201 @@ def testELBListenersInit(
     assert elb_listener.elb_arn == elb_arn
     assert elb_listener.module == module
     assert elb_listener.changed is False
+
+
+class TestCompareSslPolicy:
+    """Tests for _compare_ssl_policy helper function"""
+
+    def test_returns_new_policy_when_current_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_ssl_policy
+
+        current = {"Protocol": "HTTPS"}
+        new = {"Protocol": "HTTPS", "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06"}
+
+        result = _compare_ssl_policy(current, new)
+        assert result == "ELBSecurityPolicy-TLS13-1-2-2021-06"
+
+    def test_returns_new_policy_when_different(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_ssl_policy
+
+        current = {"Protocol": "HTTPS", "SslPolicy": "ELBSecurityPolicy-2016-08"}
+        new = {"Protocol": "HTTPS", "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06"}
+
+        result = _compare_ssl_policy(current, new)
+        assert result == "ELBSecurityPolicy-TLS13-1-2-2021-06"
+
+    def test_returns_none_when_same(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_ssl_policy
+
+        current = {"Protocol": "HTTPS", "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06"}
+        new = {"Protocol": "HTTPS", "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06"}
+
+        result = _compare_ssl_policy(current, new)
+        assert result is None
+
+    def test_returns_none_when_new_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_ssl_policy
+
+        current = {"Protocol": "HTTPS", "SslPolicy": "ELBSecurityPolicy-2016-08"}
+        new = {"Protocol": "HTTPS"}
+
+        result = _compare_ssl_policy(current, new)
+        assert result is None
+
+
+class TestCompareCertificates:
+    """Tests for _compare_certificates helper function"""
+
+    def test_returns_new_cert_when_current_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_certificates
+
+        current = {"Protocol": "HTTPS"}
+        new = {"Protocol": "HTTPS", "Certificates": [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/new"}]}
+
+        result = _compare_certificates(current, new)
+        assert result == [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/new"}]
+
+    def test_returns_new_cert_when_different(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_certificates
+
+        current = {"Protocol": "HTTPS", "Certificates": [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/old"}]}
+        new = {"Protocol": "HTTPS", "Certificates": [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/new"}]}
+
+        result = _compare_certificates(current, new)
+        assert result == [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/new"}]
+
+    def test_returns_none_when_same(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_certificates
+
+        current = {"Protocol": "HTTPS", "Certificates": [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/same"}]}
+        new = {"Protocol": "HTTPS", "Certificates": [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/same"}]}
+
+        result = _compare_certificates(current, new)
+        assert result is None
+
+    def test_returns_none_when_new_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_certificates
+
+        current = {"Protocol": "HTTPS", "Certificates": [{"CertificateArn": "arn:aws:acm:us-east-1:123:cert/old"}]}
+        new = {"Protocol": "HTTPS"}
+
+        result = _compare_certificates(current, new)
+        assert result is None
+
+
+class TestCompareDefaultActions:
+    """Tests for _compare_default_actions helper function"""
+
+    def test_returns_new_actions_when_current_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_default_actions
+
+        current = {"Protocol": "HTTP"}
+        new = {"Protocol": "HTTP", "DefaultActions": [{"Type": "forward", "TargetGroupArn": "arn:aws:..."}]}
+
+        result = _compare_default_actions(current, new)
+        assert result == [{"Type": "forward", "TargetGroupArn": "arn:aws:..."}]
+
+    def test_returns_new_actions_when_different_length(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_default_actions
+
+        current = {"Protocol": "HTTP", "DefaultActions": [{"Type": "forward", "TargetGroupArn": "arn:aws:..."}]}
+        new = {
+            "Protocol": "HTTP",
+            "DefaultActions": [
+                {"Type": "forward", "TargetGroupArn": "arn:aws:...1"},
+                {"Type": "forward", "TargetGroupArn": "arn:aws:...2"},
+            ],
+        }
+
+        result = _compare_default_actions(current, new)
+        assert result == new["DefaultActions"]
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners._rules._compare_rule_actions")
+    def test_returns_new_actions_when_compare_returns_false(self, m_compare):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_default_actions
+
+        m_compare.return_value = False
+        current = {"Protocol": "HTTP", "DefaultActions": [{"Type": "forward", "TargetGroupArn": "arn:aws:...old"}]}
+        new = {"Protocol": "HTTP", "DefaultActions": [{"Type": "forward", "TargetGroupArn": "arn:aws:...new"}]}
+
+        result = _compare_default_actions(current, new)
+        assert result == new["DefaultActions"]
+        m_compare.assert_called_once_with(current["DefaultActions"], new["DefaultActions"])
+
+    @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners._rules._compare_rule_actions")
+    def test_returns_none_when_same(self, m_compare):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_default_actions
+
+        m_compare.return_value = True
+        current = {"Protocol": "HTTP", "DefaultActions": [{"Type": "forward", "TargetGroupArn": "arn:aws:...same"}]}
+        new = {"Protocol": "HTTP", "DefaultActions": [{"Type": "forward", "TargetGroupArn": "arn:aws:...same"}]}
+
+        result = _compare_default_actions(current, new)
+        assert result is None
+
+    def test_returns_none_when_new_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_default_actions
+
+        current = {"Protocol": "HTTP", "DefaultActions": [{"Type": "forward", "TargetGroupArn": "arn:aws:..."}]}
+        new = {"Protocol": "HTTP"}
+
+        result = _compare_default_actions(current, new)
+        assert result is None
+
+
+class TestCompareAlpnPolicy:
+    """Tests for _compare_alpn_policy helper function"""
+
+    def test_returns_new_policy_when_protocol_changes_to_tls(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_alpn_policy
+
+        current = {"Protocol": "TCP"}
+        new = {"Protocol": "TLS", "AlpnPolicy": ["HTTP2Preferred"]}
+
+        result = _compare_alpn_policy(current, new, "TLS")
+        assert result == ["HTTP2Preferred"]
+
+    def test_returns_new_policy_when_current_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_alpn_policy
+
+        current = {"Protocol": "TLS"}
+        new = {"Protocol": "TLS", "AlpnPolicy": ["HTTP2Preferred"]}
+
+        result = _compare_alpn_policy(current, new, "TLS")
+        assert result == ["HTTP2Preferred"]
+
+    def test_returns_new_policy_when_different(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_alpn_policy
+
+        current = {"Protocol": "TLS", "AlpnPolicy": ["HTTP1Only"]}
+        new = {"Protocol": "TLS", "AlpnPolicy": ["HTTP2Preferred"]}
+
+        result = _compare_alpn_policy(current, new, "TLS")
+        assert result == ["HTTP2Preferred"]
+
+    def test_returns_none_when_same(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_alpn_policy
+
+        current = {"Protocol": "TLS", "AlpnPolicy": ["HTTP2Preferred"]}
+        new = {"Protocol": "TLS", "AlpnPolicy": ["HTTP2Preferred"]}
+
+        result = _compare_alpn_policy(current, new, "TLS")
+        assert result is None
+
+    def test_returns_none_when_new_missing(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_alpn_policy
+
+        current = {"Protocol": "TLS", "AlpnPolicy": ["HTTP2Preferred"]}
+        new = {"Protocol": "TLS"}
+
+        result = _compare_alpn_policy(current, new, "TLS")
+        assert result is None
+
+    def test_returns_none_when_protocol_not_tls(self):
+        from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_alpn_policy
+
+        current = {"Protocol": "HTTPS"}
+        new = {"Protocol": "HTTPS", "AlpnPolicy": ["HTTP2Preferred"]}
+
+        result = _compare_alpn_policy(current, new, "HTTPS")
+        assert result is None

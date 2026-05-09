@@ -320,3 +320,148 @@ class TestBuildApplicationLoadBalancerDescription:
         # Verify the original dict was not modified
         assert load_balancer == original_load_balancer
         assert "Attributes" not in load_balancer
+
+
+class TestAttributeDiffers:
+    """Tests for ElasticLoadBalancerV2._attribute_differs helper method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_new_value_is_none(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_enabled": "true"}
+
+        result = elb._attribute_differs(None, "access_logs_s3_enabled")
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_bool_values_differ(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_enabled": "true"}
+
+        result = elb._attribute_differs(False, "access_logs_s3_enabled")
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_bool_values_match(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_enabled": "true"}
+
+        result = elb._attribute_differs(True, "access_logs_s3_enabled")
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_int_values_differ(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"idle_timeout_timeout_seconds": "60"}
+
+        result = elb._attribute_differs(120, "idle_timeout_timeout_seconds")
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_int_values_match(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"idle_timeout_timeout_seconds": "60"}
+
+        result = elb._attribute_differs(60, "idle_timeout_timeout_seconds")
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_auto_lowercases_bool_values(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"deletion_protection_enabled": "false"}
+
+        # Bool values are automatically lowercased: True -> "true", which differs from "false"
+        result = elb._attribute_differs(True, "deletion_protection_enabled")
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_handles_string_values(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_bucket": "my-bucket"}
+
+        result = elb._attribute_differs("different-bucket", "access_logs_s3_bucket")
+        assert result is True
+
+        result = elb._attribute_differs("my-bucket", "access_logs_s3_bucket")
+        assert result is False
+
+
+class TestAddAttributeUpdate:
+    """Tests for ElasticLoadBalancerV2._add_attribute_update helper method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_bool_attribute_as_lowercase_string(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = []
+
+        elb._add_attribute_update(update_list, "access_logs.s3.enabled", True)
+
+        assert update_list == [{"Key": "access_logs.s3.enabled", "Value": "true"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_int_attribute_as_string(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = []
+
+        elb._add_attribute_update(update_list, "idle_timeout.timeout_seconds", 120)
+
+        assert update_list == [{"Key": "idle_timeout.timeout_seconds", "Value": "120"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_string_attribute(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = []
+
+        elb._add_attribute_update(update_list, "access_logs.s3.bucket", "my-bucket")
+
+        assert update_list == [{"Key": "access_logs.s3.bucket", "Value": "my-bucket"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_appends_to_existing_list(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = [{"Key": "existing.attribute", "Value": "value"}]
+
+        elb._add_attribute_update(update_list, "new.attribute", "new-value")
+
+        assert len(update_list) == 2
+        assert update_list[1] == {"Key": "new.attribute", "Value": "new-value"}
+
+
+class TestInheritedHelperMethods:
+    """Tests that both ALB and NLB can use inherited helper methods from ElasticLoadBalancerV2"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_alb_can_use_attribute_differs(self):
+        """ApplicationLoadBalancer can use _attribute_differs from parent class"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {"deletion_protection_enabled": "true"}
+
+        result = alb._attribute_differs(True, "deletion_protection_enabled")
+        assert result is False
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_alb_can_use_add_attribute_update(self):
+        """ApplicationLoadBalancer can use _add_attribute_update from parent class"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        update_list = []
+
+        alb._add_attribute_update(update_list, "deletion_protection.enabled", True)
+        assert update_list == [{"Key": "deletion_protection.enabled", "Value": "true"}]
+
+    @patch.object(elbv2.NetworkLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_nlb_can_use_attribute_differs(self):
+        """NetworkLoadBalancer can use _attribute_differs from parent class"""
+        nlb = elbv2.NetworkLoadBalancer(None, None)
+        nlb.elb_attributes = {"load_balancing_cross_zone_enabled": "false"}
+
+        result = nlb._attribute_differs(True, "load_balancing_cross_zone_enabled")
+        assert result is True
+
+    @patch.object(elbv2.NetworkLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_nlb_can_use_add_attribute_update(self):
+        """NetworkLoadBalancer can use _add_attribute_update from parent class"""
+        nlb = elbv2.NetworkLoadBalancer(None, None)
+        update_list = []
+
+        nlb._add_attribute_update(update_list, "load_balancing.cross_zone.enabled", False)
+        assert update_list == [{"Key": "load_balancing.cross_zone.enabled", "Value": "false"}]

@@ -12,6 +12,10 @@ if typing.TYPE_CHECKING:
 
 from ..waiter import BaseWaiterFactory
 
+# Constants for waiter JMESPath arguments
+_LB_STATE_PATH = "LoadBalancers[].State.Code"
+_LB_IP_ADDRESS_TYPE_PATH = "LoadBalancers[].IpAddressType"
+
 
 class ELBv2WaiterFactory(BaseWaiterFactory):
     """Factory for creating ELBv2-specific waiters with improved error handling."""
@@ -45,13 +49,13 @@ class ELBv2WaiterFactory(BaseWaiterFactory):
                     dict(
                         state="success",
                         matcher="pathAll",
-                        argument="LoadBalancers[].State.Code",
+                        argument=_LB_STATE_PATH,
                         expected="active",
                     ),
                     dict(
                         state="retry",
                         matcher="pathAny",
-                        argument="LoadBalancers[].State.Code",
+                        argument=_LB_STATE_PATH,
                         expected="provisioning",
                     ),
                     dict(state="retry", matcher="error", expected="LoadBalancerNotFound"),
@@ -65,7 +69,7 @@ class ELBv2WaiterFactory(BaseWaiterFactory):
                     dict(
                         state="retry",
                         matcher="pathAll",
-                        argument="LoadBalancers[].State.Code",
+                        argument=_LB_STATE_PATH,
                         expected="active",
                     ),
                     dict(state="success", matcher="error", expected="LoadBalancerNotFound"),
@@ -79,13 +83,13 @@ class ELBv2WaiterFactory(BaseWaiterFactory):
                     dict(
                         state="success",
                         matcher="pathAll",
-                        argument="LoadBalancers[].IpAddressType",
+                        argument=_LB_IP_ADDRESS_TYPE_PATH,
                         expected="ipv4",
                     ),
                     dict(
                         state="retry",
                         matcher="pathAny",
-                        argument="LoadBalancers[].IpAddressType",
+                        argument=_LB_IP_ADDRESS_TYPE_PATH,
                         expected="dualstack",
                     ),
                     dict(state="failure", matcher="error", expected="LoadBalancerNotFound"),
@@ -99,13 +103,13 @@ class ELBv2WaiterFactory(BaseWaiterFactory):
                     dict(
                         state="success",
                         matcher="pathAll",
-                        argument="LoadBalancers[].IpAddressType",
+                        argument=_LB_IP_ADDRESS_TYPE_PATH,
                         expected="dualstack",
                     ),
                     dict(
                         state="retry",
                         matcher="pathAny",
-                        argument="LoadBalancers[].IpAddressType",
+                        argument=_LB_IP_ADDRESS_TYPE_PATH,
                         expected="ipv4",
                     ),
                     dict(state="failure", matcher="error", expected="LoadBalancerNotFound"),

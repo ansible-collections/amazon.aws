@@ -870,10 +870,6 @@ def associate_iam_instance_profile(client, iam_instance_profile: Dict[str, str],
 class EC2InstanceTypeErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
 
-    # @classmethod
-    # def _is_missing(cls):
-    #     return is_boto3_error_code("InvalidInstanceType")
-
 
 @EC2InstanceTypeErrorHandler.list_error_handler("describe instance types", [])
 @AWSRetry.jittered_backoff()

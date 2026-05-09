@@ -61,7 +61,7 @@ def set_security_groups(
     load_balancer_arn: str,
     security_groups: List[str],
     enforce_security_group_inbound_rules_on_private_link_traffic: Optional[str] = None,
-) -> Dict[str, Union[str, List[str]]]:
+) -> Dict[str, str | List[str]]:
     params = {}
     if enforce_security_group_inbound_rules_on_private_link_traffic:
         params[
@@ -154,7 +154,7 @@ def create_listener(client, load_balancer_arn: str, **params) -> List[Dict[str, 
 @AWSRetry.jittered_backoff(retries=10)
 def add_listener_certificates(
     client, listener_arn: str, certificates: List[Dict[str, str]]
-) -> List[Dict[str, Union[str, bool]]]:
+) -> List[Dict[str, str | bool]]:
     return client.add_listener_certificates(ListenerArn=listener_arn, Certificates=certificates)["Certificates"]
 
 

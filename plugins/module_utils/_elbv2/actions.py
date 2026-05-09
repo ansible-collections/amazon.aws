@@ -87,7 +87,7 @@ def _simple_forward_config_arn(config: Dict[str, Any], parent_arn: Optional[str]
     return target_group_arn
 
 
-def _prune_ForwardConfig(action: Dict[str, Any]) -> Dict[str, Any]:
+def _prune_forward_config(action: Dict[str, Any]) -> Dict[str, Any]:
     """
     Remove redundant ForwardConfig where TargetGroupArn already set.
 
@@ -112,10 +112,10 @@ def _prune_ForwardConfig(action: Dict[str, Any]) -> Dict[str, Any]:
         return action
 
     # Remove the redundant ForwardConfig
-    newAction = action.copy()
-    del newAction["ForwardConfig"]
-    newAction["TargetGroupArn"] = arn
-    return newAction
+    new_action = action.copy()
+    del new_action["ForwardConfig"]
+    new_action["TargetGroupArn"] = arn
+    return new_action
 
 
 def _prune_secret(action: Dict[str, Any]) -> Dict[str, Any]:

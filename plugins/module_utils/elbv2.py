@@ -79,7 +79,7 @@ _group_rules = _rules._group_rules
 
 # Expose action processing functions
 _simple_forward_config_arn = _actions._simple_forward_config_arn
-_prune_ForwardConfig = _actions._prune_ForwardConfig
+_prune_forward_config = _actions._prune_forward_config
 _prune_secret = _actions._prune_secret
 _append_use_existing_client_secret = _actions._append_use_existing_client_secret
 
@@ -434,6 +434,38 @@ class ElasticLoadBalancerV2:
         self.new_load_balancer = True
         self.wait_for_status(self.elb["LoadBalancerArn"])
 
+    def _attribute_differs(self, new_value: Any, current_key: str) -> bool:
+        """
+        Check if a new attribute value differs from the current ELB attribute.
+
+        :param new_value: The new value to compare (None values return False)
+        :param current_key: The key in self.elb_attributes to compare against
+        :return: True if values differ, False if same or new_value is None
+        """
+        if new_value is None:
+            return False
+
+        current_value = self.elb_attributes[current_key]
+        # Boolean values from module params need to be lowercased to match API format
+        if isinstance(new_value, bool):
+            return str(new_value).lower() != current_value
+        return str(new_value) != current_value
+
+    def _add_attribute_update(self, update_list: List[Dict[str, str]], attribute_key: str, new_value: Any) -> None:
+        """
+        Add an attribute update to the list if needed, converting value appropriately.
+
+        :param update_list: List to append the update dict to
+        :param attribute_key: AWS ELB attribute key (e.g., "access_logs.s3.enabled")
+        :param new_value: The value to set
+        """
+        # Boolean values from module params need to be lowercased to match API format
+        if isinstance(new_value, bool):
+            value = str(new_value).lower()
+        else:
+            value = str(new_value) if not isinstance(new_value, str) else new_value
+        update_list.append({"Key": attribute_key, "Value": value})
+
 
 class ApplicationLoadBalancer(ElasticLoadBalancerV2):
     def __init__(self, connection: Any, connection_ec2: Any, module: AnsibleAWSModule) -> None:
@@ -484,85 +516,72 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
         return params
 
+    def _build_elb_attributes_update_list(self) -> List[Dict[str, str]]:
+        """
+        Build list of ELB attributes that need updating.
+
+        :return: List of attribute dicts with Key/Value pairs that differ from current state
+        """
+        update_attributes = []
+
+        if self._attribute_differs(self.access_logs_enabled, "access_logs_s3_enabled"):
+            self._add_attribute_update(update_attributes, "access_logs.s3.enabled", self.access_logs_enabled)
+
+        if self._attribute_differs(self.access_logs_s3_bucket, "access_logs_s3_bucket"):
+            self._add_attribute_update(update_attributes, "access_logs.s3.bucket", self.access_logs_s3_bucket)
+
+        if self._attribute_differs(self.access_logs_s3_prefix, "access_logs_s3_prefix"):
+            self._add_attribute_update(update_attributes, "access_logs.s3.prefix", self.access_logs_s3_prefix)
+
+        if self._attribute_differs(self.deletion_protection, "deletion_protection_enabled"):
+            self._add_attribute_update(update_attributes, "deletion_protection.enabled", self.deletion_protection)
+
+        if self._attribute_differs(self.idle_timeout, "idle_timeout_timeout_seconds"):
+            self._add_attribute_update(update_attributes, "idle_timeout.timeout_seconds", self.idle_timeout)
+
+        if self._attribute_differs(self.http2, "routing_http2_enabled"):
+            self._add_attribute_update(update_attributes, "routing.http2.enabled", self.http2)
+
+        if self._attribute_differs(self.http_desync_mitigation_mode, "routing_http_desync_mitigation_mode"):
+            self._add_attribute_update(
+                update_attributes, "routing.http.desync_mitigation_mode", self.http_desync_mitigation_mode
+            )
+
+        if self._attribute_differs(
+            self.http_drop_invalid_header_fields, "routing_http_drop_invalid_header_fields_enabled"
+        ):
+            self._add_attribute_update(
+                update_attributes,
+                "routing.http.drop_invalid_header_fields.enabled",
+                self.http_drop_invalid_header_fields,
+            )
+
+        if self._attribute_differs(
+            self.http_x_amzn_tls_version_and_cipher_suite,
+            "routing_http_x_amzn_tls_version_and_cipher_suite_enabled",
+        ):
+            self._add_attribute_update(
+                update_attributes,
+                "routing.http.x_amzn_tls_version_and_cipher_suite.enabled",
+                self.http_x_amzn_tls_version_and_cipher_suite,
+            )
+
+        if self._attribute_differs(self.http_xff_client_port, "routing_http_xff_client_port_enabled"):
+            self._add_attribute_update(
+                update_attributes, "routing.http.xff_client_port.enabled", self.http_xff_client_port
+            )
+
+        if self._attribute_differs(self.waf_fail_open, "waf_fail_open_enabled"):
+            self._add_attribute_update(update_attributes, "waf.fail_open.enabled", self.waf_fail_open)
+
+        return update_attributes
+
     def compare_elb_attributes(self) -> bool:
         """
         Compare user attributes with current ELB attributes
         :return: bool True if they match otherwise False
         """
-
-        update_attributes = []
-        if (
-            self.access_logs_enabled is not None
-            and str(self.access_logs_enabled).lower() != self.elb_attributes["access_logs_s3_enabled"]
-        ):
-            update_attributes.append({"Key": "access_logs.s3.enabled", "Value": str(self.access_logs_enabled).lower()})
-        if (
-            self.access_logs_s3_bucket is not None
-            and self.access_logs_s3_bucket != self.elb_attributes["access_logs_s3_bucket"]
-        ):
-            update_attributes.append({"Key": "access_logs.s3.bucket", "Value": self.access_logs_s3_bucket})
-        if (
-            self.access_logs_s3_prefix is not None
-            and self.access_logs_s3_prefix != self.elb_attributes["access_logs_s3_prefix"]
-        ):
-            update_attributes.append({"Key": "access_logs.s3.prefix", "Value": self.access_logs_s3_prefix})
-        if (
-            self.deletion_protection is not None
-            and str(self.deletion_protection).lower() != self.elb_attributes["deletion_protection_enabled"]
-        ):
-            update_attributes.append(
-                {"Key": "deletion_protection.enabled", "Value": str(self.deletion_protection).lower()}
-            )
-        if (
-            self.idle_timeout is not None
-            and str(self.idle_timeout) != self.elb_attributes["idle_timeout_timeout_seconds"]
-        ):
-            update_attributes.append({"Key": "idle_timeout.timeout_seconds", "Value": str(self.idle_timeout)})
-        if self.http2 is not None and str(self.http2).lower() != self.elb_attributes["routing_http2_enabled"]:
-            update_attributes.append({"Key": "routing.http2.enabled", "Value": str(self.http2).lower()})
-        if (
-            self.http_desync_mitigation_mode is not None
-            and str(self.http_desync_mitigation_mode).lower()
-            != self.elb_attributes["routing_http_desync_mitigation_mode"]
-        ):
-            update_attributes.append(
-                {"Key": "routing.http.desync_mitigation_mode", "Value": str(self.http_desync_mitigation_mode).lower()}
-            )
-        if (
-            self.http_drop_invalid_header_fields is not None
-            and str(self.http_drop_invalid_header_fields).lower()
-            != self.elb_attributes["routing_http_drop_invalid_header_fields_enabled"]
-        ):
-            update_attributes.append(
-                {
-                    "Key": "routing.http.drop_invalid_header_fields.enabled",
-                    "Value": str(self.http_drop_invalid_header_fields).lower(),
-                }
-            )
-        if (
-            self.http_x_amzn_tls_version_and_cipher_suite is not None
-            and str(self.http_x_amzn_tls_version_and_cipher_suite).lower()
-            != self.elb_attributes["routing_http_x_amzn_tls_version_and_cipher_suite_enabled"]
-        ):
-            update_attributes.append(
-                {
-                    "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled",
-                    "Value": str(self.http_x_amzn_tls_version_and_cipher_suite).lower(),
-                }
-            )
-        if (
-            self.http_xff_client_port is not None
-            and str(self.http_xff_client_port).lower() != self.elb_attributes["routing_http_xff_client_port_enabled"]
-        ):
-            update_attributes.append(
-                {"Key": "routing.http.xff_client_port.enabled", "Value": str(self.http_xff_client_port).lower()}
-            )
-        if (
-            self.waf_fail_open is not None
-            and str(self.waf_fail_open).lower() != self.elb_attributes["waf_fail_open_enabled"]
-        ):
-            update_attributes.append({"Key": "waf.fail_open.enabled", "Value": str(self.waf_fail_open).lower()})
-
+        update_attributes = self._build_elb_attributes_update_list()
         return not update_attributes
 
     def modify_elb_attributes(self) -> None:
@@ -571,80 +590,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
 
         :return:
         """
-
-        update_attributes = []
-
-        if (
-            self.access_logs_enabled is not None
-            and str(self.access_logs_enabled).lower() != self.elb_attributes["access_logs_s3_enabled"]
-        ):
-            update_attributes.append({"Key": "access_logs.s3.enabled", "Value": str(self.access_logs_enabled).lower()})
-        if (
-            self.access_logs_s3_bucket is not None
-            and self.access_logs_s3_bucket != self.elb_attributes["access_logs_s3_bucket"]
-        ):
-            update_attributes.append({"Key": "access_logs.s3.bucket", "Value": self.access_logs_s3_bucket})
-        if (
-            self.access_logs_s3_prefix is not None
-            and self.access_logs_s3_prefix != self.elb_attributes["access_logs_s3_prefix"]
-        ):
-            update_attributes.append({"Key": "access_logs.s3.prefix", "Value": self.access_logs_s3_prefix})
-        if (
-            self.deletion_protection is not None
-            and str(self.deletion_protection).lower() != self.elb_attributes["deletion_protection_enabled"]
-        ):
-            update_attributes.append(
-                {"Key": "deletion_protection.enabled", "Value": str(self.deletion_protection).lower()}
-            )
-        if (
-            self.idle_timeout is not None
-            and str(self.idle_timeout) != self.elb_attributes["idle_timeout_timeout_seconds"]
-        ):
-            update_attributes.append({"Key": "idle_timeout.timeout_seconds", "Value": str(self.idle_timeout)})
-        if self.http2 is not None and str(self.http2).lower() != self.elb_attributes["routing_http2_enabled"]:
-            update_attributes.append({"Key": "routing.http2.enabled", "Value": str(self.http2).lower()})
-        if (
-            self.http_desync_mitigation_mode is not None
-            and str(self.http_desync_mitigation_mode).lower()
-            != self.elb_attributes["routing_http_desync_mitigation_mode"]
-        ):
-            update_attributes.append(
-                {"Key": "routing.http.desync_mitigation_mode", "Value": str(self.http_desync_mitigation_mode).lower()}
-            )
-        if (
-            self.http_drop_invalid_header_fields is not None
-            and str(self.http_drop_invalid_header_fields).lower()
-            != self.elb_attributes["routing_http_drop_invalid_header_fields_enabled"]
-        ):
-            update_attributes.append(
-                {
-                    "Key": "routing.http.drop_invalid_header_fields.enabled",
-                    "Value": str(self.http_drop_invalid_header_fields).lower(),
-                }
-            )
-        if (
-            self.http_x_amzn_tls_version_and_cipher_suite is not None
-            and str(self.http_x_amzn_tls_version_and_cipher_suite).lower()
-            != self.elb_attributes["routing_http_x_amzn_tls_version_and_cipher_suite_enabled"]
-        ):
-            update_attributes.append(
-                {
-                    "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled",
-                    "Value": str(self.http_x_amzn_tls_version_and_cipher_suite).lower(),
-                }
-            )
-        if (
-            self.http_xff_client_port is not None
-            and str(self.http_xff_client_port).lower() != self.elb_attributes["routing_http_xff_client_port_enabled"]
-        ):
-            update_attributes.append(
-                {"Key": "routing.http.xff_client_port.enabled", "Value": str(self.http_xff_client_port).lower()}
-            )
-        if (
-            self.waf_fail_open is not None
-            and str(self.waf_fail_open).lower() != self.elb_attributes["waf_fail_open_enabled"]
-        ):
-            update_attributes.append({"Key": "waf.fail_open.enabled", "Value": str(self.waf_fail_open).lower()})
+        update_attributes = self._build_elb_attributes_update_list()
 
         if update_attributes:
             try:
@@ -709,23 +655,15 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
 
         :return:
         """
-
         update_attributes = []
 
-        if (
-            self.cross_zone_load_balancing is not None
-            and str(self.cross_zone_load_balancing).lower() != self.elb_attributes["load_balancing_cross_zone_enabled"]
-        ):
-            update_attributes.append(
-                {"Key": "load_balancing.cross_zone.enabled", "Value": str(self.cross_zone_load_balancing).lower()}
+        if self._attribute_differs(self.cross_zone_load_balancing, "load_balancing_cross_zone_enabled"):
+            self._add_attribute_update(
+                update_attributes, "load_balancing.cross_zone.enabled", self.cross_zone_load_balancing
             )
-        if (
-            self.deletion_protection is not None
-            and str(self.deletion_protection).lower() != self.elb_attributes["deletion_protection_enabled"]
-        ):
-            update_attributes.append(
-                {"Key": "deletion_protection.enabled", "Value": str(self.deletion_protection).lower()}
-            )
+
+        if self._attribute_differs(self.deletion_protection, "deletion_protection_enabled"):
+            self._add_attribute_update(update_attributes, "deletion_protection.enabled", self.deletion_protection)
 
         if update_attributes:
             try:
