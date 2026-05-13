@@ -94,6 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         job-id: ${{ fromJson(needs.splitter.outputs.jobs) }}
     name: "${{ matrix.job-id }}"
