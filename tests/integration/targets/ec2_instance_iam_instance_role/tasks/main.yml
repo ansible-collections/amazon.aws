@@ -48,7 +48,7 @@
         that:
           - instance_with_role.instances[0].iam_instance_profile.arn == iam_role.iam_role.arn.replace(":role/", ":instance-profile/")
 
-    - name: Make instance with an instance_role(check mode)
+    - name: Make instance with an instance_role (check mode)
       amazon.aws.ec2_instance:
         state: present
         name: "{{ resource_prefix }}-test-instance-role-checkmode"

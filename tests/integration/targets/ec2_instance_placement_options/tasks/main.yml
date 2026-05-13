@@ -18,6 +18,7 @@
         state: running
         name: "{{ resource_prefix }}-test-placement-group-name"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         placement:
           group_name: "{{ ec2_placement_group_name }}"
         tags:
@@ -52,6 +53,7 @@
         state: running
         name: "{{ resource_prefix }}-test-dedicated-tenancy"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         placement:
           tenancy: "{{ ec2_tenancy }}"
         tags:

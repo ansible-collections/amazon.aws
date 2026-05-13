@@ -84,6 +84,7 @@
       amazon.aws.ec2_instance:
         state: absent
         instance_ids: "{{ block_device_instances.instance_ids }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
 
     - name: New instance with an extra block device - gp3 volume_type and throughput
       amazon.aws.ec2_instance:

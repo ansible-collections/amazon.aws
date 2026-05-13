@@ -123,6 +123,7 @@
         region: "{{ aws_region }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -143,6 +144,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -164,6 +166,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -185,6 +188,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -206,6 +210,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -229,6 +234,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -251,6 +257,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -273,6 +280,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -295,6 +303,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -320,6 +329,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -346,6 +356,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -370,6 +381,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -395,6 +407,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -418,6 +431,7 @@
         region: "{{ aws_region }}"
         image_id: "{{ ec2_ami_id }}"
         name: "{{ resource_prefix }}-test-enf_cnt"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         purge_tags: false
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"

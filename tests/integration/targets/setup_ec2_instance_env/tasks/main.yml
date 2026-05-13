@@ -42,6 +42,10 @@
           Name: "{{ subnet_b_name }}"
       register: testing_subnet_b
 
+    - name: Wait for subnet propagation to settle
+      ansible.builtin.wait_for:
+        timeout: 10
+
     - name: Create a security group with the vpc
       amazon.aws.ec2_security_group:
         state: present

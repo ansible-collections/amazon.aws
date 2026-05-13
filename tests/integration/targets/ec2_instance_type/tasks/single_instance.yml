@@ -6,7 +6,7 @@
         state: present
         name: "{{ ec2_instance_name }}"
         image_id: "{{ ec2_ami_id }}"
-        subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         instance_type: "{{ ec2_instance_type_initial }}"
         wait: false
       register: _instances
