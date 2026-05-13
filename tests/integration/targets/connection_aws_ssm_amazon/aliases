@@ -1,5 +1,9 @@
 time=20m
 
+# non_local: Coverage is not installed or configured on remote instances.
+# This prevents ansible-test from trying to enable coverage where it will not work.
+non_local
+
 cloud/aws
 
 needs/target/connection
