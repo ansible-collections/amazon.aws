@@ -58,11 +58,11 @@
       ansible.builtin.set_fact:
         kms_key_id: "{{ key.key_id }}"
         kms_key_arn: "{{ key.key_arn }}"
-    - name: Find facts about the key (by ID)
+    - name: Get key info by ID
       amazon.aws.kms_key_info:
         key_id: "{{ kms_key_id }}"
       register: new_key
-    - name: Check that a key was found
+    - name: Assert that key was found
       ansible.builtin.assert:
         that:
           - '"key_id" in new_key.kms_keys[0]'
@@ -99,7 +99,7 @@
         key_id: "{{ kms_key_id }}"
         policy: "{{ lookup('template', 'console-policy.j2') }}"
       register: key
-    - name: Policy should have been changed
+    - name: Assert that policy was changed
       ansible.builtin.assert:
         that:
           - key is changed
@@ -121,16 +121,25 @@
           - key.key_policies[0].Id == 'key-consolepolicy-3'
           - key.description == ''
 
-    - name: Sleep to wait for updates to propagate
+    - name: Wait for policy update to propagate
+      amazon.aws.kms_key_info:
+        alias: alias/{{ kms_key_alias }}
+      register: key_info
+      until:
+        - key_info.kms_keys[0].key_policies | length == 1
+        - key_info.kms_keys[0].key_policies[0].Id == 'key-consolepolicy-3'
+      retries: 10
+      delay: 10
+    - name: Wait for policy propagation to settle
       ansible.builtin.wait_for:
-        timeout: 45
+        timeout: 10
     - name: Update policy (idempotence) - check mode
       amazon.aws.kms_key:
         alias: alias/{{ kms_key_alias }}
         policy: "{{ lookup('template', 'console-policy.j2') }}"
       register: key
       check_mode: true
-    - name: Assert no change expected
+    - name: Assert that no change is expected
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -140,7 +149,7 @@
         alias: alias/{{ kms_key_alias }}
         policy: "{{ lookup('template', 'console-policy.j2') }}"
       register: key
-    - name: Assert that no changes occurred
+    - name: Assert that no change occurred
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -171,7 +180,7 @@
         description: test key for testing
       register: key
       check_mode: true
-    - name: Assert change expected
+    - name: Assert that change is expected
       ansible.builtin.assert:
         that:
           - key.changed
@@ -182,7 +191,7 @@
         state: present
         description: test key for testing
       register: key
-    - name: Assert that description changed
+    - name: Assert that description was changed
       ansible.builtin.assert:
         that:
           - key.changed
@@ -204,9 +213,17 @@
           - key.key_policies[0].Id == 'key-consolepolicy-3'
           - key.description == 'test key for testing'
 
-    - name: Sleep to wait for updates to propagate
-      ansible.builtin.wait_for:
-        timeout: 45
+    - name: Wait for description update to propagate
+      ansible.builtin.include_tasks: double_check_key_state.yml
+      loop: "{{ range(0, 10) | list }}"
+      loop_control:
+        pause: 10
+        label: "Attempt {{ item + 1 }}/10"
+        break_when:
+          - state_check_a is defined
+          - state_check_b is defined
+          - state_check_a.kms_keys[0].description == 'test key for testing'
+          - state_check_b.kms_keys[0].description == 'test key for testing'
     - name: Update description (idempotence) - check mode
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
@@ -214,7 +231,7 @@
         description: test key for testing
       register: key
       check_mode: true
-    - name: Assert that no change was expected
+    - name: Assert that no change is expected
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -225,7 +242,7 @@
         state: present
         description: test key for testing
       register: key
-    - name: Assert no change occurred
+    - name: Assert that no change occurred
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -279,7 +296,7 @@
   always:
     # ============================================================
     #   CLEAN-UP
-    - name: Finish off by deleting keys
+    - name: Schedule key deletion for cleanup
       amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"
