@@ -11,6 +11,10 @@
       amazon.aws.aws_caller_info:
       register: aws_caller_info
 
+    - name: Set caller_reference based on tiny_prefix
+      ansible.builtin.set_fact:
+        ksk_caller_reference: "{{ tiny_prefix }}-ksk-caller-ref"
+
     - name: Create a KMS key
       amazon.aws.kms_key:
         alias: "{{ resource_prefix }}-kms-route53"
@@ -33,7 +37,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       check_mode: true
@@ -52,7 +56,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       register: _ksk_request
@@ -74,7 +78,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       register: _ksk_request
@@ -94,7 +98,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "ACTIVE"
         state: present
       check_mode: true
@@ -115,7 +119,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "ACTIVE"
         state: present
         wait: true
@@ -137,7 +141,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "ACTIVE"
         state: present
       register: _ksk_request
@@ -224,7 +228,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
         wait: true
@@ -246,7 +250,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       register: _ksk_request
