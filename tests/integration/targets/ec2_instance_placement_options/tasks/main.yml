@@ -60,7 +60,6 @@
           TestId: "{{ ec2_instance_tag_testid }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
-        availability_zone: "{{ ec2_availability_zone }}"
         wait: true
       ignore_errors: true
       register: instance_creation_tenancy

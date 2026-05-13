@@ -11,7 +11,6 @@
         state: present
         name: "{{ ec2_instance_name }}"
         image_id: "{{ ec2_ami_id }}"
-        availability_zone: "{{ subnet_b_az }}"
         vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"

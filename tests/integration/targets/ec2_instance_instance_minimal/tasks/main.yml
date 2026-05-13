@@ -12,6 +12,7 @@
         name: "{{ resource_prefix }}-test-basic"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -31,6 +32,7 @@
         name: "{{ resource_prefix }}-test-basic"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -55,6 +57,7 @@
         name: "{{ resource_prefix }}-test-basic"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -76,6 +79,7 @@
         name: "{{ resource_prefix }}-test-basic"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -98,6 +102,7 @@
         name: "{{ resource_prefix }}-test-basic-2"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -117,6 +122,7 @@
         name: "{{ resource_prefix }}-test-basic-2"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -142,6 +148,7 @@
         name: "{{ resource_prefix }}-test-basic-2"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -163,6 +170,7 @@
         name: "{{ resource_prefix }}-test-basic-2"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -184,6 +192,7 @@
         state: present
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           Name: "{{ resource_prefix }}-test-basic-tag"
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -203,6 +212,7 @@
         state: present
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           Name: "{{ resource_prefix }}-test-basic-tag"
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -229,6 +239,7 @@
         state: present
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           Name: "{{ resource_prefix }}-test-basic-tag"
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -250,6 +261,7 @@
         state: present
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           Name: "{{ resource_prefix }}-test-basic-tag"
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -273,8 +285,8 @@
         name: "{{ resource_prefix }}-test-basic-{{ aws_region }}a"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         region: "{{ aws_region }}"
-        availability_zone: "{{ aws_region }}a"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true
@@ -306,8 +318,8 @@
         name: "{{ resource_prefix }}-test-basic-{{ aws_region }}b"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         region: "{{ aws_region }}"
-        availability_zone: "{{ aws_region }}b"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         wait: true

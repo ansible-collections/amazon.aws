@@ -42,7 +42,6 @@
         network_interfaces_ids:
           - id: "{{ eni_a.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
-        availability_zone: "{{ subnet_b_az }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
@@ -136,7 +135,6 @@
         network_interfaces_ids:
           - id: "{{ eni_c.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
-        availability_zone: "{{ subnet_b_az }}"
         vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
