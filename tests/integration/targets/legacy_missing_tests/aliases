@@ -1,5 +1,4 @@
-disabled
+# Fake integration suite to prevent ansible-test-splitter from running entire collection
+# See README.md for details
 
-lambda_event
-rds_instance_snapshot
-rds_snapshot_info
+disabled

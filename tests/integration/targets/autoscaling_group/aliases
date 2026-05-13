@@ -1,4 +1,7 @@
 time=30m
+
 cloud/aws
+
+needs/target/setup_ec2_facts
 
 autoscaling_group_info

@@ -1,3 +1,6 @@
 cloud/aws
+
+needs/target/setup_node_query
+
 s3_bucket_info
 s3_object_info

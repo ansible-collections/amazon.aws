@@ -1,4 +1,8 @@
 time=10m
 
 cloud/aws
+
+needs/target/connection
+needs/target/setup_connection_aws_ssm
+
 connection_aws_ssm
