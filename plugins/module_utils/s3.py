@@ -3,6 +3,8 @@
 # Copyright (c) 2018 Red Hat, Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+"""Utilities for working with Amazon S3."""
+
 from __future__ import annotations
 
 import json

@@ -24,6 +24,7 @@
 # - Using blank string for CloudWatch Log Group / Role doesn't remove them
 #
 # Possible Bugs:
+# - None currently identified
 
 - module_defaults:
     # Add this as a default because we (almost) always need it

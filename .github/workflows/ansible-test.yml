@@ -58,7 +58,7 @@ jobs:
             python-version: "3.14"
     steps:
       - name: Perform sanity testing
-        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e # v1.17.0
+        uses: tremble/ansible-test-gh-action@fix-gha-changed-files-detection-2
         with:
           ansible-core-version: ${{ matrix.ansible-core-version }}
           testing-type: sanity
@@ -114,7 +114,7 @@ jobs:
             python-version: "3.14"
     steps:
       - name: Perform unit testing
-        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e # v1.17.0
+        uses: tremble/ansible-test-gh-action@fix-gha-changed-files-detection-2
         with:
           ansible-core-version: ${{ matrix.ansible-core-version }}
           testing-type: units
