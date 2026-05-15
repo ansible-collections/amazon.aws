@@ -453,6 +453,7 @@
       amazon.aws.ec2_instance_info:
         region: "{{ aws_region }}"
         filters:
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           tag:Name: "*-test-enf_cnt"
           instance-state-name: [running]
       register: test_instances
