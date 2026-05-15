@@ -1,2 +1,0 @@
-minor_changes:
-  - s3_bucket - Added support for managing bucket logging configuration (https://github.com/ansible-collections/amazon.aws/pull/2855).
