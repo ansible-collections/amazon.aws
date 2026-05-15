@@ -173,10 +173,36 @@ options:
         description:
           - The Active Directory Domain to restore the instance in.
         type: str
+    domain_auth_secret_arn:
+        description:
+          - The ARN of the Secrets Manager secret containing credentials for the user account to be used for domain join.
+          - Required when joining a self-managed Active Directory domain.
+        type: str
+        version_added: 12.0.0
+    domain_dns_ips:
+        description:
+          - The IPv4 DNS IP addresses of the primary and secondary Active Directory domain controllers.
+          - Two IP addresses must be provided. For single-DC configurations, the same IP address may be specified twice.
+          - Required when joining a self-managed Active Directory domain.
+        type: list
+        elements: str
+        version_added: 12.0.0
+    domain_fqdn:
+        description:
+          - The fully qualified domain name (FQDN) of a self-managed Active Directory domain.
+          - Maximum 64 characters.
+        type: str
+        version_added: 12.0.0
     domain_iam_role_name:
         description:
           - The name of the IAM role to be used when making API calls to the Directory Service.
         type: str
+    domain_ou:
+        description:
+          - The Active Directory organizational unit for the DB instance to join, in distinguished name format.
+          - Maximum 64 characters.
+        type: str
+        version_added: 12.0.0
     enable_cloudwatch_logs_exports:
         description:
           - A list of log types that need to be enabled for exporting to CloudWatch Logs.
@@ -1638,7 +1664,11 @@ def main():
         db_subnet_group_name=dict(aliases=["subnet_group"]),
         deletion_protection=dict(type="bool"),
         domain=dict(),
+        domain_auth_secret_arn=dict(),
+        domain_dns_ips=dict(type="list", elements="str"),
+        domain_fqdn=dict(),
         domain_iam_role_name=dict(),
+        domain_ou=dict(),
         enable_cloudwatch_logs_exports=dict(type="list", aliases=["cloudwatch_log_exports"], elements="str"),
         enable_iam_database_authentication=dict(type="bool"),
         enable_performance_insights=dict(type="bool"),

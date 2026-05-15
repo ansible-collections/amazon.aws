@@ -162,3 +162,97 @@ def test_validate_options():
     module.fail_json.assert_called_with(
         msg="Multi Tenant parameter only applies to RDS for Oracle container database (CDB) engines and not to Aurora."
     )
+
+
+class TestGetParametersSelfManagedAD:
+    @patch(mod_name + ".format_rds_client_method_parameters")
+    def test_create_includes_self_managed_ad_params(self, m_format_params):
+        client = MagicMock()
+        module = MagicMock()
+
+        raw_parameters = {
+            "DBInstanceIdentifier": "test-selfmanaged-ad",
+            "Engine": "postgres",
+            "DBInstanceClass": "db.t3.micro",
+            "MasterUsername": "admin",
+            "MasterUserPassword": "secret",
+            "AllocatedStorage": 20,
+            "Domain": "d-1234567890",
+            "DomainIAMRoleName": "rds-ad-role",
+            "DomainFqdn": "corp.example.com",
+            "DomainOu": "OU=RDS,DC=corp,DC=example,DC=com",
+            "DomainAuthSecretArn": "arn:aws:secretsmanager:us-east-1:123456789012:secret:ad-join-creds",
+            "DomainDnsIps": ["10.0.1.10", "10.0.2.10"],
+            "Tags": {},
+        }
+
+        m_format_params.return_value = raw_parameters.copy()
+
+        rds_instance.get_parameters(client, module, raw_parameters, "create_db_instance")
+
+        m_format_params.assert_called_once_with(client, module, raw_parameters, "create_db_instance", format_tags=False)
+
+    @patch(mod_name + ".get_changing_options_with_inconsistent_keys")
+    @patch(mod_name + ".get_instance")
+    @patch(mod_name + ".format_rds_client_method_parameters")
+    def test_modify_includes_self_managed_ad_params(self, m_format_params, m_get_instance, m_get_changing):
+        client = MagicMock()
+        module = MagicMock()
+        module.params = {
+            "db_instance_identifier": "test-selfmanaged-ad",
+            "purge_cloudwatch_logs_exports": None,
+            "force_update_password": None,
+            "port": None,
+            "enable_cloudwatch_logs_exports": None,
+            "storage_type": None,
+            "purge_security_groups": None,
+            "ca_certificate_identifier": None,
+        }
+
+        raw_parameters = {
+            "DBInstanceIdentifier": "test-selfmanaged-ad",
+            "Domain": "d-1234567890",
+            "DomainIAMRoleName": "rds-ad-role",
+            "DomainFqdn": "corp.example.com",
+            "DomainOu": "OU=RDS,DC=corp,DC=example,DC=com",
+            "DomainAuthSecretArn": "arn:aws:secretsmanager:us-east-1:123456789012:secret:ad-join-creds",
+            "DomainDnsIps": ["10.0.1.10", "10.0.2.10"],
+            "Tags": {},
+        }
+
+        m_format_params.return_value = raw_parameters.copy()
+        m_get_instance.return_value = {
+            "DBInstanceIdentifier": "test-selfmanaged-ad",
+            "DBInstanceArn": "arn:aws:rds:us-east-1:123456789012:db:test-selfmanaged-ad",
+            "Tags": {},
+            "Endpoint": {"Port": 5432},
+            "DBSubnetGroup": {"DBSubnetGroupName": "default"},
+        }
+        m_get_changing.return_value = {}
+
+        rds_instance.get_parameters(client, module, raw_parameters, "modify_db_instance")
+
+        m_format_params.assert_called_once_with(client, module, raw_parameters, "modify_db_instance", format_tags=False)
+
+    @patch(mod_name + ".format_rds_client_method_parameters")
+    def test_create_without_self_managed_ad_params(self, m_format_params):
+        client = MagicMock()
+        module = MagicMock()
+
+        raw_parameters = {
+            "DBInstanceIdentifier": "test-managed-ad",
+            "Engine": "postgres",
+            "DBInstanceClass": "db.t3.micro",
+            "MasterUsername": "admin",
+            "MasterUserPassword": "secret",
+            "AllocatedStorage": 20,
+            "Domain": "d-1234567890",
+            "DomainIAMRoleName": "rds-ad-role",
+            "Tags": {},
+        }
+
+        m_format_params.return_value = raw_parameters.copy()
+
+        rds_instance.get_parameters(client, module, raw_parameters, "create_db_instance")
+
+        m_format_params.assert_called_once_with(client, module, raw_parameters, "create_db_instance", format_tags=False)
