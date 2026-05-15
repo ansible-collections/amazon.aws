@@ -72,7 +72,7 @@ jobs:
 
       - name: list changes for pull request
         id: compute
-        uses: tremble/cloud-content-ci-automation/.github/actions/ansible_test_splitter@fix-gha-changed-files-detection-2
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_test_splitter@0b891487c4170ef856f02313c66cb1c776814c42
         with:
           collections_to_test: "${{ env.amazon_dir}}, ${{ env.community_dir }}"
           total_jobs: 24
@@ -124,7 +124,7 @@ jobs:
 
       - name: Read job targets
         id: read-targets
-        uses: tremble/cloud-content-ci-automation/.github/actions/ansible_read_targets@fix-gha-changed-files-detection-2
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_read_targets@0b891487c4170ef856f02313c66cb1c776814c42
         with:
           job_id: "${{ matrix.job-id }}"
           all_targets: "${{ env.all_targets }}"
