@@ -330,6 +330,12 @@
         state: present
         dnssec: false
       ignore_errors: true
+      register: disable_dnssec
+
+    - name: Wait for DNSSEC to be disabled
+      ansible.builtin.wait_for:
+        timeout: 10
+      when: disable_dnssec is changed
 
     - name: Delete the Key Signing Key Request
       amazon.aws.route53_key_signing_key:
@@ -337,12 +343,22 @@
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         state: absent
       ignore_errors: true
+      register: delete_ksk
+
+    - name: Wait for KSK deletion to propagate
+      ansible.builtin.wait_for:
+        timeout: 10
+      when: delete_ksk is changed
 
     - name: Delete the Route53 public zone
       amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: absent
       ignore_errors: true
+      retries: 10
+      delay: 5
+      until: delete_zone is not failed
+      register: delete_zone
 
     - name: Delete the KSM key
       amazon.aws.kms_key:
