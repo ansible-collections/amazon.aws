@@ -24,6 +24,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-ebs-optimized-instance-in-vpc"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: ebs_opt_instance_info
 
     - name: Assert instance is ebs_optimized

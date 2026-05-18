@@ -54,6 +54,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-t3nano-enabled-required"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: presented_instance_fact
 
     - name: Assert that instance metadata options have been modified successfully

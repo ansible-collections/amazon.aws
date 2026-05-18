@@ -23,6 +23,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ ec2_instance_name }}"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
         include_attributes:
           - instanceType
           - kernel

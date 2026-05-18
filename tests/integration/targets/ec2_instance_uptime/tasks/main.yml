@@ -22,6 +22,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-uptime"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           instance-state-name: [running]
       register: instance_facts
 

@@ -34,6 +34,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-placement-group-name"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           tag:TestId: "{{ ec2_instance_tag_testid }}"
           instance-state-name: running
       ignore_errors: true
@@ -68,6 +69,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-dedicated-tenancy"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           tag:TestId: "{{ ec2_instance_tag_testid }}"
           instance-state-name: running
       ignore_errors: true
