@@ -351,7 +351,7 @@
       amazon.aws.ec2_instance:
         state: absent
         name: "{{ resource_prefix }}-test-basic"
-        vpc_subnet_id: "{{ testing_subnet_a }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         wait: true
       register: terminate_name
       check_mode: true
@@ -371,7 +371,7 @@
       amazon.aws.ec2_instance:
         state: absent
         name: "{{ resource_prefix }}-test-basic"
-        vpc_subnet_id: "{{ testing_subnet_a }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         wait: true
       register: terminate_name
 
@@ -390,7 +390,7 @@
       amazon.aws.ec2_instance:
         state: absent
         name: "{{ resource_prefix }}-test-basic"
-        vpc_subnet_id: "{{ testing_subnet_a }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         wait: true
       register: terminate_name
       check_mode: true
@@ -407,7 +407,7 @@
       amazon.aws.ec2_instance:
         state: absent
         name: "{{ resource_prefix }}-test-basic"
-        vpc_subnet_id: "{{ testing_subnet_a }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         wait: true
       register: terminate_name
 
@@ -424,7 +424,7 @@
     - name: Terminate instance based on name tag (check_mode)
       amazon.aws.ec2_instance:
         state: absent
-        vpc_subnet_id: "{{ testing_subnet_a }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           Name: "{{ resource_prefix }}-test-basic-tag"
         wait: true
@@ -445,7 +445,7 @@
     - name: Terminate instance based on name tag
       amazon.aws.ec2_instance:
         state: absent
-        vpc_subnet_id: "{{ testing_subnet_a }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           Name: "{{ resource_prefix }}-test-basic-tag"
         wait: true
