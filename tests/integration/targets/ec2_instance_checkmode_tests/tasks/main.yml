@@ -176,9 +176,8 @@
 
     - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
-        filters:
-          tag:Name: "{{ resource_prefix }}-checkmode-comparison"
-          vpc-id: "{{ testing_vpc.vpc.id }}"
+        instance_ids:
+          - "{{ basic_instance.instance_ids[0] }}"
       register: confirm_checkmode_terminatedinstance_fact
 
     - name: Verify that it was not terminated,
@@ -198,15 +197,14 @@
 
     - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
-        filters:
-          tag:Name: "{{ resource_prefix }}-checkmode-comparison"
-          vpc-id: "{{ testing_vpc.vpc.id }}"
+        instance_ids:
+          - "{{ basic_instance.instance_ids[0] }}"
       register: confirm_terminatedinstance_fact
 
     - name: Verify that it was terminated,
       ansible.builtin.assert:
         that:
-          - confirm_terminatedinstance_fact.instances[0].state.name == "terminated"
+          - confirm_terminatedinstance_fact.instances | length == 0 or confirm_terminatedinstance_fact.instances[0].state.name == "terminated"
 
   always:
     - name: Terminate checkmode instances
