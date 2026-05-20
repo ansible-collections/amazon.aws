@@ -5,390 +5,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from unittest.mock import MagicMock
-from unittest.mock import call
 from unittest.mock import patch
 
-import pytest
-
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
-
-
-def createListener(**kwargs):
-    result = {
-        "Port": 80,
-        "Protocol": "TCP",
-        "DefaultActions": [
-            {
-                "Type": "fixed-response",
-                "TargetGroupArn": "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067",
-            }
-        ],
-    }
-    if kwargs.get("port"):
-        result["Port"] = kwargs.get("port")
-    if kwargs.get("protocol"):
-        result["Protocol"] = kwargs.get("protocol")
-    if kwargs.get("certificate_arn") and kwargs.get("protocol") in ("TLS", "HTTPS"):
-        result["Certificates"] = [{"CertificateArn": kwargs.get("certificate_arn")}]
-    if kwargs.get("sslPolicy") and kwargs.get("protocol") in ("TLS", "HTTPS"):
-        result["SslPolicy"] = kwargs.get("sslPolicy")
-    if kwargs.get("alpnPolicy") and kwargs.get("protocol") == "TLS":
-        result["AlpnPolicy"] = kwargs.get("alpnPolicy")
-    if kwargs.get("default_actions"):
-        result["DefaultActions"] = kwargs.get("default_actions")
-    return result
-
-
-@pytest.mark.parametrize("current_protocol", ["TCP", "TLS", "UDP"])
-@pytest.mark.parametrize(
-    "current_alpn,new_alpn",
-    [
-        (None, "None"),
-        (None, "HTTP1Only"),
-        ("HTTP1Only", "HTTP2Only"),
-        ("HTTP1Only", "HTTP1Only"),
-    ],
-)
-def test__compare_listener_alpn_policy(current_protocol, current_alpn, new_alpn):
-    current_listener = createListener(protocol=current_protocol, alpnPolicy=[current_alpn])
-    new_listener = createListener(protocol="TLS", alpnPolicy=[new_alpn])
-    result = {}
-    if current_protocol != "TLS":
-        result["Protocol"] = "TLS"
-    if new_alpn and any((current_protocol != "TLS", not current_alpn, current_alpn and current_alpn != new_alpn)):
-        result["AlpnPolicy"] = [new_alpn]
-
-    assert result == elbv2._compare_listener(current_listener, new_listener)
-
-
-@pytest.mark.parametrize(
-    "current_protocol,new_protocol",
-    [
-        ("TCP", "TCP"),
-        ("TLS", "HTTPS"),
-        ("HTTPS", "HTTPS"),
-        ("TLS", "TLS"),
-        ("HTTPS", "TLS"),
-        ("HTTPS", "TCP"),
-        ("TLS", "TCP"),
-    ],
-)
-@pytest.mark.parametrize(
-    "current_ssl,new_ssl",
-    [
-        (None, "ELBSecurityPolicy-TLS-1-0-2015-04"),
-        ("ELBSecurityPolicy-TLS13-1-2-Ext2-2021-06", "ELBSecurityPolicy-TLS-1-0-2015-04"),
-        ("ELBSecurityPolicy-TLS-1-0-2015-04", None),
-        ("ELBSecurityPolicy-TLS-1-0-2015-04", "ELBSecurityPolicy-TLS-1-0-2015-04"),
-    ],
-)
-def test__compare_listener_sslpolicy(current_protocol, new_protocol, current_ssl, new_ssl):
-    current_listener = createListener(protocol=current_protocol, sslPolicy=current_ssl)
-
-    new_listener = createListener(protocol=new_protocol, sslPolicy=new_ssl)
-
-    expected = {}
-    if new_protocol != current_protocol:
-        expected["Protocol"] = new_protocol
-    if new_protocol in ("HTTPS", "TLS") and new_ssl and new_ssl != current_ssl:
-        expected["SslPolicy"] = new_ssl
-    assert expected == elbv2._compare_listener(current_listener, new_listener)
-
-
-@pytest.mark.parametrize(
-    "current_protocol,new_protocol",
-    [
-        ("TCP", "TCP"),
-        ("TLS", "HTTPS"),
-        ("HTTPS", "HTTPS"),
-        ("TLS", "TLS"),
-        ("HTTPS", "TLS"),
-        ("HTTPS", "TCP"),
-        ("TLS", "TCP"),
-    ],
-)
-@pytest.mark.parametrize(
-    "current_certificate,new_certificate",
-    [
-        (None, "arn:aws:iam::012345678901:server-certificate/ansible-test-1"),
-        (
-            "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
-            "arn:aws:iam::012345678901:server-certificate/ansible-test-2",
-        ),
-        ("arn:aws:iam::012345678901:server-certificate/ansible-test-1", None),
-        (
-            "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
-            "arn:aws:iam::012345678901:server-certificate/ansible-test-1",
-        ),
-    ],
-)
-def test__compare_listener_certificates(current_protocol, new_protocol, current_certificate, new_certificate):
-    current_listener = createListener(protocol=current_protocol, certificate_arn=current_certificate)
-
-    new_listener = createListener(protocol=new_protocol, certificate_arn=new_certificate)
-
-    expected = {}
-    if new_protocol != current_protocol:
-        expected["Protocol"] = new_protocol
-    if new_protocol in ("HTTPS", "TLS") and new_certificate and new_certificate != current_certificate:
-        expected["Certificates"] = [{"CertificateArn": new_certificate}]
-    assert expected == elbv2._compare_listener(current_listener, new_listener)
-
-
-@pytest.mark.parametrize(
-    "current_actions,new_actions,expected_listener",
-    [
-        # When Order field differs between current and new actions, modification is expected
-        # because Order is now included in the comparison logic
-        (
-            [
-                {"TargetGroupArn": "ansible1", "Type": "a", "Order": 1},
-                {"TargetGroupArn": "ansible0", "Type": "b", "Order": 2},
-                {"TargetGroupArn": "ansible0", "Type": "a"},
-            ],
-            [
-                {"TargetGroupArn": "ansible1", "Type": "a"},
-                {"TargetGroupArn": "ansible0", "Type": "b"},
-                {"TargetGroupArn": "ansible0", "Type": "a"},
-            ],
-            {
-                "DefaultActions": [
-                    {"TargetGroupArn": "ansible1", "Type": "a"},
-                    {"TargetGroupArn": "ansible0", "Type": "b"},
-                    {"TargetGroupArn": "ansible0", "Type": "a"},
-                ]
-            },
-        ),
-        (
-            [
-                {"TargetGroupArn": "ansible0", "Type": "b", "Order": 1},
-                {"TargetGroupArn": "ansible1", "Type": "a", "Order": 2},
-                {"TargetGroupArn": "ansible0", "Type": "a"},
-            ],
-            [
-                {"TargetGroupArn": "ansible1", "Type": "a"},
-                {"TargetGroupArn": "ansible0", "Type": "b"},
-                {"TargetGroupArn": "ansible0", "Type": "a"},
-            ],
-            {
-                "DefaultActions": [
-                    {"TargetGroupArn": "ansible1", "Type": "a"},
-                    {"TargetGroupArn": "ansible0", "Type": "b"},
-                    {"TargetGroupArn": "ansible0", "Type": "a"},
-                ]
-            },
-        ),
-        (
-            [{"TargetGroupArn": "ansible1", "Type": "a", "Order": 1}],
-            [{"TargetGroupArn": "ansible1", "Type": "a"}],
-            {"DefaultActions": [{"TargetGroupArn": "ansible1", "Type": "a"}]},
-        ),
-        # When actions are identical (no Order difference), no modification expected
-        (
-            [{"TargetGroupArn": "ansible1", "Type": "a"}],
-            [{"TargetGroupArn": "ansible1", "Type": "a"}],
-            {},
-        ),
-        (
-            [{"TargetGroupArn": "ansible1", "Type": "a", "Order": 1}],
-            [{"TargetGroupArn": "ansible2", "Type": "a"}],
-            {"DefaultActions": [{"TargetGroupArn": "ansible2", "Type": "a"}]},
-        ),
-        (
-            [{"TargetGroupArn": "ansible1", "Type": "a"}, {"TargetGroupArn": "ansible2", "Type": "a"}],
-            [{"TargetGroupArn": "ansible1", "Type": "a"}, {"TargetGroupArn": "ansible2", "Type": "b"}],
-            {
-                "DefaultActions": [
-                    {"TargetGroupArn": "ansible1", "Type": "a"},
-                    {"TargetGroupArn": "ansible2", "Type": "b"},
-                ]
-            },
-        ),
-    ],
-)
-def test__compare_listener_default_actions(current_actions, new_actions, expected_listener):
-    current_listener = createListener(default_actions=current_actions)
-    new_listener = createListener(default_actions=new_actions)
-    assert expected_listener == elbv2._compare_listener(current_listener, new_listener)
-
-
-@pytest.mark.parametrize(
-    "current_listeners,new_listeners,expected",
-    [
-        (
-            [
-                {
-                    "Port": 80,
-                    "Protocol": "TCP",
-                    "ListenerArn": "arn80",
-                    "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward", "Order": 1}],
-                },
-                {
-                    "Port": 90,
-                    "Protocol": "UDP",
-                    "ListenerArn": "arn90",
-                    "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward", "Order": 1}],
-                },
-                {
-                    "Port": 100,
-                    "Protocol": "TLS",
-                    "ListenerArn": "arn100",
-                    "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward", "Order": 1}],
-                },
-            ],
-            [
-                {"Port": 80, "Protocol": "TCP", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]},
-                {"Port": 90, "Protocol": "HTTPS", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]},
-                {"Port": 101, "Protocol": "UDP", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]},
-            ],
-            {
-                "add": [
-                    {"Port": 101, "Protocol": "UDP", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
-                ],
-                # Port 80: DefaultActions Order changed (current has Order:1, new doesn't)
-                # Port 90: Protocol changed (UDP->HTTPS) AND DefaultActions Order changed
-                "modify": [
-                    {
-                        "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}],
-                        "Port": 80,
-                        "ListenerArn": "arn80",
-                    },
-                    {
-                        "Protocol": "HTTPS",
-                        "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}],
-                        "Port": 90,
-                        "ListenerArn": "arn90",
-                    },
-                ],
-                "delete": ["arn100"],
-            },
-        )
-    ],
-)
-def test__group_listeners(current_listeners, new_listeners, expected):
-    to_add, to_modify, to_delete = elbv2._group_listeners(current_listeners, new_listeners)
-    assert to_add == expected.get("add", [])
-    assert to_modify == expected.get("modify", [])
-    assert to_delete == expected.get("delete", [])
-
-
-def test__prepare_listeners__no_listeners():
-    module = MagicMock()
-    connection = MagicMock()
-    assert elbv2._prepare_listeners(connection, module, None) == []
-
-
-def test__prepare_listeners__scrub_none_parameters():
-    module = MagicMock()
-    connection = MagicMock()
-    listeners = [
-        {
-            "Port": 123,
-            "Protocol": "TCP",
-            "SslPolicy": None,
-            "Rules": None,
-            "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}],
-        }
-    ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
-        {"Port": 123, "Protocol": "TCP", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
-    ]
-
-
-def test__prepare_listeners__alpn_policy():
-    module = MagicMock()
-    connection = MagicMock()
-    listeners = [
-        {"Port": 123, "AlpnPolicy": "MyPolicy1", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
-    ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
-        {"Port": 123, "AlpnPolicy": ["MyPolicy1"], "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
-    ]
-
-
-@patch("ansible_collections.amazon.aws.plugins.module_utils.elbv2.convert_tg_name_to_arn")
-def test__prepare_listeners__target_group_name_unique_name(m_convert_tg_name_to_arn):
-    module = MagicMock()
-    connection = MagicMock()
-    m_convert_tg_name_to_arn.return_value = MagicMock()
-    target_group_name = MagicMock()
-    listeners = [
-        {
-            "DefaultActions": [
-                {"TargetGroupName": target_group_name, "Type": "forward"},
-                {"TargetGroupName": target_group_name, "Type": "redirect"},
-            ]
-        }
-    ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
-        {
-            "DefaultActions": [
-                {"TargetGroupArn": m_convert_tg_name_to_arn.return_value, "Type": "forward"},
-                {"TargetGroupArn": m_convert_tg_name_to_arn.return_value, "Type": "redirect"},
-            ]
-        }
-    ]
-    m_convert_tg_name_to_arn.assert_called_once_with(connection, module, target_group_name)
-
-
-@patch("ansible_collections.amazon.aws.plugins.module_utils.elbv2.convert_tg_name_to_arn")
-def test__prepare_listeners__target_group_name_multiple_name(m_convert_tg_name_to_arn):
-    module = MagicMock()
-    connection = MagicMock()
-    tg_name1 = MagicMock()
-    tg_name2 = MagicMock()
-    arn_values = {
-        tg_name1: MagicMock(),
-        tg_name2: MagicMock(),
-    }
-    m_convert_tg_name_to_arn.side_effect = lambda conn, module, name: arn_values.get(name)
-
-    listeners = [
-        {
-            "DefaultActions": [
-                {"TargetGroupName": tg_name1, "Type": "forward"},
-                {"TargetGroupName": tg_name2, "Type": "redirect"},
-            ]
-        }
-    ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
-        {
-            "DefaultActions": [
-                {"TargetGroupArn": arn_values.get(tg_name1), "Type": "forward"},
-                {"TargetGroupArn": arn_values.get(tg_name2), "Type": "redirect"},
-            ]
-        }
-    ]
-    m_convert_tg_name_to_arn.assert_has_calls([call(connection, module, tg_name1), call(connection, module, tg_name2)])
-
-
-@patch("ansible_collections.amazon.aws.plugins.module_utils.elbv2.describe_listeners")
-@patch("ansible_collections.amazon.aws.plugins.module_utils.elbv2._prepare_listeners")
-def testELBListenersInit(
-    m__prepare_listeners,
-    m_describe_listeners,
-):
-    connection = MagicMock()
-    module = MagicMock()
-    purge_listeners = MagicMock()
-    elb_arn = MagicMock()
-    listeners = MagicMock()
-    module.params = {"listeners": listeners, "purge_listeners": purge_listeners}
-
-    m__prepare_listeners.return_value = MagicMock()
-    m_describe_listeners.return_value = MagicMock()
-
-    elb_listener = elbv2.ELBListeners(connection, module, elb_arn)
-
-    m__prepare_listeners.assert_called_once_with(connection, module, listeners)
-    m_describe_listeners.assert_called_once_with(connection, load_balancer_arn=elb_arn)
-
-    assert elb_listener.listeners == m__prepare_listeners.return_value
-    assert elb_listener.current_listeners == m_describe_listeners.return_value
-    assert elb_listener.purge_listeners == purge_listeners
-    assert elb_listener.elb_arn == elb_arn
-    assert elb_listener.module == module
-    assert elb_listener.changed is False
 
 
 class TestBuildApplicationLoadBalancerDescription:
@@ -701,3 +320,577 @@ class TestBuildApplicationLoadBalancerDescription:
         # Verify the original dict was not modified
         assert load_balancer == original_load_balancer
         assert "Attributes" not in load_balancer
+
+
+class TestAttributeDiffers:
+    """Tests for ElasticLoadBalancerV2._attribute_differs helper method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_new_value_is_none(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_enabled": "true"}
+
+        result = elb._attribute_differs(None, "access_logs_s3_enabled")
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_bool_values_differ(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_enabled": "true"}
+
+        result = elb._attribute_differs(False, "access_logs_s3_enabled")
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_bool_values_match(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_enabled": "true"}
+
+        result = elb._attribute_differs(True, "access_logs_s3_enabled")
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_int_values_differ(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"idle_timeout_timeout_seconds": "60"}
+
+        result = elb._attribute_differs(120, "idle_timeout_timeout_seconds")
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_int_values_match(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"idle_timeout_timeout_seconds": "60"}
+
+        result = elb._attribute_differs(60, "idle_timeout_timeout_seconds")
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_auto_lowercases_bool_values(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"deletion_protection_enabled": "false"}
+
+        # Bool values are automatically lowercased: True -> "true", which differs from "false"
+        result = elb._attribute_differs(True, "deletion_protection_enabled")
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_handles_string_values(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.elb_attributes = {"access_logs_s3_bucket": "my-bucket"}
+
+        result = elb._attribute_differs("different-bucket", "access_logs_s3_bucket")
+        assert result is True
+
+        result = elb._attribute_differs("my-bucket", "access_logs_s3_bucket")
+        assert result is False
+
+
+class TestAddAttributeUpdate:
+    """Tests for ElasticLoadBalancerV2._add_attribute_update helper method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_bool_attribute_as_lowercase_string(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = []
+
+        elb._add_attribute_update(update_list, "access_logs.s3.enabled", True)
+
+        assert update_list == [{"Key": "access_logs.s3.enabled", "Value": "true"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_int_attribute_as_string(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = []
+
+        elb._add_attribute_update(update_list, "idle_timeout.timeout_seconds", 120)
+
+        assert update_list == [{"Key": "idle_timeout.timeout_seconds", "Value": "120"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_string_attribute(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = []
+
+        elb._add_attribute_update(update_list, "access_logs.s3.bucket", "my-bucket")
+
+        assert update_list == [{"Key": "access_logs.s3.bucket", "Value": "my-bucket"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_appends_to_existing_list(self):
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        update_list = [{"Key": "existing.attribute", "Value": "value"}]
+
+        elb._add_attribute_update(update_list, "new.attribute", "new-value")
+
+        assert len(update_list) == 2
+        assert update_list[1] == {"Key": "new.attribute", "Value": "new-value"}
+
+
+class TestInheritedHelperMethods:
+    """Tests that both ALB and NLB can use inherited helper methods from ElasticLoadBalancerV2"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_alb_can_use_attribute_differs(self):
+        """ApplicationLoadBalancer can use _attribute_differs from parent class"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {"deletion_protection_enabled": "true"}
+
+        result = alb._attribute_differs(True, "deletion_protection_enabled")
+        assert result is False
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_alb_can_use_add_attribute_update(self):
+        """ApplicationLoadBalancer can use _add_attribute_update from parent class"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        update_list = []
+
+        alb._add_attribute_update(update_list, "deletion_protection.enabled", True)
+        assert update_list == [{"Key": "deletion_protection.enabled", "Value": "true"}]
+
+    @patch.object(elbv2.NetworkLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_nlb_can_use_attribute_differs(self):
+        """NetworkLoadBalancer can use _attribute_differs from parent class"""
+        nlb = elbv2.NetworkLoadBalancer(None, None)
+        nlb.elb_attributes = {"load_balancing_cross_zone_enabled": "false"}
+
+        result = nlb._attribute_differs(True, "load_balancing_cross_zone_enabled")
+        assert result is True
+
+    @patch.object(elbv2.NetworkLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_nlb_can_use_add_attribute_update(self):
+        """NetworkLoadBalancer can use _add_attribute_update from parent class"""
+        nlb = elbv2.NetworkLoadBalancer(None, None)
+        update_list = []
+
+        nlb._add_attribute_update(update_list, "load_balancing.cross_zone.enabled", False)
+        assert update_list == [{"Key": "load_balancing.cross_zone.enabled", "Value": "false"}]
+
+
+class TestBuildElbAttributesUpdateList:
+    """Tests for ApplicationLoadBalancer._build_elb_attributes_update_list method"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_empty_list_when_no_changes(self):
+        """Returns empty list when all attributes match"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "access_logs_s3_enabled": "false",
+            "deletion_protection_enabled": "false",
+        }
+        alb.access_logs_enabled = False
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = False
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert result == []
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_changed_boolean_attributes(self):
+        """Returns update list for changed boolean attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "access_logs_s3_enabled": "false",
+            "deletion_protection_enabled": "false",
+            "routing_http2_enabled": "true",
+        }
+        alb.access_logs_enabled = True  # Changed
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = True  # Changed
+        alb.idle_timeout = None
+        alb.http2 = False  # Changed
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 3
+        assert {"Key": "access_logs.s3.enabled", "Value": "true"} in result
+        assert {"Key": "deletion_protection.enabled", "Value": "true"} in result
+        assert {"Key": "routing.http2.enabled", "Value": "false"} in result
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_changed_string_attributes(self):
+        """Returns update list for changed string attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "access_logs_s3_bucket": "old-bucket",
+            "access_logs_s3_prefix": "old-prefix",
+        }
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = "new-bucket"  # Changed
+        alb.access_logs_s3_prefix = "new-prefix"  # Changed
+        alb.deletion_protection = None
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 2
+        assert {"Key": "access_logs.s3.bucket", "Value": "new-bucket"} in result
+        assert {"Key": "access_logs.s3.prefix", "Value": "new-prefix"} in result
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_changed_integer_attributes(self):
+        """Returns update list for changed integer attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "idle_timeout_timeout_seconds": "60",
+        }
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = None
+        alb.idle_timeout = 120  # Changed
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 1
+        assert {"Key": "idle_timeout.timeout_seconds", "Value": "120"} in result
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_updates_for_http_routing_attributes(self):
+        """Returns update list for changed HTTP routing attributes"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {
+            "routing_http_desync_mitigation_mode": "defensive",
+            "routing_http_drop_invalid_header_fields_enabled": "false",
+            "routing_http_x_amzn_tls_version_and_cipher_suite_enabled": "false",
+            "routing_http_xff_client_port_enabled": "false",
+            "waf_fail_open_enabled": "false",
+        }
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = None
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = "strictest"  # Changed
+        alb.http_drop_invalid_header_fields = True  # Changed
+        alb.http_x_amzn_tls_version_and_cipher_suite = True  # Changed
+        alb.http_xff_client_port = True  # Changed
+        alb.waf_fail_open = True  # Changed
+
+        result = alb._build_elb_attributes_update_list()
+        assert len(result) == 5
+        assert {"Key": "routing.http.desync_mitigation_mode", "Value": "strictest"} in result
+        assert {"Key": "routing.http.drop_invalid_header_fields.enabled", "Value": "true"} in result
+        assert {
+            "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled",
+            "Value": "true",
+        } in result
+        assert {"Key": "routing.http.xff_client_port.enabled", "Value": "true"} in result
+        assert {"Key": "waf.fail_open.enabled", "Value": "true"} in result
+
+
+class TestCompareElbAttributes:
+    """Tests for ApplicationLoadBalancer.compare_elb_attributes method"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_attributes_match(self):
+        """Returns True when all attributes match current state"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {"deletion_protection_enabled": "true"}
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = True  # Matches
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb.compare_elb_attributes()
+        assert result is True
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_attributes_differ(self):
+        """Returns False when attributes differ from current state"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.elb_attributes = {"deletion_protection_enabled": "false"}
+        alb.access_logs_enabled = None
+        alb.access_logs_s3_bucket = None
+        alb.access_logs_s3_prefix = None
+        alb.deletion_protection = True  # Different
+        alb.idle_timeout = None
+        alb.http2 = None
+        alb.http_desync_mitigation_mode = None
+        alb.http_drop_invalid_header_fields = None
+        alb.http_x_amzn_tls_version_and_cipher_suite = None
+        alb.http_xff_client_port = None
+        alb.waf_fail_open = None
+
+        result = alb.compare_elb_attributes()
+        assert result is False
+
+
+class TestElbCreateParams:
+    """Tests for ElasticLoadBalancerV2._elb_create_params method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_basic_params(self):
+        """Returns basic required parameters"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = None
+        elb.subnets = None
+        elb.subnet_mappings = None
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result == {"Name": "test-elb", "Type": "application"}
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_optional_ip_address_type(self):
+        """Includes IpAddressType when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = "dualstack"
+        elb.subnets = None
+        elb.subnet_mappings = None
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result["IpAddressType"] == "dualstack"
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_subnets_when_set(self):
+        """Includes Subnets when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = None
+        elb.subnets = ["subnet-12345", "subnet-67890"]
+        elb.subnet_mappings = None
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result["Subnets"] == ["subnet-12345", "subnet-67890"]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_subnet_mappings_when_set(self):
+        """Includes SubnetMappings when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "network"
+        elb.elb_ip_addr_type = None
+        elb.subnets = None
+        elb.subnet_mappings = [{"SubnetId": "subnet-12345", "AllocationId": "eipalloc-abc"}]
+        elb.tags = None
+
+        result = elb._elb_create_params()
+        assert result["SubnetMappings"] == [{"SubnetId": "subnet-12345", "AllocationId": "eipalloc-abc"}]
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_includes_tags_when_set(self):
+        """Includes Tags when set"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.name = "test-elb"
+        elb.type = "application"
+        elb.elb_ip_addr_type = None
+        elb.subnets = None
+        elb.subnet_mappings = None
+        elb.tags = [{"Key": "Environment", "Value": "test"}]
+
+        result = elb._elb_create_params()
+        assert result["Tags"] == [{"Key": "Environment", "Value": "test"}]
+
+
+class TestAlbElbCreateParams:
+    """Tests for ApplicationLoadBalancer._elb_create_params method"""
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_security_groups_and_scheme(self):
+        """Adds SecurityGroups and Scheme to base params"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.name = "test-alb"
+        alb.type = "application"
+        alb.scheme = "internet-facing"
+        alb.security_groups = ["sg-12345", "sg-67890"]
+        alb.elb_ip_addr_type = None
+        alb.subnets = ["subnet-12345"]
+        alb.subnet_mappings = None
+        alb.tags = None
+
+        result = alb._elb_create_params()
+        assert result["Name"] == "test-alb"
+        assert result["Type"] == "application"
+        assert result["Scheme"] == "internet-facing"
+        assert result["SecurityGroups"] == ["sg-12345", "sg-67890"]
+        assert result["Subnets"] == ["subnet-12345"]
+
+    @patch.object(elbv2.ApplicationLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_omits_security_groups_when_none(self):
+        """Doesn't include SecurityGroups when None"""
+        alb = elbv2.ApplicationLoadBalancer(None, None, None)
+        alb.name = "test-alb"
+        alb.type = "application"
+        alb.scheme = "internal"
+        alb.security_groups = None
+        alb.elb_ip_addr_type = None
+        alb.subnets = None
+        alb.subnet_mappings = None
+        alb.tags = None
+
+        result = alb._elb_create_params()
+        assert "SecurityGroups" not in result
+        assert result["Scheme"] == "internal"
+
+
+class TestNlbElbCreateParams:
+    """Tests for NetworkLoadBalancer._elb_create_params method"""
+
+    @patch.object(elbv2.NetworkLoadBalancer, "__init__", lambda self, *args, **kwargs: None)
+    def test_adds_scheme_to_base_params(self):
+        """Adds Scheme to base params"""
+        nlb = elbv2.NetworkLoadBalancer(None, None)
+        nlb.name = "test-nlb"
+        nlb.type = "network"
+        nlb.scheme = "internet-facing"
+        nlb.elb_ip_addr_type = None
+        nlb.subnets = ["subnet-12345"]
+        nlb.subnet_mappings = None
+        nlb.tags = None
+
+        result = nlb._elb_create_params()
+        assert result["Name"] == "test-nlb"
+        assert result["Type"] == "network"
+        assert result["Scheme"] == "internet-facing"
+        assert result["Subnets"] == ["subnet-12345"]
+
+
+class TestCompareSubnets:
+    """Tests for ElasticLoadBalancerV2.compare_subnets method"""
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_subnets_match(self):
+        """Returns True when subnet list matches current ELB subnets"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = ["subnet-12345", "subnet-67890"]
+        elb.subnet_mappings = None
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_subnets_differ(self):
+        """Returns False when subnet list differs from current ELB subnets"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = ["subnet-12345", "subnet-99999"]  # Different subnet
+        elb.subnet_mappings = None
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_subnet_mappings_match(self):
+        """Returns True when subnet mappings match current ELB"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = None
+        elb.subnet_mappings = [{"SubnetId": "subnet-12345"}, {"SubnetId": "subnet-67890"}]
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_true_when_subnet_mappings_with_allocation_ids_match(self):
+        """Returns True when subnet mappings with AllocationIds match"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = None
+        elb.subnet_mappings = [
+            {"SubnetId": "subnet-12345", "AllocationId": "eipalloc-abc123"},
+            {"SubnetId": "subnet-67890"},
+        ]
+        elb.elb = {
+            "AvailabilityZones": [
+                {
+                    "SubnetId": "subnet-12345",
+                    "LoadBalancerAddresses": [{"AllocationId": "eipalloc-abc123"}],
+                },
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_returns_false_when_allocation_ids_differ(self):
+        """Returns False when AllocationIds differ"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = None
+        elb.subnet_mappings = [
+            {"SubnetId": "subnet-12345", "AllocationId": "eipalloc-different"},
+            {"SubnetId": "subnet-67890"},
+        ]
+        elb.elb = {
+            "AvailabilityZones": [
+                {
+                    "SubnetId": "subnet-12345",
+                    "LoadBalancerAddresses": [{"AllocationId": "eipalloc-abc123"}],
+                },
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is False
+
+    @patch.object(elbv2.ElasticLoadBalancerV2, "__init__", lambda self, *args, **kwargs: None)
+    def test_handles_different_subnet_order(self):
+        """Returns True when subnets match regardless of order"""
+        elb = elbv2.ElasticLoadBalancerV2(None, None)
+        elb.subnets = ["subnet-67890", "subnet-12345"]  # Reversed order
+        elb.subnet_mappings = None
+        elb.elb = {
+            "AvailabilityZones": [
+                {"SubnetId": "subnet-12345", "LoadBalancerAddresses": []},
+                {"SubnetId": "subnet-67890", "LoadBalancerAddresses": []},
+            ]
+        }
+
+        result = elb.compare_subnets()
+        assert result is True

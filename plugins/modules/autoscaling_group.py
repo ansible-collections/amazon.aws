@@ -859,7 +859,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_lau
 from ansible_collections.amazon.aws.plugins.module_utils.elb import get_elb_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.elb import get_min_healthy_instances_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import describe_target_groups
-from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_min_healthy_targets_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import get_min_healthy_targets_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.iterators import chunks
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule

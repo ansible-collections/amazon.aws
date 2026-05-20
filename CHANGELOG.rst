@@ -4,6 +4,28 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v11.3.0
+=======
+
+This minor release adds new features and improvements to the ``autoscaling_group``, ``elb_application_lb``, ``elb_application_lb_info``, ``elb_classic_lb``, ``event_source_aws_cloudtrail``, ``kms_key``, ``s3_bucket``, ``s3_object_info`` module(s).
+
+Minor Changes
+-------------
+
+- Various modules and utilities - migrated from deprecated ``ansible.module_utils._text`` to ``ansible.module_utils.common.text.converters`` (https://github.com/ansible-collections/amazon.aws/pull/2860).
+- amazon.aws.cloudformation - Fixed an issue where creating a changeset in check mode would fail if the stack is not in a ready state (e.g., UPDATE_IN_PROGRESS). The module now waits for the stack to be in a ready state (UPDATE_COMPLETE) before creating the changeset (https://github.com/ansible-collections/amazon.aws/pull/1910)
+- elb_application_lb_info - Fixed return value documentation to correctly reflect actual types and added missing fields (https://github.com/ansible-collections/amazon.aws/issues/2939).
+- extensions/eda/plugins/event_source/aws_sqs_queue.py - Added optional support for feedback so that the event can be removed from the SQS Queue on receipt of acknowledgement from ansible-rulebook.
+- module_utils/errors - Add support for f-string style parameter interpolation in error handler descriptions to provide more detailed error messages (https://github.com/ansible-collections/amazon.aws/pull/2944).
+- s3_bucket - Added O(account_regional) parameter to support creating buckets in the account-regional namespace. Requires at least botocore version 1.42.67 (https://github.com/ansible-collections/amazon.aws/pull/2960).
+- s3_bucket - Added support for managing bucket logging configuration (https://github.com/ansible-collections/amazon.aws/pull/2855).
+
+Bugfixes
+--------
+
+- elb_application_lb - Listener rules are now returned sorted by priority with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
+- elb_application_lb_info - Listener rules are now returned sorted by priority with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
+
 v10.3.1
 =======
 
@@ -29,7 +51,6 @@ Release Summary
 This release introduces several new features and improvements across the collection. Notable additions include support for the ``volume_initialization_rate`` parameter in ``ec2_vol`` to enable Provisioned Initialization Rate when creating volumes from snapshots, and a new ``protected_from_scale_in`` option in ``autoscaling_group`` to control scale-in protection for instances. Route53 modules have been enhanced with new parameters for latency-based routing, including ``routing_region`` and a temporary ``aws_region`` option to support the transition away from the deprecated ``region`` parameter.
 The release also includes security fixes addressing potential ReDoS vulnerabilities in ARN and EC2 security group ID parsing, as well as several internal improvements and refactorings to improve code maintainability, error handling, and testability across modules and plugin utilities.
 Several deprecations were introduced in inventory plugins to avoid conflicts with Ansible reserved variable names and modernize configuration options. In addition, the release includes code modernization updates such as replacing deprecated ``datetime.utcnow()`` usage with timezone-aware alternatives, improvements to inventory plugin utilities, and various testing and internal maintenance updates.
-
 
 Minor Changes
 -------------
@@ -912,7 +933,6 @@ Bugfixes
 - cloudwatchevent_rule - Fix to avoid adding quotes to JSON input for provided input_template (https://github.com/ansible-collections/amazon.aws/pull/1883).
 - lookup/secretsmanager_secret - fix the issue when the nested secret is missing and on_missing is set to warn, the lookup was raising an error instead of a warning message (https://github.com/ansible-collections/amazon.aws/issues/1781).
 - module_utils/elbv2 - Fix issue when creating or modifying Load balancer rule type authenticate-oidc using ``ClientSecret`` parameter and ``UseExistingClientSecret=true`` (https://github.com/ansible-collections/amazon.aws/issues/1877).
-- amazon.aws.cloudformation - Fixed an issue where creating a changeset in check mode would fail if the stack is not in a ready state (e.g., UPDATE_IN_PROGRESS). The module now waits for the stack to be in a ready state (UPDATE_COMPLETE) before creating the changeset (https://github.com/ansible-collections/amazon.aws/pull/1910)
 
 v7.3.0
 ======

@@ -99,7 +99,7 @@ simple_actions = [
     ),
 ]
 
-# Test that _prune_ForwardConfig() doesn't mangle things we don't expect
+# Test that _prune_forward_config() doesn't mangle things we don't expect
 complex_actions = [
     # Non-Forwarding
     dict(
@@ -196,13 +196,13 @@ def test__prune_secret():
     assert elbv2._prune_secret(one_action[0]) == one_action[0]
 
 
-def test__prune_ForwardConfig():
+def test__prune_forward_config():
     expectation = {"TargetGroupArn": example_arn, "Type": "forward"}
-    pruned_config = elbv2._prune_ForwardConfig(one_action[0])
+    pruned_config = elbv2._prune_forward_config(one_action[0])
     assert pruned_config == expectation
 
     # https://github.com/ansible-collections/community.aws/issues/1089
-    pruned_config = elbv2._prune_ForwardConfig(one_action_two_tg[0])
+    pruned_config = elbv2._prune_forward_config(one_action_two_tg[0])
     assert pruned_config == one_action_two_tg[0]
 
 
@@ -210,14 +210,14 @@ def test__prune_ForwardConfig():
 
 
 @pytest.mark.parametrize("action", simple_actions)
-def test__prune_ForwardConfig_simplifiable_actions(action):
-    pruned_config = elbv2._prune_ForwardConfig(action)
+def test__prune_forward_config_simplifiable_actions(action):
+    pruned_config = elbv2._prune_forward_config(action)
     assert pruned_config == simplified_action
 
 
 @pytest.mark.parametrize("action", complex_actions)
-def test__prune_ForwardConfig_non_simplifiable_actions(action):
-    pruned_config = elbv2._prune_ForwardConfig(action)
+def test__prune_forward_config_non_simplifiable_actions(action):
+    pruned_config = elbv2._prune_forward_config(action)
     assert pruned_config == action
 
 
@@ -279,5 +279,5 @@ def test__simple_forward_config_arn(config, parent_arn, expected):
         ),
     ],
 )
-def test__append_use_existing_client_secretn(action, expected):
-    assert elbv2._append_use_existing_client_secretn(action) == expected
+def test__append_use_existing_client_secret(action, expected):
+    assert elbv2._append_use_existing_client_secret(action) == expected
