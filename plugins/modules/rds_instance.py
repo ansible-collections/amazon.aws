@@ -1664,7 +1664,7 @@ def main():
         db_subnet_group_name=dict(aliases=["subnet_group"]),
         deletion_protection=dict(type="bool"),
         domain=dict(),
-        domain_auth_secret_arn=dict(),
+        domain_auth_secret_arn=dict(no_log=False),
         domain_dns_ips=dict(type="list", elements="str"),
         domain_fqdn=dict(),
         domain_iam_role_name=dict(),
