@@ -418,10 +418,47 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-rds-inst
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-domain_auth_secret_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-domain-auth-secret-arn"><strong>domain_auth_secret_arn</strong></p>
+<a class="ansibleOptionLink" href="#parameter-domain_auth_secret_arn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 11.4.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ARN of the Secrets Manager secret containing credentials for the user account to be used for domain join.</p>
+<p>Required when joining a self-managed Active Directory domain.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-domain_dns_ips"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-domain-dns-ips"><strong>domain_dns_ips</strong></p>
+<a class="ansibleOptionLink" href="#parameter-domain_dns_ips" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 11.4.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The IPv4 DNS IP addresses of the primary and secondary Active Directory domain controllers.</p>
+<p>Two IP addresses must be provided. For single-DC configurations, the same IP address may be specified twice.</p>
+<p>Required when joining a self-managed Active Directory domain.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-domain_fqdn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-domain-fqdn"><strong>domain_fqdn</strong></p>
+<a class="ansibleOptionLink" href="#parameter-domain_fqdn" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 11.4.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The fully qualified domain name (FQDN) of a self-managed Active Directory domain.</p>
+<p>Maximum 64 characters.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-domain_iam_role_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-domain-iam-role-name"><strong>domain_iam_role_name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-domain_iam_role_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The name of the IAM role to be used when making API calls to the Directory Service.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-domain_ou"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-rds-instance-module-parameter-domain-ou"><strong>domain_ou</strong></p>
+<a class="ansibleOptionLink" href="#parameter-domain_ou" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 11.4.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The Active Directory organizational unit for the DB instance to join, in distinguished name format.</p>
+<p>Maximum 64 characters.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
