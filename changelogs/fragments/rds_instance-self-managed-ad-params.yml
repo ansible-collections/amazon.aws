@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_instance - Added support for self-managed Active Directory parameters ``domain_fqdn``, ``domain_ou``, ``domain_auth_secret_arn``, and ``domain_dns_ips`` to allow joining RDS instances to a self-managed Active Directory domain (https://github.com/ansible-collections/amazon.aws/pull/2977).
