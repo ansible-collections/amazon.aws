@@ -79,6 +79,21 @@ result:
   returned: suceess
   type: list
   contains:
+    availability_mode:
+        description: Whether the NAT gateway is zonal or regional.
+        returned: always
+        type: str
+        sample: zonal
+    auto_scaling_ips:
+        description: Whether AWS automatically allocates additional EIPs when more ports are needed.
+        returned: when availability_mode is regional
+        type: str
+        sample: enabled
+    auto_provision_zones:
+        description: Whether AWS automatically manages availability zone coverage.
+        returned: when availability_mode is regional
+        type: str
+        sample: enabled
     connectivity_type:
         description:
           - Indicates whether the NAT gateway supports public or private connectivity.
@@ -135,11 +150,26 @@ result:
                 returned: always
                 type: str
                 sample: succeeded
+            availability_zone:
+                description: The availability zone of the address (regional NAT gateways only).
+                returned: when availability_mode is regional
+                type: str
+                sample: us-east-1a
+            availability_zone_id:
+                description: The availability zone ID of the address (regional NAT gateways only).
+                returned: when availability_mode is regional
+                type: str
+                sample: use1-az1
     nat_gateway_id:
         description: The ID of the NAT gateway.
         returned: always
         type: str
         sample: nat-0c242a2397acf6173
+    route_table_id:
+        description: The route table ID associated with a regional NAT gateway.
+        returned: when availability_mode is regional
+        type: str
+        sample: rtb-12345678
     state:
         description: state of the NAT gateway.
         returned: always
