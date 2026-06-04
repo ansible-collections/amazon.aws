@@ -847,6 +847,7 @@ class Connection(AWSConnectionBase):
             # If it looks like JSON remove any newlines
             if stdout.startswith("{"):
                 self.verbosity_display(5, "POST_PROCESS: Detected JSON output, removing newlines")
+                stdout = stdout.replace("\r\n", "")
                 stdout = stdout.replace("\n", "")
 
         self.verbosity_display(5, f"POST_PROCESS: Final stdout length: {len(stdout)} bytes")
