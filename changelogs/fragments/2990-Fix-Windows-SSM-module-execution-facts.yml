@@ -1,0 +1,2 @@
+bugfix:
+  - plugins/connection/aws_ssm.py - remove CRLF line termination to allow for proper JSON parsing
