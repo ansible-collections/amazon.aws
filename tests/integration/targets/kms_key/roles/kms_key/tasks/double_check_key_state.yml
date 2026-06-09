@@ -1,0 +1,18 @@
+---
+# Helper to verify KMS key state has stabilized
+# Requires variables:
+#   - kms_key_alias: the key alias to check
+
+- name: Get key state (first check)
+  amazon.aws.kms_key_info:
+    alias: "{{ kms_key_alias }}"
+  register: state_check_a
+
+- name: Wait between checks
+  ansible.builtin.wait_for:
+    timeout: 2
+
+- name: Get key state (second check)
+  amazon.aws.kms_key_info:
+    alias: "{{ kms_key_alias }}"
+  register: state_check_b

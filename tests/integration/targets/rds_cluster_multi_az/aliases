@@ -1,7 +1,8 @@
-cloud/aws
-
 # It takes >20min to spawn the mutlti az cluster
+
 disabled
+
+cloud/aws
 
 rds_cluster
 rds_cluster_info

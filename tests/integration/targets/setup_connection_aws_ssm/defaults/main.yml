@@ -19,20 +19,11 @@ ami_details:
             sudo systemctl start amazon-ssm-agent
         os_type: linux
     amazon:
-        ssm_parameter: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-        # owner: amazon
-        # name: amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2
+        ssm_parameter: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
         user_data: |
             #!/bin/sh
-            # Install Python3.11
-            yum -y groupinstall "Development Tools"
-            yum -y install gcc devel libffi-devel openssl11-1.1.1g openssl11-libs-1.1.1g openssl11-devel-1.1.1g wget
-            wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz
-            tar zxvf Python-3.11.9.tgz
-            cd Python-3.11.9/
-            ./configure --enable-optimizations
-            make -j4
-            make altinstall -j4
+            # Install Python 3.11 from AL2023 repos
+            dnf install -y python3.11
             # Pre-Installed just needs started
             systemctl start amazon-ssm-agent
         os_type: linux

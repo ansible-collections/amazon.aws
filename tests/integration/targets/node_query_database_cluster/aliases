@@ -1,2 +1,5 @@
 cloud/aws
+
+needs/target/setup_node_query
+
 rds_cluster_info

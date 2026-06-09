@@ -1,4 +1,4 @@
 cloud/aws
 
-route53_info
 module_utils_route53
+route53_info
