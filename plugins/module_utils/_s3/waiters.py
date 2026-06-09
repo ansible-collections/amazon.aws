@@ -19,6 +19,7 @@ class S3WaiterFactory(BaseWaiterFactory):
                     dict(state="success", matcher="status", expected=200),
                     dict(state="success", matcher="status", expected=301),
                     dict(state="success", matcher="status", expected=403),
+                    dict(state="retry", matcher="status", expected=404),
                 ],
             ),
             bucket_not_exists=dict(
