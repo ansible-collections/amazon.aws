@@ -1,3 +1,6 @@
 cloud/aws
+
+needs/target/setup_node_query
+
 elb_application_lb_info
 elb_classic_lb_info

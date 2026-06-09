@@ -11,7 +11,7 @@
         state: present
         name: "{{ ec2_instance_name }}"
         image_id: "{{ ec2_ami_id }}"
-        availability_zone: "{{ subnet_b_az }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         user_data: "{{ ec2_instance_user_data }}"
@@ -23,6 +23,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ ec2_instance_name }}"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
         include_attributes:
           - instanceType
           - kernel

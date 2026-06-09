@@ -42,6 +42,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-security-groups"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           instance-state-name: running
       register: dual_sg_instance_facts
       until: dual_sg_instance_facts.instances | length > 0
@@ -63,6 +64,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-security-groups"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           instance-state-name: running
       register: single_sg_instance_facts
       until: single_sg_instance_facts.instances | length > 0

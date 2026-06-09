@@ -158,13 +158,16 @@
         that:
           - set_termination_protection_results.changed
 
-    - name: Get info on termination protection
+    - name: Wait for termination protection change to propagate
       amazon.aws.ec2_instance_info:
         instance_ids:
           - "{{ instance_id }}"
         include_attributes:
           - disableApiTermination
       register: instance_info
+      until: instance_info.instances.0.attributes.disable_api_termination.value is false
+      retries: 10
+      delay: 1
 
     - name: Assert termination protection status did not change in check_mode
       ansible.builtin.assert:
@@ -203,6 +206,17 @@
         that:
           - set_termination_protection_results.changed
           - set_termination_protection_results.changes[0].DisableApiTermination.Value
+
+    - name: Wait for termination protection change to propagate
+      amazon.aws.ec2_instance_info:
+        instance_ids:
+          - "{{ instance_id }}"
+        include_attributes:
+          - disableApiTermination
+      register: instance_protection_check
+      until: instance_protection_check.instances.0.attributes.disable_api_termination.value is true
+      retries: 10
+      delay: 1
 
     - name: Set termination protection to true (idempotent)
       amazon.aws.ec2_instance:

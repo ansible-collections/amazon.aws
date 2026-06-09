@@ -28,6 +28,7 @@
     name:
       - boto3{{ _boto3_comparison }}{{ _boto3_version }}
       - botocore{{ _botocore_comparison }}{{ _botocore_version }}
+      - coverage
     virtualenv: "{{ botocore_virtualenv }}"
     virtualenv_command: "{{ botocore_virtualenv_command }}"
     virtualenv_site_packages: false

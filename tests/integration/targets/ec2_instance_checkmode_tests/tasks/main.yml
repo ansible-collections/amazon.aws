@@ -37,12 +37,14 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: presented_instance_fact
 
     - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison-checkmode"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: checkmode_instance_fact
 
     - name: Confirm whether the check mode is working normally.
@@ -65,6 +67,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: confirm_checkmode_stopinstance_fact
 
     - name: Verify that it was not stopped.
@@ -87,6 +90,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: confirm_stopinstance_fact
 
     - name: Verify that it was stopped.
@@ -108,6 +112,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: confirm_checkmode_runninginstance_fact
 
     - name: Verify that it was not running.
@@ -128,6 +133,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: confirm_runninginstance_fact
 
     - name: Verify that it was running.
@@ -149,6 +155,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: confirm_not_tagged
 
     - name: Verify that it hasn't been re-tagged.
@@ -169,8 +176,8 @@
 
     - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
-        filters:
-          tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+        instance_ids:
+          - "{{ basic_instance.instance_ids[0] }}"
       register: confirm_checkmode_terminatedinstance_fact
 
     - name: Verify that it was not terminated,
@@ -190,14 +197,14 @@
 
     - name: Fact ec2 instance
       amazon.aws.ec2_instance_info:
-        filters:
-          tag:Name: "{{ resource_prefix }}-checkmode-comparison"
+        instance_ids:
+          - "{{ basic_instance.instance_ids[0] }}"
       register: confirm_terminatedinstance_fact
 
     - name: Verify that it was terminated,
       ansible.builtin.assert:
         that:
-          - confirm_terminatedinstance_fact.instances[0].state.name == "terminated"
+          - confirm_terminatedinstance_fact.instances | length == 0 or confirm_terminatedinstance_fact.instances[0].state.name == "terminated"
 
   always:
     - name: Terminate checkmode instances

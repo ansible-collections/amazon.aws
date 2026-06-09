@@ -1,2 +1,7 @@
 cloud/aws
+
+needs/target/setup_ec2_facts
+needs/target/setup_ec2_instance_env
+needs/target/setup_node_query
+
 ec2_instance_info

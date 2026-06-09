@@ -69,11 +69,16 @@
       ignore_errors: true
 
     # Transit gateway
+    # Retry deletion as VPN attachments may still be deleting asynchronously
     - name: Delete transit gateway
       amazon.aws.ec2_transit_gateway:
         transit_gateway_id: "{{ transit_gateway_id }}"
         state: absent
         wait: true
+      register: tgw_delete_result
+      retries: 10
+      delay: 10
+      until: tgw_delete_result is not failed or 'has non-deleted VPN Attachments' not in (tgw_delete_result.msg | default(''))
       ignore_errors: true
       when: transit_gateway_id is defined
 
