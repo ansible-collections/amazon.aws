@@ -17,7 +17,6 @@ options:
     choices:
       - supported-platforms
       - default-vpc
-      - max-instances
       - vpc-max-security-groups-per-interface
       - max-elastic-ips
       - vpc-max-elastic-ips
@@ -47,8 +46,8 @@ vars:
   # vpc-xxxxxxxx | none
 
   account_details: "{{ lookup('aws_account_attribute', wantlist='true') }}"
-  # {'default-vpc': ['vpc-xxxxxxxx'], 'max-elastic-ips': ['5'], 'max-instances': ['20'],
-  #  'supported-platforms': ['VPC', 'EC2'], 'vpc-max-elastic-ips': ['5'], 'vpc-max-security-groups-per-interface': ['5']}
+  # {'default-vpc': ['vpc-xxxxxxxx'], 'max-elastic-ips': ['5'], 'supported-platforms': ['VPC', 'EC2'],
+  #  'vpc-max-elastic-ips': ['5'], 'vpc-max-security-groups-per-interface': ['5']}
 """
 
 RETURN = r"""
@@ -126,6 +125,8 @@ class LookupModule(AWSLookupBase):
         """
         flattened = {}
         for k_v_dict in response:
+            if k_v_dict["AttributeName"] == "max-instances":
+                continue
             flattened[k_v_dict["AttributeName"]] = [value["AttributeValue"] for value in k_v_dict["AttributeValues"]]
         return flattened
 
