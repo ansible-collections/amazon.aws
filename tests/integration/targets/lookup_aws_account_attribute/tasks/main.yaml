@@ -39,8 +39,6 @@
           - '"default-vpc" in account_attrs[0]'
           - '"max-elastic-ips" in account_attrs[0]'
           - account_attrs[0]['max-elastic-ips'][0] | int | string == account_attrs[0]['max-elastic-ips'][0]
-          - '"max-instances" in account_attrs[0]'
-          - account_attrs[0]['max-instances'][0] | int | string == account_attrs[0]['max-instances'][0]
           # EC2 and VPC are both valid values, but we can't guarantee which are available
           - '"supported-platforms" in account_attrs[0]'
           - account_attrs[0]['supported-platforms'] | difference(['VPC', 'EC2']) | length == 0
@@ -58,7 +56,6 @@
         that:
           - '"default-vpc" in account_attrs'
           - '"max-elastic-ips" in account_attrs'
-          - '"max-instances" in account_attrs'
           - '"supported-platforms" in account_attrs'
           - '"vpc-max-elastic-ips" in account_attrs'
           - '"vpc-max-security-groups-per-interface" in account_attrs'
@@ -76,13 +73,6 @@
     - ansible.builtin.assert:
         that:
           - max_eips | int | string == max_eips
-
-    - name: Check for maximum number of Instances (max-instances)
-      ansible.builtin.set_fact:
-        max_instances: "{{ lookup('amazon.aws.aws_account_attribute', attribute='max-instances', **connection_args) }}"
-    - ansible.builtin.assert:
-        that:
-          - max_instances | int | string == max_instances
 
     - name: Check for maximum number of EIPs in a VPC (vpc-max-elastic-ips)
       ansible.builtin.set_fact:
