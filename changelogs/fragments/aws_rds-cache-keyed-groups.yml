@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_rds inventory plugin - Fixed ``keyed_groups``, ``groups``, and ``compose`` being lost when inventory was served from cache due to not running appropriate calls within method. (https://github.com/ansible-collections/amazon.aws/issues/2852).
