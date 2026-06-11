@@ -246,15 +246,6 @@ class InventoryModule(AWSInventoryBase):
             hosts = source_data[group].get("hosts", [])
             for host in hosts:
                 self._populate_host_vars([host], hostvars.get(host, {}), group)
-                # Re-apply constructed groups from cache
-                strict = self.get_option("strict")
-                self._set_composite_vars(self.get_option("compose"), hostvars.get(host, {}), host, strict=strict)
-                self._add_host_to_composed_groups(
-                    self.get_option("groups"), hostvars.get(host, {}), host, strict=strict
-                )
-                self._add_host_to_keyed_groups(
-                    self.get_option("keyed_groups"), hostvars.get(host, {}), host, strict=strict
-                )
             self.inventory.add_child("all", group)
 
     def _format_inventory(self, hosts):
