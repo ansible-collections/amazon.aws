@@ -1,4 +1,5 @@
 minor_changes:
   - plugin_utils/inventory - add cache format versioning to automatically invalidate incompatible caches when inventory plugins change cache structure (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - aws_rds - cache raw RDS instance data instead of formatted inventory to allow configuration changes (hostvars_prefix/suffix, keyed_groups, compose) to take effect without clearing the cache (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
 trivial:
   - plugin_utils/inventory - add unit tests for cache versioning and fix aws_rds tests to properly mock base class cache methods (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
