@@ -229,3 +229,33 @@ def test_update_cached_result_respects_existing_cache(aws_inventory_base, mocker
 
     # Should not update when cache=True and key exists
     assert aws_inventory_base._cache["test_key"] == existing_data
+
+
+def test_get_cached_result_non_dict_cache_v1_plugin(aws_inventory_base, mocker):
+    """Test that non-dict legacy cache works with version 1 plugin."""
+    aws_inventory_base.CACHE_FORMAT_VERSION = 1
+    aws_inventory_base._options = {"cache": True}
+    mocker.patch.object(aws_inventory_base, "get_cache_key", return_value="test_key")
+
+    # Non-dict cache (e.g., plain list) should work with v1 plugin
+    legacy_list_cache = ["host1", "host2", "host3"]
+    aws_inventory_base._cache = {"test_key": legacy_list_cache}
+
+    result_was_cached, result = aws_inventory_base.get_cached_result("test_path", cache=True)
+    assert result_was_cached is True
+    assert result == legacy_list_cache
+
+
+def test_get_cached_result_non_dict_cache_v2_plugin(aws_inventory_base, mocker):
+    """Test that non-dict legacy cache is invalidated for version 2+ plugin."""
+    aws_inventory_base.CACHE_FORMAT_VERSION = 2
+    aws_inventory_base._options = {"cache": True}
+    mocker.patch.object(aws_inventory_base, "get_cache_key", return_value="test_key")
+
+    # Non-dict cache should be invalidated when plugin expects v2
+    legacy_list_cache = ["host1", "host2", "host3"]
+    aws_inventory_base._cache = {"test_key": legacy_list_cache}
+
+    result_was_cached, result = aws_inventory_base.get_cached_result("test_path", cache=True)
+    assert result_was_cached is False
+    assert result is None
