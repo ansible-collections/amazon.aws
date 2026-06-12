@@ -241,7 +241,7 @@ class TestSSMSessionManager:
         session = SSMSessionManager(
             ssm_client=ssm_client,
             instance_id=instance_id,
-            ssm_timeout=instance_id,
+            ssm_timeout=ssm_timeout,
             verbosity_display=verbosity_display,
         )
 

@@ -1,0 +1,2 @@
+trivial:
+  - aws_ssm connection plugin - fix unit test parameter and remove unused variable (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
