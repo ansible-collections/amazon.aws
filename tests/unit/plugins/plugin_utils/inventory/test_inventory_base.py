@@ -133,3 +133,99 @@ def test_inventory_get_options_with_templar(aws_inventory_base, mocker):
 
     # Test get_option() also uses templar
     assert aws_inventory_base.get_option("region") == "us-east-1"
+
+
+def test_cache_format_version_default():
+    """Test that CACHE_FORMAT_VERSION defaults to 1."""
+    inventory = utils_inventory.AWSInventoryBase()
+    assert inventory.CACHE_FORMAT_VERSION == 1
+
+
+def test_update_cached_result_includes_version(aws_inventory_base, mocker):
+    """Test that update_cached_result wraps data with version metadata."""
+    aws_inventory_base._cache = {}
+    aws_inventory_base._options = {"cache": True}
+
+    mocker.patch.object(aws_inventory_base, "get_cache_key", return_value="test_key")
+
+    test_data = {"hosts": ["host1", "host2"], "vars": {"key": "value"}}
+    aws_inventory_base.update_cached_result("test_path", cache=False, result=test_data)
+
+    assert "test_key" in aws_inventory_base._cache
+    cached_value = aws_inventory_base._cache["test_key"]
+    assert isinstance(cached_value, dict)
+    assert "_cache_format_version" in cached_value
+    assert cached_value["_cache_format_version"] == 1
+    assert "_data" in cached_value
+    assert cached_value["_data"] == test_data
+
+
+def test_get_cached_result_validates_version(aws_inventory_base, mocker):
+    """Test that get_cached_result invalidates cache when version doesn't match."""
+    aws_inventory_base._options = {"cache": True}
+    mocker.patch.object(aws_inventory_base, "get_cache_key", return_value="test_key")
+
+    # Test with matching version
+    test_data = {"hosts": ["host1"]}
+    aws_inventory_base._cache = {"test_key": {"_cache_format_version": 1, "_data": test_data}}
+    result_was_cached, result = aws_inventory_base.get_cached_result("test_path", cache=True)
+    assert result_was_cached is True
+    assert result == test_data
+
+    # Test with mismatched version
+    aws_inventory_base._cache = {"test_key": {"_cache_format_version": 2, "_data": test_data}}
+    result_was_cached, result = aws_inventory_base.get_cached_result("test_path", cache=True)
+    assert result_was_cached is False
+    assert result is None
+
+
+def test_get_cached_result_assumes_version_1_for_legacy_cache(aws_inventory_base, mocker):
+    """Test that cache without version metadata is treated as version 1."""
+    aws_inventory_base._options = {"cache": True}
+    mocker.patch.object(aws_inventory_base, "get_cache_key", return_value="test_key")
+
+    # Legacy cache without version metadata (should be treated as version 1)
+    legacy_data = {"hosts": ["host1"], "vars": {"key": "value"}}
+    aws_inventory_base._cache = {"test_key": legacy_data}
+
+    result_was_cached, result = aws_inventory_base.get_cached_result("test_path", cache=True)
+    assert result_was_cached is True
+    assert result == legacy_data
+
+    # Legacy dict cache with _meta but no version (should default to version 1)
+    legacy_formatted = {"_meta": {"hostvars": {}}, "aws_rds": {"hosts": []}}
+    aws_inventory_base._cache = {"test_key": legacy_formatted}
+
+    result_was_cached, result = aws_inventory_base.get_cached_result("test_path", cache=True)
+    assert result_was_cached is True
+    assert result == legacy_formatted
+
+
+def test_get_cached_result_invalidates_legacy_cache_for_v2_plugin(aws_inventory_base, mocker):
+    """Test that legacy v1 cache is invalidated when plugin expects v2."""
+    aws_inventory_base.CACHE_FORMAT_VERSION = 2
+    aws_inventory_base._options = {"cache": True}
+    mocker.patch.object(aws_inventory_base, "get_cache_key", return_value="test_key")
+
+    # Legacy cache (implicitly v1) should be invalidated for v2 plugin
+    legacy_data = {"_meta": {"hostvars": {}}, "aws_rds": {"hosts": []}}
+    aws_inventory_base._cache = {"test_key": legacy_data}
+
+    result_was_cached, result = aws_inventory_base.get_cached_result("test_path", cache=True)
+    assert result_was_cached is False
+    assert result is None
+
+
+def test_update_cached_result_respects_existing_cache(aws_inventory_base, mocker):
+    """Test that update_cached_result doesn't overwrite existing cache when cache=True."""
+    aws_inventory_base._options = {"cache": True}
+    mocker.patch.object(aws_inventory_base, "get_cache_key", return_value="test_key")
+
+    existing_data = {"_cache_format_version": 1, "_data": {"existing": "data"}}
+    aws_inventory_base._cache = {"test_key": existing_data}
+
+    new_data = {"new": "data"}
+    aws_inventory_base.update_cached_result("test_path", cache=True, result=new_data)
+
+    # Should not update when cache=True and key exists
+    assert aws_inventory_base._cache["test_key"] == existing_data

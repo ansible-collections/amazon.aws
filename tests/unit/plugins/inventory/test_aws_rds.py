@@ -73,6 +73,8 @@ def fixture_inventory():
     inventory._set_credentials = MagicMock()
 
     inventory.get_cache_key = MagicMock()
+    inventory.get_cached_result = MagicMock()
+    inventory.update_cached_result = MagicMock()
 
     inventory._cache = {}
     return inventory
@@ -631,8 +633,11 @@ def test_inventory_parse(
     inventory.get_cache_key.return_value = cache_key
 
     cache_key_value = generate_random_string()
-    if cache_hit:
-        inventory._cache[cache_key] = cache_key_value
+    # get_cached_result behavior depends on cache flags and whether there's a cache hit
+    if cache and user_cache_directive and cache_hit:
+        inventory.get_cached_result.return_value = (True, cache_key_value)
+    else:
+        inventory.get_cached_result.return_value = (False, None)
 
     inventory._populate = MagicMock()
     inventory._populate_from_source = MagicMock()
@@ -660,7 +665,15 @@ def test_inventory_parse(
             {"db-cluster-id": options["filters"]["db-cluster-id"]}
         )
 
-    if not cache or not user_cache_directive or (cache and user_cache_directive and not cache_hit):
+    # When get_cached_result returns True (cache hit), parse() uses cached data
+    if cache and user_cache_directive and cache_hit:
+        inventory._get_all_db_hosts.assert_not_called()
+        inventory._populate.assert_not_called()
+        inventory._format_inventory.assert_not_called()
+        inventory._populate_from_source.assert_called_with(cache_key_value)
+        inventory.update_cached_result.assert_not_called()
+    else:
+        # No cache hit: fetch data, populate, format, and update cache
         inventory._get_all_db_hosts.assert_called_with(
             options["regions"],
             boto3_instance_filters,
@@ -671,14 +684,6 @@ def test_inventory_parse(
         )
         inventory._populate.assert_called_with(all_db_hosts)
         inventory._format_inventory.assert_called_with(all_db_hosts)
-    else:
-        inventory._get_all_db_hosts.assert_not_called()
-        inventory._populate.assert_not_called()
-        inventory._format_inventory.assert_not_called()
-
-    if cache and user_cache_directive and cache_hit:
-        inventory._populate_from_source.assert_called_with(cache_key_value)
-
-    if cache and user_cache_directive and not cache_hit or (not cache and user_cache_directive):
-        # validate that cache was populated
-        assert inventory._cache[cache_key] == format_cache_key_value
+        inventory._populate_from_source.assert_not_called()
+        # update_cached_result is always called when there's no cache hit
+        inventory.update_cached_result.assert_called_with(path, cache, format_cache_key_value)
