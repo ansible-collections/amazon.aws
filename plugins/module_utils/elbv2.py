@@ -9,79 +9,65 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-# Re-export API wrapper functions from _elbv2.api
+# Intended for general use / re-import
+# pylint: disable=unused-import,useless-import-alias
+from ._elbv2.actions import _append_use_existing_client_secret as _append_use_existing_client_secret
+from ._elbv2.actions import _prune_forward_config as _prune_forward_config
+from ._elbv2.actions import _prune_secret as _prune_secret
+from ._elbv2.actions import _simple_forward_config_arn as _simple_forward_config_arn
+from ._elbv2.api import add_listener_certificates as add_listener_certificates
+from ._elbv2.api import add_tags as add_tags
+from ._elbv2.api import create_listener as create_listener
+from ._elbv2.api import create_load_balancer as create_load_balancer
+from ._elbv2.api import create_rule as create_rule
+from ._elbv2.api import delete_listener as delete_listener
+from ._elbv2.api import delete_load_balancer as delete_load_balancer
+from ._elbv2.api import delete_rule as delete_rule
+from ._elbv2.api import describe_listeners as describe_listeners
+from ._elbv2.api import describe_load_balancer_attributes as describe_load_balancer_attributes
+from ._elbv2.api import describe_load_balancers as describe_load_balancers
+from ._elbv2.api import describe_rules as describe_rules
+from ._elbv2.api import describe_tags as describe_tags
+from ._elbv2.api import describe_target_groups as describe_target_groups
+from ._elbv2.api import modify_listener as modify_listener
+from ._elbv2.api import modify_load_balancer_attributes as modify_load_balancer_attributes
+from ._elbv2.api import modify_rule as modify_rule
+from ._elbv2.api import remove_tags as remove_tags
+from ._elbv2.api import set_ip_address_type as set_ip_address_type
+from ._elbv2.api import set_rule_priorities as set_rule_priorities
+from ._elbv2.api import set_security_groups as set_security_groups
+from ._elbv2.api import set_subnets as set_subnets
+from ._elbv2.common import AnsibleELBv2Error as AnsibleELBv2Error
+from ._elbv2.common import ELBv2ErrorHandler as ELBv2ErrorHandler
+from ._elbv2.common import ELBv2ListenerErrorHandler as ELBv2ListenerErrorHandler
+from ._elbv2.common import ELBv2RuleErrorHandler as ELBv2RuleErrorHandler
+from ._elbv2.common import ELBv2TargetGroupErrorHandler as ELBv2TargetGroupErrorHandler
+from ._elbv2.listeners import ELBListener as ELBListener
+from ._elbv2.listeners import ELBListeners as ELBListeners
+from ._elbv2.listeners import _compare_listener as _compare_listener
+from ._elbv2.listeners import _group_listeners as _group_listeners
+from ._elbv2.listeners import _prepare_listeners as _prepare_listeners
+from ._elbv2.listeners import validate_listener_https_requirements as validate_listener_https_requirements
+from ._elbv2.rules import ELBListenerRule as ELBListenerRule
+from ._elbv2.rules import ELBListenerRules as ELBListenerRules
+from ._elbv2.rules import _check_rule_condition as _check_rule_condition
+from ._elbv2.rules import _compare_rule as _compare_rule
+from ._elbv2.rules import _compare_rule_actions as _compare_rule_actions
+from ._elbv2.rules import _group_rules as _group_rules
+from ._elbv2.transformations import normalize_application_load_balancer as normalize_application_load_balancer
+from .elb_utils import get_elb
+
+# pylint: enable=unused-import,useless-import-alias
+
+# isort: split
 # Not intended for general re-use / re-import
-from ._elbv2 import actions as _actions
-from ._elbv2 import api as _api
-from ._elbv2 import common as _common
-from ._elbv2 import listeners as _listeners
-from ._elbv2 import rules as _rules
-from ._elbv2 import transformations as _transformations
 from ._elbv2 import waiters as _waiters
 from .ec2 import get_ec2_security_group_ids_from_names
-
-add_listener_certificates = _api.add_listener_certificates
-add_tags = _api.add_tags
-create_listener = _api.create_listener
-create_load_balancer = _api.create_load_balancer
-create_rule = _api.create_rule
-delete_listener = _api.delete_listener
-delete_load_balancer = _api.delete_load_balancer
-delete_rule = _api.delete_rule
-describe_listeners = _api.describe_listeners
-describe_load_balancer_attributes = _api.describe_load_balancer_attributes
-describe_load_balancers = _api.describe_load_balancers
-describe_rules = _api.describe_rules
-describe_tags = _api.describe_tags
-describe_target_groups = _api.describe_target_groups
-modify_listener = _api.modify_listener
-modify_load_balancer_attributes = _api.modify_load_balancer_attributes
-modify_rule = _api.modify_rule
-remove_tags = _api.remove_tags
-set_ip_address_type = _api.set_ip_address_type
-set_rule_priorities = _api.set_rule_priorities
-set_security_groups = _api.set_security_groups
-set_subnets = _api.set_subnets
-
-# Re-export helper functions from elb_utils
-from .elb_utils import get_elb
 from .exceptions import AnsibleAWSError
 from .modules import AnsibleAWSModule
 from .retries import AWSRetry
 from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
-
-# Expose error handling classes
-AnsibleELBv2Error = _common.AnsibleELBv2Error
-ELBv2ErrorHandler = _common.ELBv2ErrorHandler
-ELBv2ListenerErrorHandler = _common.ELBv2ListenerErrorHandler
-ELBv2RuleErrorHandler = _common.ELBv2RuleErrorHandler
-ELBv2TargetGroupErrorHandler = _common.ELBv2TargetGroupErrorHandler
-
-# Expose transformation functions
-normalize_application_load_balancer = _transformations.normalize_application_load_balancer
-
-# Expose listener classes and functions
-ELBListeners = _listeners.ELBListeners
-ELBListener = _listeners.ELBListener
-validate_listener_https_requirements = _listeners.validate_listener_https_requirements
-_compare_listener = _listeners._compare_listener
-_group_listeners = _listeners._group_listeners
-_prepare_listeners = _listeners._prepare_listeners
-
-# Expose rule classes and functions
-ELBListenerRules = _rules.ELBListenerRules
-ELBListenerRule = _rules.ELBListenerRule
-_check_rule_condition = _rules._check_rule_condition
-_compare_rule_actions = _rules._compare_rule_actions
-_compare_rule = _rules._compare_rule
-_group_rules = _rules._group_rules
-
-# Expose action processing functions
-_simple_forward_config_arn = _actions._simple_forward_config_arn
-_prune_forward_config = _actions._prune_forward_config
-_prune_secret = _actions._prune_secret
-_append_use_existing_client_secret = _actions._append_use_existing_client_secret
 
 
 def get_elbv2_waiter(client: Any, waiter_name: str):

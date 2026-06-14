@@ -217,6 +217,37 @@ or:
        if not HAS_BOTO3:
            module.fail_json(missing_required_lib('botocore and boto3'))
 
+Importing from module_utils
+----------------------------
+
+When importing utilities from ``module_utils``, always import directly from the appropriate
+submodule rather than using the backwards-compatibility re-exports in ``core.py`` or ``ec2.py``.
+
+**Deprecated pattern** (will be removed in a future major release):
+
+.. code-block:: python
+
+   from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+   from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+
+**Correct pattern**:
+
+.. code-block:: python
+
+   from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+   from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+
+The ``core.py`` and ``ec2.py`` modules contain backwards-compatibility re-exports for historical reasons,
+but these are deprecated and will be removed in a future major release. New code should import directly
+from the source module where each function or class is defined:
+
+* ARN utilities: ``ansible_collections.amazon.aws.plugins.module_utils.arn``
+* Botocore utilities: ``ansible_collections.amazon.aws.plugins.module_utils.botocore``
+* Exception classes: ``ansible_collections.amazon.aws.plugins.module_utils.exceptions``
+* IAM policy utilities: ``ansible_collections.amazon.aws.plugins.module_utils.policy``
+* Module classes: ``ansible_collections.amazon.aws.plugins.module_utils.modules``
+* Transformation utilities: ``ansible_collections.amazon.aws.plugins.module_utils.transformation``
+
 Supporting Module Defaults
 --------------------------
 
