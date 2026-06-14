@@ -559,7 +559,7 @@ def test_inventory_get_instances_by_region(m_describe_ec2_instances, inventory, 
     assert inventory._get_instances_by_region(regions, filters, False) == expected
     inventory.all_clients.assert_called_with("ec2")
 
-    if any((f["Name"] == "instance-state-name" for f in filters)):
+    if any(f["Name"] == "instance-state-name" for f in filters):
         filters.append(default_filter)
 
     m_describe_ec2_instances.assert_has_calls([call(conn, filters) for conn, region in boto3_conn], any_order=True)

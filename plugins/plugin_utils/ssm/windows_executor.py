@@ -97,7 +97,7 @@ class WindowsCommandExecutor:
 
         # DEBUG: Show command encoding details (level 6 for long-term debugging of encoding issues)
         cmd_str = to_text(cmd)
-        self._verbosity_display(6, f"EXEC_VIA_S3: Command (str): {repr(cmd_str[:200])}")
+        self._verbosity_display(6, f"EXEC_VIA_S3: Command (str): {cmd_str[:200]!r}")
         if isinstance(cmd, bytes):
             self._verbosity_display(6, f"EXEC_VIA_S3: Command (bytes): {cmd[:200]}")
         self._verbosity_display(6, f"EXEC_VIA_S3: Command content:\n{cmd_str}")
@@ -121,8 +121,8 @@ class WindowsCommandExecutor:
             result = self._execute_wrapper(wrapper, mark_begin, mark_end)
 
             self._verbosity_display(3, f"EXEC_VIA_S3: Command execution complete, returncode={result[0]}")
-            self._verbosity_display(6, f"EXEC_VIA_S3: Stdout (str): {repr(result[1][:200])}")
-            self._verbosity_display(6, f"EXEC_VIA_S3: Stderr (str): {repr(result[2][:200])}")
+            self._verbosity_display(6, f"EXEC_VIA_S3: Stdout (str): {result[1][:200]!r}")
+            self._verbosity_display(6, f"EXEC_VIA_S3: Stderr (str): {result[2][:200]!r}")
             self._verbosity_display(6, f"EXEC_VIA_S3: Stdout type: {type(result[1])}, length: {len(result[1])}")
             self._verbosity_display(6, f"EXEC_VIA_S3: Stderr type: {type(result[2])}, length: {len(result[2])}")
             return result
@@ -184,7 +184,7 @@ class WindowsCommandExecutor:
         :returns: Presigned URL for downloading the script
         """
         script_bytes = to_bytes(script, errors="surrogate_or_strict")
-        self._verbosity_display(6, f"EXEC_VIA_S3: Script to upload (str): {repr(to_text(script)[:200])}")
+        self._verbosity_display(6, f"EXEC_VIA_S3: Script to upload (str): {to_text(script)[:200]!r}")
         self._verbosity_display(6, f"EXEC_VIA_S3: Script to upload (bytes): {script_bytes[:200]}")
 
         # WARNING: Upload with UTF-8 ContentType - PowerShell wrapper expects UTF-8
@@ -218,7 +218,7 @@ class WindowsCommandExecutor:
         self._verbosity_display(6, f"EXEC_VIA_S3: Stdin data (bytes): {in_data[:200]}")
         self._verbosity_display(
             6,
-            f"EXEC_VIA_S3: Stdin data (decoded): {repr(to_text(in_data, errors='surrogate_or_strict')[:200])}",
+            f"EXEC_VIA_S3: Stdin data (decoded): {to_text(in_data, errors='surrogate_or_strict')[:200]!r}",
         )
 
         self._s3_client.put_object(

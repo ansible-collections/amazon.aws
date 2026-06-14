@@ -78,7 +78,7 @@ try:
 except ImportError:
     HAS_PACKAGING = False
 
-from ansible.module_utils.ansible_release import __version__
+from ansible.module_utils import ansible_release as _ansible_release
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.text.converters import to_native
 
@@ -92,7 +92,7 @@ MINIMUM_BOTO3_VERSION = "1.38.23"
 
 def _get_user_agent_string():
     info = get_collection_info()
-    result = f"APN/1.0 Ansible/{__version__}"
+    result = f"APN/1.0 Ansible/{_ansible_release.__version__}"
     if info["name"]:
         if info["version"] is not None:
             result += f" {info['name']}/{info['version']}"

@@ -24,9 +24,9 @@ from ansible.module_utils.common.text.converters import to_text
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import get_boto3_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.errors import AWSErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.exceptions import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
@@ -747,7 +747,7 @@ def describe_db_cluster_parameter_groups(
 
 @AWSRetry.jittered_backoff()
 def describe_db_instance_parameter_groups(
-    connection: Any, module: AnsibleAWSModule, db_parameter_group_name: str = None
+    connection: Any, module: AnsibleAWSModule, db_parameter_group_name: Optional[str] = None
 ) -> List[dict]:
     try:
         if db_parameter_group_name:

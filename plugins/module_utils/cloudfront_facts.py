@@ -15,12 +15,18 @@
 Common cloudfront facts shared between modules
 """
 
+from __future__ import annotations
+
 from functools import partial
+from typing import TYPE_CHECKING
 
 try:
     import botocore
 except ImportError:
     pass
+
+if TYPE_CHECKING:
+    from typing import ClassVar
 
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
@@ -51,7 +57,7 @@ def _cloudfront_paginate_build_full_result(client, client_method, **kwargs):
 class CloudFrontFactsServiceManager:
     """Handles CloudFront Facts Services"""
 
-    CLOUDFRONT_CLIENT_API_MAPPING = {
+    CLOUDFRONT_CLIENT_API_MAPPING: ClassVar = {
         "get_distribution": {
             "error": "Error describing distribution",
         },
@@ -83,7 +89,7 @@ class CloudFrontFactsServiceManager:
         },
     }
 
-    CLOUDFRONT_CLIENT_PAGINATE_API_MAPPING = {
+    CLOUDFRONT_CLIENT_PAGINATE_API_MAPPING: ClassVar = {
         "list_origin_access_identities": {
             "error": "Error listing cloud front origin access identities",
             "client_api": "list_cloud_front_origin_access_identities",

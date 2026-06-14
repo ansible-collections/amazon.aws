@@ -428,7 +428,7 @@ def _delete_snapshot(module: AnsibleAWSModule, connection) -> None:
     snapshot_id = module.params.get("snapshot_id")
     if module.check_mode:
         try:
-            snapshots = describe_snapshots(connection, SnapshotIds=[(snapshot_id)])
+            snapshots = describe_snapshots(connection, SnapshotIds=[snapshot_id])
             if not snapshots:
                 module.exit_json(changed=False, msg="snapshot not found")
             module.exit_json(changed=True, msg="Would have deleted snapshot if not in check mode")

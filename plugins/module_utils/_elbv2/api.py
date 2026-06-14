@@ -28,7 +28,6 @@ if typing.TYPE_CHECKING:
     from typing import Dict
     from typing import List
     from typing import Optional
-    from typing import Union
 
     from ..botocore import ClientType
 

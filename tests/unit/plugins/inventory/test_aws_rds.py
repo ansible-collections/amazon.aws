@@ -185,13 +185,13 @@ def test_inventory_format_inventory(m_get_rds_hostname, inventory, hosts):
 
     m_get_rds_hostname.side_effect = lambda h: h["name"]
 
-    class _inventory_host(object):
+    class _InventoryHost:
         def __init__(self, name, host_vars):
             self.name = name
             self.vars = host_vars
 
     inventory.inventory = MagicMock()
-    inventory.inventory.get_host.side_effect = lambda x: _inventory_host(name=x, host_vars=hosts_vars.get(x))
+    inventory.inventory.get_host.side_effect = lambda x: _InventoryHost(name=x, host_vars=hosts_vars.get(x))
 
     hosts = [{"name": x} for x in hosts.split(",") if x]
     expected = {
@@ -679,6 +679,6 @@ def test_inventory_parse(
     if cache and user_cache_directive and cache_hit:
         inventory._populate_from_source.assert_called_with(cache_key_value)
 
-    if cache and user_cache_directive and not cache_hit or (not cache and user_cache_directive):
+    if (cache and user_cache_directive and not cache_hit) or (not cache and user_cache_directive):
         # validate that cache was populated
         assert inventory._cache[cache_key] == format_cache_key_value

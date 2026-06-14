@@ -549,7 +549,7 @@ def get_image_by_id(connection, image_id):
         return None
 
     if len(images) > 1:
-        raise Ec2AmiFailure(f"Invalid number of instances ({str(len(images))}) found for image_id: {image_id}.")
+        raise Ec2AmiFailure(f"Invalid number of instances ({len(images)!s}) found for image_id: {image_id}.")
 
     result = images[0]
     try:
