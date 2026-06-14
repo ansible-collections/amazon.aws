@@ -14,6 +14,7 @@ extend-exclude = '''
 revision = "origin/main.."
 
 src = [
+    "extensions",
     "plugins",
     "tests/unit",
     "tests/integration",
@@ -26,6 +27,7 @@ line_length = 120
 skip = [".tox", "tests/output"]
 
 src_paths = [
+    "extensions",
     "plugins",
     "tests/unit",
     "tests/integration",
