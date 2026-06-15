@@ -1,0 +1,2 @@
+trivial:
+  - .github/workflows/certification.yml - bump the reusable workflow version to v2.0.0
