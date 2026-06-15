@@ -4,6 +4,14 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v10.3.2
+=======
+
+Bugfixes
+--------
+
+- Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914) (https://github.com/ansible-collections/amazon.aws/pull/2987)
+
 v10.3.1
 =======
 

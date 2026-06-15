@@ -4032,3 +4032,12 @@ releases:
     - ansible-test-gh-action-migration.yml
     - reliability-duplicate-assignments.yml
     release_date: '2026-05-06'
+  10.3.2:
+    changes:
+      bugfixes:
+      - Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if
+        bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914)
+        (https://github.com/ansible-collections/amazon.aws/pull/2987)
+    fragments:
+    - 2987-s3bucket-waiter-retry-404.yml
+    release_date: '2026-06-16'
