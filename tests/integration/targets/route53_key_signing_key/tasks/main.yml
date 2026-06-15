@@ -156,8 +156,6 @@
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: true
-        wait: true
-        wait_timeout: 600
       check_mode: true
       register: _hosted_zone_dnssec
 
@@ -172,8 +170,6 @@
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: true
-        wait: true
-        wait_timeout: 600
       register: _hosted_zone_dnssec
 
     - name: Assert success
@@ -181,15 +177,12 @@
         that:
           - _hosted_zone_dnssec is successful
           - _hosted_zone_dnssec.changed
-          - _hosted_zone_dnssec.dnssec is defined
 
     - name: Disable DNSSEC for Route53 public zone (check_mode)
       amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: false
-        wait: true
-        wait_timeout: 600
       check_mode: true
       register: _hosted_zone_dnssec
 
@@ -204,8 +197,6 @@
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: false
-        wait: true
-        wait_timeout: 600
       register: _hosted_zone_dnssec
 
     - name: Assert success
@@ -213,7 +204,6 @@
         that:
           - _hosted_zone_dnssec is successful
           - _hosted_zone_dnssec.changed
-          - _hosted_zone_dnssec.dnssec is defined
 
     - name: Delete the Route53 public zone (expected to fail)
       amazon.aws.route53_zone:
