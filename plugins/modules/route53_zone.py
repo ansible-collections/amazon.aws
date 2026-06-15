@@ -67,7 +67,6 @@ options:
         description:
             - Enables DNSSEC signing in a specific hosted zone.
         type: bool
-        default: false
         version_added: 9.2.0
     wait:
         description:
