@@ -1,0 +1,36 @@
+---
+name: integration
+
+concurrency:
+  group: integration-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - main
+      - stable-*
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  integration:
+    if: |
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request && 
+        github.event.comment.body == 'recheck'
+      ) ||
+      contains(fromJSON('["opened", "reopened", "synchronize"]'), github.event.action) ||
+      (
+        contains(fromJSON('["labeled", "unlabeled"]'), github.event.action) && 
+        github.event.label.name == 'test-all-the-targets'
+      )
+    uses: ./.github/workflows/integration.yml
