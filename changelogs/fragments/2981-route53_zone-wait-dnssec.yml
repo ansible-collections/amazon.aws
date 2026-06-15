@@ -1,3 +1,0 @@
----
-minor_changes:
-  - route53_zone - add support for ``wait`` and ``wait_timeout`` parameters to wait for DNSSEC state changes to propagate (https://github.com/ansible-collections/amazon.aws/issues/2981).
