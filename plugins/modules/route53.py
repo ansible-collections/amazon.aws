@@ -267,14 +267,14 @@ resource_record_sets:
       description: Record value.
       returned: always
       type: str
-      sample: "52.43.18.27"
+      sample: "203.0.113.3"
     record_values:
       description: Record values as a list.
       returned: always
       type: list
       version_added: 11.0.0
       sample:
-      - 52.43.18.27
+      - 203.0.113.3
     values:
       description:
         - Record values as a list.
@@ -283,7 +283,7 @@ resource_record_sets:
       returned: always
       type: list
       sample:
-      - 52.43.18.27
+      - 203.0.113.3
     weight:
       description: Weight of the record.
       returned: always

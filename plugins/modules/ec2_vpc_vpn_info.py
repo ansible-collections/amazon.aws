@@ -118,7 +118,7 @@ vpn_connections:
                               "log_enabled": false
                           }
                       },
-                      "outside_ip_address": "34.225.101.10",
+                      "outside_ip_address": "203.0.113.14",
                       "pre_shared_key": "8n7hnjNE8zhIt4VpMOIfcrw6XnUTHLW9",
                       "tunnel_inside_cidr": "169.254.31.8/30"
                   },

@@ -571,7 +571,7 @@ instances:
             description: The public IPv4 address assigned to the instance.
             returned: always
             type: str
-            sample: 52.0.0.1
+            sample: 203.0.113.11
         root_device_name:
             description: The device name of the root device.
             returned: always

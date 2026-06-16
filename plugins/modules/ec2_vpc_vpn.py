@@ -312,7 +312,7 @@ options:
                         "log_enabled": false
                     }
                 },
-                "outside_ip_address": "34.225.101.10",
+                "outside_ip_address": "203.0.113.13",
                 "pre_shared_key": "8n7hnjNE8zhIt4VpMOIfcrw6XnUTHLW9",
                 "tunnel_inside_cidr": "169.254.31.8/30"
             }]
@@ -387,7 +387,7 @@ vgw_telemetry:
   sample: [{
             "accepted_route_count": 0,
             "last_status_change": "2024-09-30T13:12:33+00:00",
-            "outside_ip_address": "34.225.101.10",
+            "outside_ip_address": "203.0.113.15",
             "status": "DOWN",
             "status_message": "IPSEC IS DOWN"
         }]
