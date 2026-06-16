@@ -313,7 +313,7 @@ options:
                     }
                 },
                 "outside_ip_address": "203.0.113.13",
-                "pre_shared_key": "8n7hnjNE8zhIt4VpMOIfcrw6XnUTHLW9",
+                "pre_shared_key": "ExamplePreSharedKey1234567890",
                 "tunnel_inside_cidr": "169.254.31.8/30"
             }]
       contains:
