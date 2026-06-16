@@ -275,7 +275,7 @@ update_reverse_dns_record_result:
           description: The public IP address.
           returned: always
           type: str
-          sample: "11.22.33.44"
+          sample: "203.0.113.1"
 """
 
 from typing import Any

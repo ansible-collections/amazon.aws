@@ -337,7 +337,7 @@ instances:
                             description: The public IP address or Elastic IP address bound to the network interface.
                             returned: always
                             type: str
-                            sample: 1.2.3.4
+                            sample: 203.0.113.1
                 attachment:
                     description: The network interface attachment.
                     returned: always
@@ -459,7 +459,7 @@ instances:
                                     description: The public IP address or Elastic IP address bound to the network interface.
                                     returned: always
                                     type: str
-                                    sample: 1.2.3.4
+                                    sample: 203.0.113.1
                         primary:
                             description: Indicates whether this IPv4 address is the primary private IP address of the network interface.
                             returned: always

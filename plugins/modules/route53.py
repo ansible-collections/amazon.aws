@@ -252,7 +252,7 @@ resource_record_sets:
       description: Information about the resource records to act upon.
       type: list
       returned: always
-      sample: [{"value": "1.1.1.1"}]
+      sample: [{"value": "198.51.100.1"}]
     ttl:
       description: Resource record cache TTL.
       returned: always
@@ -310,7 +310,7 @@ EXAMPLES = r"""
     record: new.foo.com
     type: A
     ttl: 7200
-    value: 1.1.1.1,2.2.2.2,3.3.3.3
+    value: 198.51.100.1,198.51.100.2,198.51.100.3
     wait: true
 
 - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
@@ -321,9 +321,9 @@ EXAMPLES = r"""
     type: A
     ttl: 7200
     value:
-      - 1.1.1.1
-      - 2.2.2.2
-      - 3.3.3.3
+      - 198.51.100.1
+      - 198.51.100.2
+      - 198.51.100.3
     wait: true
 
 - name: Retrieve the details for new.foo.com
@@ -456,7 +456,7 @@ EXAMPLES = r"""
     record: 'geo-test.{{ zone_one }}'
     identifier: "geohost@www"
     type: A
-    value: 1.1.1.1
+    value: 198.51.100.1
     ttl: 30
     geo_location:
       country_code: US
@@ -468,7 +468,7 @@ EXAMPLES = r"""
     record: 'geo-test.{{ zone_one }}'
     identifier: "geohost@www"
     type: A
-    value: 1.1.1.1
+    value: 198.51.100.1
     ttl: 30
     geo_location:
       country_code: US
