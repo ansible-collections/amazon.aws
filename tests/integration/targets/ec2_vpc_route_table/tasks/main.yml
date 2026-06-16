@@ -98,7 +98,7 @@
           public: "False"
           assign_instances_ipv6: false
           ipv6_cidr: ""
-        - cidr: ""{{ subnet_e_cidr }}""
+        - cidr: "{{ subnet_e_cidr }}"
           zone: "{{ availability_zone_a }}"
           public: "False"
           assign_instances_ipv6: true
@@ -968,7 +968,7 @@
           Name: Gateway route table
         gateway_id: "{{ vpc_igw.gateway_id }}"
         routes:
-          - dest: ""{{ subnet_e_cidr }}""
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -987,7 +987,7 @@
           Name: Gateway route table
         gateway_id: "{{ vpc_igw.gateway_id }}"
         routes:
-          - dest: ""{{ subnet_e_cidr }}""
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1593,7 +1593,7 @@
         - cidr: "{{ subnet_b_cidr }}"
         - cidr: "{{ subnet_c_cidr }}"
         - cidr: "{{ subnet_d_cidr }}"
-        - cidr: ""{{ subnet_e_cidr }}""
+        - cidr: "{{ subnet_e_cidr }}"
         - cidr: "{{ subnet_f_cidr }}"
         - cidr: "{{ subnet_g_cidr }}"
       ignore_errors: true

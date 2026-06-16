@@ -31,8 +31,8 @@
       register: subnets_result
       loop:
         - { cidr: "{{ subnet_cidr }}", zone: "{{ aws_region }}a" }
-        - { cidr: {{ subnet_b_cidr }}, zone: "{{ aws_region }}b" }
-        - { cidr: {{ subnet_c_cidr }}, zone: "{{ aws_region }}c" }
+        - { cidr: "{{ subnet_b_cidr }}", zone: "{{ aws_region }}b" }
+        - { cidr: "{{ subnet_c_cidr }}", zone: "{{ aws_region }}c" }
 
     - name: Create security groups
       amazon.aws.ec2_security_group:
@@ -304,9 +304,9 @@
       delay: 10
       loop:
         - { cidr: "{{ subnet_cidr }}", zone: "{{ aws_region }}a" }
-        - { cidr: {{ subnet_b_cidr }}, zone: "{{ aws_region }}b" }
-        - { cidr: {{ subnet_c_cidr }}, zone: "{{ aws_region }}c" }
-        - { cidr: {{ subnet_d_cidr }}, zone: "{{ aws_region }}d" }
+        - { cidr: "{{ subnet_b_cidr }}", zone: "{{ aws_region }}b" }
+        - { cidr: "{{ subnet_c_cidr }}", zone: "{{ aws_region }}c" }
+        - { cidr: "{{ subnet_d_cidr }}", zone: "{{ aws_region }}d" }
 
     - name: Delete VPC
       amazon.aws.ec2_vpc_net:
