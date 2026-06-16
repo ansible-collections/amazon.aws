@@ -6,15 +6,15 @@ tgw_name: "{{ _resource_prefix }}"
 tgw_name_2: "{{ _resource_prefix }}-2"
 vpc_name_a: "{{ _resource_prefix }}-1"
 vpc_name_b: "{{ _resource_prefix }}-2"
-vpc_cidr_a: 10.{{ 256 | random(seed=vpc_seed) }}.52.0/24
-vpc_cidr_b: 10.{{ 256 | random(seed=vpc_seed) }}.53.0/24
+vpc_cidr_a: "10.{{ 256 | random(seed=vpc_seed) }}.52.0/24"
+vpc_cidr_b: "10.{{ 256 | random(seed=vpc_seed) }}.53.0/24"
 
-subnet_cidr_a_1: 10.{{ 256 | random(seed=vpc_seed) }}.52.0/26
-subnet_cidr_a_2: 10.{{ 256 | random(seed=vpc_seed) }}.52.64/26
-subnet_cidr_a_3: 10.{{ 256 | random(seed=vpc_seed) }}.52.128/26
-subnet_cidr_a_1a: 10.{{ 256 | random(seed=vpc_seed) }}.52.192/26
-subnet_cidr_b_1: 10.{{ 256 | random(seed=vpc_seed) }}.53.0/26
-subnet_cidr_b_2: 10.{{ 256 | random(seed=vpc_seed) }}.53.64/26
+subnet_cidr_a_1: "10.{{ 256 | random(seed=vpc_seed) }}.52.0/26"
+subnet_cidr_a_2: "10.{{ 256 | random(seed=vpc_seed) }}.52.64/26"
+subnet_cidr_a_3: "10.{{ 256 | random(seed=vpc_seed) }}.52.128/26"
+subnet_cidr_a_1a: "10.{{ 256 | random(seed=vpc_seed) }}.52.192/26"
+subnet_cidr_b_1: "10.{{ 256 | random(seed=vpc_seed) }}.53.0/26"
+subnet_cidr_b_2: "10.{{ 256 | random(seed=vpc_seed) }}.53.64/26"
 
 subnet_name_a_1: "{{ _resource_prefix }}-a-1"
 subnet_name_a_1a: "{{ _resource_prefix }}-a-1a"

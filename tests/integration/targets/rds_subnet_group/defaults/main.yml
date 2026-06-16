@@ -1,5 +1,5 @@
 ---
-vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.128.0/22
+vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.128.0/22"
 subnet_a: 10.{{ 256 | random(seed=resource_prefix) }}.128.0/24
 subnet_b: 10.{{ 256 | random(seed=resource_prefix) }}.129.0/24
 subnet_c: 10.{{ 256 | random(seed=resource_prefix) }}.130.0/24

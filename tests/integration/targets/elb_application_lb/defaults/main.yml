@@ -8,7 +8,7 @@ alb_name_multiple_listener_test: alb-test-{{ resource_short }}-lt
 alb_name_rules_on_create_test: alb-test-{{ resource_short }}-rc
 tg_name: alb-test-{{ resource_short }}
 tg_2_name: alb-test-2-{{ resource_short }}
-vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.108.0/22
+vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.108.0/22"
 private_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.108.0/24
 private_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.109.0/24
 public_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.110.0/24

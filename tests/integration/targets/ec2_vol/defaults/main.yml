@@ -3,7 +3,7 @@ availability_zone: "{{ ec2_availability_zone_names[0] }}"
 
 vpc_name: "{{ resource_prefix }}-vpc"
 vpc_seed: "{{ resource_prefix }}"
-vpc_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.56.0/22
-subnet_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.57.0/24
+vpc_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.56.0/22"
+subnet_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.57.0/24"
 
 instance_name: "{{ resource_prefix }}-instance"

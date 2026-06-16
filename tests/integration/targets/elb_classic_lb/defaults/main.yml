@@ -2,7 +2,7 @@
 # defaults file for elb_classic_lb
 elb_name: ansible-test-{{ tiny_prefix }}
 
-vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.112.0/22
+vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.112.0/22"
 subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.112.0/24
 subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.113.0/24
 subnet_cidr_3: 10.{{ 256 | random(seed=resource_prefix) }}.114.0/24

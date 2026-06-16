@@ -10,7 +10,7 @@ db_port: 3306
 
 # Create cluster in a VPC
 vpc_name: ansible-test-vpc-{{ tiny_prefix }}
-vpc_cidr: 10.{{ 256 | random(seed=tiny_prefix) }}.116.0/22
+vpc_cidr: "10.{{ 256 | random(seed=tiny_prefix) }}.116.0/22"
 subnets:
   - { cidr: "10.{{ 256 | random(seed=tiny_prefix) }}.116.0/24", zone: "{{ aws_region }}a" }
   - { cidr: "10.{{ 256 | random(seed=tiny_prefix) }}.117.0/24", zone: "{{ aws_region }}b" }
