@@ -244,7 +244,7 @@
             gateway_id: igw
           - dest: ::/0
             gateway_id: igw
-          - dest: "0.0.0.0/8"
+          - dest: "172.16.0.0/12"
             gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
       check_mode: true
       register: check_mode_results
@@ -265,7 +265,7 @@
             gateway_id: igw
           - dest: ::/0
             gateway_id: igw
-          - dest: "0.0.0.0/8"
+          - dest: "172.16.0.0/12"
             gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
       register: add_routes
 
