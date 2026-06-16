@@ -14,16 +14,16 @@ networking_facts:
 
 vpcs_info:
   - name: "{{ resource_prefix }}-1"
-    cidr: "10.1.0.0/16"
+    cidr: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/16"
     tags:
       resource_prefix: "{{ resource_prefix }}"
   - name: "{{ resource_prefix }}-2"
-    cidr: "10.2.0.0/16"
+    cidr: "10.{{ 256 | random(seed=resource_prefix ~ '-2') }}.0.0/16"
   - name: "{{ resource_prefix }}-3"
-    cidr: "10.3.0.0/16"
+    cidr: "10.{{ 256 | random(seed=resource_prefix ~ '-3') }}.0.0/16"
 subnets_info:
-  - cidr: "10.1.1.0/24"
+  - cidr: "10.{{ 256 | random(seed=resource_prefix) }}.1.0/24"
     tags:
       resource_prefix: "{{ resource_prefix }}"
-  - cidr: "10.1.2.0/24"
+  - cidr: "10.{{ 256 | random(seed=resource_prefix) }}.2.0/24"
   
