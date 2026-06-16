@@ -14,7 +14,7 @@
     - name: Create VPC for use in testing
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
-        cidr_block: 10.22.32.0/23
+        cidr_block: "{{ vpc_cidr }}"
         tags:
           Name: Ansible ec2_instance Testing VPC
         tenancy: default
@@ -461,7 +461,7 @@
         - name: Create second VPC for use in testing
           amazon.aws.ec2_vpc_net:
             name: "{{ resource_prefix }}-vpc2"
-            cidr_block: 10.22.34.0/23
+            cidr_block: "{{ vpc_cidr_2 }}"
             tags:
               Name: Ansible ec2_instance Testing VPC 2
             tenancy: default
@@ -543,7 +543,7 @@
         - name: Delete second VPC for use in testing
           amazon.aws.ec2_vpc_net:
             name: "{{ resource_prefix }}-vpc2"
-            cidr_block: 10.22.34.0/23
+            cidr_block: "{{ vpc_cidr_2 }}"
             state: absent
 
     # ============================================================
@@ -608,7 +608,7 @@
     - name: Remove the VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
-        cidr_block: 10.22.32.0/23
+        cidr_block: "{{ vpc_cidr }}"
         state: absent
       register: removed
       until: removed is not failed

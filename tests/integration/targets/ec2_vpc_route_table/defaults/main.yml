@@ -1,4 +1,12 @@
 ---
 availability_zone_a: "{{ ec2_availability_zone_names[0] }}"
 availability_zone_b: "{{ ec2_availability_zone_names[1] }}"
-vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/21"
+vpc_seed: "{{ resource_prefix }}"
+vpc_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.0.0/21"
+subnet_a_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.0.0/24"
+subnet_b_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.1.0/24"
+subnet_c_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.2.0/24"
+subnet_d_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.3.0/24"
+subnet_e_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.4.0/24"
+subnet_f_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.5.0/24"
+subnet_g_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.6.0/24"
