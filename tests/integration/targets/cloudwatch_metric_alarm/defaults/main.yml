@@ -3,3 +3,6 @@
 ec2_instance_name: "{{ resource_prefix }}-node"
 ec2_instance_owner: integration-run-{{ resource_prefix }}
 alarm_prefix: ansible-test
+vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/23"
+subnet_a_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/24"
+subnet_b_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.1.0/24"
