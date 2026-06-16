@@ -7,5 +7,5 @@ ec2_ami_description: Created by Ansible ec2_ami integration tests
 
 ec2_ami_image: "{{ ec2_ami_id }}"
 
-vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
-subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24
+vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.20.0/22
+subnet_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.20.0/24

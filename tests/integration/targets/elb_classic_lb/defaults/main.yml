@@ -2,11 +2,11 @@
 # defaults file for elb_classic_lb
 elb_name: ansible-test-{{ tiny_prefix }}
 
-vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
-subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24
-subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.2.0/24
-subnet_cidr_3: 10.{{ 256 | random(seed=resource_prefix) }}.3.0/24
-subnet_cidr_4: 10.{{ 256 | random(seed=resource_prefix) }}.4.0/24
+vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.112.0/22
+subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.112.0/24
+subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.113.0/24
+subnet_cidr_3: 10.{{ 256 | random(seed=resource_prefix) }}.114.0/24
+subnet_cidr_4: 10.{{ 256 | random(seed=resource_prefix) }}.115.0/24
 
 default_tags:
   snake_case_key: snake_case_value
