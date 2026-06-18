@@ -30,30 +30,6 @@ Bugfixes
 - elb_application_lb - Listener rules are now returned sorted by priority with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
 - elb_application_lb_info - Listener rules are now returned sorted by priority with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
 
-v10.3.2
-=======
-
-Bugfixes
---------
-
-- Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914) (https://github.com/ansible-collections/amazon.aws/pull/2987)
-
-v10.3.1
-=======
-
-Release Summary
----------------
-
-This patch release includes bugfixes for the ``s3_object_info``, ``autoscaling_group``, and ``kms_key`` modules, addressing duplicate dictionary key assignments and improving reliability. It also fixes a TypeError in CloudFront module utilities.
-
-Bugfixes
---------
-
-- autoscaling_group - Fixed duplicate default_cooldown assignment in properties dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
-- kms_key - Fixed parameter reassignment by using passed alias parameter instead of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
-- module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property (https://github.com/ansible-collections/community.aws/issues/1915).
-- s3_object_info - Fixed duplicate dictionary key assignments when retrieving object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
-
 v11.2.0
 =======
 
@@ -162,6 +138,14 @@ Minor Changes
 - s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
 - s3_object - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
 - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+
+v10.3.2
+=======
+
+Bugfixes
+--------
+
+- Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914) (https://github.com/ansible-collections/amazon.aws/pull/2987)
 
 v10.3.1
 =======
