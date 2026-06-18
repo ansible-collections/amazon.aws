@@ -5,5 +5,5 @@ availability_zone: "{{ ec2_availability_zone_names[0] }}"
 ec2_vpc_subnet_name: "{{ resource_prefix }}"
 ec2_vpc_subnet_description: Created by ansible integration tests
 vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.96.0/22"
-subnet_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.97.0/24"
-subnet_cidr_b: 10.{{ 256 | random(seed=resource_prefix) }}.98.0/24
+subnet_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 0) }}"
+subnet_cidr_b: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 1) }}"

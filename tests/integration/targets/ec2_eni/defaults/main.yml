@@ -2,14 +2,13 @@
 availability_zone: "{{ ec2_availability_zone_names[0] }}"
 
 vpc_seed_a: "{{ resource_prefix }}"
-vpc_prefix: 10.{{ 256 | random(seed=vpc_seed_a) }}.32
-vpc_cidr: "{{ vpc_prefix }}.0/22"
-ip_1: "{{ vpc_prefix }}.4"
-ip_2: "{{ vpc_prefix }}.5"
-ip_3: "{{ vpc_prefix }}.6"
-ip_4: "{{ vpc_prefix }}.7"
-ip_5: "{{ vpc_prefix }}.8"
+vpc_cidr: "10.{{ 256 | random(seed=vpc_seed_a) }}.32.0/22"
+ip_1: "{{ vpc_cidr | ansible.utils.ipmath(4) | ansible.utils.ipaddr('address') }}"
+ip_2: "{{ vpc_cidr | ansible.utils.ipmath(5) | ansible.utils.ipaddr('address') }}"
+ip_3: "{{ vpc_cidr | ansible.utils.ipmath(6) | ansible.utils.ipaddr('address') }}"
+ip_4: "{{ vpc_cidr | ansible.utils.ipmath(7) | ansible.utils.ipaddr('address') }}"
+ip_5: "{{ vpc_cidr | ansible.utils.ipmath(8) | ansible.utils.ipaddr('address') }}"
 
 ec2_ips:
-  - "{{ vpc_prefix }}.9"
-  - "{{ vpc_prefix }}.10"
+  - "{{ vpc_cidr | ansible.utils.ipmath(9) | ansible.utils.ipaddr('address') }}"
+  - "{{ vpc_cidr | ansible.utils.ipmath(10) | ansible.utils.ipaddr('address') }}"

@@ -3,10 +3,10 @@
 elb_name: ansible-test-{{ tiny_prefix }}
 
 vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.112.0/22"
-subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.112.0/24
-subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.113.0/24
-subnet_cidr_3: 10.{{ 256 | random(seed=resource_prefix) }}.114.0/24
-subnet_cidr_4: 10.{{ 256 | random(seed=resource_prefix) }}.115.0/24
+subnet_cidr_1: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 0) }}"
+subnet_cidr_2: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 1) }}"
+subnet_cidr_3: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 2) }}"
+subnet_cidr_4: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 3) }}"
 
 default_tags:
   snake_case_key: snake_case_value

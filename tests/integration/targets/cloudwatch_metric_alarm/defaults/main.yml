@@ -4,5 +4,5 @@ ec2_instance_name: "{{ resource_prefix }}-node"
 ec2_instance_owner: integration-run-{{ resource_prefix }}
 alarm_prefix: ansible-test
 vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.8.0/22"
-subnet_a_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.8.0/24"
-subnet_b_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.9.0/24"
+subnet_a_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 0) }}"
+subnet_b_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 1) }}"
