@@ -12,6 +12,8 @@
         filters:
           vpc-id: "{{ testing_vpc.vpc.id }}"
           instance-state-name: [pending, running, shutting-down, stopping, stopped]
+        include_attributes:
+          - disableApiTermination
       register: instances
 
     - name: Set termination protection to false (so we can terminate instance) (cleanup)
