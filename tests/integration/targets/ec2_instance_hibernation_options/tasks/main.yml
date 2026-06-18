@@ -65,6 +65,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-hibernation-options"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: instance_hibernation_status
 
     - name: Assert hibernation options is true

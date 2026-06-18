@@ -13,6 +13,7 @@
         name: "{{ resource_prefix }}-test-basic"
         instance_type: "{{ ec2_instance_type }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         metadata_options:
@@ -53,6 +54,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-t3nano-enabled-required"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: presented_instance_fact
 
     - name: Assert that instance metadata options have been modified successfully

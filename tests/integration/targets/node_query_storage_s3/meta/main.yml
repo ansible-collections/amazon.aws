@@ -1,4 +1,7 @@
 ---
-dependencies:
-  # Ensure that the role is available in the restricted docker environment
-  - role: setup_node_query
+# NOTE: This is a runme.sh based test.
+# Because runme.sh bypasses ansible-test's normal role execution,
+# meta/main.yml dependencies are NOT automatically executed.
+# Dependencies must be declared in the aliases file using needs/target/*
+# and then either explicitly included in runme.sh or added to a role's dependencies.
+dependencies: []

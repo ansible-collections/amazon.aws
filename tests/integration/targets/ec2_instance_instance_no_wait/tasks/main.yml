@@ -42,6 +42,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-no-wait"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: real_instance_fact
       until: real_instance_fact.instances | length > 0
       retries: 10
@@ -50,6 +51,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-no-wait-checkmode"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: checkmode_instance_fact
 
     - name: Confirm whether the check mode is working normally.

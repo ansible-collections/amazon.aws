@@ -100,6 +100,24 @@
           TestPrefix: "{{ resource_prefix }}"
       register: instance_output
 
+    - name: Wait for SSM agent to register
+      ansible.builtin.command:
+        cmd: >
+          aws ssm describe-instance-information
+          --filters "Key=InstanceIds,Values={{ instance_output.instances[0].instance_id }}"
+          --query "InstanceInformationList[0].PingStatus"
+          --output text
+      register: ssm_status
+      until: ssm_status.stdout == "Online"
+      retries: 30
+      delay: 10
+      changed_when: false
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+
     - name: Setup SSM document
       ansible.builtin.include_tasks: ssm_document.yml
       when: use_ssm_document | default(false)

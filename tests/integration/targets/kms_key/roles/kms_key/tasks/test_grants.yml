@@ -72,13 +72,13 @@
               - RetireGrant
       register: key
       check_mode: true
-    - name: Assert grant would have been added
+    - name: Assert that grant would be added
       ansible.builtin.assert:
         that:
           - key.changed
 
     # Roles can take a little while to get ready, pause briefly to give it chance
-    - name: Pause for role creation to fully propagate
+    - name: Wait for role creation to propagate
       ansible.builtin.wait_for:
         timeout: 20
     - name: Add grant
@@ -98,7 +98,7 @@
               - Decrypt
               - RetireGrant
       register: key
-    - name: Assert grant added
+    - name: Assert that grant was added
       ansible.builtin.assert:
         that:
           - key.changed
@@ -120,9 +120,17 @@
           - key.key_policies[0].Id == 'key-default-1'
           - key.description == ''
 
-    - name: Sleep to wait for updates to propagate
-      ansible.builtin.wait_for:
-        timeout: 45
+    - name: Wait for grant to propagate
+      ansible.builtin.include_tasks: double_check_key_state.yml
+      loop: "{{ range(0, 10) | list }}"
+      loop_control:
+        pause: 10
+        label: "Attempt {{ item + 1 }}/10"
+        break_when:
+          - state_check_a is defined
+          - state_check_b is defined
+          - state_check_a.kms_keys[0].grants | length == 1
+          - state_check_b.kms_keys[0].grants | length == 1
     - name: Add grant (idempotence) - check mode
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
@@ -141,7 +149,7 @@
               - RetireGrant
       register: key
       check_mode: true
-    - name: Assert no changes expected
+    - name: Assert that no change is expected
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -163,7 +171,7 @@
               - Decrypt
               - RetireGrant
       register: key
-    - name: Assert no changes made
+    - name: Assert that no change occurred
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -201,7 +209,7 @@
               - Decrypt
               - RetireGrant
       register: key
-    - name: Assert grant added
+    - name: Assert that grant was added
       ansible.builtin.assert:
         that:
           - key.changed
@@ -223,9 +231,17 @@
           - key.key_policies[0].Id == 'key-default-1'
           - key.description == ''
 
-    - name: Sleep to wait for updates to propagate
+    - name: Wait for grants to propagate
+      amazon.aws.kms_key_info:
+        alias: "{{ kms_key_alias }}"
+      register: key_info
+      until:
+        - key_info.kms_keys[0].grants | length == 2
+      retries: 10
+      delay: 10
+    - name: Wait for propagation to settle
       ansible.builtin.wait_for:
-        timeout: 45
+        timeout: 10
     - name: Add a second grant again
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
@@ -242,7 +258,7 @@
               - Decrypt
               - RetireGrant
       register: key
-    - name: Assert grant added
+    - name: Assert that grant was added
       ansible.builtin.assert:
         that:
           - not key.changed
@@ -281,7 +297,7 @@
               - Decrypt
               - RetireGrant
       register: key
-    - name: Assert grants replaced
+    - name: Assert that grants were replaced
       ansible.builtin.assert:
         that:
           - key.changed
@@ -319,7 +335,7 @@
               - Decrypt
               - RetireGrant
       register: key
-    - name: Assert grants replaced
+    - name: Assert that grants were replaced
       ansible.builtin.assert:
         that:
           - key.changed
@@ -346,7 +362,7 @@
   always:
     # ============================================================
     #   CLEAN-UP
-    - name: Finish off by deleting keys
+    - name: Schedule key deletion for cleanup
       amazon.aws.kms_key:
         state: absent
         alias: "{{ kms_key_alias }}"

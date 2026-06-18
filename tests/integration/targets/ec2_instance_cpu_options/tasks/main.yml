@@ -47,6 +47,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-t3nano-1-threads-per-core"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: presented_instance_fact
 
     - name: Modify cpu_options has no effect on existing instance
@@ -78,6 +79,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-t3nano-1-threads-per-core-checkmode"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: checkmode_instance_fact
 
     - name: Confirm existence of instance id.
