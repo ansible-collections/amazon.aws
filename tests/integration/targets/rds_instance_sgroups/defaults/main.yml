@@ -4,3 +4,8 @@ username: test
 password: test12345678
 db_instance_class: db.t3.micro
 allocated_storage: 20
+vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.120.0/22"
+subnet_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 0) }}"
+subnet_b_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 1) }}"
+subnet_c_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 2) }}"
+subnet_d_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 3) }}"

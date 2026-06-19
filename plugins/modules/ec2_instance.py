@@ -615,7 +615,7 @@ EXAMPLES = r"""
     security_group: default
     tower_callback:
       # IP or hostname of tower server
-      tower_address: 1.2.3.4
+      tower_address: 192.0.2.1
       job_template_id: 876
       host_config_key: '[secret config key goes here]'
     network_interfaces:
@@ -711,9 +711,9 @@ EXAMPLES = r"""
         subnet_id: subnet-0123456
         private_ip_addresses:
           - primary: true
-            private_ip_address: 168.50.4.239
+            private_ip_address: 192.168.4.239
           - primary: false
-            private_ip_address: 168.50.4.237
+            private_ip_address: 192.168.4.237
     state: present
     tags:
       foo: bar
@@ -985,7 +985,7 @@ instances:
                             description: The public IP address or Elastic IP address bound to the network interface.
                             returned: always
                             type: str
-                            sample: 1.2.3.4
+                            sample: 203.0.113.1
                 attachment:
                     description: The network interface attachment.
                     returned: always
@@ -1107,7 +1107,7 @@ instances:
                                     description: The public IP address or Elastic IP address bound to the network interface.
                                     returned: always
                                     type: str
-                                    sample: 1.2.3.4
+                                    sample: 203.0.113.1
                         primary:
                             description: Indicates whether this IPv4 address is the primary private IP address of the network interface.
                             returned: always
@@ -1244,7 +1244,7 @@ instances:
             description: The public IPv4 address assigned to the instance
             returned: always
             type: str
-            sample: 52.0.0.1
+            sample: 203.0.113.12
         root_device_name:
             description: The device name of the root device
             returned: always

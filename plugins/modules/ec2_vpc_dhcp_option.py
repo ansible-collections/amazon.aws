@@ -202,12 +202,12 @@ EXAMPLES = r"""
     inherit_existing: true
     delete_old: false
 
-## Create a DHCP option set with 4.4.4.4 and 8.8.8.8 as the specified DNS servers, with tags
+## Create a DHCP option set with 8.8.4.4 and 8.8.8.8 as the specified DNS servers, with tags
 ## but do not assign to a VPC
 - amazon.aws.ec2_vpc_dhcp_option:
     region: us-east-1
     dns_servers:
-      - 4.4.4.4
+      - 8.8.4.4
       - 8.8.8.8
     tags:
       Name: google servers
@@ -217,7 +217,7 @@ EXAMPLES = r"""
 - amazon.aws.ec2_vpc_dhcp_option:
     region: us-east-1
     dns_servers:
-      - 4.4.4.4
+      - 8.8.4.4
       - 8.8.8.8
     tags:
       Name: google servers

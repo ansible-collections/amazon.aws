@@ -78,38 +78,38 @@
           Public: "{{ item.public | string }}"
           Name: "{{ (item.public | bool) | ternary('public', 'private') }}-{{ item.zone }}"
       with_items:
-        - cidr: 10.228.224.0/24
+        - cidr: "{{ subnet_a_cidr }}"
           zone: "{{ availability_zone_a }}"
           public: "True"
           assign_instances_ipv6: false
           ipv6_cidr: ""
-        - cidr: 10.228.225.0/24
+        - cidr: "{{ subnet_b_cidr }}"
           zone: "{{ availability_zone_b }}"
           public: "True"
           assign_instances_ipv6: false
           ipv6_cidr: ""
-        - cidr: 10.228.226.0/24
+        - cidr: "{{ subnet_c_cidr }}"
           zone: "{{ availability_zone_a }}"
           public: "False"
           assign_instances_ipv6: false
           ipv6_cidr: ""
-        - cidr: 10.228.227.0/24
+        - cidr: "{{ subnet_d_cidr }}"
           zone: "{{ availability_zone_b }}"
           public: "False"
           assign_instances_ipv6: false
           ipv6_cidr: ""
-        - cidr: 10.228.228.0/24
+        - cidr: "{{ subnet_e_cidr }}"
           zone: "{{ availability_zone_a }}"
           public: "False"
           assign_instances_ipv6: true
           # Carve first /64 subnet of the Amazon-provided CIDR for the VPC.
           ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.utils.ipsubnet(64, 1) }}"
-        - cidr: 10.228.229.0/24
+        - cidr: "{{ subnet_f_cidr }}"
           zone: "{{ availability_zone_a }}"
           public: "True"
           assign_instances_ipv6: true
           ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.utils.ipsubnet(64, 2) }}"
-        - cidr: 10.228.230.0/24
+        - cidr: "{{ subnet_g_cidr }}"
           zone: "{{ availability_zone_b }}"
           public: "False"
           assign_instances_ipv6: true
@@ -244,7 +244,7 @@
             gateway_id: igw
           - dest: ::/0
             gateway_id: igw
-          - dest: "0.0.0.0/8"
+          - dest: "172.16.0.0/12"
             gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
       check_mode: true
       register: check_mode_results
@@ -265,7 +265,7 @@
             gateway_id: igw
           - dest: ::/0
             gateway_id: igw
-          - dest: "0.0.0.0/8"
+          - dest: "172.16.0.0/12"
             gateway_id: "{{ transit_gateway.transit_gateway.transit_gateway_id }}"
       register: add_routes
 
@@ -968,7 +968,7 @@
           Name: Gateway route table
         gateway_id: "{{ vpc_igw.gateway_id }}"
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -987,7 +987,7 @@
           Name: Gateway route table
         gateway_id: "{{ vpc_igw.gateway_id }}"
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1012,7 +1012,7 @@
           Name: Gateway route table
         gateway_id: "{{ vpc_igw.gateway_id }}"
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1031,7 +1031,7 @@
           Name: Gateway route table
         gateway_id: "{{ vpc_igw.gateway_id }}"
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1057,7 +1057,7 @@
           Public: "true"
           Name: Gateway route table
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1075,7 +1075,7 @@
           Public: "true"
           Name: Gateway route table
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1102,7 +1102,7 @@
           Name: Gateway route table
         gateway_id: None
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1121,7 +1121,7 @@
           Name: Gateway route table
         gateway_id: None
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1146,7 +1146,7 @@
           Name: Gateway route table
         gateway_id: None
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1165,7 +1165,7 @@
           Name: Gateway route table
         gateway_id: None
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1272,7 +1272,7 @@
           Name: Gateway route table
         gateway_id: ""
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1291,7 +1291,7 @@
           Name: Gateway route table
         gateway_id: ""
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1316,7 +1316,7 @@
           Name: Gateway route table
         gateway_id: ""
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1335,7 +1335,7 @@
           Name: Gateway route table
         gateway_id: ""
         routes:
-          - dest: 10.228.228.0/24
+          - dest: "{{ subnet_e_cidr }}"
             network_interface_id: "{{ eni.interface.id }}"
         purge_routes: false
       register: create_gateway_table
@@ -1589,17 +1589,17 @@
         vpc_id: "{{ vpc.vpc.id }}"
         state: absent
       with_items:
-        - cidr: 10.228.224.0/24
-        - cidr: 10.228.225.0/24
-        - cidr: 10.228.226.0/24
-        - cidr: 10.228.227.0/24
-        - cidr: 10.228.228.0/24
-        - cidr: 10.228.229.0/24
-        - cidr: 10.228.230.0/24
+        - cidr: "{{ subnet_a_cidr }}"
+        - cidr: "{{ subnet_b_cidr }}"
+        - cidr: "{{ subnet_c_cidr }}"
+        - cidr: "{{ subnet_d_cidr }}"
+        - cidr: "{{ subnet_e_cidr }}"
+        - cidr: "{{ subnet_f_cidr }}"
+        - cidr: "{{ subnet_g_cidr }}"
       ignore_errors: true
     - name: Destroy VPC
       amazon.aws.ec2_vpc_net:
-        cidr_block: 10.228.224.0/21
+        cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}_vpc"
         state: absent
       ignore_errors: true

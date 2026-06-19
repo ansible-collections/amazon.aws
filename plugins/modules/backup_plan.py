@@ -232,7 +232,7 @@ version_id:
   description: Version ID of the backup plan.
   returned: always
   type: str
-  sample: ODM3MjVjNjItYWFkOC00NjExLWIwZTYtZDNiNGI5M2I0ZTY1
+  sample: 01234567-89ab-cdef-0123-456789abcdef
 backup_plan:
   description: Backup plan details.
   returned: on create/update

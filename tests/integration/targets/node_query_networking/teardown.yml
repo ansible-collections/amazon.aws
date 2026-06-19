@@ -59,7 +59,7 @@
     - name: Delete customer gateway
       community.aws.ec2_customer_gateway:
         state: absent
-        ip_address: 1.2.3.4
+        ip_address: 192.0.2.1
         name: "{{ resource_prefix }}"
         bgp_asn: 12345
       register: result

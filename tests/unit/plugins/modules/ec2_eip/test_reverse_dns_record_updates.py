@@ -27,7 +27,7 @@ def fixture_ansible_module():
 def mock_address():
     return {
         "InstanceId": "i-12345678",
-        "PublicIp": "1.2.3.4",
+        "PublicIp": "198.51.100.1",
         "AllocationId": "eipalloc-12345678",
         "AssociationId": "eipassoc-12345678",
         "Domain": "vpc",
@@ -47,7 +47,7 @@ def mock_return_value_describe_addresses_attribute():
     return {
         "Addresses": [
             {
-                "PublicIp": "1.2.3.4",
+                "PublicIp": "198.51.100.1",
                 "AllocationId": "eipalloc-12345678",
                 "PtrRecord": "current.example.com.",
                 "PtrRecordUpdate": {
@@ -97,7 +97,7 @@ def test_update_reverse_dns_record_of_eip_reset_dns_record(ansible_module):
     client.reset_address_attribute.return_value = {
         "Addresses": [
             {
-                "PublicIp": "1.2.3.4",
+                "PublicIp": "198.51.100.1",
                 "AllocationId": "eipalloc-12345678",
                 "PtrRecord": "current.example.com.",
                 "PtrRecordUpdate": {
@@ -114,7 +114,7 @@ def test_update_reverse_dns_record_of_eip_reset_dns_record(ansible_module):
         {
             "addresses": [
                 {
-                    "public_ip": "1.2.3.4",
+                    "public_ip": "198.51.100.1",
                     "allocation_id": "eipalloc-12345678",
                     "ptr_record": "current.example.com.",
                     "ptr_record_update": {"value": "", "status": "PENDING", "reason": "update in progress"},
@@ -145,7 +145,7 @@ def test_update_reverse_dns_record_of_eip_modify_dns_record(ansible_module):
     client.modify_address_attribute.return_value = {
         "Addresses": [
             {
-                "PublicIp": "1.2.3.4",
+                "PublicIp": "198.51.100.1",
                 "AllocationId": "eipalloc-12345678",
                 "PtrRecord": "current.example.com.",
                 "PtrRecordUpdate": {
@@ -163,7 +163,7 @@ def test_update_reverse_dns_record_of_eip_modify_dns_record(ansible_module):
         {
             "addresses": [
                 {
-                    "public_ip": "1.2.3.4",
+                    "public_ip": "198.51.100.1",
                     "allocation_id": "eipalloc-12345678",
                     "ptr_record": "current.example.com.",
                     "ptr_record_update": {
