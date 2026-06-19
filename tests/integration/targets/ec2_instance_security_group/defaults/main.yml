@@ -3,7 +3,7 @@
 ec2_instance_type: t3a.micro
 ec2_instance_tag_testid: "{{ resource_prefix }}-instance-sg"
 
-vpc_cidr_1: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/16"
-vpc_cidr_2: "10.{{ 256 | random(seed=resource_prefix) }}.0.0/16"
-subnet_cidr_1: "10.{{ 256 | random(seed=resource_prefix) }}.1.0/24"
-subnet_cidr_2: "10.{{ 256 | random(seed=resource_prefix) }}.2.0/24"
+vpc_cidr_1: "10.{{ 256 | random(seed=resource_prefix) }}.36.0/23"
+vpc_cidr_2: "10.{{ 256 | random(seed=resource_prefix) }}.38.0/23"
+subnet_cidr_1: "{{ vpc_cidr_1 | ansible.utils.ipsubnet(24, 0) }}"
+subnet_cidr_2: "{{ vpc_cidr_2 | ansible.utils.ipsubnet(24, 0) }}"

@@ -252,7 +252,7 @@ resource_record_sets:
       description: Information about the resource records to act upon.
       type: list
       returned: always
-      sample: [{"value": "1.1.1.1"}]
+      sample: [{"value": "198.51.100.1"}]
     ttl:
       description: Resource record cache TTL.
       returned: always
@@ -267,14 +267,14 @@ resource_record_sets:
       description: Record value.
       returned: always
       type: str
-      sample: "52.43.18.27"
+      sample: "203.0.113.3"
     record_values:
       description: Record values as a list.
       returned: always
       type: list
       version_added: 11.0.0
       sample:
-      - 52.43.18.27
+      - 203.0.113.3
     values:
       description:
         - Record values as a list.
@@ -283,7 +283,7 @@ resource_record_sets:
       returned: always
       type: list
       sample:
-      - 52.43.18.27
+      - 203.0.113.3
     weight:
       description: Weight of the record.
       returned: always
@@ -310,7 +310,7 @@ EXAMPLES = r"""
     record: new.foo.com
     type: A
     ttl: 7200
-    value: 1.1.1.1,2.2.2.2,3.3.3.3
+    value: 198.51.100.1,198.51.100.2,198.51.100.3
     wait: true
 
 - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
@@ -321,9 +321,9 @@ EXAMPLES = r"""
     type: A
     ttl: 7200
     value:
-      - 1.1.1.1
-      - 2.2.2.2
-      - 3.3.3.3
+      - 198.51.100.1
+      - 198.51.100.2
+      - 198.51.100.3
     wait: true
 
 - name: Retrieve the details for new.foo.com
@@ -456,7 +456,7 @@ EXAMPLES = r"""
     record: 'geo-test.{{ zone_one }}'
     identifier: "geohost@www"
     type: A
-    value: 1.1.1.1
+    value: 198.51.100.1
     ttl: 30
     geo_location:
       country_code: US
@@ -468,7 +468,7 @@ EXAMPLES = r"""
     record: 'geo-test.{{ zone_one }}'
     identifier: "geohost@www"
     type: A
-    value: 1.1.1.1
+    value: 198.51.100.1
     ttl: 30
     geo_location:
       country_code: US

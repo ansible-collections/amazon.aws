@@ -197,7 +197,7 @@ EXAMPLES = r"""
 - name: Update Health check by ID - update ip_address
   amazon.aws.route53_health_check:
     id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
-    ip_address: 1.2.3.4
+    ip_address: 192.0.2.1
 
 - name: Update Health check by ID - update port
   amazon.aws.route53_health_check:

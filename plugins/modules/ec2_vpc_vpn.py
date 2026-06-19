@@ -88,7 +88,7 @@ options:
     description:
       - An alternative to using O(vpn_connection_id). If multiple matches are found, O(vpn_connection_id) is required.
         If one of the following suboptions is a list of items to filter by, only one item needs to match to find the VPN
-        that correlates. e.g. if the filter O(filters.cidr) is V(["194.168.2.0/24", "192.168.2.0/24"]) and the VPN route only has the
+        that correlates. e.g. if the filter O(filters.cidr) is V(["192.168.1.0/24", "192.168.2.0/24"]) and the VPN route only has the
         destination cidr block of V(192.168.2.0/24) it will be found with this filter (assuming there are not multiple
         VPNs that are matched). Another example, if the filter O(filters.vpn) is equal to V(["vpn-ccf7e7ad", "vpn-cb0ae2a2"]) and one
         of of the VPNs has the state deleted (exists but is unmodifiable) and the other exists and is not deleted,
@@ -191,7 +191,7 @@ EXAMPLES = r"""
   amazon.aws.ec2_vpc_vpn:
     state: "present"
     filters:
-      cidr: "194.168.1.0/24"
+      cidr: "192.168.1.0/24"
       tag-keys:
         - "Ansible"
         - "Other"
@@ -216,8 +216,8 @@ EXAMPLES = r"""
     filters:
       vpn: "vpn-XXXXXXXX"
     routes:
-      - "195.168.2.0/24"
-      - "196.168.2.0/24"
+      - "192.168.2.0/24"
+      - "192.168.3.0/24"
     purge_routes: true
 
 - name: Remove all routes
@@ -312,8 +312,8 @@ options:
                         "log_enabled": false
                     }
                 },
-                "outside_ip_address": "34.225.101.10",
-                "pre_shared_key": "8n7hnjNE8zhIt4VpMOIfcrw6XnUTHLW9",
+                "outside_ip_address": "203.0.113.13",
+                "pre_shared_key": "ExamplePreSharedKey1234567890",
                 "tunnel_inside_cidr": "169.254.31.8/30"
             }]
       contains:
@@ -387,7 +387,7 @@ vgw_telemetry:
   sample: [{
             "accepted_route_count": 0,
             "last_status_change": "2024-09-30T13:12:33+00:00",
-            "outside_ip_address": "34.225.101.10",
+            "outside_ip_address": "203.0.113.15",
             "status": "DOWN",
             "status_message": "IPSEC IS DOWN"
         }]
