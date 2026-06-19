@@ -293,7 +293,7 @@ def _aws_connection_info(params: dict) -> tuple[str | None, str | None, dict[str
 
 def get_aws_connection_info(
     module: AnsibleAWSModule,
-) -> tuple[str | None, str | None, dict]:
+) -> tuple[str | None, str | None, dict[str, Any]]:
     try:
         return _aws_connection_info(module.params)
     except AnsibleBotocoreError as e:
@@ -337,7 +337,7 @@ def paginated_query_with_retries(
     return result
 
 
-def gather_sdk_versions() -> dict:
+def gather_sdk_versions() -> dict[str, str]:
     """Gather AWS SDK (boto3 and botocore) dependency versions
 
     Returns {'boto3_version': str, 'botocore_version': str}
@@ -353,7 +353,7 @@ def gather_sdk_versions() -> dict:
 
 
 def is_boto3_error_code(
-    code: list | tuple | set | str,
+    code: str | list[str] | tuple[str, ...] | set[str],
     e: BaseException | None = None,
 ) -> type[Exception]:
     """Check if the botocore exception is raised by a specific error code.
@@ -381,7 +381,7 @@ def is_boto3_error_code(
 
 
 def is_boto3_error_httpstatus(
-    status: list | tuple | set | int,
+    status: int | list[int] | tuple[int, ...] | set[int],
     e: BaseException | None = None,
 ) -> type[Exception]:
     """Check if the botocore exception is raised by a specific HTTP status code.
@@ -460,8 +460,8 @@ def _boto3_handler(obj: Any) -> Any:
 
 
 def normalize_boto3_result(
-    result: list | dict | set,
-) -> list | dict | set:
+    result: list | dict,
+) -> list | dict:
     """
     Because Boto3 returns datetime objects where it knows things are supposed to
     be dates we need to mass-convert them over to strings which Ansible/Jinja
