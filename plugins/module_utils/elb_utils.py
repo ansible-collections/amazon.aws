@@ -20,6 +20,10 @@ import typing
 
 # Re-export for backward compatibility from public interface
 # pylint: disable=unused-import,useless-import-alias
+from .elbv2 import AnsibleELBv2Error as AnsibleELBv2Error
+from .elbv2 import ELBv2ListenerErrorHandler as ELBv2ListenerErrorHandler
+from .elbv2 import ELBv2RuleErrorHandler as ELBv2RuleErrorHandler
+from .elbv2 import ELBv2TargetGroupErrorHandler as ELBv2TargetGroupErrorHandler
 from .elbv2 import add_listener_certificates as add_listener_certificates
 from .elbv2 import add_tags as add_tags
 from .elbv2 import create_listener as create_listener
@@ -42,10 +46,6 @@ from .elbv2 import set_ip_address_type as set_ip_address_type
 from .elbv2 import set_rule_priorities as set_rule_priorities
 from .elbv2 import set_security_groups as set_security_groups
 from .elbv2 import set_subnets as set_subnets
-from .elbv2 import AnsibleELBv2Error as AnsibleELBv2Error
-from .elbv2 import ELBv2ListenerErrorHandler as ELBv2ListenerErrorHandler
-from .elbv2 import ELBv2RuleErrorHandler as ELBv2RuleErrorHandler
-from .elbv2 import ELBv2TargetGroupErrorHandler as ELBv2TargetGroupErrorHandler
 
 # pylint: enable=unused-import,useless-import-alias
 

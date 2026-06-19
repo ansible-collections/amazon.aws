@@ -34,7 +34,6 @@ except ImportError:
 
 from ansible.module_utils.compat.version import LooseVersion as _LooseVersion
 
-
 LooseVersion = deprecated(
     "Import LooseVersion directly from ansible.module_utils.compat.version instead. "
     "This re-export will be removed in a future major release."

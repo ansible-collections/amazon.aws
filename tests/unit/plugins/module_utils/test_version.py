@@ -47,16 +47,13 @@ class TestVersionModule:
 
     def test_looseversion_deprecation_warning(self):
         """Test that using LooseVersion emits a deprecation warning."""
-        # Check if deprecated decorator is available
-        try:
-            if sys.version_info >= (3, 13):
-                from warnings import deprecated  # noqa: F401
-            else:
-                from typing_extensions import deprecated  # noqa: F401
+        import importlib.util
 
+        # Check if deprecated decorator is available
+        if sys.version_info >= (3, 13):
             has_deprecated = True
-        except ImportError:
-            has_deprecated = False
+        else:
+            has_deprecated = importlib.util.find_spec("typing_extensions") is not None
 
         if not has_deprecated:
             pytest.skip("DeprecationWarning requires typing_extensions or Python 3.13+")
