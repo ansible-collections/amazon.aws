@@ -1,0 +1,10 @@
+---
+minor_changes:
+  - ruff - added comprehensive ruff linter configuration with Ansible-specific rules and backwards-compatibility safeguards (https://github.com/ansible-collections/amazon.aws/pull/3000).
+  - module_utils - standardised backwards-compatibility re-exports to use PEP 484 pattern (``import X as X``) for improved linter recognition while maintaining full compatibility (https://github.com/ansible-collections/amazon.aws/pull/3000).
+  - extensions - added ``extensions/`` directory to linter and formatter configurations (tox, darker, isort) to ensure EDA event sources and audit plugins are properly analysed (https://github.com/ansible-collections/amazon.aws/pull/3000).
+
+deprecated_features:
+  - module_utils.core - importing from ``plugins.module_utils.core`` is deprecated, import directly from the appropriate submodule instead (e.g. ``from plugins.module_utils.botocore import is_boto3_error_code``) (https://github.com/ansible-collections/amazon.aws/pull/3000).
+  - module_utils.ec2 - importing backwards-compatibility re-exports from ``plugins.module_utils.ec2`` is deprecated, import directly from the appropriate submodule instead (https://github.com/ansible-collections/amazon.aws/pull/3000).
+  - module_utils.version - importing ``LooseVersion`` from ``plugins.module_utils.version`` is deprecated, import directly from ``ansible.module_utils.compat.version`` instead (https://github.com/ansible-collections/amazon.aws/pull/3000).
