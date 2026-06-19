@@ -63,7 +63,7 @@ class TestVersionModule:
         # Test that instantiation emits deprecation warning
         # pytest.deprecated_call() suppresses the warning from test output
         with pytest.deprecated_call():
-            _ = LooseVersion("1.2.3")
+            _version = LooseVersion("1.2.3")
 
     def test_looseversion_all_export(self):
         """Test that LooseVersion is in __all__."""
