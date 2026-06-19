@@ -42,12 +42,6 @@ import traceback
 import typing
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Tuple
-from typing import Type
 from typing import Union
 
 BOTO3_IMP_ERR = None
@@ -68,7 +62,7 @@ if typing.TYPE_CHECKING:
 
     ClientType: TypeAlias = Union[botocore.client.BaseClient, RetryingBotoClientWrapper]
     ResourceType: TypeAlias = boto3.resources.base.ServiceResource
-    BotoConn = Union[ClientType, ResourceType, Tuple[ClientType, ResourceType]]
+    BotoConn = Union[ClientType, ResourceType, tuple[ClientType, ResourceType]]
     from .modules import AnsibleAWSModule
 
 try:
@@ -104,9 +98,9 @@ def _get_user_agent_string():
 def boto3_conn(
     module: AnsibleAWSModule,
     conn_type: str,
-    resource: Optional[str] = None,
-    region: Optional[str] = None,
-    endpoint: Optional[str] = None,
+    resource: str | None = None,
+    region: str | None = None,
+    endpoint: str | None = None,
     **params,
 ) -> BotoConn:
     """
@@ -130,7 +124,7 @@ def boto3_conn(
 
 def _merge_botocore_config(
     config_a: botocore.config.Config,
-    config_b: Union[botocore.config.Config, Dict],
+    config_b: botocore.config.Config | dict,
 ) -> botocore.config.Config:
     """
     Merges the extra configuration options from config_b into config_a.
@@ -145,9 +139,9 @@ def _merge_botocore_config(
 
 def _boto3_conn(
     conn_type: str,
-    resource: Optional[str] = None,
-    region: Optional[str] = None,
-    endpoint: Optional[str] = None,
+    resource: str | None = None,
+    region: str | None = None,
+    endpoint: str | None = None,
     **params,
 ) -> BotoConn:
     """
@@ -212,7 +206,7 @@ def boto_exception(err: Exception) -> str:
     return error
 
 
-def _aws_region(params: Dict) -> Optional[str]:
+def _aws_region(params: dict) -> str | None:
     region = params.get("region")
 
     if region:
@@ -233,7 +227,7 @@ def _aws_region(params: Dict) -> Optional[str]:
 
 def get_aws_region(
     module: AnsibleAWSModule,
-) -> Optional[str]:
+) -> str | None:
     try:
         return _aws_region(module.params)
     except AnsibleBotocoreError as e:
@@ -243,7 +237,7 @@ def get_aws_region(
             module.fail_json(msg=e.message)
 
 
-def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
+def _aws_connection_info(params: dict) -> tuple[str | None, str | None, dict[str, Any]]:
     endpoint_url = params.get("endpoint_url")
     access_key = params.get("access_key")
     secret_key = params.get("secret_key")
@@ -299,7 +293,7 @@ def _aws_connection_info(params: Dict) -> Tuple[Optional[str], Optional[str], Di
 
 def get_aws_connection_info(
     module: AnsibleAWSModule,
-) -> Tuple[Optional[str], Optional[str], Dict]:
+) -> tuple[str | None, str | None, dict]:
     try:
         return _aws_connection_info(module.params)
     except AnsibleBotocoreError as e:
@@ -343,7 +337,7 @@ def paginated_query_with_retries(
     return result
 
 
-def gather_sdk_versions() -> Dict:
+def gather_sdk_versions() -> dict:
     """Gather AWS SDK (boto3 and botocore) dependency versions
 
     Returns {'boto3_version': str, 'botocore_version': str}
@@ -359,9 +353,9 @@ def gather_sdk_versions() -> Dict:
 
 
 def is_boto3_error_code(
-    code: Union[List, Tuple, Set, str],
-    e: Optional[BaseException] = None,
-) -> Type[Exception]:
+    code: list | tuple | set | str,
+    e: BaseException | None = None,
+) -> type[Exception]:
     """Check if the botocore exception is raised by a specific error code.
 
     Returns ClientError if the error code matches, a dummy exception if it does not have an error code or does not match
@@ -387,9 +381,9 @@ def is_boto3_error_code(
 
 
 def is_boto3_error_httpstatus(
-    status: Union[List, Tuple, Set, int],
-    e: Optional[BaseException] = None,
-) -> Type[Exception]:
+    status: list | tuple | set | int,
+    e: BaseException | None = None,
+) -> type[Exception]:
     """Check if the botocore exception is raised by a specific HTTP status code.
 
     Returns ClientError if the HTTP status code matches, a dummy exception if it does not have a status code or does not match
@@ -416,8 +410,8 @@ def is_boto3_error_httpstatus(
 
 def is_boto3_error_message(
     msg: str,
-    e: Optional[BaseException] = None,
-) -> Type[Exception]:
+    e: BaseException | None = None,
+) -> type[Exception]:
     """Check if the botocore exception contains a specific error message.
 
     Returns ClientError if the error code matches, a dummy exception if it does not have an error code or does not match
@@ -445,7 +439,7 @@ def get_boto3_client_method_parameters(
     client: ClientType,
     method_name: str,
     required=False,
-) -> List:
+) -> list:
     op = client.meta.method_to_api_mapping.get(method_name)
     input_shape = client._service_model.operation_model(op).input_shape  # pylint: disable=protected-access
     if not input_shape:
@@ -466,8 +460,8 @@ def _boto3_handler(obj: Any) -> Any:
 
 
 def normalize_boto3_result(
-    result: Union[List, Dict, Set],
-) -> Union[List, Dict, Set]:
+    result: list | dict | set,
+) -> list | dict | set:
     """
     Because Boto3 returns datetime objects where it knows things are supposed to
     be dates we need to mass-convert them over to strings which Ansible/Jinja
@@ -511,9 +505,9 @@ def enable_placebo(session: boto3.session.Session) -> None:
 
 
 def check_sdk_version_supported(
-    botocore_version: Optional[str] = None,
-    boto3_version: Optional[str] = None,
-    warn: Optional[Callable] = None,
+    botocore_version: str | None = None,
+    boto3_version: str | None = None,
+    warn: Callable | None = None,
 ) -> bool:
     """Checks to see if the available boto3 / botocore versions are supported
     args:
