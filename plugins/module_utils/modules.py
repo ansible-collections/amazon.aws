@@ -48,9 +48,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any
     from typing import ClassVar
-    from typing import Dict
     from typing import NoReturn
-    from typing import Optional
 
 from ansible.module_utils import ansible_release as _ansible_release
 from ansible.module_utils.basic import AnsibleModule
@@ -141,7 +139,7 @@ class AnsibleAWSModule:
             return False
 
     @property
-    def params(self) -> Dict[str, Any]:
+    def params(self) -> dict[str, Any]:
         return self._module.params
 
     def _get_resource_action_list(self):
@@ -212,10 +210,10 @@ class AnsibleAWSModule:
         return boto3_conn(self, conn_type="resource", resource=service, **kw_args)
 
     @property
-    def region(self) -> Optional[str]:
+    def region(self) -> str | None:
         return get_aws_region(self)
 
-    def fail_json_aws(self, exception: BaseException, msg: Optional[str] = None, **kwargs) -> NoReturn:
+    def fail_json_aws(self, exception: BaseException, msg: str | None = None, **kwargs) -> NoReturn:
         """call fail_json with processed exception
 
         function for converting exceptions thrown by AWS SDK modules,
@@ -255,7 +253,7 @@ class AnsibleAWSModule:
             self.fail_json_aws(exception.exception, msg=exception.message)
         self.fail_json(msg=exception.message)
 
-    def _gather_versions(self) -> Dict[str, Any]:
+    def _gather_versions(self) -> dict[str, Any]:
         """Gather AWS SDK (boto3 and botocore) dependency versions
 
         Returns {'boto3_version': str, 'botocore_version': str}
@@ -308,7 +306,7 @@ class AnsibleAWSModule:
         return botocore_at_least(desired)
 
 
-def _aws_common_argument_spec() -> Dict[str, Any]:
+def _aws_common_argument_spec() -> dict[str, Any]:
     """
     This does not include 'region' as some AWS APIs don't require a
     region.  However, it's not recommended to do this as it means module_defaults
@@ -357,7 +355,7 @@ def _aws_common_argument_spec() -> Dict[str, Any]:
     )
 
 
-def aws_argument_spec() -> Dict[str, Any]:
+def aws_argument_spec() -> dict[str, Any]:
     """
     Returns a dictionary containing the argument_spec common to all AWS modules.
     """
