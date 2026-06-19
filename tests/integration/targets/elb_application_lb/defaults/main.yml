@@ -8,11 +8,11 @@ alb_name_multiple_listener_test: alb-test-{{ resource_short }}-lt
 alb_name_rules_on_create_test: alb-test-{{ resource_short }}-rc
 tg_name: alb-test-{{ resource_short }}
 tg_2_name: alb-test-2-{{ resource_short }}
-vpc_cidr: 10.{{ 256 | random(seed=resource_prefix) }}.0.0/16
-private_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.1.0/24
-private_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.2.0/24
-public_subnet_cidr_1: 10.{{ 256 | random(seed=resource_prefix) }}.3.0/24
-public_subnet_cidr_2: 10.{{ 256 | random(seed=resource_prefix) }}.4.0/24
+vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.108.0/22"
+private_subnet_cidr_1: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 0) }}"
+private_subnet_cidr_2: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 1) }}"
+public_subnet_cidr_1: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 2) }}"
+public_subnet_cidr_2: "{{ vpc_cidr | ansible.utils.ipsubnet(24, 3) }}"
 s3_bucket_name: alb-ansible-test-{{ resource_short }}
 
 local_certs:

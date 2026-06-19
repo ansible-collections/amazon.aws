@@ -1,3 +1,5 @@
 ---
+vpc_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.148.0/22"
+subnet_cidr: "10.{{ 256 | random(seed=resource_prefix) }}.148.0/24"
 ec2_asg_load_balancer_name: "{{ tiny_prefix }}-lb"
 ec2_asg_setup_run_once: true

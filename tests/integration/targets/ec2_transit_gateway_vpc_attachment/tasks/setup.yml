@@ -39,17 +39,19 @@
     vpc_id_b: "{{ vpc_b.id }}"
     vpc_owner_a: "{{ vpc_a.owner_id }}"
     vpc_owner_b: "{{ vpc_b.owner_id }}"
-    subnet_ipv6_a_1: '{{ vpc_ipv6_a | replace("0::/56", "0::/64") }}'
-    subnet_ipv6_a_2: '{{ vpc_ipv6_a | replace("0::/56", "1::/64") }}'
-    subnet_ipv6_a_3: '{{ vpc_ipv6_a | replace("0::/56", "2::/64") }}'
-    subnet_ipv6_a_1a: '{{ vpc_ipv6_a | replace("0::/56", "3::/64") }}'
-    subnet_ipv6_b_1: '{{ vpc_ipv6_b | replace("0::/56", "0::/64") }}'
-    subnet_ipv6_b_2: '{{ vpc_ipv6_b | replace("0::/56", "1::/64") }}'
+    vpc_ipv6_a: "{{ vpc_a.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
+    vpc_ipv6_b: "{{ vpc_b.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
   vars:
     vpc_a: "{{ create_vpcs.results[0].vpc }}"
     vpc_b: "{{ create_vpcs.results[1].vpc }}"
-    vpc_ipv6_a: "{{ vpc_a.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
-    vpc_ipv6_b: "{{ vpc_b.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
+
+- ansible.builtin.set_fact:
+    subnet_ipv6_a_1: '{{ vpc_ipv6_a | ansible.utils.ipaddr("0") | ansible.utils.ipsubnet(64, 0) }}'
+    subnet_ipv6_a_2: '{{ vpc_ipv6_a | ansible.utils.ipaddr("0") | ansible.utils.ipsubnet(64, 1) }}'
+    subnet_ipv6_a_3: '{{ vpc_ipv6_a | ansible.utils.ipaddr("0") | ansible.utils.ipsubnet(64, 2) }}'
+    subnet_ipv6_a_1a: '{{ vpc_ipv6_a | ansible.utils.ipaddr("0") | ansible.utils.ipsubnet(64, 3) }}'
+    subnet_ipv6_b_1: '{{ vpc_ipv6_b | ansible.utils.ipaddr("0") | ansible.utils.ipsubnet(64, 0) }}'
+    subnet_ipv6_b_2: '{{ vpc_ipv6_b | ansible.utils.ipaddr("0") | ansible.utils.ipsubnet(64, 1) }}'
 
 - name: Create subnets
   amazon.aws.ec2_vpc_subnet:

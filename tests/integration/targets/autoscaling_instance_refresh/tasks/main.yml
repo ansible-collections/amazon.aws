@@ -12,7 +12,7 @@
     - name: Create VPC for use in testing
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
-        cidr_block: "{{ subnet_a_cidr }}"
+        cidr_block: "{{ vpc_cidr }}"
         tenancy: default
       register: testing_vpc
 
@@ -205,7 +205,7 @@
     - name: Remove the VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
-        cidr_block: "{{ subnet_a_cidr }}"
+        cidr_block: "{{ vpc_cidr }}"
         state: absent
       register: removed
       until: removed is not failed

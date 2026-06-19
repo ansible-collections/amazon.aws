@@ -106,29 +106,29 @@ EXAMPLES = r"""
 - name: associate an elastic IP with an instance
   amazon.aws.ec2_eip:
     device_id: i-1212f003
-    ip: 93.184.216.119
+    ip: 203.0.113.1
 
 - name: associate an elastic IP with a device
   amazon.aws.ec2_eip:
     device_id: eni-c8ad70f3
-    ip: 93.184.216.119
+    ip: 203.0.113.1
 
 - name: associate an elastic IP with a device and allow reassociation
   amazon.aws.ec2_eip:
     device_id: eni-c8ad70f3
-    public_ip: 93.184.216.119
+    public_ip: 203.0.113.1
     allow_reassociation: true
 
 - name: disassociate an elastic IP from an instance
   amazon.aws.ec2_eip:
     device_id: i-1212f003
-    ip: 93.184.216.119
+    ip: 203.0.113.1
     state: absent
 
 - name: disassociate an elastic IP with a device
   amazon.aws.ec2_eip:
     device_id: eni-c8ad70f3
-    ip: 93.184.216.119
+    ip: 203.0.113.1
     state: absent
 
 - name: allocate a new elastic IP and associate it with an instance
@@ -214,13 +214,13 @@ EXAMPLES = r"""
 
 - name: Modify reverse DNS record of an existing EIP
   amazon.aws.ec2_eip:
-    public_ip: 44.224.84.105
+    public_ip: 203.0.113.2
     domain_name: test-domain.xyz
     state: present
 
 - name: Remove reverse DNS record of an existing EIP
   amazon.aws.ec2_eip:
-    public_ip: 44.224.84.105
+    public_ip: 203.0.113.2
     domain_name: ""
     state: present
 """
@@ -235,7 +235,7 @@ public_ip:
   description: An elastic ip address.
   returned: on success
   type: str
-  sample: 52.88.159.209
+  sample: 203.0.113.1
 update_reverse_dns_record_result:
   description: Information about result of update reverse dns record operation.
   returned: When O(domain_name) is specified.
@@ -275,7 +275,7 @@ update_reverse_dns_record_result:
           description: The public IP address.
           returned: always
           type: str
-          sample: "11.22.33.44"
+          sample: "203.0.113.1"
 """
 
 from typing import Any

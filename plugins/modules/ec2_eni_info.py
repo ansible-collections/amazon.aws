@@ -60,7 +60,7 @@ network_interfaces:
           association_id: "eipassoc-8sdf123",
           ip_owner_id: "123456789012",
           public_dns_name: "ec2-52-1-0-63.compute-1.amazonaws.com",
-          public_ip: "52.1.0.63"
+          public_ip: "203.0.113.10"
         }
     attachment:
       description: Info about attached ec2 instance.

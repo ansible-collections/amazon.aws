@@ -1,4 +1,12 @@
 ---
 availability_zone_a: "{{ ec2_availability_zone_names[0] }}"
 availability_zone_b: "{{ ec2_availability_zone_names[1] }}"
-vpc_cidr: 10.228.224.0/21
+vpc_seed: "{{ resource_prefix }}"
+vpc_cidr: "10.{{ 256 | random(seed=vpc_seed) }}.92.0/22"
+subnet_a_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(26, 0) }}"
+subnet_b_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(26, 1) }}"
+subnet_c_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(26, 2) }}"
+subnet_d_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(26, 3) }}"
+subnet_e_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(26, 4) }}"
+subnet_f_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(26, 5) }}"
+subnet_g_cidr: "{{ vpc_cidr | ansible.utils.ipsubnet(26, 6) }}"

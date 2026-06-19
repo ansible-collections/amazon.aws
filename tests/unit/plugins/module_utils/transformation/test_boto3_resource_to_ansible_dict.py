@@ -45,7 +45,7 @@ EXAMPLE_DICT = [
     {"example_nested": {"example_key": "Example Value"}, "tags": {}},
 ]
 
-TEST_DATA = zip(EXAMPLE_BOTO3, EXAMPLE_DICT)
+TEST_DATA = list(zip(EXAMPLE_BOTO3, EXAMPLE_DICT))
 
 NESTED_DATA = {"sentinal": sentinel.MY_VALUE}
 
