@@ -466,7 +466,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_nat_gateway</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-12345678</span>
-<span class="w">    </span><span class="nt">eip_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">52.1.1.1</span>
+<span class="w">    </span><span class="nt">eip_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">203.0.113.4</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
 <span class="w">    </span><span class="nt">client_token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">abcd-12345678</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_nat_gateway</span>
@@ -484,7 +484,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_nat_gateway</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-12345678</span>
-<span class="w">    </span><span class="nt">eip_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">52.1.1.1</span>
+<span class="w">    </span><span class="nt">eip_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">203.0.113.4</span>
 <span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_nat_gateway</span>
@@ -591,7 +591,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-cell"><p>List of dictionaries containing the public_ip, network_interface_id, private_ip, and allocation_id.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;allocation_id&quot;:</span> <span class="pre">&quot;eipalloc-08ec128d03629671d&quot;,</span> <span class="pre">&quot;association_id&quot;:</span> <span class="pre">&quot;eipassoc-0d6365c7eeb7d4932&quot;,</span> <span class="pre">&quot;is_primary&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;network_interface_id&quot;:</span> <span class="pre">&quot;eni-095104e630881bad6&quot;,</span> <span class="pre">&quot;private_ip&quot;:</span> <span class="pre">&quot;10.1.0.250&quot;,</span> <span class="pre">&quot;public_ip&quot;:</span> <span class="pre">&quot;34.202.90.172&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;succeeded&quot;}]</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;allocation_id&quot;:</span> <span class="pre">&quot;eipalloc-08ec128d03629671d&quot;,</span> <span class="pre">&quot;association_id&quot;:</span> <span class="pre">&quot;eipassoc-0d6365c7eeb7d4932&quot;,</span> <span class="pre">&quot;is_primary&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;network_interface_id&quot;:</span> <span class="pre">&quot;eni-095104e630881bad6&quot;,</span> <span class="pre">&quot;private_ip&quot;:</span> <span class="pre">&quot;10.1.0.250&quot;,</span> <span class="pre">&quot;public_ip&quot;:</span> <span class="pre">&quot;203.0.113.6&quot;,</span> <span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;succeeded&quot;}]</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -645,7 +645,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The Elastic IP address associated with the NAT gateway.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;34.204.123.52&quot;</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;203.0.113.5&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
