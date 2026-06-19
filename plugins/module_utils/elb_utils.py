@@ -50,8 +50,10 @@ from .elbv2 import set_subnets as set_subnets
 # pylint: enable=unused-import,useless-import-alias
 
 # isort: split
-# Used by wrapper functions below - import from public interface
-from . import elbv2 as _elbv2_api
+# Used by wrapper functions below
+from .elbv2 import get_listener_rules as _get_listener_rules
+from .elbv2 import get_load_balancer_by_name as _get_load_balancer_by_name
+from .elbv2 import get_target_group_arn_by_name as _get_target_group_arn_by_name
 
 if typing.TYPE_CHECKING:
     from typing import Any
@@ -84,7 +86,7 @@ def get_elb(connection: ClientType, module: AnsibleAWSModule, elb_name: str) -> 
         boto3 ELB dict or None if not found
     """
     try:
-        return _elbv2_api.get_load_balancer_by_name(connection, elb_name)
+        return _get_load_balancer_by_name(connection, elb_name)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
 
@@ -106,7 +108,7 @@ def get_elb_listener_rules(connection: ClientType, module: AnsibleAWSModule, lis
         boto3 ELB rules list
     """
     try:
-        return _elbv2_api.get_listener_rules(connection, listener_arn)
+        return _get_listener_rules(connection, listener_arn)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
 
@@ -128,6 +130,6 @@ def convert_tg_name_to_arn(connection: ClientType, module: AnsibleAWSModule, tg_
         Target group ARN string
     """
     try:
-        return _elbv2_api.get_target_group_arn_by_name(connection, tg_name)
+        return _get_target_group_arn_by_name(connection, tg_name)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)

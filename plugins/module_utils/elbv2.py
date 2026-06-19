@@ -29,6 +29,9 @@ from ._elbv2.api import describe_load_balancers as describe_load_balancers
 from ._elbv2.api import describe_rules as describe_rules
 from ._elbv2.api import describe_tags as describe_tags
 from ._elbv2.api import describe_target_groups as describe_target_groups
+from ._elbv2.api import get_listener_rules as get_listener_rules
+from ._elbv2.api import get_load_balancer_by_name as get_load_balancer_by_name
+from ._elbv2.api import get_target_group_arn_by_name as get_target_group_arn_by_name
 from ._elbv2.api import modify_listener as modify_listener
 from ._elbv2.api import modify_load_balancer_attributes as modify_load_balancer_attributes
 from ._elbv2.api import modify_rule as modify_rule
@@ -44,23 +47,16 @@ from ._elbv2.common import ELBv2RuleErrorHandler as ELBv2RuleErrorHandler
 from ._elbv2.common import ELBv2TargetGroupErrorHandler as ELBv2TargetGroupErrorHandler
 from ._elbv2.listeners import ELBListener as ELBListener
 from ._elbv2.listeners import ELBListeners as ELBListeners
-from ._elbv2.listeners import _compare_listener as _compare_listener
-from ._elbv2.listeners import _group_listeners as _group_listeners
-from ._elbv2.listeners import _prepare_listeners as _prepare_listeners
 from ._elbv2.listeners import validate_listener_https_requirements as validate_listener_https_requirements
 from ._elbv2.rules import ELBListenerRule as ELBListenerRule
 from ._elbv2.rules import ELBListenerRules as ELBListenerRules
-from ._elbv2.rules import _check_rule_condition as _check_rule_condition
-from ._elbv2.rules import _compare_rule as _compare_rule
-from ._elbv2.rules import _compare_rule_actions as _compare_rule_actions
-from ._elbv2.rules import _group_rules as _group_rules
 from ._elbv2.transformations import normalize_application_load_balancer as normalize_application_load_balancer
-from .elb_utils import get_elb
 
 # pylint: enable=unused-import,useless-import-alias
 
 # isort: split
 # Not intended for general re-use / re-import
+from ._elbv2 import api as _elbv2_api
 from ._elbv2 import waiters as _waiters
 from .ec2 import get_ec2_security_group_ids_from_names
 from .exceptions import AnsibleAWSError
@@ -190,7 +186,11 @@ class ElasticLoadBalancerV2:
 
         self.purge_tags = module.params.get("purge_tags")
 
-        self.elb = get_elb(connection, module, self.name)
+        try:
+            self.elb = get_load_balancer_by_name(connection, self.name)
+        except AnsibleELBv2Error as e:
+            module.fail_json_aws(e)
+
         self.elb_attributes = {}
         if self.elb is not None:
             self.elb_attributes = self.get_elb_attributes()
@@ -368,7 +368,11 @@ class ElasticLoadBalancerV2:
         :return:
         """
 
-        self.elb = get_elb(self.connection, self.module, self.module.params.get("name"))
+        try:
+            self.elb = get_load_balancer_by_name(self.connection, self.module.params.get("name"))
+        except AnsibleELBv2Error as e:
+            self.module.fail_json_aws(e)
+
         self.elb["tags"] = self.get_elb_tags()
 
     def modify_ip_address_type(self, ip_addr_type) -> None:
