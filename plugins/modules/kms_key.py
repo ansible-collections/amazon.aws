@@ -437,6 +437,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.kms import get_key_policy
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
@@ -771,13 +772,17 @@ def update_policy(connection, module, key, policy):
         module.fail_json_aws(e, msg="Unable to parse new policy as JSON")
 
     key_id = key["key_arn"]
-    try:
-        keyret = connection.get_key_policy(KeyId=key_id, PolicyName="default")
-        original_policy = json.loads(keyret["Policy"])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
-        # If we can't fetch the current policy assume we're making a change
-        # Could occur if we have PutKeyPolicy without GetKeyPolicy
+    # Use the retry-decorated error-handled function from module_utils
+    # This properly handles rate limiting and transient errors with automatic retry
+    keyret = get_key_policy(connection, key_id, "default")
+
+    # Handle case where we don't have permission to read the policy or key doesn't exist
+    if keyret is None:
+        # If we can't fetch the current policy, we need to attempt the update
+        # This can occur if we have PutKeyPolicy without GetKeyPolicy permissions
         original_policy = {}
+    else:
+        original_policy = json.loads(keyret["Policy"])
 
     if not compare_policies(original_policy, new_policy):
         return False
