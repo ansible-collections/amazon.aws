@@ -274,3 +274,194 @@ class TestAddHostnameToList:
 
         inventory._add_hostname_to_list(hostname_list, {"key": "value"})
         assert hostname_list == []
+
+
+# Route53 hostname matching tests
+
+
+@pytest.mark.parametrize(
+    "route53_hostnames,hostname,expected",
+    [
+        (None, "test.example.com", True),
+        ([], "test.example.com", True),
+        (["example.com"], "test.example.com", True),
+        (["example.com"], "test.other.com", False),
+        (["example.com", "test.com"], "my.test.com", True),
+        (["example.com", "test.com"], "my.other.com", False),
+    ],
+)
+def test__is_matching_route53_hostname(inventory, route53_hostnames, hostname, expected):
+    inventory.get_option = MagicMock(return_value=route53_hostnames)
+    result = inventory._is_matching_route53_hostname(hostname)
+    assert result == expected
+
+
+# Jinja2 filter template formatting tests
+
+
+@pytest.mark.parametrize(
+    "preference,expected_template",
+    [
+        ("dns-name|upper", "{{'test.example.com'|upper}}"),
+        ("dns-name|lower", "{{'test.example.com'|lower}}"),
+        ("tag:Name|upper", "{{['host1', 'host2']|upper}}"),
+        ("tag:Environment|lower", "{{['PROD', 'DEV']|lower}}"),
+    ],
+)
+def test__get_hostname_with_jinja2_filter_template_format(inventory, preference, expected_template, monkeypatch):
+    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
+    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
+
+    instance = {"dns-name": "test.example.com", "tag:Name": ["host1", "host2"]}
+
+    def tag_hostname_side_effect(pref, inst):
+        if pref == "tag:Name":
+            return inst.get("tag:Name")
+        if pref == "tag:Environment":
+            return ["PROD", "DEV"]
+        return None
+
+    def boto_attr_side_effect(pref, inst):
+        if pref == "dns-name":
+            return inst.get("dns-name")
+        return None
+
+    monkeypatch.setattr("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname", tag_hostname_side_effect)
+    monkeypatch.setattr("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain", boto_attr_side_effect)
+
+    # Mock the templar to capture the template variable
+    inventory.templar = MagicMock()
+    inventory.templar.template = MagicMock(side_effect=lambda variable: variable)
+
+    result = inventory._get_hostname_with_jinja2_filter(instance, preference)
+
+    # Verify the correct template format was passed to templar
+    inventory.templar.template.assert_called_once()
+    call_args = inventory.templar.template.call_args
+    assert call_args[1]["variable"] == expected_template
+
+
+# Additional hostname-related tests moved from test_aws_ec2.py
+
+
+@pytest.mark.parametrize(
+    "hostnames,expected",
+    [
+        ([], "test-instance.ansible.com"),
+        (["private-dns-name"], "test-instance.localhost"),
+        (["tag:os_version"], "RHEL"),
+        (["tag:os_version", "dns-name"], "RHEL"),
+        ([{"name": "Name", "prefix": "Phase"}], "dev_test-instance-01"),
+        ([{"name": "Name", "prefix": "Phase", "separator": "-"}], "dev-test-instance-01"),
+        ([{"name": "Name", "prefix": "OSVersion", "separator": "-"}], "test-instance-01"),
+        ([{"name": "Name", "separator": "-"}], "test-instance-01"),
+        ([{"name": "Name", "prefix": "Phase"}, "private-dns-name"], "dev_test-instance-01"),
+        ([{"name": "Name", "prefix": "Phase"}, "tag:os_version"], "dev_test-instance-01"),
+        (["private-dns-name", "dns-name"], "test-instance.localhost"),
+        (["private-dns-name", {"name": "Name", "separator": "-"}], "test-instance.localhost"),
+        (["private-dns-name", "tag:os_version"], "test-instance.localhost"),
+        (["OSRelease"], None),
+    ],
+)
+def test_inventory_get_preferred_hostname(inventory, hostnames, expected, monkeypatch):
+    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
+    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
+
+    instance = {
+        "Name": "test-instance-01",
+        "Phase": "dev",
+        "tag:os_version": ["RHEL", "CoreOS"],
+        "another_key": "another_value",
+        "dns-name": "test-instance.ansible.com",
+        "private-dns-name": "test-instance.localhost",
+    }
+
+    inventory._sanitize_hostname = MagicMock()
+    inventory._sanitize_hostname.side_effect = lambda x: x
+
+    monkeypatch.setattr(
+        "ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain",
+        lambda pref, instance: instance.get(pref),
+    )
+    monkeypatch.setattr(
+        "ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname",
+        lambda pref, instance: instance.get(pref),
+    )
+
+    assert expected == inventory._get_preferred_hostname(instance, hostnames)
+
+
+def test_inventory_get_preferred_hostname_failure(inventory):
+    instance = {}
+    hostnames = [{"value": "saome_value"}]
+
+    inventory._sanitize_hostname = MagicMock()
+    inventory._sanitize_hostname.side_effect = lambda x: x
+
+    with pytest.raises(AnsibleError) as err:
+        inventory._get_preferred_hostname(instance, hostnames)
+    assert "A 'name' key must be defined in a hostnames dictionary." in str(err.value)
+
+
+@pytest.mark.parametrize("hostname,expected", [(1, "1"), ("a:b", "a_b"), ("a:/b", "a__b"), ("example", "example")])
+def test_sanitize_hostname(inventory, hostname, expected):
+    assert inventory._sanitize_hostname(hostname) == expected
+
+
+def test_sanitize_hostname_legacy(inventory):
+    inventory._sanitize_group_name = inventory._legacy_script_compatible_group_sanitization
+    assert inventory._sanitize_hostname("a:/b") == "a__b"
+
+
+@pytest.mark.parametrize(
+    "hostnames,expected",
+    [
+        ([], ["test-instance.ansible.com", "test-instance.localhost"]),
+        (["private-dns-name"], ["test-instance.localhost"]),
+        (["tag:os_version"], ["RHEL", "CoreOS"]),
+        (["tag:os_version", "dns-name"], ["RHEL", "CoreOS", "test-instance.ansible.com"]),
+        ([{"name": "Name", "prefix": "Phase"}], ["dev_test-instance-01"]),
+        ([{"name": "Name", "prefix": "Phase", "separator": "-"}], ["dev-test-instance-01"]),
+        ([{"name": "Name", "prefix": "OSVersion", "separator": "-"}], ["test-instance-01"]),
+        ([{"name": "Name", "separator": "-"}], ["test-instance-01"]),
+        (
+            [{"name": "Name", "prefix": "Phase"}, "private-dns-name"],
+            ["dev_test-instance-01", "test-instance.localhost"],
+        ),
+        ([{"name": "Name", "prefix": "Phase"}, "tag:os_version"], ["dev_test-instance-01", "RHEL", "CoreOS"]),
+        (["private-dns-name", {"name": "Name", "separator": "-"}], ["test-instance.localhost", "test-instance-01"]),
+        (["OSRelease"], []),
+    ],
+)
+def test_inventory_get_all_hostnames(inventory, hostnames, expected, monkeypatch):
+    instance = {
+        "Name": "test-instance-01",
+        "Phase": "dev",
+        "tag:os_version": ["RHEL", "CoreOS"],
+        "another_key": "another_value",
+        "dns-name": "test-instance.ansible.com",
+        "private-dns-name": "test-instance.localhost",
+    }
+
+    inventory._sanitize_hostname = MagicMock()
+    inventory._sanitize_hostname.side_effect = lambda x: x
+
+    monkeypatch.setattr(
+        "ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain",
+        lambda pref, instance: instance.get(pref),
+    )
+    monkeypatch.setattr(
+        "ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname",
+        lambda pref, instance: instance.get(pref),
+    )
+
+    assert expected == inventory._get_all_hostnames(instance, hostnames)
+
+
+def test_inventory_get_all_hostnames_failure(inventory):
+    instance = {}
+    hostnames = [{"value": "some_value"}]
+
+    with pytest.raises(AnsibleError) as err:
+        inventory._get_all_hostnames(instance, hostnames)
+    assert "A 'name' key must be defined in a hostnames dictionary." in str(err.value)
