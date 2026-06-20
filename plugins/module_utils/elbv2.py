@@ -56,7 +56,6 @@ from ._elbv2.transformations import normalize_application_load_balancer as norma
 
 # isort: split
 # Not intended for general re-use / re-import
-from ._elbv2 import api as _elbv2_api
 from ._elbv2 import waiters as _waiters
 from .ec2 import get_ec2_security_group_ids_from_names
 from .exceptions import AnsibleAWSError

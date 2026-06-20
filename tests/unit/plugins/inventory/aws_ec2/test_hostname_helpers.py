@@ -309,9 +309,6 @@ def test__is_matching_route53_hostname(inventory, route53_hostnames, hostname, e
     ],
 )
 def test__get_hostname_with_jinja2_filter_template_format(inventory, preference, expected_template, monkeypatch):
-    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
-    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
-
     instance = {"dns-name": "test.example.com", "tag:Name": ["host1", "host2"]}
 
     def tag_hostname_side_effect(pref, inst):
@@ -326,8 +323,12 @@ def test__get_hostname_with_jinja2_filter_template_format(inventory, preference,
             return inst.get("dns-name")
         return None
 
-    monkeypatch.setattr("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname", tag_hostname_side_effect)
-    monkeypatch.setattr("ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain", boto_attr_side_effect)
+    monkeypatch.setattr(
+        "ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_tag_hostname", tag_hostname_side_effect
+    )
+    monkeypatch.setattr(
+        "ansible_collections.amazon.aws.plugins.inventory.aws_ec2._get_boto_attr_chain", boto_attr_side_effect
+    )
 
     # Mock the templar to capture the template variable
     inventory.templar = MagicMock()
@@ -364,9 +365,6 @@ def test__get_hostname_with_jinja2_filter_template_format(inventory, preference,
     ],
 )
 def test_inventory_get_preferred_hostname(inventory, hostnames, expected, monkeypatch):
-    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
-    from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_tag_hostname
-
     instance = {
         "Name": "test-instance-01",
         "Phase": "dev",

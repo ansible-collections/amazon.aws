@@ -29,8 +29,6 @@ except ImportError:
     # Handled by HAS_BOTO3
     pass
 
-from ansible.errors import AnsibleError
-
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import InventoryModule
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _compile_values
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import _get_boto_attr_chain
@@ -717,5 +715,3 @@ def test__get_instance_route53_hostnames(inventory, instance, hostnames):
     }
     result = inventory._get_instance_route53_hostnames(instance)
     assert sorted(hostnames) == sorted(result)
-
-
