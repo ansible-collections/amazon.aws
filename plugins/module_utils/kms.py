@@ -13,12 +13,16 @@ if typing.TYPE_CHECKING:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-# pylint: disable-next=unused-import
-from ansible_collections.amazon.aws.plugins.module_utils._kms.common import AnsibleKMSError
-from ansible_collections.amazon.aws.plugins.module_utils._kms.common import KMSErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+
+# Intended for general use / re-import
+# pylint: disable=unused-import,useless-import-alias
+from ._kms.common import AnsibleKMSError as AnsibleKMSError
+from ._kms.common import KMSErrorHandler as KMSErrorHandler
+
+# pylint: enable=unused-import,useless-import-alias
 
 
 @KMSErrorHandler.common_error_handler("list KMS keys")
