@@ -139,7 +139,7 @@ def get_key_details(client: ClientType, key_id: str) -> dict:
         raise AnsibleKMSError(message="Failed to obtain aliases", exception=e.exception) from e
 
     try:
-        current_rotation_status = client.get_key_rotation_status(KeyId=key_id)
+        current_rotation_status = get_key_rotation_status(client, key_id)
         result["enable_key_rotation"] = current_rotation_status.get("KeyRotationEnabled")
     except is_boto3_error_code(["AccessDeniedException", "UnsupportedOperationException"]):
         result["enable_key_rotation"] = None
@@ -155,3 +155,114 @@ def get_key_details(client: ClientType, key_id: str) -> dict:
     result["key_policies"] = [json.loads(policy) for policy in policies]
 
     return result
+
+
+# Key rotation operations
+
+
+@KMSErrorHandler.common_error_handler("get key rotation status")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def get_key_rotation_status(client: ClientType, key_id: str) -> dict:
+    return client.get_key_rotation_status(KeyId=key_id)
+
+
+@KMSErrorHandler.common_error_handler("enable key rotation")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def enable_key_rotation(client: ClientType, key_id: str) -> dict:
+    return client.enable_key_rotation(KeyId=key_id)
+
+
+@KMSErrorHandler.common_error_handler("disable key rotation")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def disable_key_rotation(client: ClientType, key_id: str) -> dict:
+    return client.disable_key_rotation(KeyId=key_id)
+
+
+# Key state operations
+
+
+@KMSErrorHandler.common_error_handler("enable key")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def enable_key(client: ClientType, key_id: str) -> dict:
+    return client.enable_key(KeyId=key_id)
+
+
+@KMSErrorHandler.common_error_handler("disable key")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def disable_key(client: ClientType, key_id: str) -> dict:
+    return client.disable_key(KeyId=key_id)
+
+
+@KMSErrorHandler.common_error_handler("schedule key deletion")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def schedule_key_deletion(client: ClientType, key_id: str, pending_window_in_days: int | None = None) -> dict:
+    params = {"KeyId": key_id}
+    if pending_window_in_days is not None:
+        params["PendingWindowInDays"] = pending_window_in_days
+    return client.schedule_key_deletion(**params)
+
+
+@KMSErrorHandler.common_error_handler("cancel key deletion")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def cancel_key_deletion(client: ClientType, key_id: str) -> dict:
+    return client.cancel_key_deletion(KeyId=key_id)
+
+
+# Key creation and modification
+
+
+@KMSErrorHandler.common_error_handler("create key")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def create_key(client: ClientType, **params) -> dict:
+    return client.create_key(**params)
+
+
+@KMSErrorHandler.common_error_handler("update key description")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def update_key_description(client: ClientType, key_id: str, description: str) -> dict:
+    return client.update_key_description(KeyId=key_id, Description=description)
+
+
+@KMSErrorHandler.common_error_handler("put key policy")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def put_key_policy(client: ClientType, key_id: str, policy_name: str, policy: str) -> dict:
+    return client.put_key_policy(KeyId=key_id, PolicyName=policy_name, Policy=policy)
+
+
+# Alias operations
+
+
+@KMSErrorHandler.common_error_handler("create alias")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def create_alias(client: ClientType, alias_name: str, target_key_id: str) -> dict:
+    return client.create_alias(AliasName=alias_name, TargetKeyId=target_key_id)
+
+
+# Tag operations
+
+
+@KMSErrorHandler.common_error_handler("tag resource")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def tag_resource(client: ClientType, key_id: str, tags: list[dict]) -> dict:
+    return client.tag_resource(KeyId=key_id, Tags=tags)
+
+
+@KMSErrorHandler.common_error_handler("untag resource")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def untag_resource(client: ClientType, key_id: str, tag_keys: list[str]) -> dict:
+    return client.untag_resource(KeyId=key_id, TagKeys=tag_keys)
+
+
+# Grant operations
+
+
+@KMSErrorHandler.common_error_handler("create grant")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def create_grant(client: ClientType, **params) -> dict:
+    return client.create_grant(**params)
+
+
+@KMSErrorHandler.common_error_handler("retire grant")
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
+def retire_grant(client: ClientType, key_id: str, grant_id: str) -> dict:
+    return client.retire_grant(KeyId=key_id, GrantId=grant_id)
