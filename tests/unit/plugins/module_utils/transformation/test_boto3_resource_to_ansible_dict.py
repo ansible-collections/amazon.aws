@@ -135,3 +135,29 @@ class TestBoto3ResourceToAnsibleDict:
         if input_params and "Tags" not in input_params:
             del expected_value["tags"]
         assert boto3_resource_to_ansible_dict(input_params, force_tags=False) == expected_value
+
+    def test_tagging_params_tagkey_tagvalue(self):
+        # Test with KMS-style TagKey/TagValue tags
+        input_params = {
+            "ResourceId": "abc123",
+            "Tags": [{"TagKey": "Hello", "TagValue": "World"}, {"TagKey": "Environment", "TagValue": "Test"}],
+        }
+        expected_output = {
+            "resource_id": "abc123",
+            "tags": {"Hello": "World", "Environment": "Test"},
+        }
+        tagging_params = {"tag_name_key_name": "TagKey", "tag_value_key_name": "TagValue"}
+        assert boto3_resource_to_ansible_dict(input_params, tagging_params=tagging_params) == expected_output
+
+    def test_tagging_params_name_value(self):
+        # Test with name/value style tags
+        input_params = {
+            "ResourceId": "abc123",
+            "Tags": [{"name": "Hello", "value": "World"}, {"name": "Environment", "value": "Test"}],
+        }
+        expected_output = {
+            "resource_id": "abc123",
+            "tags": {"Hello": "World", "Environment": "Test"},
+        }
+        tagging_params = {"tag_name_key_name": "name", "tag_value_key_name": "value"}
+        assert boto3_resource_to_ansible_dict(input_params, tagging_params=tagging_params) == expected_output
