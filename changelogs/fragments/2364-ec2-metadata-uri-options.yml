@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - ec2_metadata_facts - Add support to change instance metadata service endpoint uri for test
