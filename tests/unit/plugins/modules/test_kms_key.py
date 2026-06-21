@@ -58,11 +58,10 @@ key_details = {
 
 @patch(module_name + ".get_kms_metadata")
 def test_fetch_key_metadata(m_get_kms_metadata):
-    module = MagicMock()
     kms_client = MagicMock()
 
     m_get_kms_metadata.return_value = key_details["KeyMetadata"]
-    kms_key.fetch_key_metadata(kms_client, module, "mrk-12345678", "mykey")
+    kms_key.fetch_key_metadata(kms_client, "mrk-12345678", "mykey")
     assert m_get_kms_metadata.call_count == 1
 
 

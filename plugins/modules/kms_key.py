@@ -729,7 +729,7 @@ def delete_key(connection, module, key_metadata):
     return result
 
 
-def fetch_key_metadata(connection, module, key_id, alias):
+def fetch_key_metadata(connection, key_id, alias):
     # Note - fetching a key's metadata is very inconsistent shortly after any sort of update to a key has occurred.
     # Combinations of manual waiters, checking expecting key values to actual key value, and static sleeps
     #        have all been exhausted, but none of those available options have solved the problem.
@@ -799,7 +799,7 @@ def main():
     try:
         kms = module.client("kms")
 
-        key_metadata = fetch_key_metadata(kms, module, module.params.get("key_id"), module.params.get("alias"))
+        key_metadata = fetch_key_metadata(kms, module.params.get("key_id"), module.params.get("alias"))
         validate_params(module, key_metadata)
 
         if module.params.get("state") == "absent":
