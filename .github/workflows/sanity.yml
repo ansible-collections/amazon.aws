@@ -1,0 +1,63 @@
+# Ansible sanity testing with ansible-test-gh-action
+
+---
+name: sanity
+
+on:
+  workflow_call:
+    inputs:
+      ansible-core-versions:
+        description: 'JSON array of ansible-core versions to test'
+        required: false
+        type: string
+        default: '["stable-2.17", "stable-2.18", "stable-2.19", "stable-2.20", "milestone", "devel"]'
+      python-versions:
+        description: 'JSON array of Python versions to test'
+        required: false
+        type: string
+        default: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
+      matrix-exclude:
+        description: 'JSON array of matrix exclusions'
+        required: false
+        type: string
+        default: |
+          [
+            {"ansible-core-version": "devel", "python-version": "3.10"},
+            {"ansible-core-version": "devel", "python-version": "3.11"},
+            {"ansible-core-version": "milestone", "python-version": "3.10"},
+            {"ansible-core-version": "milestone", "python-version": "3.11"},
+            {"ansible-core-version": "stable-2.20", "python-version": "3.10"},
+            {"ansible-core-version": "stable-2.20", "python-version": "3.11"},
+            {"ansible-core-version": "stable-2.19", "python-version": "3.10"},
+            {"ansible-core-version": "stable-2.19", "python-version": "3.14"},
+            {"ansible-core-version": "stable-2.18", "python-version": "3.10"},
+            {"ansible-core-version": "stable-2.18", "python-version": "3.14"},
+            {"ansible-core-version": "stable-2.17", "python-version": "3.13"},
+            {"ansible-core-version": "stable-2.17", "python-version": "3.14"}
+          ]
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-core-version: ${{ fromJson(inputs.ansible-core-versions) }}
+        python-version: ${{ fromJson(inputs.python-versions) }}
+        exclude: ${{ fromJson(inputs.matrix-exclude) }}
+    steps:
+      - name: Perform sanity testing
+        id: ansible-test
+        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e # v1.17.0
+        with:
+          ansible-core-version: ${{ matrix.ansible-core-version }}
+          testing-type: sanity
+          target-python-version: ${{ matrix.python-version }}
+
+      - name: Upload coverage XML files
+        if: always() && steps.ansible-test.outputs.coverage-report-files != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-sanity-${{ matrix.ansible-core-version }}-py${{ matrix.python-version }}
+          path: ${{ steps.ansible-test.outputs.coverage-report-files }}
+          if-no-files-found: ignore

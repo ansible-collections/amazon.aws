@@ -1,14 +1,14 @@
 ## SonarCloud Analysis Workflow for amazon.aws
 
-# This workflow runs SonarCloud analysis triggered by all_green workflow completion.
+# This workflow runs SonarCloud analysis triggered by CI workflow completion.
 #
-# FLOW: all_green completes (linters, sanity, units, coverage) → workflow_run triggers this workflow → finalize job runs
+# FLOW: ci completes (linters, sanity, units, integration) → workflow_run triggers this workflow → finalize job runs
 #
-# - Triggered by: workflow_run (all_green on pull_request or push to main/stable-*)
-# - Steps: Checkout → Download coverage from all_green run → Get PR info (if PR) → Run SonarCloud scan
-# - Coverage: Unit test coverage is produced by the coverage job (via tox) in all_green and passed to SonarCloud here.
+# - Triggered by: workflow_run (ci on pull_request or push to main/stable-*)
+# - Steps: Checkout → Download coverage from ci run → Get PR info (if PR) → Run SonarCloud scan
+# - Coverage: Sanity, unit, and integration test coverage is produced by the test jobs in ci and passed to SonarCloud here.
 #
-# This ensures coverage data is always available from the all_green run before analysis runs.
+# This ensures coverage data is always available from the ci run before analysis runs.
 #
 # What files are scanned:
 # - All files in the repository that SonarCloud can analyze
@@ -21,7 +21,7 @@ name: SonarCloud
 on:
   workflow_run:
     workflows:
-      - all_green
+      - ci
     types:
       - completed
 
@@ -47,9 +47,9 @@ jobs:
         uses: dawidd6/action-download-artifact@2536c51d3d126276eb39f74d6bc9c72ac6ef30d3  # v16
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: all_green
+          workflow: ci
           run_id: ${{ github.event.workflow_run.id }}
-          pattern: coverage*
+          pattern: coverage*  # downloads coverage-sanity-*, coverage-units-*, coverage-integration-*
 
       - name: Set coverage report paths
         run: |
