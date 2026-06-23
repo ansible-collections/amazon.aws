@@ -79,8 +79,10 @@ jobs:
           base_ref: '${{ needs.retrieve-pr-info.outputs.base_ref }}'
 
   run-tests:
+    # Skip if jobs matrix is empty to avoid automatic failure
+    if: needs.splitter.outputs.jobs != '[]'
     needs:
-      - retrieve-pr-info 
+      - retrieve-pr-info
       - splitter
     permissions:
       pull-requests: read
@@ -185,3 +187,24 @@ jobs:
           name: coverage-integration-${{ matrix.job-id }}
           path: ${{ steps.ansible-test.outputs.coverage-report-files }}
           if-no-files-found: ignore
+
+  # Final check to ensure workflow reports success even when no tests run
+  integration-complete:
+    if: always()
+    needs:
+      - retrieve-pr-info
+      - splitter
+      - run-tests
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          # Success if run-tests succeeded, was skipped, or didn't run (empty matrix)
+          RESULT="${{ needs.run-tests.result }}"
+          if [[ "$RESULT" == "success" ]] || [[ "$RESULT" == "skipped" ]] || [[ -z "$RESULT" ]]; then
+            echo "Integration tests completed successfully (or no tests to run)"
+            echo "run-tests result: '${RESULT}'"
+            exit 0
+          else
+            echo "Integration tests failed with result: '${RESULT}'"
+            exit 1
+          fi
