@@ -58,11 +58,12 @@ jobs:
     steps:
       - name: Perform unit testing
         id: ansible-test
-        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e # v1.17.0
+        uses: tremble/ansible-test-gh-action@debug-coverage-output
         with:
           ansible-core-version: ${{ matrix.ansible-core-version }}
           testing-type: units
           target-python-version: ${{ matrix.python-version }}
+          coverage: always
           # test-deps: -r tests/unit/requirements.txt
 
       - name: Upload coverage XML files

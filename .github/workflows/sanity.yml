@@ -53,11 +53,3 @@ jobs:
           ansible-core-version: ${{ matrix.ansible-core-version }}
           testing-type: sanity
           target-python-version: ${{ matrix.python-version }}
-
-      - name: Upload coverage XML files
-        if: always() && steps.ansible-test.outputs.coverage-report-files != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-sanity-${{ matrix.ansible-core-version }}-py${{ matrix.python-version }}
-          path: ${{ steps.ansible-test.outputs.coverage-report-files }}
-          if-no-files-found: ignore

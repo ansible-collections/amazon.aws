@@ -6,7 +6,8 @@
 #
 # - Triggered by: workflow_run (ci on pull_request or push to main/stable-*)
 # - Steps: Checkout → Download coverage from ci run → Get PR info (if PR) → Run SonarCloud scan
-# - Coverage: Sanity, unit, and integration test coverage is produced by the test jobs in ci and passed to SonarCloud here.
+# - Coverage: Unit and integration test coverage is produced by the test jobs in ci and passed to SonarCloud here.
+#   Note: Sanity tests do not produce coverage (they are linting/validation checks).
 #
 # This ensures coverage data is always available from the ci run before analysis runs.
 #
@@ -49,7 +50,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: ci
           run_id: ${{ github.event.workflow_run.id }}
-          pattern: coverage*  # downloads coverage-sanity-*, coverage-units-*, coverage-integration-*
+          pattern: coverage*  # downloads coverage-units-*, coverage-integration-*
 
       - name: Set coverage report paths
         run: |
