@@ -35,6 +35,16 @@ on:
             {"ansible-core-version": "stable-2.17", "python-version": "3.13"},
             {"ansible-core-version": "stable-2.17", "python-version": "3.14"}
           ]
+      canonical-ansible-version:
+        description: 'Canonical ansible-core version for coverage'
+        required: false
+        type: string
+        default: 'milestone'
+      canonical-python-version:
+        description: 'Canonical Python version for coverage'
+        required: false
+        type: string
+        default: '3.14'
 
 jobs:
   units:
@@ -60,5 +70,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-units-${{ matrix.ansible-core-version }}-py${{ matrix.python-version }}
+          path: ${{ steps.ansible-test.outputs.coverage-report-files }}
+          if-no-files-found: ignore
+
+      - name: Upload canonical coverage
+        if: |
+          always() &&
+          steps.ansible-test.outputs.coverage-report-files != '' &&
+          matrix.ansible-core-version == inputs.canonical-ansible-version &&
+          matrix.python-version == inputs.canonical-python-version
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-units-canonical
           path: ${{ steps.ansible-test.outputs.coverage-report-files }}
           if-no-files-found: ignore

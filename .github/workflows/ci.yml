@@ -42,6 +42,8 @@ jobs:
       ansible-core-versions: ${{ needs.matrix-config.outputs.ansible-core-versions }}
       python-versions: ${{ needs.matrix-config.outputs.python-versions }}
       matrix-exclude: ${{ needs.matrix-config.outputs.matrix-exclude }}
+      canonical-ansible-version: ${{ needs.matrix-config.outputs.canonical-ansible-version }}
+      canonical-python-version: ${{ needs.matrix-config.outputs.canonical-python-version }}
 
   integration:
     uses: ./.github/workflows/integration.yml

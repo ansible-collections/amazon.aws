@@ -21,6 +21,12 @@ on:
       matrix-exclude:
         description: 'JSON array of matrix exclusions'
         value: ${{ jobs.config.outputs.matrix-exclude }}
+      canonical-ansible-version:
+        description: 'Canonical ansible-core version for coverage (milestone)'
+        value: ${{ jobs.config.outputs.canonical-ansible-version }}
+      canonical-python-version:
+        description: 'Canonical Python version for coverage (latest supported)'
+        value: ${{ jobs.config.outputs.canonical-python-version }}
 
 jobs:
   config:
@@ -29,6 +35,8 @@ jobs:
       ansible-core-versions: ${{ steps.set-matrix.outputs.ansible-core-versions }}
       python-versions: ${{ steps.set-matrix.outputs.python-versions }}
       matrix-exclude: ${{ steps.set-matrix.outputs.matrix-exclude }}
+      canonical-ansible-version: ${{ steps.set-matrix.outputs.canonical-ansible-version }}
+      canonical-python-version: ${{ steps.set-matrix.outputs.canonical-python-version }}
     steps:
       - name: Set matrix configuration
         id: set-matrix
@@ -88,9 +96,16 @@ jobs:
               {"ansible-core-version": "stable-2.17", "python-version": "3.14"},
           ]
 
+          # Canonical versions for consistent coverage artifact location
+          # Use milestone (upcoming release) with latest supported Python
+          canonical_ansible_version = "milestone"
+          canonical_python_version = python_versions[-1]  # Latest Python version
+
           # Write to GITHUB_OUTPUT as single-line JSON
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"ansible-core-versions={json.dumps(ansible_core_versions)}\n")
               f.write(f"python-versions={json.dumps(python_versions)}\n")
               f.write(f"matrix-exclude={json.dumps(matrix_exclude)}\n")
+              f.write(f"canonical-ansible-version={canonical_ansible_version}\n")
+              f.write(f"canonical-python-version={canonical_python_version}\n")
           PYTHON
