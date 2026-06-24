@@ -50,7 +50,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: ci
           run_id: ${{ github.event.workflow_run.id }}
-          pattern: coverage*  # downloads coverage-units-*, coverage-integration-*
+          pattern: coverage-(units-canonical|integration-*)  # canonical units + all integration
 
       - name: Set coverage report paths
         run: |

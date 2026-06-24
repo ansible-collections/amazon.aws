@@ -142,43 +142,27 @@ jobs:
             echo "collection_dep=${{ env.amazon_dir }}" >> $GITHUB_OUTPUT
           fi
 
-      # TEMPORARY: Comment out for fork testing (requires upstream credentials)
-      # - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
+      - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
 
-      # TEMPORARY: Comment out for fork testing (requires upstream credentials)
-      # - name: Run integration tests
-      #   id: ansible-test
-      #   uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e
-      #   with:
-      #     ansible-core-version: ${{ env.ansible_version }}
-      #     origin-python-version: ${{ env.python_version }}
-      #     testing-type: integration
-      #     collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
-      #     collection-root: ''
-      #     target: ${{ steps.read-targets.outputs.job_targets }}
-      #     test-deps: >-
-      #       ansible.utils
-      #       ansible.netcommon
-      #       community.general
-      #       community.crypto
-      #       ansible.windows
-      #       ${{ steps.set-path.outputs.collection_dep }}
-      #     pre-test-cmd: |
-      #       python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
-
-      # TEMPORARY: Fake integration test for fork testing - remove before merging upstream
       - name: Run integration tests
         id: ansible-test
-        run: |
-          mkdir -p coverage-fake
-          cat > coverage-fake/coverage.xml <<'EOF'
-          <?xml version="1.0" ?>
-          <coverage version="7.0" timestamp="1234567890" lines-valid="0" lines-covered="0" line-rate="0" branches-valid="0" branches-covered="0" branch-rate="0" complexity="0">
-            <sources><source>.</source></sources>
-            <packages></packages>
-          </coverage>
-          EOF
-          echo "coverage-report-files=coverage-fake/coverage.xml" >> $GITHUB_OUTPUT
+        uses: tremble/ansible-test-gh-action@debug-coverage-output
+        with:
+          ansible-core-version: ${{ env.ansible_version }}
+          origin-python-version: ${{ env.python_version }}
+          testing-type: integration
+          collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
+          collection-root: ''
+          target: ${{ steps.read-targets.outputs.job_targets }}
+          test-deps: >-
+            ansible.utils
+            ansible.netcommon
+            community.general
+            community.crypto
+            ansible.windows
+            ${{ steps.set-path.outputs.collection_dep }}
+          pre-test-cmd: |
+            python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
 
       - name: Upload coverage XML files
         if: always() && steps.ansible-test.outputs.coverage-report-files != ''
