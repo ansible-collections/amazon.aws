@@ -420,7 +420,6 @@ def get_nat_gateways(
     states: Optional[List[str]] = None,
     vpc_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-
     """Retrieve a list of NAT Gateways
     Args:
         client (botocore.client.EC2): Boto3 client
