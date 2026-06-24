@@ -129,7 +129,7 @@ EXAMPLES = r"""
   amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
-    eip_address: 52.1.1.1
+    eip_address: 203.0.113.4
     region: ap-southeast-2
     client_token: abcd-12345678
   register: new_nat_gateway
@@ -147,7 +147,7 @@ EXAMPLES = r"""
   amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
-    eip_address: 52.1.1.1
+    eip_address: 203.0.113.4
     wait: true
     region: ap-southeast-2
   register: new_nat_gateway
@@ -343,7 +343,7 @@ nat_gateway_addresses:
         description: The Elastic IP address associated with the NAT gateway.
         returned: always
         type: str
-        sample: 34.204.123.52
+        sample: 203.0.113.5
     status:
         description: The address status.
         returned: always
@@ -368,7 +368,7 @@ nat_gateway_addresses:
             "is_primary": true,
             "network_interface_id": "eni-095104e630881bad6",
             "private_ip": "10.1.0.250",
-            "public_ip": "34.202.90.172",
+            "public_ip": "203.0.113.6",
             "status": "succeeded"
         }
   ]
@@ -420,6 +420,47 @@ def get_nat_gateways(
     states: Optional[List[str]] = None,
     vpc_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
+
+    """Retrieve a list of NAT Gateways
+    Args:
+        client (botocore.client.EC2): Boto3 client
+        module: AnsibleAWSModule class instance
+
+    Kwargs:
+        subnet_id (str): The subnet_id the nat resides in.
+        nat_gateway_id (str): The Amazon NAT id.
+        states (list): States available (pending, failed, available, deleting, and deleted)
+            default=None
+
+    Basic Usage:
+        >>> client = boto3.client('ec2')
+        >>> module = AnsibleAWSModule(...)
+        >>> subnet_id = 'subnet-12345678'
+        >>> get_nat_gateways(client, module, subnet_id)
+        [
+            {
+                "create_time": "2016-03-05T00:33:21.209000+00:00",
+                "delete_time": "2016-03-05T00:36:37.329000+00:00",
+                "nat_gateway_addresses": [
+                    {
+                        "public_ip": "203.0.113.7",
+                        "network_interface_id": "eni-1234567",
+                        "private_ip": "10.0.0.102",
+                        "allocation_id": "eipalloc-1234567"
+                    }
+                ],
+                "nat_gateway_id": "nat-123456789",
+                "state": "deleted",
+                "subnet_id": "subnet-123456789",
+                "tags": {},
+                "vpc_id": "vpc-12345678"
+            }
+        ]
+
+    Returns:
+        list
+    """
+
     params: dict[str, Any] = {}
     if not states:
         states = ["available", "pending"]
@@ -467,7 +508,7 @@ def gateway_in_subnet_exists(
                     "delete_time": "2016-03-05T00:36:37.329000+00:00",
                     "nat_gateway_addresses": [
                         {
-                            "public_ip": "55.55.55.55",
+                            "public_ip": "203.0.113.7",
                             "network_interface_id": "eni-1234567",
                             "private_ip": "10.0.0.102",
                             "allocation_id": "eipalloc-1234567"
@@ -531,7 +572,7 @@ def get_eip_allocation_id_by_address(client, eip_address: str) -> Tuple[Optional
     Basic Usage:
         >>> client = boto3.client('ec2')
         >>> module = AnsibleAWSModule(...)
-        >>> eip_address = '52.87.29.36'
+        >>> eip_address = '203.0.113.8'
         >>> get_eip_allocation_id_by_address(client, eip_address)
         (
             'eipalloc-36014da3', ''
@@ -655,7 +696,7 @@ def create(client, module: AnsibleAWSModule, allocation_id: Optional[str]) -> Tu
                 "delete_time": "2016-03-05T00:36:37.329000+00:00",
                 "nat_gateway_addresses": [
                     {
-                        "public_ip": "55.55.55.55",
+                        "public_ip": "203.0.113.7",
                         "network_interface_id": "eni-1234567",
                         "private_ip": "10.0.0.102",
                         "allocation_id": "eipalloc-1234567"
@@ -757,7 +798,7 @@ def pre_create(
                 "delete_time": "2016-03-05T00:36:37.329000+00:00",
                 "nat_gateway_addresses": [
                     {
-                        "public_ip": "52.87.29.36",
+                        "public_ip": "203.0.113.8",
                         "network_interface_id": "eni-5579742d",
                         "private_ip": "10.0.0.102",
                         "allocation_id": "eipalloc-36014da3"
@@ -876,7 +917,7 @@ def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]
                 "delete_time": "2016-03-05T00:36:37.329000+00:00",
                 "nat_gateway_addresses": [
                     {
-                        "public_ip": "52.87.29.36",
+                        "public_ip": "203.0.113.8",
                         "network_interface_id": "eni-5579742d",
                         "private_ip": "10.0.0.102",
                         "allocation_id": "eipalloc-36014da3"

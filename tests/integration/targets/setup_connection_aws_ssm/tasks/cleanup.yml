@@ -62,7 +62,7 @@
 
     - name: Delete S3 bucket
       ansible.builtin.include_tasks: 'delete_bucket.yml'
-      loop: "{{ bucket_name }}"
+      loop: "{{ [bucket_name] }}"
       when: s3_vars_file.stat.exists is true
       ignore_errors: true  # noqa: ignore-errors
 

@@ -9,7 +9,7 @@
     - name: Get ARN of calling user
       amazon.aws.aws_caller_info:
       register: aws_caller_info
-    - name: See whether key exists and its current state
+    - name: Get key info to verify it does not exist yet
       amazon.aws.kms_key_info:
         alias: "{{ kms_key_alias }}"
     - name: Create a multi region key - check mode
@@ -22,11 +22,11 @@
         enabled: true
       register: key_check
       check_mode: true
-    - name: Find facts about the check mode key
+    - name: Get key info for check mode key
       amazon.aws.kms_key_info:
         alias: "{{ kms_key_alias }}-check"
       register: check_key
-    - name: Ensure that check mode worked as expected
+    - name: Assert that check mode worked as expected
       ansible.builtin.assert:
         that:
           - check_key.kms_keys | length == 0
@@ -65,10 +65,18 @@
           - key.description == ''
           - key.multi_region == True
 
-    - name: Sleep to wait for updates to propagate
-      ansible.builtin.wait_for:
-        timeout: 45
+    - name: Wait for key creation to propagate
+      amazon.aws.kms_key_info:
+        alias: "{{ kms_key_alias }}"
+      register: key_info
+      until:
+        - key_info.kms_keys[0].multi_region == True
+      retries: 10
+      delay: 10
 
+    - name: Wait for propagation to settle
+      ansible.builtin.wait_for:
+        timeout: 10
     - name: Create a key (expect failure)
       amazon.aws.kms_key:
         alias: "{{ kms_key_alias }}"
@@ -91,7 +99,7 @@
   always:
     # ============================================================
     #   CLEAN-UP
-    - name: Finish off by deleting keys
+    - name: Schedule key deletion for cleanup
       amazon.aws.kms_key:
         state: absent
         alias: "{{ item }}"

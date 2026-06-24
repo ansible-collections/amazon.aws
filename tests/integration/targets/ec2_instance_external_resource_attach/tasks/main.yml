@@ -42,7 +42,7 @@
         network_interfaces_ids:
           - id: "{{ eni_a.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
-        availability_zone: "{{ subnet_b_az }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
@@ -53,6 +53,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: in_test_vpc_instance
 
     - ansible.builtin.assert:
@@ -68,6 +69,7 @@
           - id: "{{ eni_a.interface.id }}"
           - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
@@ -84,6 +86,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: in_test_vpc_instance
 
     - name: Validate that only 1 ENI is attached to instance as we run using check_mode=true
@@ -100,6 +103,7 @@
           - id: "{{ eni_a.interface.id }}"
           - id: "{{ eni_b.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
@@ -133,7 +137,7 @@
         network_interfaces_ids:
           - id: "{{ eni_c.interface.id }}"
         image_id: "{{ ec2_ami_id }}"
-        availability_zone: "{{ subnet_b_az }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         instance_type: "{{ ec2_instance_type }}"
@@ -143,12 +147,14 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: presented_instance_fact
 
     - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-eni-vpc-checkmode"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: checkmode_instance_fact
 
     - name: Confirm existence of instance id.

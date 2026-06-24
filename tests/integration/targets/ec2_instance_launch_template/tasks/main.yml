@@ -29,6 +29,7 @@
       amazon.aws.ec2_instance:
         state: present
         wait: true
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         launch_template:
           id: "{{ _launch_template.template.launch_template_id }}"
       register: _create_check
@@ -43,6 +44,7 @@
     - name: Create EC2 instance using launch template
       amazon.aws.ec2_instance:
         state: present
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         launch_template:
           id: "{{ _launch_template.template.launch_template_id }}"
         wait: true

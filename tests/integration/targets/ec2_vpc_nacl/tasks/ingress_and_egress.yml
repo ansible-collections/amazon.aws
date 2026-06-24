@@ -158,8 +158,8 @@
           - [100, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 22, 22]
           - [200, "tcp", "allow", "0.0.0.0/0", !!null "", !!null "", 80, 80]
         egress:
-          - [100, "tcp", "allow", "192.68.0.0/24", !!null "", !!null "", 22, 22]
-          - [200, "udp", "allow", "192.68.0.0/24", !!null "", !!null "", 443, 443]
+          - [100, "tcp", "allow", "192.168.0.0/24", !!null "", !!null "", 22, 22]
+          - [200, "udp", "allow", "192.168.0.0/24", !!null "", !!null "", 443, 443]
         state: "present"
       register: nacl
 

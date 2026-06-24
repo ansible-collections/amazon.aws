@@ -4032,6 +4032,15 @@ releases:
     - ansible-test-gh-action-migration.yml
     - reliability-duplicate-assignments.yml
     release_date: '2026-05-06'
+  10.3.2:
+    changes:
+      bugfixes:
+      - Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if
+        bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914)
+        (https://github.com/ansible-collections/amazon.aws/pull/2987)
+    fragments:
+    - 2987-s3bucket-waiter-retry-404.yml
+    release_date: '2026-06-16'
   11.0.0:
     changes:
       major_changes:
@@ -4228,3 +4237,55 @@ releases:
     - unittests-common.yml
     - utcnow-deprecation.yml
     release_date: '2026-03-17'
+  11.3.0:
+    changes:
+      bugfixes:
+      - autoscaling_group - Fixed duplicate default_cooldown assignment in properties
+        dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - elb_application_lb - Listener rules are now returned sorted by priority with
+        the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
+      - elb_application_lb_info - Listener rules are now returned sorted by priority
+        with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
+      - kms_key - Fixed parameter reassignment by using passed alias parameter instead
+        of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property
+        (https://github.com/ansible-collections/community.aws/issues/1915).
+      - s3_object_info - Fixed duplicate dictionary key assignments when retrieving
+        object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      minor_changes:
+      - Various modules and utilities - migrated from deprecated ``ansible.module_utils._text``
+        to ``ansible.module_utils.common.text.converters`` (https://github.com/ansible-collections/amazon.aws/pull/2860).
+      - amazon.aws.cloudformation - Fixed an issue where creating a changeset in check
+        mode would fail if the stack is not in a ready state (e.g., UPDATE_IN_PROGRESS).
+        The module now waits for the stack to be in a ready state (UPDATE_COMPLETE)
+        before creating the changeset (https://github.com/ansible-collections/amazon.aws/pull/1910)
+      - elb_application_lb_info - Fixed return value documentation to correctly reflect
+        actual types and added missing fields (https://github.com/ansible-collections/amazon.aws/issues/2939).
+      - extensions/eda/plugins/event_source/aws_sqs_queue.py - Added optional support
+        for feedback so that the event can be removed from the SQS Queue on receipt
+        of acknowledgement from ansible-rulebook.
+      - module_utils/errors - Add support for f-string style parameter interpolation
+        in error handler descriptions to provide more detailed error messages (https://github.com/ansible-collections/amazon.aws/pull/2944).
+      - s3_bucket - Added O(account_regional) parameter to support creating buckets
+        in the account-regional namespace. Requires at least botocore version 1.42.67
+        (https://github.com/ansible-collections/amazon.aws/pull/2960).
+      - s3_bucket - Added support for managing bucket logging configuration (https://github.com/ansible-collections/amazon.aws/pull/2855).
+      release_summary: This minor release adds new features and improvements to the
+        ``autoscaling_group``, ``elb_application_lb``, ``elb_application_lb_info``,
+        ``elb_classic_lb``, ``event_source_aws_cloudtrail``, ``kms_key``, ``s3_bucket``,
+        ``s3_object_info`` module(s).
+    fragments:
+    - 11.3.0.yml
+    - 1910-check_stack_change_set.yml
+    - 1915-cloudfront_distribution_info-TypeError.yml
+    - 20260225-migrate-text-converters.yml
+    - 2868_event_source_aws_cloudtrail_integration_tests.yaml
+    - 2939-elb-rules-sorting.yml
+    - ansible-test-gh-action-migration.yml
+    - elb_logging_service_principal.yml
+    - error-handler-format-strings.yml
+    - feedback_eda_sqs_source_plugin.yml
+    - reliability-duplicate-assignments.yml
+    - s3_bucket-account_regional.yml
+    - s3_bucket_logging.yml
+    release_date: '2026-05-08'

@@ -65,12 +65,22 @@
           Tag_B: second value
         appliance_mode_support: true
         ipv6_support: true
+      register: complex_attach_create
+
+    - name: Wait for transit gateway attachment to stabilize
+      ansible.builtin.wait_for:
+        timeout: 15
+      when: complex_attach_create is changed
+
+    - name: Get attachment info to verify state propagation
+      amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+        id: "{{ complex_attach_create.attachments[0].transit_gateway_attachment_id }}"
       register: complex_attach
 
     - name: Assert that the test is successful
       ansible.builtin.assert:
         that:
-          - complex_attach is changed
+          - complex_attach_create is changed
           - '"attachments" in complex_attach'
           - complex_attach.attachments | length == 1
           - '"subnet_ids" in attachment'
@@ -297,12 +307,22 @@
         purge_tags: false
         dns_support: false
         ipv6_support: false
+      register: complex_attach_update
+
+    - name: Wait for transit gateway attachment to stabilize
+      ansible.builtin.wait_for:
+        timeout: 15
+      when: complex_attach_update is changed
+
+    - name: Get attachment info to verify state propagation
+      amazon.aws.ec2_transit_gateway_vpc_attachment_info:
+        id: "{{ complex_attach_update.attachments[0].transit_gateway_attachment_id }}"
       register: complex_attach
 
     - name: Assert that the test is successful
       ansible.builtin.assert:
         that:
-          - complex_attach is changed
+          - complex_attach_update is changed
           - '"attachments" in complex_attach'
           - complex_attach.attachments | length == 1
           - '"subnet_ids" in attachment'

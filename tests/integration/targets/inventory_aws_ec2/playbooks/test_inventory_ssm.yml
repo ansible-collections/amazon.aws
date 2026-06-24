@@ -17,7 +17,7 @@
       #!/bin/sh
       sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
       sudo systemctl start amazon-ssm-agent
-    iam_role_name: "{{ resource_prefix }}-inventory-ssm"
+    iam_role_name: "ansible-test-{{ tiny_prefix }}-inventory-ssm"
 
   tasks:
     - block:

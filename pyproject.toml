@@ -5,6 +5,8 @@ target-version = ['py38', 'py39']
 extend-exclude = '''
 /(
   | plugins/module_utils/_version.py
+  | \.tox
+  | tests/output
 )/
 '''
 
@@ -21,6 +23,7 @@ src = [
 profile = "black"
 force_single_line = true
 line_length = 120
+skip = [".tox", "tests/output"]
 
 src_paths = [
     "plugins",
@@ -38,6 +41,8 @@ known_ansible_community_aws = ["ansible_collections.community.aws"]
 transform-joins = true
 exclude = [
     "ec2_metadata_facts",
+    ".tox",
+    "tests/output",
 ]
 
 [tool.flake8]
@@ -46,18 +51,23 @@ show-source = true
 ignore = ["E123", "E125", "E203", "E402", "E501", "E741", "F401", "F811", "F841", "W503"]
 max-line-length = 160
 builtins = "_"
+exclude = [".tox", "tests/output"]
 
 [tool.mypy]
 disable_error_code = ["import-untyped"]
 
 [tool.ruff]
 line-length = 120
+exclude = [".tox", "tests/output"]
 
 [tool.ruff.lint]
 # "F401" - unused-imports - We use these imports to maintain historic Interfaces
 # "E402" - import not at top of file - General Ansible style puts the documentation at the top.
 unfixable = ["F401"]
 ignore = ["F401", "E402"]
+
+[tool.pylint.main]
+ignore = [".tox", "tests/output"]
 
 [tool.pytest.ini_options]
 xfail_strict = true

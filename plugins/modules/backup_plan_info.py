@@ -83,7 +83,7 @@ backup_plans:
             description: Version id of the backup plan
             returned: always
             type: str
-            sample: 'A2AiAAAmAAAtAxAxAA00AAa0AAAxAxAtA0AmAAA4NDY1ZTZl'
+            sample: '01234567-89ab-cdef-0123-456789abcdef'
         backup_plan:
             returned: always
             description: Detailed information about the backup plan.

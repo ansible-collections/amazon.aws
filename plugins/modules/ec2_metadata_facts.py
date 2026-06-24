@@ -349,7 +349,7 @@ ansible_facts:
         ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s:
             description: The Elastic IP addresses associated with the interface. There may be multiple IPv4 addresses on an instance.
             type: str
-            sample: "1.2.3.4"
+            sample: "203.0.113.1"
         ansible_ec2_network_interfaces_macs_mac_address_security_group_ids:
             description: The IDs of the security groups to which the network interface belongs. Returned only for instances launched into a VPC.
             type: str
@@ -410,7 +410,7 @@ ansible_facts:
         ansible_ec2_public_ipv4:
             description: The public IPv4 address. If an Elastic IP address is associated with the instance, the value returned is the Elastic IP address.
             type: str
-            sample: "1.2.3.4"
+            sample: "203.0.113.1"
         ansible_ec2_public_key:
             description: Public key. Only available if supplied at instance launch time.
             type: str

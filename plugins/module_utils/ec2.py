@@ -870,10 +870,6 @@ def associate_iam_instance_profile(client, iam_instance_profile: Dict[str, str],
 class EC2InstanceTypeErrorHandler(AWSErrorHandler):
     _CUSTOM_EXCEPTION = AnsibleEC2Error
 
-    # @classmethod
-    # def _is_missing(cls):
-    #     return is_boto3_error_code("InvalidInstanceType")
-
 
 @EC2InstanceTypeErrorHandler.list_error_handler("describe instance types", [])
 @AWSRetry.jittered_backoff()
@@ -1258,6 +1254,26 @@ def authorize_security_group_ingress(client, **params: Dict[str, Any]) -> bool:
 @AWSRetry.jittered_backoff()
 def authorize_security_group_egress(client, **params: Dict[str, Any]) -> bool:
     return client.authorize_security_group_egress(**params)["Return"]
+
+
+def get_default_security_group_id(client, vpc_id: str) -> str:
+    """
+    Find the default security group for a given VPC.
+
+    :param client: EC2 client
+    :param vpc_id: VPC ID
+    :return: Security group ID of the default security group
+    :raises AnsibleEC2Error: If no default security group is found or multiple are found
+    """
+    filters = ansible_dict_to_boto3_filter_list({"vpc-id": vpc_id, "group-name": "default"})
+    security_groups = describe_security_groups(client, Filters=filters)
+
+    if len(security_groups) == 0:
+        raise AnsibleEC2Error(message=f"No default security group found for VPC {vpc_id}")
+    elif len(security_groups) > 1:
+        raise AnsibleEC2Error(message=f'Multiple security groups named "default" found for VPC {vpc_id}')
+
+    return security_groups[0]["GroupId"]
 
 
 # EC2 Egress only internet Gateway

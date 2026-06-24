@@ -12,7 +12,7 @@
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
-        cidr_block: 10.0.0.0/26
+        cidr_block: "{{ vpc_cidr }}"
         tags:
           Name: "{{ resource_prefix }}-vpc"
           Description: Created by ansible-test
@@ -212,7 +212,7 @@
       amazon.aws.ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: absent
-        cidr_block: 10.0.0.0/26
+        cidr_block: "{{ vpc_cidr }}"
       register: result
       retries: 10
       delay: 3

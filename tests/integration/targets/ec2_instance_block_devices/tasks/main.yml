@@ -29,6 +29,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-ebs-vols"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: block_device_instances_info
 
     - name: Check device name
@@ -62,12 +63,14 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-ebs-vols"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: presented_instance_fact
 
     - name: Fact checkmode ec2 instance
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-ebs-vols-checkmode"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
       register: checkmode_instance_fact
 
     - name: Confirm instance was created without check mode
@@ -84,6 +87,7 @@
       amazon.aws.ec2_instance:
         state: absent
         instance_ids: "{{ block_device_instances.instance_ids }}"
+        vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
 
     - name: New instance with an extra block device - gp3 volume_type and throughput
       amazon.aws.ec2_instance:

@@ -7,20 +7,21 @@
       session_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - name: Set termination protection to false (so we can terminate instance) (cleanup)
-      amazon.aws.ec2_instance:
-        filters:
-          instance-state-name: [pending, running, stopping, stopped]
-          vpc-id: "{{ testing_vpc.vpc.id }}"
-        termination_protection: false
-      ignore_errors: true  # noqa: ignore-errors
-
     - name: (Cleanup) Find all remaining Instances
       amazon.aws.ec2_instance_info:
         filters:
           vpc-id: "{{ testing_vpc.vpc.id }}"
           instance-state-name: [pending, running, shutting-down, stopping, stopped]
+        include_attributes:
+          - disableApiTermination
       register: instances
+
+    - name: Set termination protection to false (so we can terminate instance) (cleanup)
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ item.instance_id }}"
+        termination_protection: false
+      ignore_errors: true  # noqa: ignore-errors
+      loop: "{{ instances.instances }}"
 
     - name: (Cleanup) Remove Instances (start)
       amazon.aws.ec2_instance:

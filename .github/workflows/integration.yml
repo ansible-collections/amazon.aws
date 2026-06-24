@@ -72,7 +72,7 @@ jobs:
 
       - name: list changes for pull request
         id: compute
-        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_test_splitter@0b891487c4170ef856f02313c66cb1c776814c42
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_test_splitter@6659b608aab58bf1d20641b805eb9cb4fd2b771f
         with:
           collections_to_test: "${{ env.amazon_dir}}, ${{ env.community_dir }}"
           total_jobs: 24
@@ -94,6 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
         job-id: ${{ fromJson(needs.splitter.outputs.jobs) }}
     name: "${{ matrix.job-id }}"
@@ -123,7 +124,7 @@ jobs:
 
       - name: Read job targets
         id: read-targets
-        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_read_targets@0b891487c4170ef856f02313c66cb1c776814c42
+        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_read_targets@6659b608aab58bf1d20641b805eb9cb4fd2b771f
         with:
           job_id: "${{ matrix.job-id }}"
           all_targets: "${{ env.all_targets }}"

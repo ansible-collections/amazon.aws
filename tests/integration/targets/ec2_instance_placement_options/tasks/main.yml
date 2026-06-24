@@ -18,6 +18,7 @@
         state: running
         name: "{{ resource_prefix }}-test-placement-group-name"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         placement:
           group_name: "{{ ec2_placement_group_name }}"
         tags:
@@ -33,6 +34,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-placement-group-name"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           tag:TestId: "{{ ec2_instance_tag_testid }}"
           instance-state-name: running
       ignore_errors: true
@@ -52,13 +54,13 @@
         state: running
         name: "{{ resource_prefix }}-test-dedicated-tenancy"
         image_id: "{{ ec2_ami_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         placement:
           tenancy: "{{ ec2_tenancy }}"
         tags:
           TestId: "{{ ec2_instance_tag_testid }}"
         security_group: default
         instance_type: "{{ ec2_instance_type }}"
-        availability_zone: "{{ ec2_availability_zone }}"
         wait: true
       ignore_errors: true
       register: instance_creation_tenancy
@@ -67,6 +69,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           tag:Name: "{{ resource_prefix }}-test-dedicated-tenancy"
+          vpc-id: "{{ testing_vpc.vpc.id }}"
           tag:TestId: "{{ ec2_instance_tag_testid }}"
           instance-state-name: running
       ignore_errors: true

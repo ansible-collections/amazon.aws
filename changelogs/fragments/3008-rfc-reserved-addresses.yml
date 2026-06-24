@@ -1,0 +1,21 @@
+---
+trivial:
+  - integration tests - replace hard-coded VPC and subnet CIDRs with randomized values using dedicated third octets per test to prevent parallel test collisions (https://github.com/ansible-collections/amazon.aws/pull/3008).
+
+minor_changes:
+  - backup_plan - replace realistic version IDs with example UUID format in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - backup_plan_info - replace realistic version IDs with example UUID format in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_eip - replace AWS public IPs with RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_eni_info - use RFC 1918 private addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_instance - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_instance_info - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_key_info - replace realistic SSH fingerprint with example value in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_metadata_facts - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_vpc_dhcp_option - use public DNS servers (8.8.4.4, 8.8.8.8) instead of RFC 5737 addresses for DNS examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_vpc_nat_gateway - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_vpc_nat_gateway_info - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_vpc_vpn - replace realistic pre-shared key with obvious example value in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_vpc_vpn - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - ec2_vpc_vpn_info - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - route53 - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+  - route53_health_check - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).

@@ -11,6 +11,10 @@
       amazon.aws.aws_caller_info:
       register: aws_caller_info
 
+    - name: Set caller_reference based on tiny_prefix
+      ansible.builtin.set_fact:
+        ksk_caller_reference: "{{ tiny_prefix }}-ksk-caller-ref"
+
     - name: Create a KMS key
       amazon.aws.kms_key:
         alias: "{{ resource_prefix }}-kms-route53"
@@ -33,7 +37,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       check_mode: true
@@ -52,7 +56,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       register: _ksk_request
@@ -74,7 +78,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       register: _ksk_request
@@ -94,7 +98,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "ACTIVE"
         state: present
       check_mode: true
@@ -115,7 +119,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "ACTIVE"
         state: present
         wait: true
@@ -137,7 +141,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "ACTIVE"
         state: present
       register: _ksk_request
@@ -156,6 +160,8 @@
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: true
+        wait: true
+        wait_timeout: 600
       check_mode: true
       register: _hosted_zone_dnssec
 
@@ -170,6 +176,8 @@
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: true
+        wait: true
+        wait_timeout: 600
       register: _hosted_zone_dnssec
 
     - name: Assert success
@@ -177,12 +185,15 @@
         that:
           - _hosted_zone_dnssec is successful
           - _hosted_zone_dnssec.changed
+          - _hosted_zone_dnssec.dnssec is defined
 
     - name: Disable DNSSEC for Route53 public zone (check_mode)
       amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: false
+        wait: true
+        wait_timeout: 600
       check_mode: true
       register: _hosted_zone_dnssec
 
@@ -197,6 +208,8 @@
         zone: "{{ resource_prefix }}.public"
         state: present
         dnssec: false
+        wait: true
+        wait_timeout: 600
       register: _hosted_zone_dnssec
 
     - name: Assert success
@@ -204,6 +217,7 @@
         that:
           - _hosted_zone_dnssec is successful
           - _hosted_zone_dnssec.changed
+          - _hosted_zone_dnssec.dnssec is defined
 
     - name: Delete the Route53 public zone (expected to fail)
       amazon.aws.route53_zone:
@@ -224,7 +238,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
         wait: true
@@ -246,7 +260,7 @@
         name: "{{ resource_prefix }}-ksk"
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         key_management_service_arn: "{{ kms_key.key_arn }}"
-        caller_reference: "{{ aws_caller_info.arn }}"
+        caller_reference: "{{ ksk_caller_reference }}"
         status: "INACTIVE"
         state: present
       register: _ksk_request
@@ -326,6 +340,12 @@
         state: present
         dnssec: false
       ignore_errors: true
+      register: disable_dnssec
+
+    - name: Wait for DNSSEC to be disabled
+      ansible.builtin.wait_for:
+        timeout: 10
+      when: disable_dnssec is changed
 
     - name: Delete the Key Signing Key Request
       amazon.aws.route53_key_signing_key:
@@ -333,12 +353,22 @@
         hosted_zone_id: "{{ _hosted_zone.zone_id }}"
         state: absent
       ignore_errors: true
+      register: delete_ksk
+
+    - name: Wait for KSK deletion to propagate
+      ansible.builtin.wait_for:
+        timeout: 10
+      when: delete_ksk is changed
 
     - name: Delete the Route53 public zone
       amazon.aws.route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: absent
       ignore_errors: true
+      retries: 10
+      delay: 5
+      until: delete_zone is not failed
+      register: delete_zone
 
     - name: Delete the KSM key
       amazon.aws.kms_key:
