@@ -1,0 +1,111 @@
+# Test matrix configuration for ansible-test
+#
+# This workflow provides the single source of truth for test matrix configuration.
+# It outputs JSON strings that can be consumed by sanity.yml and units.yml.
+#
+# To update the test matrix (e.g., add Python 3.15 or ansible-core stable-2.21),
+# modify this file only - the changes will propagate to all test workflows.
+
+---
+name: test-matrix-config
+
+on:
+  workflow_call:
+    outputs:
+      ansible-core-versions:
+        description: 'JSON array of ansible-core versions to test'
+        value: ${{ jobs.config.outputs.ansible-core-versions }}
+      python-versions:
+        description: 'JSON array of Python versions to test'
+        value: ${{ jobs.config.outputs.python-versions }}
+      matrix-exclude:
+        description: 'JSON array of matrix exclusions'
+        value: ${{ jobs.config.outputs.matrix-exclude }}
+      canonical-ansible-version:
+        description: 'Canonical ansible-core version for coverage (milestone)'
+        value: ${{ jobs.config.outputs.canonical-ansible-version }}
+      canonical-python-version:
+        description: 'Canonical Python version for coverage (latest supported)'
+        value: ${{ jobs.config.outputs.canonical-python-version }}
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      ansible-core-versions: ${{ steps.set-matrix.outputs.ansible-core-versions }}
+      python-versions: ${{ steps.set-matrix.outputs.python-versions }}
+      matrix-exclude: ${{ steps.set-matrix.outputs.matrix-exclude }}
+      canonical-ansible-version: ${{ steps.set-matrix.outputs.canonical-ansible-version }}
+      canonical-python-version: ${{ steps.set-matrix.outputs.canonical-python-version }}
+    steps:
+      - name: Set matrix configuration
+        id: set-matrix
+        run: |
+          python3 <<'PYTHON'
+          import json
+          import os
+
+          # Ansible core versions to test
+          ansible_core_versions = [
+              "stable-2.17",
+              "stable-2.18",
+              "stable-2.19",
+              "stable-2.20",
+              "milestone",
+              "devel",
+          ]
+
+          # Python versions to test
+          python_versions = [
+              "3.9",
+              "3.10",
+              "3.11",
+              "3.12",
+              "3.13",
+              "3.14",
+          ]
+
+          # Matrix exclusions based on ansible-core Python version requirements
+          # See: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-node-requirements
+          matrix_exclude = [
+              # devel & milestone: require Python 3.12+
+              {"ansible-core-version": "devel", "python-version": "3.9"},
+              {"ansible-core-version": "devel", "python-version": "3.10"},
+              {"ansible-core-version": "devel", "python-version": "3.11"},
+              {"ansible-core-version": "milestone", "python-version": "3.9"},
+              {"ansible-core-version": "milestone", "python-version": "3.10"},
+              {"ansible-core-version": "milestone", "python-version": "3.11"},
+
+              # stable-2.20: requires Python 3.12+
+              {"ansible-core-version": "stable-2.20", "python-version": "3.9"},
+              {"ansible-core-version": "stable-2.20", "python-version": "3.10"},
+              {"ansible-core-version": "stable-2.20", "python-version": "3.11"},
+
+              # stable-2.19: requires Python 3.11-3.13
+              {"ansible-core-version": "stable-2.19", "python-version": "3.9"},
+              {"ansible-core-version": "stable-2.19", "python-version": "3.10"},
+              {"ansible-core-version": "stable-2.19", "python-version": "3.14"},
+
+              # stable-2.18: requires Python 3.11-3.13
+              {"ansible-core-version": "stable-2.18", "python-version": "3.9"},
+              {"ansible-core-version": "stable-2.18", "python-version": "3.10"},
+              {"ansible-core-version": "stable-2.18", "python-version": "3.14"},
+
+              # stable-2.17: requires Python 3.9-3.12
+              {"ansible-core-version": "stable-2.17", "python-version": "3.13"},
+              {"ansible-core-version": "stable-2.17", "python-version": "3.14"},
+          ]
+
+          # Canonical versions for consistent coverage artifact location
+          # Use milestone (upcoming release) with latest supported Python
+          canonical_ansible_version = "milestone"
+          canonical_python_version = python_versions[-1]  # Latest Python version
+
+          # Write to GITHUB_OUTPUT as single-line JSON
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"ansible-core-versions={json.dumps(ansible_core_versions)}\n")
+              f.write(f"python-versions={json.dumps(python_versions)}\n")
+              f.write(f"matrix-exclude={json.dumps(matrix_exclude)}\n")
+              f.write(f"canonical-ansible-version={canonical_ansible_version}\n")
+              f.write(f"canonical-python-version={canonical_python_version}\n")
+          PYTHON

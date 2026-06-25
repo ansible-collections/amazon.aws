@@ -79,8 +79,10 @@ jobs:
           base_ref: '${{ needs.retrieve-pr-info.outputs.base_ref }}'
 
   run-tests:
+    # Skip if jobs matrix is empty to avoid automatic failure
+    if: needs.splitter.outputs.jobs != '[]'
     needs:
-      - retrieve-pr-info 
+      - retrieve-pr-info
       - splitter
     permissions:
       pull-requests: read
@@ -143,7 +145,8 @@ jobs:
       - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
 
       - name: Run integration tests
-        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e
+        id: ansible-test
+        uses: tremble/ansible-test-gh-action@debug-coverage-output
         with:
           ansible-core-version: ${{ env.ansible_version }}
           origin-python-version: ${{ env.python_version }}
@@ -160,3 +163,32 @@ jobs:
             ${{ steps.set-path.outputs.collection_dep }}
           pre-test-cmd: |
             python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
+
+      - name: Upload coverage XML files
+        if: always() && steps.ansible-test.outputs.coverage-report-files != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration-${{ matrix.job-id }}
+          path: ${{ steps.ansible-test.outputs.coverage-report-files }}
+          if-no-files-found: ignore
+
+  # Final check to ensure workflow reports success even when no tests run
+  integration-complete:
+    if: always()
+    needs:
+      - retrieve-pr-info
+      - splitter
+      - run-tests
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          # Success if run-tests succeeded, was skipped, or didn't run (empty matrix)
+          RESULT="${{ needs.run-tests.result }}"
+          if [[ "$RESULT" == "success" ]] || [[ "$RESULT" == "skipped" ]] || [[ -z "$RESULT" ]]; then
+            echo "Integration tests completed successfully (or no tests to run)"
+            echo "run-tests result: '${RESULT}'"
+            exit 0
+          else
+            echo "Integration tests failed with result: '${RESULT}'"
+            exit 1
+          fi

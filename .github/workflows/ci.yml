@@ -1,0 +1,75 @@
+---
+name: ci
+
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    branches:
+      - main
+      - stable-*
+  push:
+    branches:
+      - main
+      - stable-*
+
+jobs:
+  matrix-config:
+    uses: ./.github/workflows/test-matrix-config.yml
+
+  linters:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/linters.yml
+
+  sanity:
+    needs: matrix-config
+    uses: ./.github/workflows/sanity.yml
+    with:
+      ansible-core-versions: ${{ needs.matrix-config.outputs.ansible-core-versions }}
+      python-versions: ${{ needs.matrix-config.outputs.python-versions }}
+      matrix-exclude: ${{ needs.matrix-config.outputs.matrix-exclude }}
+
+  units:
+    needs: matrix-config
+    uses: ./.github/workflows/units.yml
+    with:
+      ansible-core-versions: ${{ needs.matrix-config.outputs.ansible-core-versions }}
+      python-versions: ${{ needs.matrix-config.outputs.python-versions }}
+      matrix-exclude: ${{ needs.matrix-config.outputs.matrix-exclude }}
+      canonical-ansible-version: ${{ needs.matrix-config.outputs.canonical-ansible-version }}
+      canonical-python-version: ${{ needs.matrix-config.outputs.canonical-python-version }}
+
+  integration:
+    uses: ./.github/workflows/integration.yml
+
+  check-results:
+    if: ${{ always() }}
+    needs:
+      - matrix-config
+      - linters
+      - sanity
+      - units
+      - integration
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          python -c "
+          required = ['sanity', 'units', 'integration']
+          if '${{ github.event_name }}' == 'pull_request':
+            required = ['linters', 'sanity', 'units', 'integration']
+          results = {
+            'linters': '${{ needs.linters.result }}',
+            'sanity': '${{ needs.sanity.result }}',
+            'units': '${{ needs.units.result }}',
+            'integration': '${{ needs.integration.result }}'
+          }
+          ok = all(results[j] == 'success' for j in required)
+          skipped_ok = all(results[j] in ('success', 'skipped') for j in results)
+          assert ok and skipped_ok, f'required={required} results={results}'
+          "
