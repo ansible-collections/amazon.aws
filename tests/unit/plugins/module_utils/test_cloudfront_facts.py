@@ -401,18 +401,18 @@ def test_summary_get_distribution_list(
     cloudfront_facts_service.list_distributions.return_value = distributions
 
     cloudfront_facts_service.get_etag_from_distribution_id = MagicMock()
-    cloudfront_facts_service.get_etag_from_distribution_id.side_effect = lambda id, stream: [
+    cloudfront_facts_service.get_etag_from_distribution_id.side_effect = lambda id, stream: next(
         x["ETag"] for x in distributions if x["Id"] == id
-    ][0]
+    )
 
     cloudfront_facts_service.get_list_of_invalidation_ids_from_distribution_id = MagicMock()
-    cloudfront_facts_service.get_list_of_invalidation_ids_from_distribution_id.side_effect = lambda id: [
+    cloudfront_facts_service.get_list_of_invalidation_ids_from_distribution_id.side_effect = lambda id: next(
         x["_ids"] for x in distributions if x["Id"] == id
-    ][0]
+    )
 
     cloudfront_facts_service.list_resource_tags = MagicMock()
     cloudfront_facts_service.list_resource_tags.side_effect = lambda arn: {
-        "Tags": [x["Tags"] for x in distributions if x["ARN"] == arn][0]
+        "Tags": next(x["Tags"] for x in distributions if x["ARN"] == arn)
     }
 
     key_name = "streaming_distributions"
@@ -472,9 +472,9 @@ def test_summary_get_origin_access_identity_list(cloudfront_facts_service, origi
     cloudfront_facts_service.list_origin_access_identities = MagicMock()
     cloudfront_facts_service.list_origin_access_identities.return_value = origin_access_identities
     cloudfront_facts_service.get_origin_access_identity = MagicMock()
-    cloudfront_facts_service.get_origin_access_identity.side_effect = lambda id: [
+    cloudfront_facts_service.get_origin_access_identity.side_effect = lambda id: next(
         o["response"] for o in origin_access_identities if o["Id"] == id
-    ][0]
+    )
 
     assert {"origin_access_identities": expected} == cloudfront_facts_service.summary_get_origin_access_identity_list()
 

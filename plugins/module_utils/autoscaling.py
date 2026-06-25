@@ -12,7 +12,6 @@ from __future__ import annotations
 import typing
 
 # Not intended for general re-use / re-import
-from ._autoscaling import common as _common
 from ._autoscaling import groups as _groups
 from ._autoscaling import instances as _instances
 from ._autoscaling import transformations as _transformations
@@ -30,10 +29,13 @@ if typing.TYPE_CHECKING:
     from .transformation import BotoResourceList
 
 # Intended for general use / re-import
-AnsibleAutoScalingError = _common.AnsibleAutoScalingError
-AutoScalingErrorHandler = _common.AutoScalingErrorHandler
-WAITER_MAP = _waiters.WAITER_MAP
-transform_autoscaling_group = _transformations.transform_autoscaling_group
+# pylint: disable=unused-import,useless-import-alias
+from ._autoscaling.common import AnsibleAutoScalingError as AnsibleAutoScalingError
+from ._autoscaling.common import AutoScalingErrorHandler as AutoScalingErrorHandler
+from ._autoscaling.transformations import transform_autoscaling_group as transform_autoscaling_group
+from ._autoscaling.waiters import WAITER_MAP as WAITER_MAP
+
+# pylint: enable=unused-import,useless-import-alias
 
 
 def get_autoscaling_groups(

@@ -4,6 +4,8 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 DOCUMENTATION = r"""
 ---
 module: cloudwatchevent_rule
@@ -217,11 +219,15 @@ targets:
 """
 
 import json
+from typing import TYPE_CHECKING
 
 try:
     import botocore
 except ImportError:
     pass  # handled by AnsibleAWSModule
+
+if TYPE_CHECKING:
+    from typing import ClassVar
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
@@ -388,7 +394,7 @@ class CloudWatchEventRule:
 
 
 class CloudWatchEventRuleManager:
-    RULE_FIELDS = ["name", "event_pattern", "schedule_expression", "description", "role_arn"]
+    RULE_FIELDS: ClassVar = ["name", "event_pattern", "schedule_expression", "description", "role_arn"]
 
     def __init__(self, rule, targets):
         self.rule = rule

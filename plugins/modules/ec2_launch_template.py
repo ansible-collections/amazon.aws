@@ -1222,7 +1222,7 @@ def validate_version_deletion(
         # Find the default version
         default_version = module.params.get("default_version")
         if default_version in (None, ""):
-            default_version_int = [t["VersionNumber"] for t in existing_versions if t["DefaultVersion"]][0]
+            default_version_int = next(t["VersionNumber"] for t in existing_versions if t["DefaultVersion"])
         elif default_version == "latest":
             default_version_int = max(remaining_versions, default=None)
             default_version_to_set = default_version_int
@@ -1373,12 +1373,12 @@ def format_module_output(client, module: AnsibleAWSModule) -> Dict[str, Any]:
     result = {
         "template": template,
         "versions": template_versions,
-        "default_template": [v for v in template_versions if v.get("default_version")][0],
-        "latest_template": [
+        "default_template": next(v for v in template_versions if v.get("default_version")),
+        "latest_template": next(
             v
             for v in template_versions
             if (v.get("version_number") and int(v["version_number"]) == int(template["latest_version_number"]))
-        ][0],
+        ),
     }
     if "version_number" in result["default_template"]:
         result["default_version"] = result["default_template"]["version_number"]

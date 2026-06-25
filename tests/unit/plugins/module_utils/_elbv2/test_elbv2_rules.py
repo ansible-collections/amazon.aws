@@ -8,8 +8,11 @@ from unittest.mock import patch
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils import elbv2
 from ansible_collections.amazon.aws.plugins.module_utils._elbv2 import rules
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules import ELBListenerRules
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules import _check_rule_condition
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules import _compare_rule
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.rules import _compare_rule_actions
 
 example_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-targets/73e2d6bc24d8a067"
 example_arn2 = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/other-targets/abcdef0123456789"
@@ -20,29 +23,29 @@ class TestCompareRuleActions:
 
     def test_empty_actions(self):
         """Empty action lists should match"""
-        assert elbv2._compare_rule_actions([], []) is True
+        assert _compare_rule_actions([], []) is True
 
     def test_different_lengths(self):
         """Actions with different lengths should not match"""
         current = [{"Type": "forward", "TargetGroupArn": example_arn}]
         new = []
-        assert elbv2._compare_rule_actions(current, new) is False
+        assert _compare_rule_actions(current, new) is False
 
         current = []
         new = [{"Type": "forward", "TargetGroupArn": example_arn}]
-        assert elbv2._compare_rule_actions(current, new) is False
+        assert _compare_rule_actions(current, new) is False
 
     def test_simple_forward_action_match(self):
         """Simple forward actions that match"""
         current = [{"Type": "forward", "TargetGroupArn": example_arn}]
         new = [{"Type": "forward", "TargetGroupArn": example_arn}]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_simple_forward_action_different_arn(self):
         """Simple forward actions with different ARNs should not match"""
         current = [{"Type": "forward", "TargetGroupArn": example_arn}]
         new = [{"Type": "forward", "TargetGroupArn": example_arn2}]
-        assert elbv2._compare_rule_actions(current, new) is False
+        assert _compare_rule_actions(current, new) is False
 
     def test_forward_config_pruning(self):
         """ForwardConfig should be pruned when redundant"""
@@ -57,7 +60,7 @@ class TestCompareRuleActions:
             }
         ]
         new = [{"Type": "forward", "TargetGroupArn": example_arn}]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_forward_config_not_pruned_when_complex(self):
         """ForwardConfig should not be pruned when it contains non-default config"""
@@ -72,7 +75,7 @@ class TestCompareRuleActions:
             }
         ]
         new = [{"Type": "forward", "TargetGroupArn": example_arn}]
-        assert elbv2._compare_rule_actions(current, new) is False
+        assert _compare_rule_actions(current, new) is False
 
     def test_forward_config_multiple_target_groups(self):
         """ForwardConfig with multiple target groups should not be simplified"""
@@ -102,7 +105,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_oidc_action_without_client_secret(self):
         """OIDC actions without ClientSecret should match when UseExistingClientSecret is added"""
@@ -137,7 +140,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_oidc_action_with_client_secret_removed(self):
         """OIDC actions should match when ClientSecret is removed due to UseExistingClientSecret"""
@@ -173,7 +176,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_oidc_action_different_config(self):
         """OIDC actions with different configs should not match"""
@@ -208,7 +211,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is False
+        assert _compare_rule_actions(current, new) is False
 
     def test_multiple_actions_same_order(self):
         """Multiple actions in the same order should match"""
@@ -245,7 +248,7 @@ class TestCompareRuleActions:
             },
             {"Type": "forward", "Order": 2, "TargetGroupArn": example_arn},
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_multiple_actions_different_order(self):
         """Actions are sorted by Order before comparison, so different input order should still match"""
@@ -282,7 +285,7 @@ class TestCompareRuleActions:
             },
             {"Type": "forward", "Order": 2, "TargetGroupArn": example_arn},
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_redirect_action(self):
         """Redirect actions should be compared correctly"""
@@ -314,7 +317,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_fixed_response_action(self):
         """Fixed response actions should be compared correctly"""
@@ -340,7 +343,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_cognito_action(self):
         """Cognito authentication actions should be compared correctly"""
@@ -374,7 +377,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_oidc_default_values_added(self):
         """OIDC actions should match when default values are added during pruning"""
@@ -411,7 +414,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is True
+        assert _compare_rule_actions(current, new) is True
 
     def test_oidc_non_default_scope(self):
         """OIDC actions with non-default scope should not match default"""
@@ -447,7 +450,7 @@ class TestCompareRuleActions:
                 },
             }
         ]
-        assert elbv2._compare_rule_actions(current, new) is False
+        assert _compare_rule_actions(current, new) is False
 
 
 @pytest.fixture(name="elb_listener_rules")
@@ -457,7 +460,7 @@ def fixture_elb_listener_rules(mocker):
     rules_list = MagicMock()
     listener_arn = MagicMock()
 
-    return elbv2.ELBListenerRules(connection, module, listener_arn, rules_list)
+    return ELBListenerRules(connection, module, listener_arn, rules_list)
 
 
 example_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/nlb-123456789abc/abcdef0123456789"
@@ -637,7 +640,7 @@ test_rules = [
 
 @pytest.mark.parametrize("current_rule,new_rule,modified_rule", test_rules)
 def test__compare_rule(current_rule, new_rule, modified_rule):
-    assert modified_rule == elbv2._compare_rule(current_rule, new_rule)
+    assert modified_rule == _compare_rule(current_rule, new_rule)
 
 
 test_listener_arn = "arn:aws:elasticloadbalancing:us-west-2:123456789012:listener/app/my-load-balancer/50dc6c495c0c9188/f2f7dc8efc522ab2"
@@ -1232,7 +1235,7 @@ def test_compare_rules(elb_listener_rules, current_rules, desired_rules, expecte
     ],
 )
 def test__check_rule_condition(current_conditions, condition, expected):
-    assert elbv2._check_rule_condition(current_conditions, condition) == expected
+    assert _check_rule_condition(current_conditions, condition) == expected
 
 
 @pytest.mark.parametrize(

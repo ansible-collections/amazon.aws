@@ -44,26 +44,26 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ["XNotImplemented", "NotImplemented", "AccessControlListNotSupported"]
 
-from ._s3 import common as _common
-from ._s3 import transformations as _transformations
+# Intended for general use / re-import
+# pylint: disable=unused-import,useless-import-alias
+from ._s3.common import AnsibleS3ACLSupportError as AnsibleS3ACLSupportError
+from ._s3.common import AnsibleS3Error as AnsibleS3Error
+from ._s3.common import AnsibleS3PermissionsError as AnsibleS3PermissionsError
+from ._s3.common import AnsibleS3RegionSupportError as AnsibleS3RegionSupportError
+from ._s3.common import AnsibleS3Sigv4RequiredError as AnsibleS3Sigv4RequiredError
+from ._s3.common import AnsibleS3SupportError as AnsibleS3SupportError
+from ._s3.common import S3ErrorHandler as S3ErrorHandler
+from ._s3.transformations import merge_tags as merge_tags
+from ._s3.transformations import normalize_s3_bucket_acls as normalize_s3_bucket_acls
+from ._s3.transformations import normalize_s3_bucket_logging as normalize_s3_bucket_logging
+from ._s3.transformations import normalize_s3_bucket_public_access as normalize_s3_bucket_public_access
+from ._s3.transformations import normalize_s3_bucket_versioning as normalize_s3_bucket_versioning
+from ._s3.transformations import s3_acl_to_name as s3_acl_to_name
+
+# pylint: enable=unused-import,useless-import-alias
+
+# isort: split
 from ._s3 import waiters as _waiters
-
-S3ErrorHandler = _common.S3ErrorHandler
-
-AnsibleS3Error = _common.AnsibleS3Error
-AnsibleS3Sigv4RequiredError = _common.AnsibleS3Error
-AnsibleS3PermissionsError = _common.AnsibleS3PermissionsError
-AnsibleS3SupportError = _common.AnsibleS3SupportError
-AnsibleS3ACLSupportError = _common.AnsibleS3ACLSupportError
-AnsibleS3RegionSupportError = _common.AnsibleS3RegionSupportError
-
-normalize_s3_bucket_versioning = _transformations.normalize_s3_bucket_versioning
-normalize_s3_bucket_public_access = _transformations.normalize_s3_bucket_public_access
-normalize_s3_bucket_acls = _transformations.normalize_s3_bucket_acls
-normalize_s3_bucket_logging = _transformations.normalize_s3_bucket_logging
-s3_acl_to_name = _transformations.s3_acl_to_name
-merge_tags = _transformations.merge_tags
-
 
 # ========================================
 # S3 Client Wrappers - Bucket Operations

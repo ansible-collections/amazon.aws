@@ -198,7 +198,7 @@ def nacl_entry_to_list(entry: Dict[str, Any]) -> List[Union[str, int, None]]:
     else:
         elist.append(None)
 
-    elist = elist + [None, None, None, None]
+    elist = [*elist, None, None, None, None]
 
     if entry["protocol"] in ("1", "58"):
         elist[4] = entry.get("icmp_type_code", {}).get("type")

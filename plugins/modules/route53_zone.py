@@ -410,8 +410,7 @@ def ensure_dnssec(zone_id: str) -> bool:
         elif dnssec_status == "DELETING":
             # DNSSEC signing is in the process of being removed for the hosted zone.
             module.warn(
-                f"DNSSEC signing is in the process of being removed for the hosted zone: {zone_id}."
-                "Could not enable it."
+                f"DNSSEC signing is in the process of being removed for the hosted zone: {zone_id}. Could not enable it."
             )
     else:
         if dnssec_status == "SIGNING":

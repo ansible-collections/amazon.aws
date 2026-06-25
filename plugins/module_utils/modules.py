@@ -37,16 +37,20 @@ The call will be retried the specified number of times, so the calling functions
 don't need to be wrapped in the backoff decorator.
 """
 
+from __future__ import annotations
+
 import logging
 import re
 import traceback
 from io import StringIO
-from typing import Any
-from typing import Dict
-from typing import NoReturn
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from ansible.module_utils.ansible_release import __version__ as _ANSIBLE_CORE_VERSION
+if TYPE_CHECKING:
+    from typing import Any
+    from typing import ClassVar
+    from typing import NoReturn
+
+from ansible.module_utils import ansible_release as _ansible_release
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import missing_required_lib
@@ -79,7 +83,12 @@ class AnsibleAWSModule:
     features needed.
     """
 
-    default_settings = {"default_args": True, "check_boto3": True, "auto_retry": True, "module_class": AnsibleModule}
+    default_settings: ClassVar = {
+        "default_args": True,
+        "check_boto3": True,
+        "auto_retry": True,
+        "module_class": AnsibleModule,
+    }
 
     def __init__(self, **kwargs):
         local_settings = {}
@@ -123,14 +132,14 @@ class AnsibleAWSModule:
         # Inject warnings into the JSON result for ansible-core versions that
         # do not include them automatically (>=2.19 based on CI behavior).
         try:
-            parts = [int(p) for p in _ANSIBLE_CORE_VERSION.split(".")[:2]]
-            major, minor = (parts + [0, 0])[:2]
+            parts = [int(p) for p in _ansible_release.__version__.split(".")[:2]]
+            major, minor = ([*parts, 0, 0])[:2]
             return (major, minor) >= (2, 19)
         except Exception:
             return False
 
     @property
-    def params(self) -> Dict[str, Any]:
+    def params(self) -> dict[str, Any]:
         return self._module.params
 
     def _get_resource_action_list(self):
@@ -201,10 +210,10 @@ class AnsibleAWSModule:
         return boto3_conn(self, conn_type="resource", resource=service, **kw_args)
 
     @property
-    def region(self) -> Optional[str]:
+    def region(self) -> str | None:
         return get_aws_region(self)
 
-    def fail_json_aws(self, exception: BaseException, msg: Optional[str] = None, **kwargs) -> NoReturn:
+    def fail_json_aws(self, exception: BaseException, msg: str | None = None, **kwargs) -> NoReturn:
         """call fail_json with processed exception
 
         function for converting exceptions thrown by AWS SDK modules,
@@ -244,7 +253,7 @@ class AnsibleAWSModule:
             self.fail_json_aws(exception.exception, msg=exception.message)
         self.fail_json(msg=exception.message)
 
-    def _gather_versions(self) -> Dict[str, Any]:
+    def _gather_versions(self) -> dict[str, Any]:
         """Gather AWS SDK (boto3 and botocore) dependency versions
 
         Returns {'boto3_version': str, 'botocore_version': str}
@@ -297,7 +306,7 @@ class AnsibleAWSModule:
         return botocore_at_least(desired)
 
 
-def _aws_common_argument_spec() -> Dict["str", Any]:
+def _aws_common_argument_spec() -> dict[str, Any]:
     """
     This does not include 'region' as some AWS APIs don't require a
     region.  However, it's not recommended to do this as it means module_defaults
@@ -346,7 +355,7 @@ def _aws_common_argument_spec() -> Dict["str", Any]:
     )
 
 
-def aws_argument_spec() -> Dict["str", Any]:
+def aws_argument_spec() -> dict[str, Any]:
     """
     Returns a dictionary containing the argument_spec common to all AWS modules.
     """

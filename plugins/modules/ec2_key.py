@@ -270,7 +270,7 @@ def _write_private_key(key_data, file_name):
         file = os.open(file_name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         os.write(file, key_data["private_key"].encode("utf-8"))
         os.close(file)
-    except (IOError, OSError) as e:
+    except OSError as e:
         raise Ec2KeyFailure(e, "Could not save private key to specified path. Private key is irretrievable.")
 
     del key_data["private_key"]

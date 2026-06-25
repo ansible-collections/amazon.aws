@@ -4,25 +4,56 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """
-Backward compatibility helpers for ELBv2 modules.
+Backwards-compatibility helpers for ELBv2 modules.
 
-This module provides thin wrappers around _elbv2.api functions that handle
+This module provides re-exports from _elbv2.api and thin wrappers that handle
 fail_json_aws translation. New code should prefer importing from _elbv2.api
 or elbv2 and handling exceptions directly.
+
+See the developer guidelines for details:
+https://ansible-collections.github.io/amazon.aws/branch/main/dev_guidelines.html
 """
 
 from __future__ import annotations
 
 import typing
 
-from ._elbv2 import api as _elbv2_api
-from ._elbv2 import common as _elbv2_common
+# Re-export for backward compatibility from public interface
+# pylint: disable=unused-import,useless-import-alias
+from .elbv2 import AnsibleELBv2Error as AnsibleELBv2Error
+from .elbv2 import ELBv2ListenerErrorHandler as ELBv2ListenerErrorHandler
+from .elbv2 import ELBv2RuleErrorHandler as ELBv2RuleErrorHandler
+from .elbv2 import ELBv2TargetGroupErrorHandler as ELBv2TargetGroupErrorHandler
+from .elbv2 import add_listener_certificates as add_listener_certificates
+from .elbv2 import add_tags as add_tags
+from .elbv2 import create_listener as create_listener
+from .elbv2 import create_load_balancer as create_load_balancer
+from .elbv2 import create_rule as create_rule
+from .elbv2 import delete_listener as delete_listener
+from .elbv2 import delete_load_balancer as delete_load_balancer
+from .elbv2 import delete_rule as delete_rule
+from .elbv2 import describe_listeners as describe_listeners
+from .elbv2 import describe_load_balancer_attributes as describe_load_balancer_attributes
+from .elbv2 import describe_load_balancers as describe_load_balancers
+from .elbv2 import describe_rules as describe_rules
+from .elbv2 import describe_tags as describe_tags
+from .elbv2 import describe_target_groups as describe_target_groups
+from .elbv2 import modify_listener as modify_listener
+from .elbv2 import modify_load_balancer_attributes as modify_load_balancer_attributes
+from .elbv2 import modify_rule as modify_rule
+from .elbv2 import remove_tags as remove_tags
+from .elbv2 import set_ip_address_type as set_ip_address_type
+from .elbv2 import set_rule_priorities as set_rule_priorities
+from .elbv2 import set_security_groups as set_security_groups
+from .elbv2 import set_subnets as set_subnets
 
-# Re-export for backward compatibility
-AnsibleELBv2Error = _elbv2_common.AnsibleELBv2Error
-ELBv2ListenerErrorHandler = _elbv2_common.ELBv2ListenerErrorHandler
-ELBv2RuleErrorHandler = _elbv2_common.ELBv2RuleErrorHandler
-ELBv2TargetGroupErrorHandler = _elbv2_common.ELBv2TargetGroupErrorHandler
+# pylint: enable=unused-import,useless-import-alias
+
+# isort: split
+# Used by wrapper functions below
+from .elbv2 import get_listener_rules as _get_listener_rules
+from .elbv2 import get_load_balancer_by_name as _get_load_balancer_by_name
+from .elbv2 import get_target_group_arn_by_name as _get_target_group_arn_by_name
 
 if typing.TYPE_CHECKING:
     from typing import Any
@@ -32,30 +63,6 @@ if typing.TYPE_CHECKING:
 
     from .botocore import ClientType
     from .modules import AnsibleAWSModule
-
-# Re-export API wrapper functions
-add_listener_certificates = _elbv2_api.add_listener_certificates
-add_tags = _elbv2_api.add_tags
-create_listener = _elbv2_api.create_listener
-create_load_balancer = _elbv2_api.create_load_balancer
-create_rule = _elbv2_api.create_rule
-delete_listener = _elbv2_api.delete_listener
-delete_load_balancer = _elbv2_api.delete_load_balancer
-delete_rule = _elbv2_api.delete_rule
-describe_listeners = _elbv2_api.describe_listeners
-describe_load_balancer_attributes = _elbv2_api.describe_load_balancer_attributes
-describe_load_balancers = _elbv2_api.describe_load_balancers
-describe_rules = _elbv2_api.describe_rules
-describe_tags = _elbv2_api.describe_tags
-describe_target_groups = _elbv2_api.describe_target_groups
-modify_listener = _elbv2_api.modify_listener
-modify_load_balancer_attributes = _elbv2_api.modify_load_balancer_attributes
-modify_rule = _elbv2_api.modify_rule
-remove_tags = _elbv2_api.remove_tags
-set_ip_address_type = _elbv2_api.set_ip_address_type
-set_rule_priorities = _elbv2_api.set_rule_priorities
-set_security_groups = _elbv2_api.set_security_groups
-set_subnets = _elbv2_api.set_subnets
 
 
 # Thin fail_json wrappers for backward compatibility
@@ -79,7 +86,7 @@ def get_elb(connection: ClientType, module: AnsibleAWSModule, elb_name: str) -> 
         boto3 ELB dict or None if not found
     """
     try:
-        return _elbv2_api.get_load_balancer_by_name(connection, elb_name)
+        return _get_load_balancer_by_name(connection, elb_name)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
 
@@ -101,7 +108,7 @@ def get_elb_listener_rules(connection: ClientType, module: AnsibleAWSModule, lis
         boto3 ELB rules list
     """
     try:
-        return _elbv2_api.get_listener_rules(connection, listener_arn)
+        return _get_listener_rules(connection, listener_arn)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)
 
@@ -123,6 +130,6 @@ def convert_tg_name_to_arn(connection: ClientType, module: AnsibleAWSModule, tg_
         Target group ARN string
     """
     try:
-        return _elbv2_api.get_target_group_arn_by_name(connection, tg_name)
+        return _get_target_group_arn_by_name(connection, tg_name)
     except AnsibleELBv2Error as e:
         module.fail_json_aws(e)

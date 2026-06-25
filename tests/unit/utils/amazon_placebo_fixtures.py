@@ -1,13 +1,7 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-__metaclass__ = type
-
 import errno
 import os
+from unittest import mock
 
-import mock
 import pytest
 
 boto3 = pytest.importorskip("boto3")
