@@ -88,6 +88,7 @@ class S3ClientManager:
                 escaped_in_path = in_path.replace("'", "''")
                 command = (
                     "$ErrorActionPreference = 'Stop' ; "
+                    "$ProgressPreference = 'SilentlyContinue' ; "
                     f"$fileContent = [System.IO.File]::ReadAllBytes('{escaped_in_path}') ; "
                     "Invoke-WebRequest -Method PUT "
                     # @{'key' = 'value'; 'key2' = 'value2'}
@@ -118,6 +119,7 @@ class S3ClientManager:
                 escaped_out_path = out_path.replace("'", "''")
                 command = (
                     "$ErrorActionPreference = 'Stop' ; "
+                    "$ProgressPreference = 'SilentlyContinue' ; "
                     f"$response = Invoke-WebRequest -Uri '{url}' -UseBasicParsing ; "
                     f"[System.IO.File]::WriteAllBytes('{escaped_out_path}', $response.Content)"
                 )  # fmt: skip
