@@ -39,16 +39,30 @@
         mode: '0644'
       delegate_to: localhost
 
-    - name: Remove remote file with unicode filename and content
+    - name: Remove remote file with unicode filename and content (Linux)
       ansible.builtin.file:
         path: "{{ remote_file }}"
         state: absent
+      when: ansible_os_family != 'Windows'
 
-    - name: Create remote directory with unicode name
+    - name: Remove remote file with unicode filename and content (Windows)
+      ansible.windows.win_file:
+        path: "{{ remote_file }}"
+        state: absent
+      when: ansible_os_family == 'Windows'
+
+    - name: Create remote directory with unicode name (Linux)
       ansible.builtin.file:
         path: "{{ remote_dir }}"
         state: directory
         mode: '0755'
+      when: ansible_os_family != 'Windows'
+
+    - name: Create remote directory with unicode name (Windows)
+      ansible.windows.win_file:
+        path: "{{ remote_dir }}"
+        state: directory
+      when: ansible_os_family == 'Windows'
 
     - name: Copy local file with unicode filename and content
       ansible.builtin.copy:
@@ -78,13 +92,20 @@
         mode: '0644'
       delegate_to: localhost
 
-    - name: Remove remote temp file
+    - name: Remove remote temp file (Linux)
       ansible.builtin.file:
         path: "{{ remote_file }}"
         state: absent
+      when: ansible_os_family != 'Windows'
+
+    - name: Remove remote temp file (Windows)
+      ansible.windows.win_file:
+        path: "{{ remote_file }}"
+        state: absent
+      when: ansible_os_family == 'Windows'
 
     - name: Test user manipulation
-      when: "'aws_ssm_linux' in group_names"
+      when: ansible_os_family != 'Windows'
       block:
         - name: Find ID when become=false # noqa no-changed-when
           ansible.builtin.command: id -u -n
@@ -121,13 +142,28 @@
         mode: '0644'
       loop: ["one", "two", "three"]
 
-    - name: Stat empty file
+    - name: Stat empty file (Linux)
       ansible.builtin.stat:
         path: "{{ remote_empty_file }}"
       register: stat_empty_file_cmd
+      when: ansible_os_family != 'Windows'
 
-    - name: Check that empty file exists
+    - name: Check that empty file exists (Linux)
       ansible.builtin.assert:
         that:
           - stat_empty_file_cmd.stat.isreg # it is a regular file
           - stat_empty_file_cmd.stat.size == 0
+      when: ansible_os_family != 'Windows'
+
+    - name: Stat empty file (Windows)
+      ansible.windows.win_stat:
+        path: "{{ remote_empty_file }}"
+      register: stat_empty_file_cmd
+      when: ansible_os_family == 'Windows'
+
+    - name: Check that empty file exists (Windows)
+      ansible.builtin.assert:
+        that:
+          - stat_empty_file_cmd.stat.isreg # it is a regular file
+          - stat_empty_file_cmd.stat.size == 0
+      when: ansible_os_family == 'Windows'

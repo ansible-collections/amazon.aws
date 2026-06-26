@@ -87,7 +87,7 @@
 
     - name: Create EC2 instance
       amazon.aws.ec2_instance:
-        instance_type: "{{ instance_type }}"
+        instance_type: "{{ ami_configuration.instance_type | default(instance_type) }}"
         ebs_optimized: true
         image_id: "{{ latest_ami_id }}"
         wait: true

@@ -5,6 +5,7 @@
 
 from unittest.mock import MagicMock
 
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_bucket_region
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import get_s3_bucket_location
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import parse_s3_endpoint
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import s3_extra_params
@@ -166,3 +167,35 @@ class TestGetS3BucketLocation:
         result = get_s3_bucket_location(module)
 
         assert result is None
+
+
+class TestGetBucketRegion:
+    def test_get_bucket_region_from_header(self):
+        """Test that bucket region is extracted from response headers."""
+        client = MagicMock()
+        client.head_bucket.return_value = {"ResponseMetadata": {"HTTPHeaders": {"x-amz-bucket-region": "eu-west-1"}}}
+
+        result = get_bucket_region(client, "test-bucket")
+
+        assert result == "eu-west-1"
+        client.head_bucket.assert_called_once_with(Bucket="test-bucket")
+
+    def test_get_bucket_region_defaults_to_us_east_1_when_header_missing(self):
+        """Test that bucket region defaults to us-east-1 when header is missing."""
+        client = MagicMock()
+        client.head_bucket.return_value = {"ResponseMetadata": {"HTTPHeaders": {}}}
+
+        result = get_bucket_region(client, "test-bucket")
+
+        assert result == "us-east-1"
+        client.head_bucket.assert_called_once_with(Bucket="test-bucket")
+
+    def test_get_bucket_region_defaults_to_us_east_1_when_region_is_none(self):
+        """Test that bucket region defaults to us-east-1 when x-amz-bucket-region is None."""
+        client = MagicMock()
+        client.head_bucket.return_value = {"ResponseMetadata": {"HTTPHeaders": {"x-amz-bucket-region": None}}}
+
+        result = get_bucket_region(client, "test-bucket")
+
+        assert result == "us-east-1"
+        client.head_bucket.assert_called_once_with(Bucket="test-bucket")

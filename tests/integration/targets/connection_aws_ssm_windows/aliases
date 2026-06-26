@@ -10,5 +10,3 @@ needs/target/connection
 needs/target/setup_connection_aws_ssm
 
 connection_aws_ssm
-
-unstable

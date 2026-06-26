@@ -1,0 +1,10 @@
+bugfixes:
+  - aws_ssm - Fixed Windows SSM connection failures when transferring files with Unicode characters in filenames or content. The connection plugin now properly handles UTF-8 encoding throughout the S3 upload/download process (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Fixed PowerShell command execution timeouts on Windows caused by PTY echo issues. Commands are now uploaded to S3 and executed via a small wrapper to avoid echoing large payloads to stdout (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Fixed PowerShell stdin handling for modules that require stdin input on Windows hosts (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Fixed stderr message accumulation across multiple command executions. Stderr is now flushed at the start of each command to prevent error messages from previous commands appearing in subsequent command output (https://github.com/ansible-collections/amazon.aws/pull/2909).
+minor_changes:
+  - aws_ssm - Refactored connection plugin to inherit from AWSConnectionBase for consistent AWS credential handling across plugins (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Improved code organisation by extracting Windows command execution logic into a dedicated WindowsCommandExecutor class (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Renamed connection plugin options for consistency with other AWS plugins. O(aws_access_key_id) renamed to O(access_key); O(aws_secret_access_key) renamed to O(secret_key); O(aws_session_token) renamed to O(session_token); O(aws_profile) renamed to O(profile). Old names are retained as aliases. Additional aliases O(access_key_id) and O(secret_access_key) were also added (https://github.com/ansible-collections/amazon.aws/pull/2909).
+  - aws_ssm - Added O(endpoint_url) option for connecting to alternate AWS endpoints. The alias O(aws_endpoint_url) is also supported (https://github.com/ansible-collections/amazon.aws/pull/2909).

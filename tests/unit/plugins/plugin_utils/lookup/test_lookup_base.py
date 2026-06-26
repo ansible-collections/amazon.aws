@@ -20,6 +20,12 @@ def test_fail_aws():
         lookup_plugin._do_fail(sentinel.ERROR_MSG)
 
 
+def test_init():
+    """Test that AWSLookupBase initializes host to None"""
+    lookup_plugin = utils_lookup.AWSLookupBase()
+    assert lookup_plugin.host is None
+
+
 def test_run(monkeypatch):
     kwargs = {"example": sentinel.KWARG}
     require_aws_sdk = MagicMock(name="require_aws_sdk")

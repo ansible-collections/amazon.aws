@@ -13,6 +13,11 @@ class AWSLookupBase(AWSPluginBase, LookupBase):
     def _do_fail(self, message):
         raise AnsibleLookupError(message)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Lookup plugins don't have a host context
+        self.host = None
+
     def run(self, terms, variables, botocore_version=None, boto3_version=None, **kwargs):
         self.require_aws_sdk(botocore_version=botocore_version, boto3_version=boto3_version)
         self.set_options(var_options=variables, direct=kwargs)
