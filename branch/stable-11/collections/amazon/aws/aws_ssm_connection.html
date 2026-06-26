@@ -186,14 +186,19 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-access_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-access-key-id"><strong>access_key_id</strong></p>
-<a class="ansibleOptionLink" href="#parameter-access_key_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-access_key_id"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_access_key_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-access-key-id"><span id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-access-key-id"></span><span id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-access-key"></span><strong>access_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: access_key_id, aws_access_key_id</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The STS access key to use when connecting via session-manager.</p>
+<p>This option was renamed from <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-access-key-id"><span class="std std-ref"><span class="pre">aws_access_key_id</span></span></a></strong></code> to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-access-key"><span class="std std-ref"><span class="pre">access_key</span></span></a></strong></code> in version 11.3.0 for consistency with other AWS plugins. The old name is retained as an alias. The alias <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-access-key-id"><span class="std std-ref"><span class="pre">access_key_id</span></span></a></strong></code> was also added.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
 <li><p>Environment variable: <span class="target" id="index-0"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY_ID"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-1"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code></a></p></li>
 <li><p>Variable: ansible_aws_ssm_access_key_id</p></li>
 </ul>
 </div></td>
@@ -251,6 +256,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-endpoint_url"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_endpoint_url"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-endpoint-url"><span id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-endpoint-url"></span><strong>endpoint_url</strong></p>
+<a class="ansibleOptionLink" href="#parameter-endpoint_url" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_endpoint_url</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 11.3.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>URL to connect to instead of the default AWS endpoints.</p>
+<p>This is used for the SSM client connection.</p>
+<p>The alias <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-endpoint-url"><span class="std std-ref"><span class="pre">aws_endpoint_url</span></span></a></strong></code> was added in version 11.3.0 for consistency with other AWS plugins.</p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul class="simple">
+<li><p>Variable: ansible_aws_ssm_endpoint_url</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-instance_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-instance-id"><strong>instance_id</strong></p>
 <a class="ansibleOptionLink" href="#parameter-instance_id" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -261,7 +282,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-plugin"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-plugin"><strong>plugin</strong></p>
 <a class="ansibleOptionLink" href="#parameter-plugin" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -270,25 +291,29 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 <p>The plugin will first check the <code class="ansible-value docutils literal notranslate"><span class="pre">'/usr/local/bin/session-manager-plugin'</span></code> as the default path of the SSM plugin if this does not exist, it will find the session-manager-plugin from the PATH environment variable. Added in version 9.1.0.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
-<li><p>Environment variable: <span class="target" id="index-1"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_MANAGER_PLUGIN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_MANAGER_PLUGIN</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-2"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_MANAGER_PLUGIN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_MANAGER_PLUGIN</span></code></a></p></li>
 <li><p>Variable: ansible_aws_ssm_plugin</p></li>
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-profile"><strong>profile</strong></p>
-<a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-profile"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_profile"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-profile"><span id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-profile"></span><strong>profile</strong></p>
+<a class="ansibleOptionLink" href="#parameter-profile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_profile</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.5.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Sets AWS profile to use.</p>
+<p>This option was renamed from <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-profile"><span class="std std-ref"><span class="pre">aws_profile</span></span></a></strong></code> to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-profile"><span class="std std-ref"><span class="pre">profile</span></span></a></strong></code> in version 11.3.0 for consistency with other AWS plugins. The old name is retained as an alias.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
-<li><p>Environment variable: <span class="target" id="index-2"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_PROFILE</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_DEFAULT_PROFILE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_DEFAULT_PROFILE</span></code></a></p></li>
 <li><p>Variable: ansible_aws_ssm_profile</p></li>
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-reconnection_retries"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-reconnection-retries"><strong>reconnection_retries</strong></p>
 <a class="ansibleOptionLink" href="#parameter-reconnection_retries" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
@@ -300,7 +325,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-region"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-region"><strong>region</strong></p>
 <a class="ansibleOptionLink" href="#parameter-region" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -308,13 +333,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;us-east-1&quot;</span></code></p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
-<li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_REGION</span></code></a></p></li>
-<li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_DEFAULT_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_DEFAULT_REGION</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_REGION</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-6"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_DEFAULT_REGION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_DEFAULT_REGION</span></code></a></p></li>
 <li><p>Variable: ansible_aws_ssm_region</p></li>
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-s3_addressing_style"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-s3-addressing-style"><strong>s3_addressing_style</strong></p>
 <a class="ansibleOptionLink" href="#parameter-s3_addressing_style" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.2.0</em></p>
@@ -333,33 +358,41 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-secret_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-secret-access-key"><strong>secret_access_key</strong></p>
-<a class="ansibleOptionLink" href="#parameter-secret_access_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-secret_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-secret_access_key"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_secret_access_key"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-secret-key"><span id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-secret-access-key"></span><span id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-secret-access-key"></span><strong>secret_key</strong></p>
+<a class="ansibleOptionLink" href="#parameter-secret_key" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: secret_access_key, aws_secret_access_key</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The STS secret key to use when connecting via session-manager.</p>
+<p>This option was renamed from <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-secret-access-key"><span class="std std-ref"><span class="pre">aws_secret_access_key</span></span></a></strong></code> to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-secret-key"><span class="std std-ref"><span class="pre">secret_key</span></span></a></strong></code> in version 11.3.0 for consistency with other AWS plugins. The old name is retained as an alias. The alias <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-secret-access-key"><span class="std std-ref"><span class="pre">secret_access_key</span></span></a></strong></code> was also added.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
-<li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-7"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_ACCESS_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-8"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SECRET_KEY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code></a></p></li>
 <li><p>Variable: ansible_aws_ssm_secret_access_key</p></li>
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-session_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-session-token"><strong>session_token</strong></p>
-<a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-session_token"></div>
+<div class="ansibleOptionAnchor" id="parameter-aws_session_token"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-session-token"><span id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-session-token"></span><strong>session_token</strong></p>
+<a class="ansibleOptionLink" href="#parameter-session_token" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: aws_session_token</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 1.3.0</em></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The STS session token to use when connecting via session-manager.</p>
+<p>This option was renamed from <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-aws-session-token"><span class="std std-ref"><span class="pre">aws_session_token</span></span></a></strong></code> to <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-connection-parameter-session-token"><span class="std std-ref"><span class="pre">session_token</span></span></a></strong></code> in version 11.3.0 for consistency with other AWS plugins. The old name is retained as an alias.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
-<li><p>Environment variable: <span class="target" id="index-6"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-9"></span><a class="reference internal" href="../../environment_variables.html#envvar-AWS_SESSION_TOKEN"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">AWS_SESSION_TOKEN</span></code></a></p></li>
 <li><p>Variable: ansible_aws_ssm_session_token</p></li>
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ssm_document"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-ssm-document"><strong>ssm_document</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ssm_document" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 5.2.0</em></p>
@@ -372,7 +405,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ssm-
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ssm_timeout"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ssm-connection-parameter-ssm-timeout"><strong>ssm_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ssm_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
