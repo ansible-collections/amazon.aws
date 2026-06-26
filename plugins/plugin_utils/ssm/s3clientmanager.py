@@ -153,6 +153,7 @@ class S3ClientManager:
             if is_windows:
                 put_command_headers = "; ".join([f"'{h}' = '{v}'" for h, v in put_headers.items()])
                 command = (
+                    "$ProgressPreference = 'SilentlyContinue' ; "
                     "Invoke-WebRequest -Method PUT "
                     # @{'key' = 'value'; 'key2' = 'value2'}
                     f"-Headers @{{{put_command_headers}}} "
@@ -177,6 +178,7 @@ class S3ClientManager:
             url = self.get_url("get_object", bucket_name, s3_path, "GET")
             if is_windows:
                 command = (
+                    "$ProgressPreference = 'SilentlyContinue' ; "
                     "Invoke-WebRequest "
                     f"'{url}' "
                     f"-OutFile '{out_path}'"

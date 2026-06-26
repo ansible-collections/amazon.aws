@@ -231,7 +231,9 @@ class TestS3ClientManager:
             if method == "get":
                 m_generate_encryption_settings.assert_called_once_with(bucket_sse_mode, bucket_sse_kms_key_id)
                 if is_windows:
-                    assert test_command_generation.startswith("Invoke-WebRequest -Method PUT -Headers @")
+                    assert test_command_generation.startswith(
+                        "$ProgressPreference = 'SilentlyContinue' ; Invoke-WebRequest -Method PUT -Headers @"
+                    )
                     assert test_command_generation.endswith(
                         "-InFile 'test/in/path' -Uri 'https://test-url' -UseBasicParsing"
                     )
@@ -245,7 +247,8 @@ class TestS3ClientManager:
             elif method == "put":
                 m_generate_encryption_settings.assert_not_called()
                 if is_windows:
-                    assert "Invoke-WebRequest 'https://test-url' -OutFile 'test/out/path'" == test_command_generation
+                    expected = "$ProgressPreference = 'SilentlyContinue' ; Invoke-WebRequest 'https://test-url' -OutFile 'test/out/path'"
+                    assert expected == test_command_generation
                 else:
                     assert "curl -o 'test/out/path' 'https://test-url';touch 'test/out/path'" == test_command_generation
                 assert put_args is None
