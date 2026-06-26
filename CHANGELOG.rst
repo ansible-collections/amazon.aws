@@ -4,6 +4,52 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v11.4.0
+=======
+
+Release Summary
+---------------
+
+This release includes significant improvements to the ``aws_ssm`` connection plugin,
+particularly for Windows hosts, along with new features for ``route53_zone`` and
+``rds_instance``. Documentation examples have been updated to use RFC-compliant
+addresses throughout the collection.
+
+Minor Changes
+-------------
+
+- aws_ssm - Added O(endpoint_url) option for connecting to alternate AWS endpoints. The alias O(aws_endpoint_url) is also supported (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- aws_ssm - Improved code organisation by extracting Windows command execution logic into a dedicated WindowsCommandExecutor class (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- aws_ssm - Refactored connection plugin to inherit from AWSConnectionBase for consistent AWS credential handling across plugins (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- aws_ssm - Renamed connection plugin options for consistency with other AWS plugins. O(aws_access_key_id) renamed to O(access_key); O(aws_secret_access_key) renamed to O(secret_key); O(aws_session_token) renamed to O(session_token); O(aws_profile) renamed to O(profile). Old names are retained as aliases. Additional aliases O(access_key_id) and O(secret_access_key) were also added (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- backup_plan - replace realistic version IDs with example UUID format in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- backup_plan_info - replace realistic version IDs with example UUID format in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_eip - replace AWS public IPs with RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_eni_info - use RFC 1918 private addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_instance - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_instance_info - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_key_info - replace realistic SSH fingerprint with example value in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_metadata_facts - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_vpc_dhcp_option - use public DNS servers (8.8.4.4, 8.8.8.8) instead of RFC 5737 addresses for DNS examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_vpc_nat_gateway - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_vpc_nat_gateway_info - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_vpc_vpn - replace realistic pre-shared key with obvious example value in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_vpc_vpn - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- ec2_vpc_vpn_info - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- rds_instance - Added support for self-managed Active Directory parameters ``domain_fqdn``, ``domain_ou``, ``domain_auth_secret_arn``, and ``domain_dns_ips`` to allow joining RDS instances to a self-managed Active Directory domain (https://github.com/ansible-collections/amazon.aws/pull/2977).
+- route53 - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- route53_health_check - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+- route53_zone - add support for ``wait`` and ``wait_timeout`` parameters to wait for DNSSEC state changes to propagate (https://github.com/ansible-collections/amazon.aws/issues/2981).
+
+Bugfixes
+--------
+
+- aws_ssm - Fixed PowerShell command execution timeouts on Windows caused by PTY echo issues. Commands are now uploaded to S3 and executed via a small wrapper to avoid echoing large payloads to stdout (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- aws_ssm - Fixed PowerShell stdin handling for modules that require stdin input on Windows hosts (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- aws_ssm - Fixed Windows SSM connection failures when transferring files with Unicode characters in filenames or content. The connection plugin now properly handles UTF-8 encoding throughout the S3 upload/download process (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- aws_ssm - Fixed stderr message accumulation across multiple command executions. Stderr is now flushed at the start of each command to prevent error messages from previous commands appearing in subsequent command output (https://github.com/ansible-collections/amazon.aws/pull/2909).
+- aws_ssm - suppress PowerShell progress output in Windows file transfers to prevent stdout pollution that causes transfer failures (https://github.com/ansible-collections/amazon.aws/pull/3013).
+
 v11.3.0
 =======
 

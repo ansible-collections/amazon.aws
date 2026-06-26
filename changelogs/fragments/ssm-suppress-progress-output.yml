@@ -1,3 +1,0 @@
----
-bugfixes:
-  - aws_ssm - suppress PowerShell progress output in Windows file transfers to prevent stdout pollution that causes transfer failures (https://github.com/ansible-collections/amazon.aws/pull/3013).
