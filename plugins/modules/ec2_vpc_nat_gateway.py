@@ -11,6 +11,7 @@ version_added: 1.0.0
 short_description: Manage AWS VPC NAT Gateways
 description:
   - Ensure the state of AWS VPC NAT Gateways based on their id, allocation and subnet ids.
+  - Supports both zonal (subnet-scoped) and regional (VPC-scoped) NAT gateways.
 options:
   state:
     description:
@@ -25,14 +26,34 @@ options:
     type: str
   subnet_id:
     description:
-      - The id of the subnet to create the NAT Gateway in. This is required
-        with the present option.
+      - The id of the subnet to create the NAT Gateway in.
+      - Required when O(state=present) and O(availability_mode=zonal) (the default).
+      - Mutually exclusive with O(vpc_id).
     type: str
+  vpc_id:
+    description:
+      - The ID of the VPC in which to create a regional NAT gateway.
+      - Required when O(availability_mode=regional) and O(state=present).
+      - Mutually exclusive with O(subnet_id).
+    type: str
+    version_added: 12.0.0
   allocation_id:
     description:
       - The id of the elastic IP allocation. If this is not passed and the
         eip_address is not passed. An EIP is generated for this NAT Gateway.
     type: str
+  availability_mode:
+    description:
+      - Whether to create a zonal or regional NAT gateway.
+      - Zonal NAT gateways (the default) operate in a single availability zone
+        and require O(subnet_id).
+      - Regional NAT gateways are VPC-scoped, automatically span multiple
+        availability zones, and require O(vpc_id) instead of O(subnet_id).
+      - Regional NAT gateways only support O(connectivity_type=public).
+    choices: ["zonal", "regional"]
+    default: "zonal"
+    type: str
+    version_added: 12.0.0
   connectivity_type:
     description:
       - Indicates whether the NAT gateway supports public or private connectivity.
@@ -48,7 +69,8 @@ options:
     type: str
   if_exist_do_not_create:
     description:
-      - If a NAT Gateway exists already in the O(subnet_id), then do not create a new one.
+      - If a NAT Gateway exists already in the O(subnet_id) (for zonal) or
+        O(vpc_id) (for regional), then do not create a new one.
     required: false
     default: false
     type: bool
@@ -57,6 +79,7 @@ options:
       - Deallocate the EIP from the VPC.
       - Option is only valid with the absent state.
       - You should use this with the wait option. Since you can not release an address while a delete operation is happening.
+      - Has no effect on regional NAT gateways in automatic mode, as AWS manages their EIP lifecycle.
     default: false
     type: bool
   wait:
@@ -194,9 +217,42 @@ EXAMPLES = r"""
       Tag3: tag3
     wait: true
   register: update_tags_nat_gateway
+
+- name: Create a regional NAT gateway with auto-provisioned EIPs.
+  amazon.aws.ec2_vpc_nat_gateway:
+    state: present
+    availability_mode: regional
+    vpc_id: vpc-12345678
+    wait: true
+    region: ap-southeast-2
+  register: regional_nat_gateway
+
+- name: Create a regional NAT gateway with a specific EIP.
+  amazon.aws.ec2_vpc_nat_gateway:
+    state: present
+    availability_mode: regional
+    vpc_id: vpc-12345678
+    allocation_id: eipalloc-12345678
+    wait: true
+    region: ap-southeast-2
+  register: regional_nat_gateway
+
+- name: Delete a regional NAT gateway and release all EIPs.
+  amazon.aws.ec2_vpc_nat_gateway:
+    state: absent
+    nat_gateway_id: nat-12345678
+    release_eip: true
+    wait: true
+    region: ap-southeast-2
 """
 
 RETURN = r"""
+availability_mode:
+  description: Whether the NAT gateway is zonal or regional.
+  returned: always
+  type: str
+  sample: "zonal"
+  version_added: 12.0.0
 connectivity_type:
     description:
       - Indicates whether the NAT gateway supports public or private connectivity.
@@ -235,6 +291,24 @@ vpc_id:
   returned: always
   type: str
   sample: "vpc-12345"
+auto_scaling_ips:
+  description: Whether AWS automatically allocates additional EIPs when more ports are needed.
+  returned: when availability_mode is regional
+  type: str
+  sample: "enabled"
+  version_added: 12.0.0
+auto_provision_zones:
+  description: Whether AWS automatically manages availability zone coverage.
+  returned: when availability_mode is regional
+  type: str
+  sample: "enabled"
+  version_added: 12.0.0
+route_table_id:
+  description: The route table ID associated with the regional NAT gateway.
+  returned: when availability_mode is regional
+  type: str
+  sample: "rtb-12345678"
+  version_added: 12.0.0
 nat_gateway_addresses:
   description: List of dictionaries containing the public_ip, network_interface_id, private_ip, and allocation_id.
   returned: always
@@ -275,6 +349,18 @@ nat_gateway_addresses:
         returned: always
         type: str
         sample: succeeded
+    availability_zone:
+        description: The availability zone of the address (regional NAT gateways only).
+        returned: when availability_mode is regional
+        type: str
+        sample: us-east-1a
+        version_added: 12.0.0
+    availability_zone_id:
+        description: The availability zone ID of the address (regional NAT gateways only).
+        returned: when availability_mode is regional
+        type: str
+        sample: use1-az1
+        version_added: 12.0.0
   sample: [
        {
             "allocation_id": "eipalloc-08ec128d03629671d",
@@ -328,7 +414,11 @@ def wait_for_status(client, module: AnsibleAWSModule, waiter_name: str, nat_gate
 
 
 def get_nat_gateways(
-    client, subnet_id: Optional[str] = None, nat_gateway_id: Optional[str] = None, states: Optional[List[str]] = None
+    client,
+    subnet_id: Optional[str] = None,
+    nat_gateway_id: Optional[str] = None,
+    states: Optional[List[str]] = None,
+    vpc_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """Retrieve a list of NAT Gateways
     Args:
@@ -376,12 +466,19 @@ def get_nat_gateways(
     if nat_gateway_id:
         params["NatGatewayIds"] = [nat_gateway_id]
     else:
-        params["Filter"] = [
-            {"Name": "subnet-id", "Values": [subnet_id]},
-            {"Name": "state", "Values": states},
-        ]
+        filters = [{"Name": "state", "Values": states}]
+        if subnet_id:
+            filters.append({"Name": "subnet-id", "Values": [subnet_id]})
+        elif vpc_id:
+            filters.append({"Name": "vpc-id", "Values": [vpc_id]})
+        params["Filter"] = filters
 
-    return [camel_dict_to_snake_dict(gw) for gw in describe_nat_gateways(client, **params) or []]
+    gateways = [camel_dict_to_snake_dict(gw) for gw in describe_nat_gateways(client, **params) or []]
+
+    if vpc_id and not subnet_id:
+        gateways = [gw for gw in gateways if gw.get("availability_mode") == "regional"]
+
+    return gateways
 
 
 def gateway_in_subnet_exists(
@@ -432,6 +529,25 @@ def gateway_in_subnet_exists(
 
     states = ["available", "pending"]
     nat_gateways = get_nat_gateways(client, subnet_id=subnet_id, states=states)
+    if not allocation_id:
+        return nat_gateways, False
+
+    allocation_id_exists = False
+    gateways = []
+    for gw in nat_gateways:
+        for address in gw["nat_gateway_addresses"]:
+            if address.get("allocation_id") == allocation_id:
+                allocation_id_exists = True
+                gateways.append(gw)
+
+    return gateways, allocation_id_exists
+
+
+def gateway_in_vpc_exists(
+    client, vpc_id: str, allocation_id: Optional[str] = None
+) -> Tuple[List[Dict[str, Any]], bool]:
+    states = ["available", "pending"]
+    nat_gateways = get_nat_gateways(client, vpc_id=vpc_id, states=states)
     if not allocation_id:
         return nat_gateways, False
 
@@ -598,16 +714,22 @@ def create(client, module: AnsibleAWSModule, allocation_id: Optional[str]) -> Tu
         Tuple (bool, str, list)
     """
 
+    availability_mode = module.params.get("availability_mode")
     connectivity_type = module.params.get("connectivity_type")
     wait = module.params.get("wait")
     client_token = module.params.get("client_token")
-    subnet_id = module.params.get("subnet_id")
     tags = module.params.get("tags")
 
-    params = {"SubnetId": subnet_id, "ConnectivityType": connectivity_type}
+    params = {"ConnectivityType": connectivity_type}
 
-    if connectivity_type == "public":
-        params.update({"AllocationId": allocation_id})
+    if availability_mode == "regional":
+        params["VpcId"] = module.params.get("vpc_id")
+        params["AvailabilityMode"] = "regional"
+    else:
+        params["SubnetId"] = module.params.get("subnet_id")
+
+    if connectivity_type == "public" and allocation_id:
+        params["AllocationId"] = allocation_id
 
     request_time = datetime.datetime.now(datetime.timezone.utc)
     changed = False
@@ -697,15 +819,29 @@ def pre_create(
     msg = ""
     results = {}
 
+    availability_mode = module.params.get("availability_mode")
     connectivity_type = module.params.get("connectivity_type")
     if_exist_do_not_create = module.params.get("if_exist_do_not_create")
     purge_tags = module.params.get("purge_tags")
     default_create = module.params.get("default_create")
     subnet_id = module.params.get("subnet_id")
+    vpc_id = module.params.get("vpc_id")
     tags = module.params.get("tags")
 
+    is_regional = availability_mode == "regional"
+
+    def _find_existing(alloc_id=None):
+        if is_regional:
+            return gateway_in_vpc_exists(client, vpc_id=vpc_id, allocation_id=alloc_id)
+        return gateway_in_subnet_exists(client, subnet_id=subnet_id, allocation_id=alloc_id)
+
+    def _existing_msg(gw_id):
+        if is_regional:
+            return f"NAT Gateway {gw_id} already exists in vpc_id {vpc_id}"
+        return f"NAT Gateway {gw_id} already exists in subnet_id {subnet_id}"
+
     if not allocation_id and not eip_address:
-        existing_gateways, allocation_id_exists = gateway_in_subnet_exists(client, subnet_id=subnet_id)
+        existing_gateways, allocation_id_exists = _find_existing()
         if len(existing_gateways) > 0 and if_exist_do_not_create:
             results = existing_gateways[0]
             changed |= ensure_ec2_tags(
@@ -718,10 +854,10 @@ def pre_create(
                 return changed, msg, results
 
             changed = False
-            msg = f"NAT Gateway {existing_gateways[0]['nat_gateway_id']} already exists in subnet_id {subnet_id}"
+            msg = _existing_msg(existing_gateways[0]["nat_gateway_id"])
             return changed, msg, results
         else:
-            if connectivity_type == "public":
+            if connectivity_type == "public" and not is_regional:
                 changed, msg, allocation_id = allocate_eip_address(client, module.check_mode)
 
                 if not changed:
@@ -737,9 +873,7 @@ def pre_create(
                 eip_address = None
                 return pre_create(client, module, allocation_id, eip_address)
 
-        existing_gateways, allocation_id_exists = gateway_in_subnet_exists(
-            client, subnet_id=subnet_id, allocation_id=allocation_id
-        )
+        existing_gateways, allocation_id_exists = _find_existing(alloc_id=allocation_id)
 
         if len(existing_gateways) > 0 and (allocation_id_exists or if_exist_do_not_create):
             results = existing_gateways[0]
@@ -753,7 +887,7 @@ def pre_create(
                 return changed, msg, results
 
             changed = False
-            msg = f"NAT Gateway {existing_gateways[0]['nat_gateway_id']} already exists in subnet_id {subnet_id}"
+            msg = _existing_msg(existing_gateways[0]["nat_gateway_id"])
             return changed, msg, results
 
     return create(client, module, allocation_id)
@@ -800,7 +934,7 @@ def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]
         Tuple (bool, str, list)
     """
 
-    allocation_id = None
+    allocation_ids = []
     changed = False
     results: dict[str, Any] = {}
     states = ["pending", "available"]
@@ -808,7 +942,6 @@ def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]
     nat_gateway_id = module.params.get("nat_gateway_id")
     wait = module.params.get("wait")
     release_eip = module.params.get("release_eip")
-    connectivity_type = module.params.get("connectivity_type")
 
     if module.check_mode:
         changed = True
@@ -818,12 +951,17 @@ def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]
 
     if len(gw_list) == 1:
         results = gw_list[0]
+        connectivity_type = results.get("connectivity_type", module.params.get("connectivity_type"))
+        is_regional = results.get("availability_mode") == "regional"
         try:
             changed = delete_nat_gateway(client, nat_gateway_id)
         except AnsibleEC2Error as e:
             module.fail_json_aws_error(e)
-        if connectivity_type == "public":
-            allocation_id = results["nat_gateway_addresses"][0]["allocation_id"]
+        if connectivity_type == "public" and not is_regional:
+            for address in results.get("nat_gateway_addresses", []):
+                aid = address.get("allocation_id")
+                if aid:
+                    allocation_ids.append(aid)
         msg = f"NAT gateway {nat_gateway_id} is in a deleting state. Delete was successful"
 
         if wait and results.get("state") != "deleted":
@@ -833,8 +971,9 @@ def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]
             results = camel_dict_to_snake_dict(describe_nat_gateways(client, NatGatewayIds=[nat_gateway_id])[0])
             results["tags"] = describe_ec2_tags(client, module, nat_gateway_id, resource_type="natgateway")
 
-    if release_eip and allocation_id:
-        changed |= release_eip_address(client, allocation_id, module.check_mode)
+    if release_eip and allocation_ids:
+        for aid in allocation_ids:
+            changed |= release_eip_address(client, aid, module.check_mode)
 
     return changed, msg, results
 
@@ -842,8 +981,10 @@ def remove(client, module: AnsibleAWSModule) -> Tuple[bool, str, Dict[str, Any]]
 def main() -> None:
     argument_spec = dict(
         subnet_id=dict(type="str"),
+        vpc_id=dict(type="str"),
         eip_address=dict(type="str"),
         allocation_id=dict(type="str"),
+        availability_mode=dict(type="str", default="zonal", choices=["zonal", "regional"]),
         connectivity_type=dict(type="str", default="public", choices=["private", "public"]),
         if_exist_do_not_create=dict(type="bool", default=False),
         state=dict(default="present", choices=["present", "absent"]),
@@ -860,9 +1001,23 @@ def main() -> None:
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[["allocation_id", "eip_address"]],
-        required_if=[["state", "absent", ["nat_gateway_id"]], ["state", "present", ["subnet_id"]]],
+        mutually_exclusive=[["allocation_id", "eip_address"], ["subnet_id", "vpc_id"]],
+        required_if=[["state", "absent", ["nat_gateway_id"]]],
     )
+
+    state = module.params.get("state")
+    availability_mode = module.params.get("availability_mode")
+    connectivity_type = module.params.get("connectivity_type")
+
+    if state == "present":
+        if availability_mode == "regional":
+            if not module.params.get("vpc_id"):
+                module.fail_json(msg="vpc_id is required when availability_mode is 'regional' and state is 'present'.")
+            if connectivity_type == "private":
+                module.fail_json(msg="connectivity_type 'private' is not supported for regional NAT gateways.")
+        else:
+            if not module.params.get("subnet_id"):
+                module.fail_json(msg="subnet_id is required when state is 'present' and availability_mode is 'zonal'.")
 
     try:
         client = module.client("ec2")
@@ -871,7 +1026,6 @@ def main() -> None:
 
     changed = False
     msg = ""
-    state = module.params.get("state")
 
     try:
         if state == "present":

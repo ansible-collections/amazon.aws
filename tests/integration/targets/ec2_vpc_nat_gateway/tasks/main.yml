@@ -943,6 +943,139 @@
         nat_gateway_id: "{{ create_ngw.nat_gateway_id }}"
         network_interface_id: "{{ create_ngw.nat_gateway_addresses[0].network_interface_id }}"
 
+    # ============================================================
+    # Regional NAT Gateway Tests
+    # Requires botocore >= 1.41.0 for AvailabilityMode/VpcId support
+    # ============================================================
+
+    - name: Run regional NAT gateway tests
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+      block:
+        - name: Create new regional NAT gateway - CHECK_MODE
+          amazon.aws.ec2_vpc_nat_gateway:
+            state: present
+            availability_mode: regional
+            vpc_id: "{{ vpc_id }}"
+            wait: true
+          register: create_regional_ngw
+          check_mode: true
+
+        - name: Assert creation would happen - CHECK_MODE
+          ansible.builtin.assert:
+            that:
+              - create_regional_ngw.changed
+              - '"ec2:CreateNatGateway" not in create_regional_ngw.resource_actions'
+
+        - name: Create new regional NAT gateway
+          amazon.aws.ec2_vpc_nat_gateway:
+            state: present
+            availability_mode: regional
+            vpc_id: "{{ vpc_id }}"
+            wait: true
+          register: create_regional_ngw
+
+        - name: Assert regional creation happened
+          ansible.builtin.assert:
+            that:
+              - create_regional_ngw.changed
+              - '"create_time" in create_regional_ngw'
+              - '"nat_gateway_id" in create_regional_ngw'
+              - create_regional_ngw.nat_gateway_id.startswith("nat-")
+              - '"state" in create_regional_ngw'
+              - create_regional_ngw.state == 'available'
+              - '"vpc_id" in create_regional_ngw'
+              - create_regional_ngw.vpc_id == vpc_id
+              - create_regional_ngw.availability_mode == 'regional'
+              - '"nat_gateway_addresses" in create_regional_ngw'
+              - create_regional_ngw.connectivity_type == 'public'
+
+        - name: "Set facts: regional NAT gateway ID"
+          ansible.builtin.set_fact:
+            regional_ngw_id: "{{ create_regional_ngw.nat_gateway_id }}"
+
+        # ============================================================
+
+        - name: Create regional NAT gateway when one already exists (if_exist_do_not_create)
+          amazon.aws.ec2_vpc_nat_gateway:
+            state: present
+            availability_mode: regional
+            vpc_id: "{{ vpc_id }}"
+            if_exist_do_not_create: true
+            wait: true
+          register: create_regional_ngw_idem
+
+        - name: Assert no change (idempotency)
+          ansible.builtin.assert:
+            that:
+              - not create_regional_ngw_idem.changed
+              - create_regional_ngw_idem.nat_gateway_id == regional_ngw_id
+
+        # ============================================================
+
+        - name: Get regional NAT gateway info
+          amazon.aws.ec2_vpc_nat_gateway_info:
+            nat_gateway_ids:
+              - "{{ regional_ngw_id }}"
+          register: regional_ngw_info
+
+        - name: Assert info module returns regional fields
+          ansible.builtin.assert:
+            that:
+              - regional_ngw_info is successful
+              - regional_ngw_info.result | length == 1
+              - regional_ngw_info.result[0].availability_mode == 'regional'
+              - regional_ngw_info.result[0].vpc_id == vpc_id
+              - regional_ngw_info.result[0].connectivity_type == 'public'
+
+        # ============================================================
+
+        - name: Fail to create regional NAT gateway with private connectivity
+          amazon.aws.ec2_vpc_nat_gateway:
+            state: present
+            availability_mode: regional
+            vpc_id: "{{ vpc_id }}"
+            connectivity_type: private
+            wait: true
+          register: fail_regional_private
+          ignore_errors: true
+
+        - name: Assert failure for regional + private
+          ansible.builtin.assert:
+            that:
+              - fail_regional_private is failed
+              - "'not supported' in fail_regional_private.msg"
+
+        # ============================================================
+
+        - name: Fail to create regional NAT gateway without vpc_id
+          amazon.aws.ec2_vpc_nat_gateway:
+            state: present
+            availability_mode: regional
+            wait: true
+          register: fail_regional_no_vpc
+          ignore_errors: true
+
+        - name: Assert failure for regional without vpc_id
+          ansible.builtin.assert:
+            that:
+              - fail_regional_no_vpc is failed
+              - "'vpc_id' in fail_regional_no_vpc.msg"
+
+        # ============================================================
+
+        - name: Delete regional NAT gateway
+          amazon.aws.ec2_vpc_nat_gateway:
+            nat_gateway_id: "{{ regional_ngw_id }}"
+            state: absent
+            wait: true
+          register: delete_regional_ngw
+
+        - name: Assert regional deletion happened
+          ansible.builtin.assert:
+            that:
+              - delete_regional_ngw.changed
+
   # ============================================================
 
   always:
@@ -956,7 +1089,7 @@
 
     - name: Tidy up NAT gateway
       amazon.aws.ec2_vpc_nat_gateway:
-        subnet_id: "{{ item.subnet_id }}"
+        subnet_id: "{{ item.subnet_id | default(omit) }}"
         nat_gateway_id: "{{ item.nat_gateway_id }}"
         connectivity_type: "{{ item.connectivity_type }}"
         release_eip: true
