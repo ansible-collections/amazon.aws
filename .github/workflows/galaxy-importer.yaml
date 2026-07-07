@@ -1,0 +1,15 @@
+name: Galaxy import
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - main
+      - stable-*
+
+jobs:
+  galaxy-import:
+    uses: ansible-network/github_actions/.github/workflows/galaxy_importer.yml@4eb390a8c86b0c1eae9a87624a117193839579ef  # main, authored on May 5, 2023
