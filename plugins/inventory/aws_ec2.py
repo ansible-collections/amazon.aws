@@ -21,6 +21,7 @@ notes:
     role will be used for authentication.
   - The C(tags) host variable is deprecated and will be removed in a release after 2026-12-01.
     Use C(ec2_tags) instead to avoid conflicts with Ansible reserved variable names.
+    Set O(use_deprecated_tags=false) to disable the C(tags) host variable, and this warning, before then.
   - The C(ec2_tags) host variable was added in version 11.2.0.
   - The C(use_contrib_script_compatible_ec2_tag_keys) option is deprecated and will be removed in a release after 2026-12-01.
     Use the C(ec2_tags) structure instead (e.g. use C(ec2_tags.TAGNAME) rather than C(ec2_tag_TAGNAME)).
@@ -130,6 +131,17 @@ options:
     type: bool
     default: false
     version_added: 1.5.0
+  use_deprecated_tags:
+    description:
+      - Whether to include the deprecated C(tags) host variable alongside C(ec2_tags).
+      - Set to V(false) to stop the plugin from adding the C(tags) host variable, which also
+        disables this plugin's C(tags) deprecation warning and Ansible's reserved variable
+        name warning for C(tags).
+      - The use of this feature is deprecated and will be removed in a release after 2026-12-01.
+        Use the C(ec2_tags) structure instead.
+    type: bool
+    default: true
+    version_added: 12.0.0
   hostvars_prefix:
     description:
       - The prefix for host variables names coming from AWS.
@@ -499,6 +511,7 @@ def _prepare_host_vars(
     hostvars_prefix: str = None,
     hostvars_suffix: str = None,
     use_contrib_script_compatible_ec2_tag_keys: bool = False,
+    use_deprecated_tags: bool = True,
 ) -> Dict[str, Any]:
     """
     Transform EC2 instance data into Ansible host variables.
@@ -511,12 +524,18 @@ def _prepare_host_vars(
     :param hostvars_prefix: Optional prefix to add to all host variable names
     :param hostvars_suffix: Optional suffix to add to all host variable names
     :param use_contrib_script_compatible_ec2_tag_keys: If True, create ec2_tag_* variables
+    :param use_deprecated_tags: If True, also expose the deprecated 'tags' host variable
     :return: Dictionary of processed host variables
     """
     host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=["Tags"])
     host_vars["ec2_tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
-    # ec2_tags is the new key, tags is deprecated but kept for backward compatibility
-    host_vars["tags"] = host_vars["ec2_tags"]
+    if use_deprecated_tags:
+        # ec2_tags is the new key, tags is deprecated but kept for backward compatibility
+        host_vars["tags"] = host_vars["ec2_tags"]
+    else:
+        # camel_dict_to_snake_dict() above already renamed the raw 'Tags' key to 'tags';
+        # drop it so the deprecated host variable is fully absent, not just left unconverted.
+        host_vars.pop("tags", None)
 
     # Allow easier grouping by region or by AZ ID
     host_vars["placement"]["region"] = host_vars["placement"]["availability_zone"][:-1]
@@ -976,6 +995,7 @@ class InventoryModule(AWSInventoryBase):
         hostvars_prefix=None,
         hostvars_suffix=None,
         use_contrib_script_compatible_ec2_tag_keys=False,
+        use_deprecated_tags=True,
     ):
         for group in groups:
             group = self.inventory.add_group(group)
@@ -988,6 +1008,7 @@ class InventoryModule(AWSInventoryBase):
                 hostvars_prefix=hostvars_prefix,
                 hostvars_suffix=hostvars_suffix,
                 use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+                use_deprecated_tags=use_deprecated_tags,
             )
             self.inventory.add_child("all", group)
 
@@ -1000,6 +1021,7 @@ class InventoryModule(AWSInventoryBase):
         hostvars_prefix=None,
         hostvars_suffix=None,
         use_contrib_script_compatible_ec2_tag_keys=False,
+        use_deprecated_tags=True,
     ):
         for host in hosts:
             if allow_duplicated_hosts:
@@ -1015,6 +1037,7 @@ class InventoryModule(AWSInventoryBase):
                 hostvars_prefix,
                 hostvars_suffix,
                 use_contrib_script_compatible_ec2_tag_keys,
+                use_deprecated_tags,
             )
             for name in hostname_list:
                 yield to_text(name), host_vars
@@ -1029,6 +1052,7 @@ class InventoryModule(AWSInventoryBase):
         hostvars_prefix=None,
         hostvars_suffix=None,
         use_contrib_script_compatible_ec2_tag_keys=False,
+        use_deprecated_tags=True,
     ):
         """
         :param hosts: a list of hosts to be added to a group
@@ -1039,6 +1063,7 @@ class InventoryModule(AWSInventoryBase):
         :param str hostvars_prefix: starts the hostvars variable name with this prefix
         :param str hostvars_suffix: ends the hostvars variable name with this suffix
         :param bool use_contrib_script_compatible_ec2_tag_keys: transform the host name with the legacy naming system
+        :param bool use_deprecated_tags: if true, also expose the deprecated 'tags' host variable
         """
 
         for name, host_vars in self.iter_entry(
@@ -1049,6 +1074,7 @@ class InventoryModule(AWSInventoryBase):
             hostvars_prefix=hostvars_prefix,
             hostvars_suffix=hostvars_suffix,
             use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+            use_deprecated_tags=use_deprecated_tags,
         ):
             self.inventory.add_host(name, group=group)
             for k, v in host_vars.items():
@@ -1076,12 +1102,6 @@ class InventoryModule(AWSInventoryBase):
     def parse(self, inventory, loader, path, cache=True):
         super().parse(inventory, loader, path, cache=cache)
 
-        self.display.deprecated(
-            "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
-            date="2026-12-01",
-            collection_name="amazon.aws",
-        )
-
         # get user specifications
         regions = self.get_option("regions")
         include_filters = self.build_include_filters()
@@ -1094,7 +1114,15 @@ class InventoryModule(AWSInventoryBase):
         hostvars_suffix = self.get_option("hostvars_suffix")
         use_contrib_script_compatible_sanitization = self.get_option("use_contrib_script_compatible_sanitization")
         use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
+        use_deprecated_tags = self.get_option("use_deprecated_tags")
         use_ssm_inventory = self.get_option("use_ssm_inventory")
+
+        if use_deprecated_tags:
+            self.display.deprecated(
+                "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
+                date="2026-12-01",
+                collection_name="amazon.aws",
+            )
 
         if use_contrib_script_compatible_sanitization:
             self.display.deprecated(
@@ -1135,6 +1163,7 @@ class InventoryModule(AWSInventoryBase):
             hostvars_prefix=hostvars_prefix,
             hostvars_suffix=hostvars_suffix,
             use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+            use_deprecated_tags=use_deprecated_tags,
         )
 
         self.update_cached_result(path, cache, results)
