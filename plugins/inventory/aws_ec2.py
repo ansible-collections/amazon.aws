@@ -1121,7 +1121,7 @@ class InventoryModule(AWSInventoryBase):
             self.display.deprecated(
                 "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
                 date="2026-12-01",
-                collection_name="amazon.aws",
+                collection_name=collection_name,
             )
 
         if use_contrib_script_compatible_sanitization:
