@@ -51,6 +51,7 @@ def fixture_inventory():
         "aws_session_token": "test_security_token",
         "iam_role_arn": None,
         "use_contrib_script_compatible_ec2_tag_keys": False,
+        "use_deprecated_tags": True,
         "hostvars_prefix": "",
         "hostvars_suffix": "",
         "strict": True,
@@ -260,12 +261,14 @@ def test_sanitize_hostname_legacy(inventory):
 
 
 @pytest.mark.parametrize(
-    "hostvars_prefix,hostvars_suffix,use_contrib_script_compatible_ec2_tag_keys,availability_zone_ids,expectation",
+    "hostvars_prefix,hostvars_suffix,use_contrib_script_compatible_ec2_tag_keys,use_deprecated_tags,"
+    "availability_zone_ids,expectation",
     [
         (
             None,
             None,
             False,
+            True,
             {"us-east-1a": "use1-az1"},
             {
                 "my_var": 1,
@@ -282,6 +285,7 @@ def test_sanitize_hostname_legacy(inventory):
             "pre",
             "post",
             False,
+            True,
             {"us-east-1a": "use1-az1"},
             {
                 "premy_varpost": 1,
@@ -297,6 +301,7 @@ def test_sanitize_hostname_legacy(inventory):
         (
             None,
             None,
+            True,
             True,
             {"us-east-1a": "use1-az1"},
             {
@@ -315,6 +320,7 @@ def test_sanitize_hostname_legacy(inventory):
             None,
             None,
             False,
+            True,
             {},
             {
                 "my_var": 1,
@@ -323,12 +329,29 @@ def test_sanitize_hostname_legacy(inventory):
                 "tags": {"Name": "my-name"},
             },
         ),
+        (
+            None,
+            None,
+            False,
+            False,
+            {"us-east-1a": "use1-az1"},
+            {
+                "my_var": 1,
+                "placement": {
+                    "availability_zone": "us-east-1a",
+                    "region": "us-east-1",
+                    "availability_zone_id": "use1-az1",
+                },
+                "ec2_tags": {"Name": "my-name"},
+            },
+        ),
     ],
 )
 def test_prepare_host_vars(
     hostvars_prefix,
     hostvars_suffix,
     use_contrib_script_compatible_ec2_tag_keys,
+    use_deprecated_tags,
     availability_zone_ids,
     expectation,
 ):
@@ -344,9 +367,33 @@ def test_prepare_host_vars(
             hostvars_prefix,
             hostvars_suffix,
             use_contrib_script_compatible_ec2_tag_keys,
+            use_deprecated_tags,
         )
         == expectation
     )
+
+
+@pytest.mark.parametrize("use_deprecated_tags", [True, False])
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.AWSInventoryBase.parse")
+def test_parse_tags_deprecation_warning(m_parse, inventory, use_deprecated_tags):
+    inventory._options["use_deprecated_tags"] = use_deprecated_tags
+    inventory.display = MagicMock()
+    inventory.get_cached_result = MagicMock(return_value=(True, {}))
+    inventory.update_cached_result = MagicMock()
+    inventory._get_availability_zone_ids = MagicMock(return_value={})
+    inventory._populate = MagicMock()
+
+    inventory.parse(MagicMock(), MagicMock(), "aws_ec2.yml", cache=False)
+
+    tags_deprecation_calls = [
+        c for c in inventory.display.deprecated.call_args_list if "'tags' host variable" in c.args[0]
+    ]
+    if use_deprecated_tags:
+        assert len(tags_deprecation_calls) == 1
+    else:
+        assert not tags_deprecation_calls
+
+    assert inventory._populate.call_args.kwargs["use_deprecated_tags"] == use_deprecated_tags
 
 
 def test_iter_entry(inventory):
