@@ -1139,7 +1139,7 @@ class InventoryModule(AWSInventoryBase):
                 "The 'use_contrib_script_compatible_ec2_tag_keys' option is deprecated. "
                 "Use the 'ec2_tags' structure instead.",
                 date="2026-12-01",
-                collection_name="amazon.aws",
+                collection_name=collection_name,
             )
 
         if not all(isinstance(element, (dict, str)) for element in hostnames):
