@@ -1129,7 +1129,7 @@ class InventoryModule(AWSInventoryBase):
                 "The 'use_contrib_script_compatible_sanitization' option is deprecated. "
                 "Use Ansible's default group name sanitization instead.",
                 date="2026-12-01",
-                collection_name="amazon.aws",
+                collection_name=collection_name,
             )
 
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
