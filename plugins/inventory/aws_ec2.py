@@ -1103,6 +1103,7 @@ class InventoryModule(AWSInventoryBase):
         super().parse(inventory, loader, path, cache=cache)
 
         # get user specifications
+        collection_name = get_collection_info()['name']
         regions = self.get_option("regions")
         include_filters = self.build_include_filters()
         exclude_filters = self.get_option("exclude_filters")
