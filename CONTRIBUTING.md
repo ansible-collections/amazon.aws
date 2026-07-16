@@ -100,6 +100,64 @@ Then create a pull request.
 If you're struggling with running integration tests locally, don't worry.
 After creating a pull request the GitHub Actions will automatically test for you.
 
+## Running Tests Locally
+
+### Unit Tests
+
+Unit tests are run via [tox](https://tox.wiki/). The collection uses fully-qualified
+`ansible_collections.amazon.aws.*` imports, which require the Ansible collection loader
+to resolve the namespace correctly. `tox` handles this automatically by syncing the
+collection into a managed environment before running `pytest`.
+
+First, install `tox` into your virtual environment:
+
+```bash
+pip install tox
+```
+
+To run all unit tests:
+
+```bash
+tox -e ansible2.20-py312-without_constraints
+```
+
+To run a specific test file or filter by test name, use the `-k` flag rather than
+passing a file path directly (file paths resolve relative to the repo root and break
+the collection namespace resolution inside tox):
+
+```bash
+tox -e ansible2.20-py312-without_constraints -- -k test_aws_sqs_queue -v
+```
+
+See `tox.ini` for the full list of available environments (ansible-core versions and
+Python version combinations).
+
+> **Note:** Do not use `pytest` or `ansible-test units` directly — they will fail with
+> `ModuleNotFoundError: No module named 'ansible_collections'` because the collection
+> namespace is not on `sys.path` without the tox setup.
+
+### Linting
+
+Two linters are enforced in CI. Run them against changed files before submitting a PR:
+
+**Black** (code formatting):
+
+```bash
+tox -e black-lint -- <path/to/file>
+```
+
+**Flake8** (style and error checking):
+
+```bash
+tox -e flake8-lint -- <path/to/file>
+```
+
+To auto-fix formatting issues (rather than just checking), use the `black` environment:
+
+```bash
+tox -e black -- <path/to/file>
+```
+
 ## More information about contributing
 
 General information about setting up your Python environment, testing modules,
