@@ -55,8 +55,8 @@ if typing.TYPE_CHECKING:
     from typing import Any
 
 import json
+import urllib.error
 
-import ansible.module_utils.six.moves.urllib.error
 import ansible.module_utils.urls
 from ansible.errors import AnsibleLookupError
 from ansible.module_utils.common.text.converters import to_native
@@ -99,11 +99,11 @@ class LookupModule(LookupBase):
             # on Python 3+, json.decoder.JSONDecodeError is raised for bad
             # JSON. On 2.x it's a ValueError
             raise AnsibleLookupError(f"Could not decode AWS IP ranges: {to_native(e)}")
-        except ansible.module_utils.six.moves.urllib.error.HTTPError as e:
+        except urllib.error.HTTPError as e:
             raise AnsibleLookupError(f"Received HTTP error while pulling IP ranges: {to_native(e)}")
         except ansible.module_utils.urls.SSLValidationError as e:
             raise AnsibleLookupError(f"Error validating the server's certificate for: {to_native(e)}")
-        except ansible.module_utils.six.moves.urllib.error.URLError as e:
+        except urllib.error.URLError as e:
             raise AnsibleLookupError(f"Failed look up IP range service: {to_native(e)}")
         except ansible.module_utils.urls.ConnectionError as e:
             raise AnsibleLookupError(f"Error connecting to IP range service: {to_native(e)}")
