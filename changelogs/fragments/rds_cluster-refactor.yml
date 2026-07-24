@@ -1,0 +1,4 @@
+minor_changes:
+  - rds_cluster - Removed module-level globals, replaced ``eval()`` dispatch with ``format_rds_client_method_parameters()``, and use shared ``describe_db_clusters`` from ``module_utils/rds.py`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+bugfixes:
+  - rds_cluster - Fixed ``add_role`` and ``backtrack_cluster`` function signature mismatch that would cause a TypeError when adding IAM roles or backtracking clusters (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
