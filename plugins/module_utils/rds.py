@@ -20,6 +20,7 @@ get_rds_method_attribute = _common.get_rds_method_attribute
 
 # api.py re-exports
 describe_db_cluster_snapshots = _api.describe_db_cluster_snapshots
+describe_db_clusters = _api.describe_db_clusters
 describe_db_instances = _api.describe_db_instances
 describe_db_snapshots = _api.describe_db_snapshots
 list_tags_for_resource = _api.list_tags_for_resource

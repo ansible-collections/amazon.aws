@@ -245,48 +245,47 @@ clusters:
 """
 
 
-try:
-    import botocore
-except ImportError:
-    pass  # handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-@AWSRetry.jittered_backoff(retries=10)
-def _describe_db_clusters(client, **params):
-    try:
-        paginator = client.get_paginator("describe_db_clusters")
-        return paginator.paginate(**params).build_full_result()["DBClusters"]
-    except is_boto3_error_code("DBClusterNotFoundFault"):
-        return []
+def cluster_info(
+    client, module: AnsibleAWSModule, cluster_id: Optional[str], filters: Optional[Dict[str, Union[str, List]]]
+) -> List[Dict[str, Any]]:
+    """Returns attributes of DB cluster(s), optionally filtered by ID and filters.
 
+    Parameters:
+        client: boto3 rds client
+        module: AnsibleAWSModule
+        cluster_id: Unique identifier of DB cluster to describe
+        filters: Additional boto3-supported filters
 
-def cluster_info(client, module):
-    cluster_id = module.params.get("db_cluster_identifier")
-    filters = module.params.get("filters")
-
-    params = dict()
+    Returns:
+        List of cluster attribute dicts in snake_case format
+    """
+    params = {}
     if cluster_id:
         params["DBClusterIdentifier"] = cluster_id
     if filters:
         params["Filters"] = ansible_dict_to_boto3_filter_list(filters)
 
-    try:
-        result = _describe_db_clusters(client, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get RDS cluster information.")
+    results = describe_db_clusters(client, **params)
 
-    for cluster in result:
+    for cluster in results:
         cluster["Tags"] = get_tags(client, module, cluster["DBClusterArn"])
 
-    return dict(changed=False, clusters=[camel_dict_to_snake_dict(cluster, ignore_list=["Tags"]) for cluster in result])
+    return [camel_dict_to_snake_dict(cluster, ignore_list=["Tags"]) for cluster in results]
 
 
 def main():
@@ -300,12 +299,15 @@ def main():
         supports_check_mode=True,
     )
 
-    try:
-        client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS.")
+    client = module.client("rds")
 
-    module.exit_json(**cluster_info(client, module))
+    cluster_id = module.params.get("db_cluster_identifier")
+    filters = module.params.get("filters")
+
+    try:
+        module.exit_json(changed=False, clusters=cluster_info(client, module, cluster_id, filters))
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e)
 
 
 if __name__ == "__main__":

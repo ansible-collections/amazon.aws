@@ -1,0 +1,3 @@
+minor_changes:
+  - rds_cluster_info - Refactored module to use shared ``describe_db_clusters`` from ``module_utils/rds.py`` and ``AnsibleRDSError`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - module_utils/rds - Added ``describe_db_clusters`` centralized wrapper with ``@RDSErrorHandler`` and ``@AWSRetry`` decorators (https://github.com/ansible-collections/amazon.aws/pull/XXXX).

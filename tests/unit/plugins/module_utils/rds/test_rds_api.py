@@ -17,6 +17,7 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.rds import Boto3ClientMethod
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
 from ansible_collections.amazon.aws.plugins.module_utils.rds import handle_errors
@@ -518,3 +519,49 @@ def test__update_iam_roles_add_only(m_call_method):
     assert result is True
     m_call_method.assert_called_once()
     assert m_call_method.call_args[1]["method_name"] == "add_role_to_db_instance"
+
+
+# =============================================================================
+# describe_db_clusters
+# =============================================================================
+
+
+class TestDescribeDbClusters:
+    def test_describe_db_clusters_returns_list(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "DBClusters": [
+                {"DBClusterIdentifier": "cluster-1"},
+                {"DBClusterIdentifier": "cluster-2"},
+            ]
+        }
+
+        result = describe_db_clusters(client, DBClusterIdentifier="cluster-1")
+
+        client.get_paginator.assert_called_with("describe_db_clusters")
+        paginator.paginate.assert_called_with(DBClusterIdentifier="cluster-1")
+        assert len(result) == 2
+        assert result[0]["DBClusterIdentifier"] == "cluster-1"
+
+    def test_describe_db_clusters_empty(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {"DBClusters": []}
+
+        result = describe_db_clusters(client)
+
+        assert result == []
+
+    def test_describe_db_clusters_not_found_returns_empty(self):
+        client = MagicMock()
+        client.get_paginator.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "DBClusterNotFoundFault", "Message": "not found"}},
+            "DescribeDBClusters",
+        )
+
+        result = describe_db_clusters(client, DBClusterIdentifier="nonexistent")
+
+        assert result == []
