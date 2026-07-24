@@ -890,7 +890,7 @@ def changing_cluster_options(
     """Compare desired parameters against current cluster state and return only parameters that need to change."""
 
     changing_params = {}
-    apply_immediately = modify_params.pop("ApplyImmediately")
+    apply_immediately = modify_params.pop("ApplyImmediately", None)
     db_cluster_id = modify_params.pop("DBClusterIdentifier")
 
     enable_cloudwatch_logs_export = modify_params.pop("EnableCloudwatchLogsExports", None)
