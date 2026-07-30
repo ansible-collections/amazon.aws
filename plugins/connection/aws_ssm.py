@@ -373,11 +373,6 @@ import typing
 
 if typing.TYPE_CHECKING:
     from typing import Any
-    from typing import Dict
-    from typing import Iterator
-    from typing import List
-    from typing import Optional
-    from typing import Tuple
 
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound
@@ -694,7 +689,7 @@ class Connection(AWSConnectionBase):
 
             line = filter_ansi(self.session_manager.stdout_readline(), self.is_windows)
             line_count += 1
-            self.verbosity_display(4, f"EXEC_COMMUNICATE: stdout line {line_count}: {repr(line)}")
+            self.verbosity_display(4, f"EXEC_COMMUNICATE: stdout line {line_count}: {line!r}")
 
             # Check for end marker before adding line to output
             if end_search.search(line):
@@ -771,9 +766,9 @@ class Connection(AWSConnectionBase):
             # DEBUG: Show what we're returning to Ansible (level 6 for long-term debugging of encoding issues)
             stdout_bytes = to_bytes(stdout, errors="surrogate_or_strict")
             stderr_bytes = to_bytes(stderr, errors="surrogate_or_strict")
-            self.verbosity_display(6, f"EXEC: Returning stdout (str): {repr(stdout[:200])}")
+            self.verbosity_display(6, f"EXEC: Returning stdout (str): {stdout[:200]!r}")
             self.verbosity_display(6, f"EXEC: Returning stdout (bytes): {stdout_bytes[:200]}")
-            self.verbosity_display(6, f"EXEC: Returning stderr (str): {repr(stderr[:200])}")
+            self.verbosity_display(6, f"EXEC: Returning stderr (str): {stderr[:200]!r}")
             self.verbosity_display(6, f"EXEC: Returning stderr (bytes): {stderr_bytes[:200]}")
 
             return (returncode, stdout_bytes, stderr_bytes)

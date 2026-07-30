@@ -3,17 +3,23 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import annotations
+
 import random
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from typing import ClassVar
 
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry
 
 
 class TestCloudRetry:
-    error_codes = [400, 500, 600]
-    custom_error_codes = [100, 200, 300]
+    error_codes: ClassVar = [400, 500, 600]
+    custom_error_codes: ClassVar = [100, 200, 300]
 
     class OurTestException(Exception):
         """

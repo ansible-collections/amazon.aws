@@ -175,7 +175,7 @@ PROTOCOL_NUMBERS = {"all": -1, "icmp": 1, "tcp": 6, "udp": 17, "ipv6-icmp": 58}
 
 # Utility methods
 def icmp_present(entry: List[str]) -> bool:
-    return len(entry) == 6 and entry[1] in ["icmp", "ipv6-icmp"] or entry[1] in [1, 58]
+    return (len(entry) == 6 and entry[1] in ["icmp", "ipv6-icmp"]) or entry[1] in [1, 58]
 
 
 def subnets_changed(client, module: AnsibleAWSModule, nacl_id: str, subnets_ids: List[str]) -> bool:

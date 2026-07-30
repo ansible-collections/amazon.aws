@@ -54,7 +54,7 @@ options:
   headers:
     description:
       - Custom headers to use when O(mode=put) as a dictionary of key value pairs.
-      - Keys that match supported S3 object arguments are promoted to top‑level ExtraArgs. Supported keys include
+      - Keys that match supported S3 object arguments are promoted to top-level ExtraArgs. Supported keys include
         C(ContentType), C(Content-Disposition), C(ContentEncoding), C(ContentLanguage), C(CacheControl), C(Expires),
         C(ACL), C(GrantFullControl), C(GrantRead), C(GrantReadACP), C(GrantWriteACP), C(StorageClass),
         C(ServerSideEncryption), C(SSECustomerAlgorithm), C(SSECustomerKey), C(SSECustomerKeyMD5), C(SSEKMSKeyId),
@@ -79,7 +79,7 @@ options:
   metadata:
     description:
       - Metadata to use when O(mode=copy), O(mode=create) or O(mode=put) as a dictionary of key value pairs.
-      - Keys that match supported S3 object arguments are promoted to top‑level ExtraArgs (for example C(ContentType)).
+      - Keys that match supported S3 object arguments are promoted to top-level ExtraArgs (for example C(ContentType)).
         Remaining keys are applied as user metadata under C(Metadata).
     type: dict
   mode:
@@ -441,9 +441,7 @@ import os
 import typing
 
 if typing.TYPE_CHECKING:
-    from typing import Any
     from typing import Dict
-    from typing import List
     from typing import Optional
     from typing import Tuple
 
@@ -1164,7 +1162,7 @@ def copy_object_to_bucket(
 
         # We can't set the ACLs & tags during the copy, update them afterwards
         put_object_acl(module, s3, bucket, obj)
-        tags, tags_updated = ensure_s3_object_tags(
+        tags, _tags_updated = ensure_s3_object_tags(
             s3, bucket, obj, module.params.get("tags"), module.params.get("purge_tags")
         )
 

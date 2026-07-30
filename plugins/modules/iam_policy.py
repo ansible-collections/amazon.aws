@@ -243,7 +243,7 @@ class Policy:
             if self.policy_json is not None:
                 return self.get_policy_from_json()
         except json.JSONDecodeError as e:
-            raise PolicyError(f"Failed to decode the policy as valid JSON: {str(e)}")
+            raise PolicyError(f"Failed to decode the policy as valid JSON: {e!s}")
         return None
 
     def get_policy_from_json(self):

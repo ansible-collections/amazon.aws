@@ -141,7 +141,7 @@ def test_upload_content_headers_promoted_to_extraargs():
     # With in-memory content we now use put_object to ensure headers are honored
     assert s3.put_object.call_count == 1
     # Extract kwargs for verification
-    call_args, kwargs = s3.put_object.call_args
+    _call_args, kwargs = s3.put_object.call_args
     # With put_object, promoted headers are top-level kwargs, not under ExtraArgs
     assert kwargs["ContentType"] == headers["ContentType"]
     assert kwargs["ContentDisposition"] == headers["ContentDisposition"]
@@ -171,7 +171,7 @@ def test_upload_src_headers_promoted_to_extraargs():
     )
 
     assert s3.upload_file.call_count == 1
-    call_args, kwargs = s3.upload_file.call_args
+    _call_args, kwargs = s3.upload_file.call_args
     extra = kwargs.get("ExtraArgs")
 
     assert extra["ContentType"] == headers["ContentType"]

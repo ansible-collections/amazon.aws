@@ -32,9 +32,12 @@
 """
 This module adds helper functions for various EC2 specific services.
 
-It also includes a large number of imports for functions which historically
-lived here.  Most of these functions were not specific to EC2, they ended
-up in this module because "that's where the AWS code was" (originally).
+It also includes backwards-compatibility re-exports for functions which historically
+lived here. These re-exports are deprecated and will be removed in a future major
+release. New code should import directly from the appropriate module_utils submodule.
+
+See the developer guidelines for details:
+https://ansible-collections.github.io/amazon.aws/branch/main/dev_guidelines.html
 """
 
 import copy
@@ -45,55 +48,46 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-import ansible.module_utils.common.warnings as ansible_warnings  # pylint: disable=unused-import
-from ansible.module_utils.ansible_release import __version__
+# Deprecated backwards-compatibility re-exports
+# These imports are maintained for backwards compatibility but their use is deprecated.
+# New code should import directly from the appropriate module_utils submodule.
+# These re-exports will be removed in a future major release.
+# pylint: disable=unused-import,useless-import-alias
+import ansible.module_utils.common.warnings as ansible_warnings  # noqa: F401
+from ansible.module_utils.common.dict_transformations import _camel_to_snake as _camel_to_snake
+from ansible.module_utils.common.dict_transformations import _snake_to_camel as _snake_to_camel
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict as camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict as snake_dict_to_camel_dict
 
-# Used to live here, moved into ansible.module_utils.common.dict_transformations
-from ansible.module_utils.common.dict_transformations import _camel_to_snake  # pylint: disable=unused-import
-from ansible.module_utils.common.dict_transformations import _snake_to_camel  # pylint: disable=unused-import
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
+from .arn import is_outpost_arn as is_outposts_arn  # noqa: F401
+from .botocore import HAS_BOTO3 as HAS_BOTO3
+from .botocore import boto3_conn as boto3_conn
+from .botocore import boto3_inventory_conn as boto3_inventory_conn
+from .botocore import boto_exception as boto_exception
+from .botocore import get_aws_connection_info as get_aws_connection_info
+from .botocore import get_aws_region as get_aws_region
+from .exceptions import AnsibleAWSError as AnsibleAWSError
+from .modules import _aws_common_argument_spec as aws_common_argument_spec  # noqa: F401
+from .modules import aws_argument_spec as ec2_argument_spec  # noqa: F401
+from .policy import _py3cmp as py3cmp  # noqa: F401
+from .policy import compare_policies as compare_policies
+from .retries import AWSRetry as AWSRetry
+from .tagging import ansible_dict_to_boto3_tag_list as ansible_dict_to_boto3_tag_list
+from .tagging import boto3_tag_list_to_ansible_dict as boto3_tag_list_to_ansible_dict
+from .tagging import compare_aws_tags as compare_aws_tags
+from .transformation import ansible_dict_to_boto3_filter_list as ansible_dict_to_boto3_filter_list
+from .transformation import map_complex_type as map_complex_type
 
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
-from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
+# pylint: enable=unused-import,useless-import-alias
+
+# isort: split
+# Imports for internal use only (not re-exported)
 from .arn import validate_aws_arn
-
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
-from .botocore import HAS_BOTO3  # pylint: disable=unused-import
-from .botocore import boto3_conn  # pylint: disable=unused-import
-from .botocore import boto3_inventory_conn  # pylint: disable=unused-import
-from .botocore import boto_exception  # pylint: disable=unused-import
-from .botocore import get_aws_connection_info  # pylint: disable=unused-import
-from .botocore import get_aws_region  # pylint: disable=unused-import
 from .botocore import is_boto3_error_code
 from .botocore import paginated_query_with_retries
 from .errors import AWSErrorHandler
-
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
-from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
 from .iam import list_iam_instance_profiles
-
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
-# The names have been changed in .modules to better reflect their applicability.
-from .modules import _aws_common_argument_spec as aws_common_argument_spec  # pylint: disable=unused-import
-from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
-
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.policy
-from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
-from .policy import compare_policies  # pylint: disable=unused-import
-
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.retries
-from .retries import AWSRetry  # pylint: disable=unused-import
-
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
-from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
-from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-import
 from .tagging import boto3_tag_specifications
-from .tagging import compare_aws_tags  # pylint: disable=unused-import
-
-# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
-from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
-from .transformation import map_complex_type  # pylint: disable=unused-import
 
 try:
     import botocore
@@ -1786,9 +1780,9 @@ def normalize_ec2_vpc_dhcp_config(option_config: List[Dict[str, Any]]) -> Dict[s
         # Handle single value keys
         if config_item["Key"] == "netbios-node-type":
             if isinstance(config_item["Values"], int):
-                config_data["netbios-node-type"] = str((config_item["Values"]))
+                config_data["netbios-node-type"] = str(config_item["Values"])
             elif isinstance(config_item["Values"], list):
-                config_data["netbios-node-type"] = str((config_item["Values"][0]["Value"]))
+                config_data["netbios-node-type"] = str(config_item["Values"][0]["Value"])
         # Handle actual lists of values
         for option in ["domain-name", "domain-name-servers", "ntp-servers", "netbios-name-servers"]:
             if config_item["Key"] == option:
@@ -1896,3 +1890,8 @@ def modify_ec2_dedicated_hosts(
     if isinstance(host_id, str):
         host_ids = [host_id]
     return client.modify_hosts(HostIds=host_ids, **params)
+
+
+# Alias for backwards compatibility (deprecated)
+# Note: map_complex_type is imported at the top for re-export
+map_complex_type = ansible_dict_to_boto3_filter_list

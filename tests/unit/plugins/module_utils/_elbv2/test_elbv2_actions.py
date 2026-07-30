@@ -6,7 +6,10 @@
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils import elbv2
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.actions import _append_use_existing_client_secret
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.actions import _prune_forward_config
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.actions import _prune_secret
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.actions import _simple_forward_config_arn
 
 example_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/nlb-123456789abc/abcdef0123456789"
 example_arn2 = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/nlb-0123456789ab/0123456789abcdef"
@@ -193,16 +196,16 @@ oidc_actions = [
 
 # Original tests
 def test__prune_secret():
-    assert elbv2._prune_secret(one_action[0]) == one_action[0]
+    assert _prune_secret(one_action[0]) == one_action[0]
 
 
 def test__prune_forward_config():
     expectation = {"TargetGroupArn": example_arn, "Type": "forward"}
-    pruned_config = elbv2._prune_forward_config(one_action[0])
+    pruned_config = _prune_forward_config(one_action[0])
     assert pruned_config == expectation
 
     # https://github.com/ansible-collections/community.aws/issues/1089
-    pruned_config = elbv2._prune_forward_config(one_action_two_tg[0])
+    pruned_config = _prune_forward_config(one_action_two_tg[0])
     assert pruned_config == one_action_two_tg[0]
 
 
@@ -211,25 +214,25 @@ def test__prune_forward_config():
 
 @pytest.mark.parametrize("action", simple_actions)
 def test__prune_forward_config_simplifiable_actions(action):
-    pruned_config = elbv2._prune_forward_config(action)
+    pruned_config = _prune_forward_config(action)
     assert pruned_config == simplified_action
 
 
 @pytest.mark.parametrize("action", complex_actions)
 def test__prune_forward_config_non_simplifiable_actions(action):
-    pruned_config = elbv2._prune_forward_config(action)
+    pruned_config = _prune_forward_config(action)
     assert pruned_config == action
 
 
 @pytest.mark.parametrize("action", oidc_actions)
 def test__prune_secret_simplifiable_actions(action):
-    pruned_config = elbv2._prune_secret(action)
+    pruned_config = _prune_secret(action)
     assert pruned_config == simplified_oidc_action
 
 
 @pytest.mark.parametrize("action", complex_actions)
 def test__prune_secret_non_simplifiable_actions(action):
-    pruned_config = elbv2._prune_secret(action)
+    pruned_config = _prune_secret(action)
     assert pruned_config == action
 
 
@@ -266,7 +269,7 @@ def test__prune_secret_non_simplifiable_actions(action):
     ],
 )
 def test__simple_forward_config_arn(config, parent_arn, expected):
-    assert elbv2._simple_forward_config_arn(config, parent_arn) == expected
+    assert _simple_forward_config_arn(config, parent_arn) == expected
 
 
 @pytest.mark.parametrize(
@@ -280,4 +283,4 @@ def test__simple_forward_config_arn(config, parent_arn, expected):
     ],
 )
 def test__append_use_existing_client_secret(action, expected):
-    assert elbv2._append_use_existing_client_secret(action) == expected
+    assert _append_use_existing_client_secret(action) == expected

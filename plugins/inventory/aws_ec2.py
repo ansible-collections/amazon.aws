@@ -339,6 +339,7 @@ from collections import defaultdict
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Set
 
 from ansible.errors import AnsibleError
@@ -496,8 +497,8 @@ def _get_tag_hostname(preference: str, instance: Dict[str, Any]) -> Any:
 def _prepare_host_vars(
     original_host_vars: Dict[str, Any],
     availability_zone_ids: Dict[str, str],
-    hostvars_prefix: str = None,
-    hostvars_suffix: str = None,
+    hostvars_prefix: Optional[str] = None,
+    hostvars_suffix: Optional[str] = None,
     use_contrib_script_compatible_ec2_tag_keys: bool = False,
 ) -> Dict[str, Any]:
     """
@@ -756,9 +757,9 @@ class InventoryModule(AWSInventoryBase):
         else:
             hostname = _get_boto_attr_chain(preference, instance)
         if is_template:
-            template_var = "{{'%s'|%s}}" % (hostname, jinja2_filter)
+            template_var = "{{'%s'|%s}}" % (hostname, jinja2_filter)  # noqa: UP031
             if isinstance(hostname, list):
-                template_var = "{{%s|%s}}" % (hostname, jinja2_filter)
+                template_var = "{{%s|%s}}" % (hostname, jinja2_filter)  # noqa: UP031
             if trust_as_template:
                 template_var = trust_as_template(template_var)
             hostname = self.templar.template(variable=template_var)
@@ -940,7 +941,7 @@ class InventoryModule(AWSInventoryBase):
         route53_hostnames = self.get_option("route53_hostnames")
         result = True
         if route53_hostnames:
-            result = any((hostname.endswith(name) for name in route53_hostnames))
+            result = any(hostname.endswith(name) for name in route53_hostnames)
         return result
 
     def _get_instance_route53_hostnames(self, instance: Dict[str, Any]) -> List[str]:
@@ -1070,7 +1071,7 @@ class InventoryModule(AWSInventoryBase):
     def build_include_filters(self):
         result = self.get_option("include_filters")
         if self.get_option("filters"):
-            result = [self.get_option("filters")] + result
+            result = [self.get_option("filters"), *result]
         return result or [{}]
 
     def parse(self, inventory, loader, path, cache=True):

@@ -252,7 +252,7 @@ def attach_vgw_to_vpc(client, module: AnsibleAWSModule, vpn_gateway_id: str) -> 
     response = None
     vpc_id = module.params.get("vpc_id")
     response = attach_vpn_gateway(client, vpc_id, vpn_gateway_id)
-    status_achieved, vgw = wait_for_status(client, module, vpn_gateway_id, "attached")
+    status_achieved, _vgw = wait_for_status(client, module, vpn_gateway_id, "attached")
 
     if not status_achieved:
         module.fail_json(msg="Error waiting for VPC to attach to VGW - please check the AWS console")
@@ -268,7 +268,7 @@ def detach_vgw(client, module: AnsibleAWSModule, vpn_gateway_id: str, vpc_id: Op
 
     response = detach_vpn_gateway(client, vpc_id, vpn_gateway_id)
 
-    status_achieved, vgw = wait_for_status(client, module, vpn_gateway_id, "detached")
+    status_achieved, _vgw = wait_for_status(client, module, vpn_gateway_id, "detached")
     if not status_achieved:
         module.fail_json(msg="Error waiting for  vpc to detach from vgw - please check the AWS console")
 

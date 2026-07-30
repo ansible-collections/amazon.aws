@@ -10,7 +10,10 @@ from unittest.mock import patch
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils import elbv2
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import ELBListeners
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _compare_listener
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _group_listeners
+from ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners import _prepare_listeners
 
 
 def createListener(**kwargs):
@@ -58,7 +61,7 @@ def test__compare_listener_alpn_policy(current_protocol, current_alpn, new_alpn)
     if new_alpn and any((current_protocol != "TLS", not current_alpn, current_alpn and current_alpn != new_alpn)):
         result["AlpnPolicy"] = [new_alpn]
 
-    assert result == elbv2._compare_listener(current_listener, new_listener)
+    assert result == _compare_listener(current_listener, new_listener)
 
 
 @pytest.mark.parametrize(
@@ -92,7 +95,7 @@ def test__compare_listener_sslpolicy(current_protocol, new_protocol, current_ssl
         expected["Protocol"] = new_protocol
     if new_protocol in ("HTTPS", "TLS") and new_ssl and new_ssl != current_ssl:
         expected["SslPolicy"] = new_ssl
-    assert expected == elbv2._compare_listener(current_listener, new_listener)
+    assert expected == _compare_listener(current_listener, new_listener)
 
 
 @pytest.mark.parametrize(
@@ -132,7 +135,7 @@ def test__compare_listener_certificates(current_protocol, new_protocol, current_
         expected["Protocol"] = new_protocol
     if new_protocol in ("HTTPS", "TLS") and new_certificate and new_certificate != current_certificate:
         expected["Certificates"] = [{"CertificateArn": new_certificate}]
-    assert expected == elbv2._compare_listener(current_listener, new_listener)
+    assert expected == _compare_listener(current_listener, new_listener)
 
 
 @pytest.mark.parametrize(
@@ -209,7 +212,7 @@ def test__compare_listener_certificates(current_protocol, new_protocol, current_
 def test__compare_listener_default_actions(current_actions, new_actions, expected_listener):
     current_listener = createListener(default_actions=current_actions)
     new_listener = createListener(default_actions=new_actions)
-    assert expected_listener == elbv2._compare_listener(current_listener, new_listener)
+    assert expected_listener == _compare_listener(current_listener, new_listener)
 
 
 @pytest.mark.parametrize(
@@ -266,7 +269,7 @@ def test__compare_listener_default_actions(current_actions, new_actions, expecte
     ],
 )
 def test__group_listeners(current_listeners, new_listeners, expected):
-    to_add, to_modify, to_delete = elbv2._group_listeners(current_listeners, new_listeners)
+    to_add, to_modify, to_delete = _group_listeners(current_listeners, new_listeners)
     assert to_add == expected.get("add", [])
     assert to_modify == expected.get("modify", [])
     assert to_delete == expected.get("delete", [])
@@ -275,7 +278,7 @@ def test__group_listeners(current_listeners, new_listeners, expected):
 def test__prepare_listeners__no_listeners():
     module = MagicMock()
     connection = MagicMock()
-    assert elbv2._prepare_listeners(connection, module, None) == []
+    assert _prepare_listeners(connection, module, None) == []
 
 
 def test__prepare_listeners__scrub_none_parameters():
@@ -290,7 +293,7 @@ def test__prepare_listeners__scrub_none_parameters():
             "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}],
         }
     ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
+    assert _prepare_listeners(connection, module, listeners) == [
         {"Port": 123, "Protocol": "TCP", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
     ]
 
@@ -301,12 +304,12 @@ def test__prepare_listeners__alpn_policy():
     listeners = [
         {"Port": 123, "AlpnPolicy": "MyPolicy1", "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
     ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
+    assert _prepare_listeners(connection, module, listeners) == [
         {"Port": 123, "AlpnPolicy": ["MyPolicy1"], "DefaultActions": [{"TargetGroupArn": "arn1", "Type": "forward"}]}
     ]
 
 
-@patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners.convert_tg_name_to_arn")
+@patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.api.get_target_group_arn_by_name")
 def test__prepare_listeners__target_group_name_unique_name(m_convert_tg_name_to_arn):
     module = MagicMock()
     connection = MagicMock()
@@ -320,7 +323,7 @@ def test__prepare_listeners__target_group_name_unique_name(m_convert_tg_name_to_
             ]
         }
     ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
+    assert _prepare_listeners(connection, module, listeners) == [
         {
             "DefaultActions": [
                 {"TargetGroupArn": m_convert_tg_name_to_arn.return_value, "Type": "forward"},
@@ -328,10 +331,10 @@ def test__prepare_listeners__target_group_name_unique_name(m_convert_tg_name_to_
             ]
         }
     ]
-    m_convert_tg_name_to_arn.assert_called_once_with(connection, module, target_group_name)
+    m_convert_tg_name_to_arn.assert_called_once_with(connection, target_group_name)
 
 
-@patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.listeners.convert_tg_name_to_arn")
+@patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.api.get_target_group_arn_by_name")
 def test__prepare_listeners__target_group_name_multiple_name(m_convert_tg_name_to_arn):
     module = MagicMock()
     connection = MagicMock()
@@ -341,7 +344,7 @@ def test__prepare_listeners__target_group_name_multiple_name(m_convert_tg_name_t
         tg_name1: MagicMock(),
         tg_name2: MagicMock(),
     }
-    m_convert_tg_name_to_arn.side_effect = lambda conn, module, name: arn_values.get(name)
+    m_convert_tg_name_to_arn.side_effect = lambda conn, name: arn_values.get(name)
 
     listeners = [
         {
@@ -351,7 +354,7 @@ def test__prepare_listeners__target_group_name_multiple_name(m_convert_tg_name_t
             ]
         }
     ]
-    assert elbv2._prepare_listeners(connection, module, listeners) == [
+    assert _prepare_listeners(connection, module, listeners) == [
         {
             "DefaultActions": [
                 {"TargetGroupArn": arn_values.get(tg_name1), "Type": "forward"},
@@ -359,7 +362,7 @@ def test__prepare_listeners__target_group_name_multiple_name(m_convert_tg_name_t
             ]
         }
     ]
-    m_convert_tg_name_to_arn.assert_has_calls([call(connection, module, tg_name1), call(connection, module, tg_name2)])
+    m_convert_tg_name_to_arn.assert_has_calls([call(connection, tg_name1), call(connection, tg_name2)])
 
 
 @patch("ansible_collections.amazon.aws.plugins.module_utils._elbv2.api.describe_listeners")
@@ -378,7 +381,7 @@ def testELBListenersInit(
     m__prepare_listeners.return_value = MagicMock()
     m_describe_listeners.return_value = MagicMock()
 
-    elb_listener = elbv2.ELBListeners(connection, module, elb_arn)
+    elb_listener = ELBListeners(connection, module, elb_arn)
 
     m__prepare_listeners.assert_called_once_with(connection, module, listeners)
     m_describe_listeners.assert_called_once_with(connection, load_balancer_arn=elb_arn)

@@ -3,18 +3,12 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-import sys
 from unittest.mock import Mock
 from unittest.mock import sentinel
 
 import pytest
 
 import ansible_collections.amazon.aws.plugins.module_utils.cloud as cloud_utils
-
-if sys.version_info < (3, 8):
-    pytest.skip(
-        "accessing call_args.kwargs by keyword (instead of index) was introduced in Python 3.8", allow_module_level=True
-    )
 
 
 class ExceptionA(Exception):

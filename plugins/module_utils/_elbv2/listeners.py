@@ -24,7 +24,6 @@ if typing.TYPE_CHECKING:
 
     from ..modules import AnsibleAWSModule
 
-from ..elb_utils import convert_tg_name_to_arn
 from ..transformation import scrub_none_parameters
 from . import api as _api
 from . import rules as _rules
@@ -230,7 +229,10 @@ def _prepare_listeners(
             tg_name = action.pop("TargetGroupName", None)
             if tg_name:
                 if tg_name not in target_group_mapping:
-                    target_group_mapping[tg_name] = convert_tg_name_to_arn(connection, module, tg_name)
+                    try:
+                        target_group_mapping[tg_name] = _api.get_target_group_arn_by_name(connection, tg_name)
+                    except AnsibleELBv2Error as e:
+                        module.fail_json_aws(e)
                 action["TargetGroupArn"] = target_group_mapping[tg_name]
         updated_listeners.append(listener)
     return updated_listeners

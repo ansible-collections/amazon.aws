@@ -564,7 +564,7 @@ def _code_args(module, current_config):
 
     try:
         code_kwargs.update(_zip_args(zip_file, current_config, bool(code_kwargs)))
-    except IOError as e:
+    except OSError as e:
         module.fail_json(msg=str(e), exception=traceback.format_exc())
 
     code_kwargs.update(_s3_args(s3_bucket, s3_key, s3_object_version))
@@ -762,7 +762,7 @@ def main():
         if layers:
             # compare two lists to see if the target layers are equal to the current
             current_layers = current_config.get("Layers", [])
-            if Counter(layers) != Counter((f["Arn"] for f in current_layers)):
+            if Counter(layers) != Counter(f["Arn"] for f in current_layers):
                 func_kwargs.update({"Layers": layers})
 
         # Upload new configuration if configuration has changed

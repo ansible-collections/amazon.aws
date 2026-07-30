@@ -106,13 +106,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 
-class IAMConnection(object):
+class IAMConnection:
     def __init__(self, module):
         try:
             self.connection = module.resource("iam")
             self.module = module
         except Exception as e:
-            module.fail_json(msg=f"Failed to connect to AWS: {str(e)}")
+            module.fail_json(msg=f"Failed to connect to AWS: {e!s}")
 
     def policy_to_dict(self, policy):
         policy_attributes = [

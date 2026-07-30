@@ -2339,7 +2339,7 @@ def modify_ec2_instance_attribute(client, module: AnsibleAWSModule, state: str, 
                 else:
                     modify_instance_attribute(client, instance_id=instance_id, **c)
             except AnsibleEC2Error as e:
-                module.fail_json_aws(e, msg=f"Could not apply change {str(c)} to existing instance.")
+                module.fail_json_aws(e, msg=f"Could not apply change {c!s} to existing instance.")
 
 
 def handle_existing(

@@ -31,7 +31,7 @@ class TestGetUserAgentString:
             collection_version=common.AMAZON_AWS_COLLECTION_VERSION,
         )
 
-    @patch("ansible_collections.amazon.aws.plugins.module_utils.botocore.__version__", "2.15.0")
+    @patch("ansible_collections.amazon.aws.plugins.module_utils.botocore._ansible_release.__version__", "2.15.0")
     def test_user_agent_with_ansible_version(self):
         """Test user agent string includes Ansible version."""
         user_agent = _get_user_agent_string()
@@ -133,7 +133,7 @@ class TestGetUserAgentString:
         assert parts[1].startswith("Ansible/")
         assert parts[2] == "example.test/2.3.4"
 
-    @patch("ansible_collections.amazon.aws.plugins.module_utils.botocore.__version__", "2.16.1")
+    @patch("ansible_collections.amazon.aws.plugins.module_utils.botocore._ansible_release.__version__", "2.16.1")
     def test_user_agent_real_world_scenario(self):
         """Test user agent string in a real-world scenario."""
         from ansible_collections.amazon.aws.plugins.module_utils import common

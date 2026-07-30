@@ -617,9 +617,9 @@ def get_hosted_zone_nameservers(route53, zone_id):
     hosted_zone_name = route53.get_hosted_zone(aws_retry=True, Id=zone_id)["HostedZone"]["Name"]
     resource_records_sets = _list_record_sets(route53, HostedZoneId=zone_id)
 
-    nameservers_records = list(
+    nameservers_records = next(
         filter(lambda record: record["Name"] == hosted_zone_name and record["Type"] == "NS", resource_records_sets)
-    )[0]["ResourceRecords"]
+    )["ResourceRecords"]
 
     return [ns_record["Value"] for ns_record in nameservers_records]
 

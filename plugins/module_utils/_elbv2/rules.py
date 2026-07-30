@@ -24,10 +24,10 @@ if typing.TYPE_CHECKING:
 
     from ..modules import AnsibleAWSModule
 
-from ..elb_utils import convert_tg_name_to_arn
 from . import actions as _actions
 from . import api as _api
 from . import transformations as _transformations
+from .common import AnsibleELBv2Error
 
 
 def _normalize_condition_values(condition: Dict[str, Any]) -> Dict[str, Any]:
@@ -360,11 +360,14 @@ class ELBListenerRules:
     ) -> None:
         self.connection = connection
         self.module = module
-        self.rules = self._ensure_rules_action_has_arn(listener_rules)
-        self.changed = False
+        try:
+            self.rules = self._ensure_rules_action_has_arn(listener_rules)
+            self.changed = False
 
-        self.listener_arn = listener_arn
-        self.current_rules = _api.describe_rules(self.connection, ListenerArn=listener_arn)
+            self.listener_arn = listener_arn
+            self.current_rules = _api.describe_rules(self.connection, ListenerArn=listener_arn)
+        except AnsibleELBv2Error as e:
+            self.module.fail_json_aws(e)
 
     def _ensure_rules_action_has_arn(self, rules: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -380,8 +383,8 @@ class ELBListenerRules:
             fixed_actions = []
             for action in rule["Actions"]:
                 if "TargetGroupName" in action:
-                    action["TargetGroupArn"] = convert_tg_name_to_arn(
-                        self.connection, self.module, action["TargetGroupName"]
+                    action["TargetGroupArn"] = _api.get_target_group_arn_by_name(
+                        self.connection, action["TargetGroupName"]
                     )
                     del action["TargetGroupName"]
                 fixed_actions.append(action)

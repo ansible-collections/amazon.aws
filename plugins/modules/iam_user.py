@@ -571,7 +571,7 @@ def create_or_update_user(connection, module):
         user.update(camel_dict_to_snake_dict(policies))
     except AnsibleIAMError as e:
         module.warn(
-            f"Failed to list attached policies - {str(e.exception)}",
+            f"Failed to list attached policies - {e.exception!s}",
         )
         pass
 

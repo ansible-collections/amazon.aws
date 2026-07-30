@@ -10,7 +10,7 @@ except ImportError:
     HAS_JQ = False
 
 
-class FilterModule(object):
+class FilterModule:
     def filters(self):
         return {"aws_jq": self.aws_jq}
 
@@ -24,4 +24,4 @@ class FilterModule(object):
         try:
             return jq.compile(query).input(json.loads(data)).all()
         except Exception as e:
-            raise AnsibleFilterError(f"jq query failed: {str(e)} - Query: {query}")
+            raise AnsibleFilterError(f"jq query failed: {e!s} - Query: {query}")

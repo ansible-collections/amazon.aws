@@ -721,7 +721,7 @@ def rule_from_group_permission(perm):
                 target_type,
                 r.get("Description"),
             )
-    if "UserIdGroupPairs" in perm and perm["UserIdGroupPairs"]:
+    if perm.get("UserIdGroupPairs"):
         for pair in perm["UserIdGroupPairs"]:
             target = (
                 pair.get("UserId", current_account_id),

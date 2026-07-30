@@ -19,7 +19,6 @@ if typing.TYPE_CHECKING:
     from typing import Callable
     from typing import Dict
     from typing import Iterator
-    from typing import NoReturn
     from typing import Optional
 
     verbosity_display_type = Callable[[int, str], None]
@@ -69,7 +68,7 @@ class ProcessManager:
         if isinstance(command, str):
             command = command.encode("utf-8")
         self.verbosity_display(5, f"stdin_write: Writing {len(command)} bytes")
-        self.verbosity_display(5, f"stdin_write: First 200 bytes: {repr(command[:200])}")
+        self.verbosity_display(5, f"stdin_write: First 200 bytes: {command[:200]!r}")
         self._session.stdin.write(command)
         self._session.stdin.flush()
         self.verbosity_display(5, "stdin_write: Flushed")
@@ -85,7 +84,7 @@ class ProcessManager:
         self.verbosity_display(6, f"stdout_readline: Raw bytes: {result[:200]}")
         # Decode as UTF-8 with surrogate escapes to handle any encoding issues
         decoded = to_text(result, encoding="utf-8", errors="surrogate_or_strict")
-        self.verbosity_display(6, f"stdout_readline: Decoded string: {repr(decoded[:200])}")
+        self.verbosity_display(6, f"stdout_readline: Decoded string: {decoded[:200]!r}")
         return decoded
 
     def flush_stderr(self) -> str:
@@ -111,7 +110,7 @@ class ProcessManager:
             self.verbosity_display(5, "FLUSH_STDERR: About to read stderr line")
             line = to_text(self._session.stderr.readline(), encoding="utf-8", errors="surrogate_or_strict")
             self.verbosity_display(5, f"FLUSH_STDERR: stderr readline returned {len(line)} chars")
-            self.verbosity_display(4, f"stderr line: {repr(line)}")
+            self.verbosity_display(4, f"stderr line: {line!r}")
             self._stderr_accumulator = self._stderr_accumulator + line
             self.verbosity_display(5, "FLUSH_STDERR: Checking session.poll() status")
             poll_result = self._session.poll()
@@ -171,7 +170,7 @@ class ProcessManager:
                     4, f"{label} WAIT_FOR_MATCH: MATCHED! Found string in stdout after {elapsed:.2f}s"
                 )
                 return True
-            self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: No match yet, last 100 chars: {repr(stdout[-100:])}")
+            self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: No match yet, last 100 chars: {stdout[-100:]!r}")
             return False
 
         # Callable match - try both raw and filtered
@@ -181,8 +180,8 @@ class ProcessManager:
             return True
 
         self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: No pattern match yet")
-        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (raw): {repr(stdout[-100:])}")
-        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (filtered): {repr(stdout_filtered[-100:])}")
+        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (raw): {stdout[-100:]!r}")
+        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Last 100 chars (filtered): {stdout_filtered[-100:]!r}")
         return False
 
     def _log_progress_if_needed(
@@ -222,7 +221,7 @@ class ProcessManager:
         """
         stderr_output = self.flush_stderr()
         if stderr_output:
-            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stderr while waiting: {repr(stderr_output)}")
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stderr while waiting: {stderr_output!r}")
 
     def _log_match_start(self, label: str, cmd: str | bytes, match: str | Callable[[str], bool]) -> None:
         """Log the start of waiting for a match.
@@ -233,7 +232,7 @@ class ProcessManager:
         """
         self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Starting to wait for pattern")
         if isinstance(match, str):
-            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for string: {repr(match)}")
+            self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for string: {match!r}")
         else:
             self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Looking for pattern match")
         self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: Command = {to_text(cmd)}")
@@ -295,7 +294,7 @@ class ProcessManager:
             if result:
                 line = to_text(self.stdout_readline())
                 line_count += 1
-                self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stdout line {line_count}: {repr(line)}")
+                self.verbosity_display(4, f"{label} WAIT_FOR_MATCH: stdout line {line_count}: {line!r}")
                 stdout += line
 
                 elapsed = time.time() - wait_start
@@ -309,7 +308,7 @@ class ProcessManager:
             4,
             f"{label} WAIT_FOR_MATCH: Complete after {total_duration:.2f}s - {line_count} lines, {poll_count} polls, {len(stdout)} bytes collected",
         )
-        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Full stdout collected: {repr(stdout)}")
+        self.verbosity_display(5, f"{label} WAIT_FOR_MATCH: Full stdout collected: {stdout!r}")
 
         self._check_and_warn_command_echo(stdout, line_count, is_windows, label)
 
@@ -364,7 +363,7 @@ class SSMSessionManager:
         document_name: Optional[str],
         region_name: Optional[str],
         profile_name: str,
-        parameters: Dict[str, Any] = None,
+        parameters: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Start SSM Session manager session and eventually prepare terminal"""
 

@@ -244,7 +244,7 @@ def sanitize_filters_to_boto3_filter_list(
     """
     sanitized_filters = deepcopy(filters)
     for k, v in filters.items():
-        if ignore_keys and any((k.startswith(x) for x in ignore_keys)):
+        if ignore_keys and any(k.startswith(x) for x in ignore_keys):
             continue
         if "_" in k:
             sanitized_filters[k.replace("_", "-")] = v

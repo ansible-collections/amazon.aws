@@ -82,7 +82,7 @@ class TestProcessManager:
         process_manager.stdin_write("test with émojis 🎉")
 
         # Should encode Unicode to UTF-8
-        expected = "test with émojis 🎉".encode("utf-8")
+        expected = "test with émojis 🎉".encode()
         process_manager._session.stdin.write.assert_called_once_with(expected)
 
     def test_stdout_read_text(self, process_manager):

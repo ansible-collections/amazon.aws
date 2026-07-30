@@ -713,7 +713,7 @@ def main():
     stack_params["StackName"] = module.params["stack_name"]
 
     if module.params["template"] is not None:
-        with open(module.params["template"], "r") as template_fh:
+        with open(module.params["template"]) as template_fh:
             stack_params["TemplateBody"] = template_fh.read()
     elif module.params["template_body"] is not None:
         stack_params["TemplateBody"] = module.params["template_body"]
@@ -733,7 +733,7 @@ def main():
     ):
         stack_params["StackPolicyBody"] = module.params["stack_policy_body"]
     elif module.params["stack_policy"] is not None and not module.check_mode and not module.params["create_changeset"]:
-        with open(module.params["stack_policy"], "r") as stack_policy_fh:
+        with open(module.params["stack_policy"]) as stack_policy_fh:
             stack_params["StackPolicyBody"] = stack_policy_fh.read()
 
     template_parameters = module.params["template_parameters"]
