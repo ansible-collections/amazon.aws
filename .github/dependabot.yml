@@ -1,0 +1,27 @@
+---
+# Dependabot configuration for GitHub Actions updates
+# See https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Monitor GitHub Actions for version updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    # Group all GitHub Actions updates into a single PR to reduce noise
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    # Keep commit messages conventional and concise
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    # Limit number of open PRs
+    open-pull-requests-limit: 5
+    # Add labels for easy identification
+    labels:
+      - "dependencies"
+      - "github_actions"

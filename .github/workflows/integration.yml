@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Retrieve pull request base ref
         id: retrieve-pr-info
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source collection (on issue comment)
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
@@ -56,14 +56,14 @@ jobs:
         if: ${{ github.event_name == 'issue_comment' }}
 
       - name: Checkout the source collection (on other triggering method)
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
         if: ${{ github.event_name != 'issue_comment' }}
 
       - name: Checkout community.aws collection
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           repository: ansible-collections/community.aws
           path: "${{ env.community_dir }}"
@@ -100,7 +100,7 @@ jobs:
     name: "${{ matrix.job-id }}"
     steps:
       - name: Checkout the source collection (on issue comment)
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
@@ -108,14 +108,14 @@ jobs:
         if: ${{ github.event_name == 'issue_comment' }}
 
       - name: Checkout the source collection (on other triggering method)
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
         if: ${{ github.event_name != 'issue_comment' }}
 
       - name: Checkout community.aws collection
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           repository: ansible-collections/community.aws
           path: "${{ env.community_dir }}"
