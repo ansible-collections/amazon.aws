@@ -771,7 +771,6 @@ vpc_security_groups:
 from typing import Any
 from typing import Dict
 from typing import Optional
-from typing import Tuple
 
 try:
     from botocore.exceptions import BotoCoreError
@@ -791,7 +790,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_c
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import wait_for_cluster_status
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
 
 def get_add_role_options(
