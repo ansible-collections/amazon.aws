@@ -224,7 +224,7 @@ class TestS3ClientManager:
                     "put_object", bucket_name, s3_path, "PUT", extra_args=encryption_args
                 )
             elif method == "put":
-                m_generate_encryption_settings.assert_not_called()
+                m_generate_encryption_settings.assert_called_once_with(bucket_sse_mode, bucket_sse_kms_key_id)
                 if is_windows:
                     assert (
                         "$ErrorActionPreference = 'Stop' ; "
@@ -234,7 +234,7 @@ class TestS3ClientManager:
                     ) == test_command_generation
                 else:
                     assert "curl -o 'test/out/path' 'https://test-url';touch 'test/out/path'" == test_command_generation
-                assert put_args is None
+                assert put_args == encryption_args
                 s3_client_manager.get_url.assert_called_once_with("get_object", bucket_name, s3_path, "GET")
 
     def test_get_url_no_extra_args(self):
