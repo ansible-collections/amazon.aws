@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Retrieve pull request base ref
         id: retrieve-pr-info
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source collection (on issue comment)
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
@@ -56,14 +56,14 @@ jobs:
         if: ${{ github.event_name == 'issue_comment' }}
 
       - name: Checkout the source collection (on other triggering method)
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
         if: ${{ github.event_name != 'issue_comment' }}
 
       - name: Checkout community.aws collection
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           repository: ansible-collections/community.aws
           path: "${{ env.community_dir }}"
@@ -100,7 +100,7 @@ jobs:
     name: "${{ matrix.job-id }}"
     steps:
       - name: Checkout the source collection (on issue comment)
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
@@ -108,14 +108,14 @@ jobs:
         if: ${{ github.event_name == 'issue_comment' }}
 
       - name: Checkout the source collection (on other triggering method)
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           path: "${{ env.amazon_dir }}"
           fetch-depth: 0
         if: ${{ github.event_name != 'issue_comment' }}
 
       - name: Checkout community.aws collection
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           repository: ansible-collections/community.aws
           path: "${{ env.community_dir }}"
@@ -143,7 +143,7 @@ jobs:
       - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
 
       - name: Run integration tests
-        uses: ansible-community/ansible-test-gh-action@d3a8ec7a59694e25e210fcd44738910149537f0e
+        uses: ansible-community/ansible-test-gh-action@6ded727edb598e670ac056a8e680ca4050bac0a3
         with:
           ansible-core-version: ${{ env.ansible_version }}
           origin-python-version: ${{ env.python_version }}
