@@ -908,7 +908,6 @@ vpc_security_groups:
       sample: sg-12345678
 """
 
-from time import sleep
 from typing import Any
 from typing import Dict
 from typing import List
@@ -917,7 +916,6 @@ from typing import Optional
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.text.converters import to_text
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
@@ -1508,15 +1506,12 @@ def promote_replication_instance(
         # 'StatusInfos' only exists when the instance is a read replica
         # See https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/describe-db-instances.html
         if bool(instance.get("StatusInfos")):
-            try:
-                _result, changed = call_method(
-                    client,
-                    module,
-                    method_name="promote_read_replica",
-                    parameters={"DBInstanceIdentifier": instance["DBInstanceIdentifier"]},
-                )
-            except is_boto3_error_message("DB Instance is not a read replica"):
-                pass
+            _result, changed = call_method(
+                client,
+                module,
+                method_name="promote_read_replica",
+                parameters={"DBInstanceIdentifier": instance["DBInstanceIdentifier"]},
+            )
     return changed
 
 
@@ -1818,12 +1813,6 @@ def main():
 
         if changed:
             instance = get_instance(client, module, instance_id)
-            if state != "absent" and (instance or not module.check_mode):
-                for _wait_attempt in range(0, 10):
-                    instance = get_instance(client, module, instance_id)
-                    if instance:
-                        break
-                    sleep(5)
 
         if state == "absent" and changed and not module.params["skip_final_snapshot"]:
             snapshot_id = module.params["final_db_snapshot_identifier"]
