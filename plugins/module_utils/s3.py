@@ -48,6 +48,7 @@ from ._s3 import common as _common
 from ._s3 import transformations as _transformations
 from ._s3 import waiters as _waiters
 
+# Re-exported for public use
 S3ErrorHandler = _common.S3ErrorHandler
 
 AnsibleS3Error = _common.AnsibleS3Error

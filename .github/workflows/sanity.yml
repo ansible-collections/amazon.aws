@@ -1,0 +1,43 @@
+# Ansible sanity testing with ansible-test-gh-action
+
+---
+name: sanity
+
+on:
+  workflow_call:
+    inputs:
+      ansible-core-versions:
+        description: 'JSON array of ansible-core versions to test'
+        required: false
+        type: string
+        default: '["milestone", "devel"]'
+      python-versions:
+        description: 'JSON array of Python versions to test'
+        required: false
+        type: string
+        default: '["3.14"]'
+      matrix-exclude:
+        description: 'JSON array of matrix exclusions'
+        required: false
+        type: string
+        default: '[]'
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-core-version: ${{ fromJson(inputs.ansible-core-versions) }}
+        python-version: ${{ fromJson(inputs.python-versions) }}
+        exclude: ${{ fromJson(inputs.matrix-exclude) }}
+    steps:
+      - name: Perform sanity testing
+        id: ansible-test
+        uses: tremble/ansible-test-gh-action@946052847ee83635f3f392719d1b153fc715acd5
+        with:
+          ansible-core-version: ${{ matrix.ansible-core-version }}
+          testing-type: sanity
+          target-python-version: ${{ matrix.python-version }}
+          pull-request-change-detection: true
+          debug: true

@@ -2,7 +2,18 @@
 name: integration
 
 on:
-  - workflow_call
+  workflow_call:
+    inputs:
+      ansible-core-version:
+        description: 'Ansible-core version for integration tests'
+        required: false
+        type: string
+        default: 'milestone'
+      python-version:
+        description: 'Python version for integration tests'
+        required: false
+        type: string
+        default: '3.13'
 
 jobs:
   retrieve-pr-info:
@@ -82,8 +93,10 @@ jobs:
           base_ref: '${{ needs.retrieve-pr-info.outputs.base_ref }}'
 
   run-tests:
+    # Skip if jobs matrix is empty to avoid automatic failure
+    if: needs.splitter.outputs.jobs != '[]'
     needs:
-      - retrieve-pr-info 
+      - retrieve-pr-info
       - splitter
     permissions:
       pull-requests: read
@@ -92,8 +105,8 @@ jobs:
       community_dir: "./community_aws"
       all_targets: "${{ needs.splitter.outputs.targets }}"
       tarball_dir: "./tarballs"
-      ansible_version: milestone
-      python_version: 3.13
+      ansible_version: ${{ inputs.ansible-core-version }}
+      python_version: ${{ inputs.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -149,11 +162,17 @@ jobs:
       - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
 
       - name: Run integration tests
-        uses: ansible-community/ansible-test-gh-action@6ded727edb598e670ac056a8e680ca4050bac0a3
+        id: ansible-test
+        uses: tremble/ansible-test-gh-action@946052847ee83635f3f392719d1b153fc715acd5
         with:
           ansible-core-version: ${{ env.ansible_version }}
+          # origin-python-version: Python version for the controller (not target nodes)
+          # This differs from sanity/units which use target-python-version
           origin-python-version: ${{ env.python_version }}
           testing-type: integration
+          coverage: auto
+          pull-request-change-detection: true
+          debug: true
           collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
           collection-root: ''
           target: ${{ steps.read-targets.outputs.job_targets }}
@@ -164,5 +183,34 @@ jobs:
             community.crypto
             ansible.windows
             ${{ steps.set-path.outputs.collection_dep }}
-          pre-test-cmd: |
+          pre-test-cmd: >-
             python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
+
+      - name: Upload coverage XML files
+        if: always() && steps.ansible-test.outputs.coverage-report-files != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-integration-${{ matrix.job-id }}
+          path: ${{ steps.ansible-test.outputs.coverage-report-files }}
+          if-no-files-found: ignore
+
+  # Final check to ensure workflow reports success even when no tests run
+  integration-complete:
+    if: always()
+    needs:
+      - retrieve-pr-info
+      - splitter
+      - run-tests
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          # Success if run-tests succeeded, was skipped, or didn't run (empty matrix)
+          RESULT="${{ needs.run-tests.result }}"
+          if [[ "$RESULT" == "success" ]] || [[ "$RESULT" == "skipped" ]] || [[ -z "$RESULT" ]]; then
+            echo "Integration tests completed successfully (or no tests to run)"
+            echo "run-tests result: '${RESULT}'"
+            exit 0
+          else
+            echo "Integration tests failed with result: '${RESULT}'"
+            exit 1
+          fi
