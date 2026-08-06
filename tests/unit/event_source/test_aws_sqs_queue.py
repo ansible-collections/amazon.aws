@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
@@ -8,8 +9,19 @@ from asyncmock import AsyncMock
 pytest.importorskip("aiobotocore")
 
 from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_sqs_queue import _delete_messages
+from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_sqs_queue import _uuid_warning
 from ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_sqs_queue import main as sqs_main
 from ansible_collections.amazon.aws.tests.unit.utils.event import ListQueue
+
+VALID_UUID = "5fea7756-0ea4-451a-a703-a558b933e274"
+PATCH_SESSION = "ansible_collections.amazon.aws.extensions.eda.plugins.event_source.aws_sqs_queue.get_session"
+
+
+@pytest.fixture(autouse=True)
+def reset_uuid_warning():
+    _uuid_warning["emitted"] = False
+    yield
+    _uuid_warning["emitted"] = False
 
 
 @pytest.mark.asyncio
@@ -68,11 +80,17 @@ async def test_receive_from_sqs(eda_queue: ListQueue) -> None:
             )
         assert eda_queue.queue[0] == {
             "body": "Hello World",
-            "meta": {"MessageId": "1", "event": {"uuid": "1"}},
+            "meta": {
+                "MessageId": "1",
+                "uuid": str(uuid.uuid5(uuid.NAMESPACE_OID, "1")),
+            },
         }
         assert eda_queue.queue[1] == {
             "body": {"Say": "Hello World"},
-            "meta": {"MessageId": "2", "event": {"uuid": "2"}},
+            "meta": {
+                "MessageId": "2",
+                "uuid": str(uuid.uuid5(uuid.NAMESPACE_OID, "2")),
+            },
         }
         assert len(eda_queue.queue) == 2
 
@@ -327,6 +345,7 @@ async def test_unicode_error_handling(eda_queue: ListQueue) -> None:
         assert len(eda_queue.queue) == 1
         assert eda_queue.queue[0]["body"] is None
         assert eda_queue.queue[0]["meta"]["MessageId"] == "1"
+        assert "uuid" in eda_queue.queue[0]["meta"]
 
 
 @pytest.mark.asyncio
@@ -382,3 +401,68 @@ async def test_delete_failure_in_feedback_mode(eda_queue: ListQueue) -> None:
 
         # Verify the message was put in the queue
         assert len(eda_queue.queue) == 1
+
+
+@pytest.mark.asyncio
+async def test_valid_uuid_message_id(eda_queue: ListQueue) -> None:
+    """Valid UUID MessageId is used directly as meta.uuid; no meta.message_id added."""
+    session = AsyncMock()
+    with patch(PATCH_SESSION, return_value=session):
+        client = AsyncMock()
+        client.get_queue_url.return_value = {"QueueUrl": "sqs_url"}
+
+        message = {
+            "MessageId": VALID_UUID,
+            "Body": '{"data": "test"}',
+            "ReceiptHandle": "handle1",
+        }
+        response = {"Messages": [message]}
+        delete_response = {"Successful": [{"Id": VALID_UUID, "ReceiptHandle": "handle1"}]}
+
+        client.receive_message = AsyncMock(side_effect=[response, ValueError()])
+        client.delete_message_batch = AsyncMock(return_value=delete_response)
+        session.create_client.return_value = client
+        session.create_client.not_async = True
+
+        with pytest.raises(ValueError):
+            await sqs_main(
+                eda_queue,
+                {"region": "us-east-1", "name": "eda", "delay_seconds": 1},
+            )
+
+        assert len(eda_queue.queue) == 1
+        assert eda_queue.queue[0]["meta"]["uuid"] == VALID_UUID
+        assert eda_queue.queue[0]["meta"]["MessageId"] == VALID_UUID
+
+
+@pytest.mark.asyncio
+async def test_invalid_uuid_message_id_falls_back(eda_queue: ListQueue) -> None:
+    """Non-UUID MessageId falls back to UUID5; original preserved in meta.message_id."""
+    session = AsyncMock()
+    with patch(PATCH_SESSION, return_value=session):
+        client = AsyncMock()
+        client.get_queue_url.return_value = {"QueueUrl": "sqs_url"}
+
+        message = {
+            "MessageId": "not-a-valid-uuid",
+            "Body": '{"data": "test"}',
+            "ReceiptHandle": "handle1",
+        }
+        response = {"Messages": [message]}
+        delete_response = {"Successful": [{"Id": "not-a-valid-uuid", "ReceiptHandle": "handle1"}]}
+
+        client.receive_message = AsyncMock(side_effect=[response, ValueError()])
+        client.delete_message_batch = AsyncMock(return_value=delete_response)
+        session.create_client.return_value = client
+        session.create_client.not_async = True
+
+        with pytest.raises(ValueError):
+            await sqs_main(
+                eda_queue,
+                {"region": "us-east-1", "name": "eda", "delay_seconds": 1},
+            )
+
+        assert len(eda_queue.queue) == 1
+        expected_uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, "not-a-valid-uuid"))
+        assert eda_queue.queue[0]["meta"]["uuid"] == expected_uuid
+        assert eda_queue.queue[0]["meta"]["MessageId"] == "not-a-valid-uuid"

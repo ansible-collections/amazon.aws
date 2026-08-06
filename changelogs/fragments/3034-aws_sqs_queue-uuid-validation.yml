@@ -1,0 +1,4 @@
+bugfixes:
+  - aws_sqs_queue - Fix UUID generation in EDA event source plugin to set ``meta.uuid`` as a flat key readable by ansible-rulebook, validate the SQS ``MessageId`` as a proper RFC 4122 UUID, and fall back to a deterministic UUID5 when invalid (https://github.com/ansible-collections/amazon.aws/pull/3034).
+trivial:
+  - aws_sqs_queue - Add unit tests for UUID validation, valid UUID passthrough, and invalid UUID fallback behaviour in the EDA event source plugin (https://github.com/ansible-collections/amazon.aws/pull/3034).

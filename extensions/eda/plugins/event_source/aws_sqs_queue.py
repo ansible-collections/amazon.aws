@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import uuid
 from typing import Any
 from typing import TypedDict
 
@@ -15,6 +16,10 @@ description:
   - >
     This supports all the authentication methods supported by boto3 library:
     U(https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
+  - Each event is assigned a valid RFC 4122 UUID under meta.uuid.
+  - The SQS MessageId is used directly if it is a valid UUID (AWS guarantees this).
+  - If the MessageId is not a valid UUID, a deterministic UUID5 is generated from the
+    MessageId value. The original value remains accessible under meta.MessageId.
 options:
   access_key:
     description:
@@ -100,6 +105,39 @@ EXAMPLES = r"""
 
 
 DEFAULT_FEEDBACK_TIMEOUT = 120
+
+_uuid_warning = {"emitted": False}
+
+
+def is_valid_uuid(value: str) -> bool:
+    """Check if a string is a valid RFC 4122 UUID."""
+    try:
+        uuid.UUID(value)
+        return True  # noqa: TRY300
+    except (ValueError, AttributeError):
+        return False
+
+
+def _process_sqs_uuid(message_id: str, meta: dict[str, Any]) -> None:
+    """Assign a valid UUID to meta["uuid"].
+
+    Uses the SQS MessageId directly if it is a valid UUID (AWS guarantees this).
+    If not, generates a deterministic UUID5 from the MessageId string and
+    preserves the original under meta["message_id"] for tracking.
+    """
+    logger = logging.getLogger()
+
+    if is_valid_uuid(message_id):
+        meta["uuid"] = message_id
+    else:
+        meta["uuid"] = str(uuid.uuid5(uuid.NAMESPACE_OID, message_id))
+        if not _uuid_warning["emitted"]:
+            _uuid_warning["emitted"] = True
+            logger.warning(
+                "Provided MessageId is not a valid UUID,"
+                " using generated UUID. The original value is preserved"
+                " under event.meta.MessageId for tracking.",
+            )
 
 
 class DeleteMessageBatchRequestEntryTypeDef(TypedDict):
@@ -281,10 +319,10 @@ async def _process_message(
         ReceiptHandle=entry["ReceiptHandle"],
     )
 
-    meta = {
+    meta: dict[str, Any] = {
         "MessageId": entry["MessageId"],
-        "event": {"uuid": entry["MessageId"]},
     }
+    _process_sqs_uuid(entry["MessageId"], meta)
 
     msg_body = _parse_message_body(entry)
 
