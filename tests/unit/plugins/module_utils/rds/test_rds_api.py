@@ -18,6 +18,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOT
 from ansible_collections.amazon.aws.plugins.module_utils.rds import Boto3ClientMethod
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_engine_versions
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_option_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
@@ -612,3 +613,58 @@ class TestDescribeOptionGroups:
         result = describe_option_groups(client, OptionGroupName="nonexistent")
 
         assert result == []
+
+
+# =============================================================================
+# describe_db_engine_versions
+# =============================================================================
+
+
+class TestDescribeDbEngineVersions:
+    def test_describe_db_engine_versions_returns_list(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "DBEngineVersions": [
+                {"Engine": "aurora-postgresql", "EngineVersion": "16.1"},
+                {"Engine": "aurora-postgresql", "EngineVersion": "15.5"},
+            ]
+        }
+
+        result = describe_db_engine_versions(client, Engine="aurora-postgresql")
+
+        client.get_paginator.assert_called_with("describe_db_engine_versions")
+        paginator.paginate.assert_called_with(Engine="aurora-postgresql")
+        assert len(result) == 2
+        assert result[0]["Engine"] == "aurora-postgresql"
+
+    def test_describe_db_engine_versions_empty(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {"DBEngineVersions": []}
+
+        result = describe_db_engine_versions(client, DefaultOnly=True)
+
+        assert result == []
+
+    def test_describe_db_engine_versions_with_default_only(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "DBEngineVersions": [
+                {"Engine": "postgres", "EngineVersion": "16.4"},
+            ]
+        }
+
+        result = describe_db_engine_versions(
+            client, Engine="postgres", DefaultOnly=True, DBParameterGroupFamily="postgres16",
+        )
+
+        paginator.paginate.assert_called_with(
+            Engine="postgres", DefaultOnly=True, DBParameterGroupFamily="postgres16",
+        )
+        assert len(result) == 1
+

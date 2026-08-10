@@ -293,33 +293,40 @@ db_engine_versions:
 from typing import Any
 from typing import Dict
 from typing import List
-
-try:
-    import botocore
-except ImportError:
-    pass  # handled by AnsibleAWSModule
+from typing import Optional
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_engine_versions as _describe_db_engine_versions
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-@AWSRetry.jittered_backoff(retries=10)
-def _describe_db_engine_versions(connection: Any, **params: Dict[str, Any]) -> List[Dict[str, Any]]:
-    paginator = connection.get_paginator("describe_db_engine_versions")
-    return paginator.paginate(**params).build_full_result()["DBEngineVersions"]
+def engine_versions_info(
+    client,
+    module: AnsibleAWSModule,
+    engine: Optional[str],
+    engine_version: Optional[str],
+    db_parameter_group_family: Optional[str],
+    default_only: bool,
+    filters: Optional[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Returns attributes of DB engine version(s).
 
+    Parameters:
+        client: boto3 rds client
+        module: AnsibleAWSModule
+        engine: Database engine name to filter by
+        engine_version: Specific engine version to filter by
+        db_parameter_group_family: Parameter group family to filter by
+        default_only: Whether to return only default versions
+        filters: Additional boto3-supported filters
 
-def describe_db_engine_versions(connection: Any, module: AnsibleAWSModule) -> Dict[str, Any]:
-    engine = module.params.get("engine")
-    engine_version = module.params.get("engine_version")
-    db_parameter_group_family = module.params.get("db_parameter_group_family")
-    default_only = module.params.get("default_only")
-    filters = module.params.get("filters")
-
-    params = {"DefaultOnly": default_only}
+    Returns:
+        List of engine version attribute dicts in snake_case format
+    """
+    params: Dict[str, Any] = {"DefaultOnly": default_only}
     if engine:
         params["Engine"] = engine
     if engine_version:
@@ -329,18 +336,12 @@ def describe_db_engine_versions(connection: Any, module: AnsibleAWSModule) -> Di
     if filters:
         params["Filters"] = filters
 
-    try:
-        result = _describe_db_engine_versions(connection, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get RDS engine versions.")
+    results = _describe_db_engine_versions(client, **params)
 
-    def _transform_item(v):
-        tag_list = v.pop("TagList", [])
-        v = camel_dict_to_snake_dict(v)
-        v["tags"] = boto3_tag_list_to_ansible_dict(tag_list)
-        return v
+    for version in results:
+        version["Tags"] = boto3_tag_list_to_ansible_dict(version.pop("TagList", []))
 
-    return dict(changed=False, db_engine_versions=[_transform_item(v) for v in result])
+    return [camel_dict_to_snake_dict(version, ignore_list=["Tags"]) for version in results]
 
 
 def main() -> None:
@@ -376,12 +377,23 @@ def main() -> None:
         supports_check_mode=True,
     )
 
-    try:
-        client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS.")
+    client = module.client("rds")
 
-    module.exit_json(**describe_db_engine_versions(client, module))
+    try:
+        module.exit_json(
+            changed=False,
+            db_engine_versions=engine_versions_info(
+                client,
+                module,
+                engine=module.params.get("engine"),
+                engine_version=module.params.get("engine_version"),
+                db_parameter_group_family=module.params.get("db_parameter_group_family"),
+                default_only=module.params.get("default_only"),
+                filters=module.params.get("filters"),
+            ),
+        )
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, "Couldn't get RDS engine versions.")
 
 
 if __name__ == "__main__":
