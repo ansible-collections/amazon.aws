@@ -155,7 +155,7 @@ tox -e flake8-lint -- <path/to/file>
 To auto-fix formatting issues (rather than just checking), use the `black` environment:
 
 ```bash
-tox -e black -- <path/to/file>
+tox -m format
 ```
 
 ## More information about contributing
