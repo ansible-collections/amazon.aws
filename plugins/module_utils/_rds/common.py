@@ -20,7 +20,7 @@ class RDSErrorHandler(AWSErrorHandler):
     @classmethod
     def _is_missing(cls):
         return is_boto3_error_code(
-            ["DBInstanceNotFound", "DBSnapshotNotFound", "DBClusterNotFound", "DBClusterNotFoundFault", "DBClusterSnapshotNotFoundFault"]
+            ["DBInstanceNotFound", "DBSnapshotNotFound", "DBClusterNotFound", "DBClusterNotFoundFault", "DBClusterSnapshotNotFoundFault", "OptionGroupNotFoundFault"]
         )
 
 

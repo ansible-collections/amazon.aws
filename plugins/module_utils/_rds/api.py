@@ -54,6 +54,13 @@ def describe_db_snapshots(client, **params: Dict) -> List[Dict]:
     return paginator.paginate(**params).build_full_result()["DBSnapshots"]
 
 
+@RDSErrorHandler.list_error_handler("describe option groups", [])
+@AWSRetry.jittered_backoff()
+def describe_option_groups(client, **params: Dict) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_option_groups")
+    return paginator.paginate(**params).build_full_result()["OptionGroupsList"]
+
+
 @RDSErrorHandler.list_error_handler("list tags for resource", [])
 @AWSRetry.jittered_backoff()
 def list_tags_for_resource(client, resource_arn: str) -> List[Dict[str, str]]:
