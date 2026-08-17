@@ -24,12 +24,12 @@ options:
     marker:
         description:
             - If this parameter is specified, the response includes only records beyond the marker, up to the value specified by O(max_records).
-            - Allowed values are between V(20) and V(100).
         required: false
         type: str
     max_records:
         description:
             - The maximum number of records to include in the response.
+            - Allowed values are between V(20) and V(100).
         type: int
         default: 100
         required: false
@@ -282,13 +282,11 @@ def option_group_info(
 
     if marker:
         params["Marker"] = marker
-        if int(marker) < 20 or int(marker) > 100:
-            module.fail_json(msg="marker must be between 20 and 100")
 
     if max_records:
+        if max_records < 20 or max_records > 100:
+            module.fail_json(msg="The maximum number of records to include in the response must be between 20 and 100.")
         params["MaxRecords"] = max_records
-        if max_records > 100:
-            module.fail_json(msg="The maximum number of records to include in the response is 100.")
 
     results = describe_option_groups(client, **params)
 
@@ -337,7 +335,7 @@ def main():
             ),
         )
     except AnsibleRDSError as e:
-        module.fail_json_aws(e, msg="Couldn't describe option groups.")
+        module.fail_json_aws(e, msg="Could not describe option groups.")
 
 
 if __name__ == "__main__":

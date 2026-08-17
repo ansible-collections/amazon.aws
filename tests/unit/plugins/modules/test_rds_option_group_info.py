@@ -93,6 +93,44 @@ def test_option_group_info_no_results(m_describe, m_get_tags):
     m_get_tags.assert_not_called()
 
 
+@patch(mod_name + ".describe_option_groups")
+def test_option_group_info_max_records_too_high(m_describe):
+    conn = MagicMock()
+    module = MagicMock()
+    module.fail_json.side_effect = SystemExit(1)
+
+    try:
+        option_group_info(
+            conn, module, option_group_name="", engine_name="", major_engine_version="", marker=None, max_records=101
+        )
+    except SystemExit:
+        pass
+
+    module.fail_json.assert_called_once_with(
+        msg="The maximum number of records to include in the response must be between 20 and 100."
+    )
+    m_describe.assert_not_called()
+
+
+@patch(mod_name + ".describe_option_groups")
+def test_option_group_info_max_records_too_low(m_describe):
+    conn = MagicMock()
+    module = MagicMock()
+    module.fail_json.side_effect = SystemExit(1)
+
+    try:
+        option_group_info(
+            conn, module, option_group_name="", engine_name="", major_engine_version="", marker=None, max_records=19
+        )
+    except SystemExit:
+        pass
+
+    module.fail_json.assert_called_once_with(
+        msg="The maximum number of records to include in the response must be between 20 and 100."
+    )
+    m_describe.assert_not_called()
+
+
 @patch(mod_name + ".AnsibleAWSModule")
 def test_main_success(m_AnsibleAWSModule):
     m_module = MagicMock()
@@ -131,4 +169,4 @@ def test_main_failure(m_AnsibleAWSModule, m_describe):
     rds_option_group_info.main()
 
     m_module.client.assert_called_with("rds")
-    m_module.fail_json_aws.assert_called_with(e, msg="Couldn't describe option groups.")
+    m_module.fail_json_aws.assert_called_with(e, msg="Could not describe option groups.")
