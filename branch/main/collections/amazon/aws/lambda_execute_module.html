@@ -411,7 +411,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-lambda-e
 <span class="c1"># Pass the Lambda event payload as a json file.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.lambda_execute</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-function</span>
-<span class="w">    </span><span class="nt">payload</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span><span class="s1">&#39;lambda_event.json&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">payload</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'file'</span><span class="o">,</span><span class="s1">'lambda_event.json'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">response</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.lambda_execute</span><span class="p">:</span>

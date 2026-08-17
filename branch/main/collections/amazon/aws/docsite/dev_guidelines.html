@@ -232,7 +232,7 @@
 <h3><a class="toc-backref" href="#id5" role="doc-backlink">SDK Version Support</a><a class="headerlink" href="#sdk-version-support" title="Link to this heading"></a></h3>
 <p>Starting with the 2.0 releases of both collections, it is generally the policy to support the versions of botocore and boto3 that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).</p>
 <p>Features and functionality that require newer versions of the SDK can be contributed provided they are noted in the module documentation:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">DOCUMENTATION = &#39;&#39;&#39;</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">DOCUMENTATION = '''</span>
 <span class="nn">---</span>
 <span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_vol</span>
 <span class="nt">options</span><span class="p">:</span>
@@ -247,9 +247,9 @@
 </pre></div>
 </div>
 <p>And handled using the <code class="docutils literal notranslate"><span class="pre">botocore_at_least</span></code> helper method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;throughput&#39;</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="o">.</span><span class="n">botocore_at_least</span><span class="p">(</span><span class="s2">&quot;1.19.27&quot;</span><span class="p">):</span>
-        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;botocore &gt;= 1.19.27 is required to set the throughput for a volume&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'throughput'</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="o">.</span><span class="n">botocore_at_least</span><span class="p">(</span><span class="s2">"1.19.27"</span><span class="p">):</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"botocore &gt;= 1.19.27 is required to set the throughput for a volume"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Starting with the 4.0 releases of both collections, all support for the original boto SDK has been dropped.  AWS Modules must be written using the botocore and boto3 SDKs.</p>
@@ -290,8 +290,8 @@ used by boto3)</p>
     <span class="o">...</span>
 <span class="p">)</span>
 
-<span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scope&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;managed&#39;</span><span class="p">:</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">require_botocore_at_least</span><span class="p">(</span><span class="s1">&#39;1.23.23&#39;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">&#39;to list managed rules&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'scope'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'managed'</span><span class="p">:</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">require_botocore_at_least</span><span class="p">(</span><span class="s1">'1.23.23'</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">'to list managed rules'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -384,7 +384,7 @@ as the module does that check:</p>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_BOTO3</span><span class="p">:</span>
-        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">missing_required_lib</span><span class="p">(</span><span class="s1">&#39;botocore and boto3&#39;</span><span class="p">))</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">missing_required_lib</span><span class="p">(</span><span class="s1">'botocore and boto3'</span><span class="p">))</span>
 </pre></div>
 </div>
 </section>
@@ -426,20 +426,20 @@ exception handling like in boto. Instead, an <code class="docutils literal notra
 connection. To ensure that authorization, parameter validation and permissions errors are all caught,
 you should catch <code class="docutils literal notranslate"><span class="pre">ClientError</span></code> and <code class="docutils literal notranslate"><span class="pre">BotoCoreError</span></code> exceptions with every boto3 connection call.
 See exception handling:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">'ec2'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>or for the higher level EC2 resource:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">resource</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">resource</span><span class="p">(</span><span class="s1">'ec2'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>An example of the older style connection used for modules based on AnsibleModule rather than AnsibleAWSModule:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">region</span><span class="p">,</span> <span class="n">ec2_url</span><span class="p">,</span> <span class="n">aws_connect_params</span> <span class="o">=</span> <span class="n">get_aws_connection_info</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">boto3</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">connection</span> <span class="o">=</span> <span class="n">boto3_conn</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">conn_type</span><span class="o">=</span><span class="s1">&#39;client&#39;</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">ec2_url</span><span class="p">,</span> <span class="o">**</span><span class="n">aws_connect_params</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">boto3_conn</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">conn_type</span><span class="o">=</span><span class="s1">'client'</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="s1">'ec2'</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">ec2_url</span><span class="p">,</span> <span class="o">**</span><span class="n">aws_connect_params</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">region</span><span class="p">,</span> <span class="n">ec2_url</span><span class="p">,</span> <span class="n">aws_connect_params</span> <span class="o">=</span> <span class="n">get_aws_connection_info</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">boto3</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">connection</span> <span class="o">=</span> <span class="n">boto3_conn</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">conn_type</span><span class="o">=</span><span class="s1">&#39;client&#39;</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">ec2_url</span><span class="p">,</span> <span class="o">**</span><span class="n">aws_connect_params</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">boto3_conn</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">conn_type</span><span class="o">=</span><span class="s1">'client'</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="s1">'ec2'</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">ec2_url</span><span class="p">,</span> <span class="o">**</span><span class="n">aws_connect_params</span><span class="p">)</span>
 </pre></div>
 </div>
 <section id="common-documentation-fragments-for-connection-parameters">
@@ -454,14 +454,14 @@ that should be included into almost all AWS modules:</p>
 </ul>
 <p>These fragments should be used rather than re-documenting these properties to ensure consistency
 and that the more esoteric connection options are documented. For example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DOCUMENTATION</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DOCUMENTATION</span> <span class="o">=</span> <span class="s1">'''</span>
 <span class="s1">module: my_module</span>
 <span class="s1"># some lines omitted here</span>
 <span class="s1">extends_documentation_fragment:</span>
 <span class="s1">    - amazon.aws.boto3</span>
 <span class="s1">    - amazon.aws.common.modules</span>
 <span class="s1">    - amazon.aws.region.modules</span>
-<span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">'''</span>
 </pre></div>
 </div>
 <p>Other plugin types have a slightly different document fragment format, and should use
@@ -474,14 +474,14 @@ the following fragments:</p>
 </ul>
 <p>These fragments should be used rather than re-documenting these properties to ensure consistency
 and that the more esoteric connection options are documented. For example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DOCUMENTATION</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DOCUMENTATION</span> <span class="o">=</span> <span class="s1">'''</span>
 <span class="s1">module: my_plugin</span>
 <span class="s1"># some lines omitted here</span>
 <span class="s1">extends_documentation_fragment:</span>
 <span class="s1">    - amazon.aws.boto3</span>
 <span class="s1">    - amazon.aws.common.plugins</span>
 <span class="s1">    - amazon.aws.region.plugins</span>
-<span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">'''</span>
 </pre></div>
 </div>
 </section>
@@ -510,7 +510,7 @@ this example, <em>only</em> the <code class="docutils literal notranslate"><span
 and any other error will be raised for handling elsewhere in the program.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">info</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_security_groups</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="k">except</span> <span class="n">is_boto3_error_code</span><span class="p">(</span><span class="s1">&#39;InvalidGroup.NotFound&#39;</span><span class="p">):</span>
+<span class="k">except</span> <span class="n">is_boto3_error_code</span><span class="p">(</span><span class="s1">'InvalidGroup.NotFound'</span><span class="p">):</span>
     <span class="k">pass</span>
 <span class="n">do_something</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>  <span class="c1"># do something with the info that was successfully returned</span>
 </pre></div>
@@ -531,11 +531,11 @@ use in Ansible verbose mode.</p>
 <span class="c1"># connection code here</span>
 
 <span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="k">except</span> <span class="p">(</span><span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BotoCoreError</span><span class="p">,</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Couldn&#39;t obtain frooble </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">"Couldn't obtain frooble </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that it should normally be acceptable to catch all normal exceptions here, however if you
@@ -543,13 +543,13 @@ expect anything other than botocore exceptions you should test everything works 
 <p>If you need to perform an action based on the error boto3 returned, use the error code and the
 <code class="docutils literal notranslate"><span class="pre">is_boto3_error_code()</span></code> helper.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-<span class="k">except</span> <span class="n">is_boto3_error_code</span><span class="p">(</span><span class="s1">&#39;FroobleNotFound&#39;</span><span class="p">):</span>
+<span class="k">except</span> <span class="n">is_boto3_error_code</span><span class="p">(</span><span class="s1">'FroobleNotFound'</span><span class="p">):</span>
     <span class="n">workaround_failure</span><span class="p">()</span>  <span class="c1"># This is an error that we can work around</span>
 <span class="k">except</span> <span class="p">(</span><span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BotoCoreError</span><span class="p">,</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pylint: disable=duplicate-except</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Couldn&#39;t obtain frooble </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">"Couldn't obtain frooble </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -567,11 +567,11 @@ along with the message.</p>
 <span class="c1"># connection code here</span>
 
 <span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Couldn&#39;t obtain frooble </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Couldn't obtain frooble </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span>
                      <span class="n">exception</span><span class="o">=</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">(),</span>
                      <span class="o">**</span><span class="n">camel_dict_to_snake_dict</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">response</span><span class="p">))</span>
 </pre></div>
@@ -580,18 +580,18 @@ along with the message.</p>
 work with python3</p>
 <p>If you need to perform an action based on the error boto3 returned, use the error code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a call to AWS</span>
-<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">describe_frooble</span><span class="p">(</span><span class="n">FroobleName</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;Error&#39;</span><span class="p">][</span><span class="s1">&#39;Code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FroobleNotFound&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="s1">'Error'</span><span class="p">][</span><span class="s1">'Code'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'FroobleNotFound'</span><span class="p">:</span>
         <span class="n">workaround_failure</span><span class="p">()</span>  <span class="c1"># This is an error that we can work around</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Couldn&#39;t obtain frooble </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">fail_json</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Couldn't obtain frooble </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span>
                          <span class="n">exception</span><span class="o">=</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">(),</span>
                          <span class="o">**</span><span class="n">camel_dict_to_snake_dict</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">response</span><span class="p">))</span>
 <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BotoCoreError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Couldn&#39;t obtain frooble </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">"Couldn't obtain frooble </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -615,15 +615,15 @@ and <a class="reference external" href="https://www.awsarchitectureblog.com/2015
 <p>The combination of these two approaches is then:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">describe_some_resource_with_backoff</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-     <span class="n">paginator</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_paginator</span><span class="p">(</span><span class="s1">&#39;describe_some_resource&#39;</span><span class="p">)</span>
-     <span class="k">return</span> <span class="n">paginator</span><span class="o">.</span><span class="n">paginate</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">build_full_result</span><span class="p">()[</span><span class="s1">&#39;SomeResource&#39;</span><span class="p">]</span>
+     <span class="n">paginator</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_paginator</span><span class="p">(</span><span class="s1">'describe_some_resource'</span><span class="p">)</span>
+     <span class="k">return</span> <span class="n">paginator</span><span class="o">.</span><span class="n">paginate</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">build_full_result</span><span class="p">()[</span><span class="s1">'SomeResource'</span><span class="p">]</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">describe_some_resource</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
-    <span class="n">filters</span> <span class="o">=</span> <span class="n">ansible_dict_to_boto3_filter_list</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;filters&#39;</span><span class="p">])</span>
+    <span class="n">filters</span> <span class="o">=</span> <span class="n">ansible_dict_to_boto3_filter_list</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">'filters'</span><span class="p">])</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">describe_some_resource_with_backoff</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">Filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Could not describe some resource&quot;</span><span class="p">)</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">"Could not describe some resource"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Prior to Ansible 2.10 if the underlying <code class="docutils literal notranslate"><span class="pre">describe_some_resources</span></code> API call threw
@@ -632,35 +632,35 @@ it is not thrown (this is so that when creating a resource, we can just retry un
 exists).  This default was changed and it is now necessary to explicitly request
 this behaviour.  This can be done by using the <code class="docutils literal notranslate"><span class="pre">catch_extra_error_codes</span></code>
 argument on the decorator.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">catch_extra_error_codes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ResourceNotFound&#39;</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">catch_extra_error_codes</span><span class="o">=</span><span class="p">[</span><span class="s1">'ResourceNotFound'</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">describe_some_resource_retry_missing</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-     <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">describe_some_resource</span><span class="p">(</span><span class="n">ResourceName</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])[</span><span class="s1">&#39;Resources&#39;</span><span class="p">]</span>
+     <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">describe_some_resource</span><span class="p">(</span><span class="n">ResourceName</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">'name'</span><span class="p">])[</span><span class="s1">'Resources'</span><span class="p">]</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">describe_some_resource</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">describe_some_resource_with_backoff</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BotoCoreError</span><span class="p">,</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Could not describe resource </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">fail_json_aws</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">"Could not describe resource </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To make use of AWSRetry easier, it can now be wrapped around a client returned
 by <code class="docutils literal notranslate"><span class="pre">AnsibleAWSModule</span></code>. any call from a client. To add retries to a client,
 create a client:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="n">retry_decorator</span><span class="o">=</span><span class="n">AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">'ec2'</span><span class="p">,</span> <span class="n">retry_decorator</span><span class="o">=</span><span class="n">AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Any calls from that client can be made to use the decorator passed at call-time
 using the <code class="docutils literal notranslate"><span class="pre">aws_retry</span></code> argument. By default, no retries are used.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ec2</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="n">retry_decorator</span><span class="o">=</span><span class="n">AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
-<span class="n">ec2</span><span class="o">.</span><span class="n">describe_instances</span><span class="p">(</span><span class="n">InstanceIds</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i-123456789&#39;</span><span class="p">],</span> <span class="n">aws_retry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ec2</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">'ec2'</span><span class="p">,</span> <span class="n">retry_decorator</span><span class="o">=</span><span class="n">AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">ec2</span><span class="o">.</span><span class="n">describe_instances</span><span class="p">(</span><span class="n">InstanceIds</span><span class="o">=</span><span class="p">[</span><span class="s1">'i-123456789'</span><span class="p">],</span> <span class="n">aws_retry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># equivalent with normal AWSRetry</span>
 <span class="nd">@AWSRetry</span><span class="o">.</span><span class="n">jittered_backoff</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">describe_instances</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">ec2</span><span class="o">.</span><span class="n">describe_instances</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<span class="n">describe_instances</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">),</span> <span class="n">InstanceIds</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i-123456789&#39;</span><span class="p">])</span>
+<span class="n">describe_instances</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">'ec2'</span><span class="p">),</span> <span class="n">InstanceIds</span><span class="o">=</span><span class="p">[</span><span class="s1">'i-123456789'</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>The call will be retried the specified number of times, so the calling functions
@@ -689,7 +689,7 @@ of a dict.  This is particularly useful for tags, where keys are case-sensitive.
 <span class="n">resource</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">aws_call</span><span class="p">()</span>
 
 <span class="c1"># Convert resource response to snake_case</span>
-<span class="n">snaked_resource</span> <span class="o">=</span> <span class="n">camel_dict_to_snake_dict</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">ignore_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Tags&#39;</span><span class="p">])</span>
+<span class="n">snaked_resource</span> <span class="o">=</span> <span class="n">camel_dict_to_snake_dict</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">ignore_list</span><span class="o">=</span><span class="p">[</span><span class="s1">'Tags'</span><span class="p">])</span>
 
 <span class="c1"># Return the resource details to the user without modifying tags</span>
 <span class="n">module</span><span class="o">.</span><span class="n">exit_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">some_resource</span><span class="o">=</span><span class="n">snaked_resource</span><span class="p">)</span>
@@ -711,10 +711,10 @@ from boto3’s returned tag list to the desired dictionary of tags to be returne
 <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">aws_call</span><span class="p">()</span>
 
 <span class="c1"># Make result snake_case without modifying tags</span>
-<span class="n">snaked_result</span> <span class="o">=</span> <span class="n">camel_dict_to_snake_dict</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">ignore_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Tags&#39;</span><span class="p">])</span>
+<span class="n">snaked_result</span> <span class="o">=</span> <span class="n">camel_dict_to_snake_dict</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">ignore_list</span><span class="o">=</span><span class="p">[</span><span class="s1">'Tags'</span><span class="p">])</span>
 
 <span class="c1"># Convert boto3 list of dict tags to just a dict of tags</span>
-<span class="n">snaked_result</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">boto3_tag_list_to_ansible_dict</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+<span class="n">snaked_result</span><span class="p">[</span><span class="s1">'tags'</span><span class="p">]</span> <span class="o">=</span> <span class="n">boto3_tag_list_to_ansible_dict</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'tags'</span><span class="p">,</span> <span class="p">[]))</span>
 
 <span class="c1"># Return the result to the user</span>
 <span class="n">module</span><span class="o">.</span><span class="n">exit_json</span><span class="p">(</span><span class="n">changed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">snaked_result</span><span class="p">)</span>
@@ -734,21 +734,21 @@ of dictionaries.</p>
 If a return value can be used as a parameter for its corresponding main module, the key should
 match either the parameter name itself, or an alias of that parameter.</p>
 <p>The following is an example of improper usage of a sample info module with its respective main module:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="s">&quot;security_groups&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="s">"security_groups"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
 <span class="w">    </span><span class="p p-Indicator">{</span>
-<span class="w">        </span><span class="s">&quot;description&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;Created</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">ansible</span><span class="nv"> </span><span class="s">integration</span><span class="nv"> </span><span class="s">tests&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;group_id&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;sg-050dba5c3520cba71&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;group_name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;ansible-test-87988625-unknown5c5f67f3ad09-icmp-1&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;ip_permissions&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
-<span class="w">        </span><span class="s">&quot;ip_permissions_egress&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
-<span class="w">        </span><span class="s">&quot;owner_id&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;721066863947&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;tags&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
+<span class="w">        </span><span class="s">"description"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"Created</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">ansible</span><span class="nv"> </span><span class="s">integration</span><span class="nv"> </span><span class="s">tests"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"group_id"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"sg-050dba5c3520cba71"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"group_name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"ansible-test-87988625-unknown5c5f67f3ad09-icmp-1"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"ip_permissions"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
+<span class="w">        </span><span class="s">"ip_permissions_egress"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
+<span class="w">        </span><span class="s">"owner_id"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"721066863947"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"tags"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
 <span class="w">            </span><span class="p p-Indicator">{</span>
-<span class="w">                </span><span class="s">&quot;Key&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;Tag_One&quot;</span>
-<span class="w">                </span><span class="s">&quot;Value&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;Tag_One_Value&quot;</span>
+<span class="w">                </span><span class="s">"Key"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"Tag_One"</span>
+<span class="w">                </span><span class="s">"Value"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"Tag_One_Value"</span>
 <span class="w">            </span><span class="p p-Indicator">},</span>
 <span class="w">        </span><span class="p p-Indicator">],</span>
-<span class="w">        </span><span class="s">&quot;vpc_id&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;vpc-0cbc2380a326b8a0d&quot;</span>
+<span class="w">        </span><span class="s">"vpc_id"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"vpc-0cbc2380a326b8a0d"</span>
 <span class="w">    </span><span class="p p-Indicator">}</span>
 <span class="p p-Indicator">}</span>
 </pre></div>
@@ -757,18 +757,18 @@ match either the parameter name itself, or an alias of that parameter.</p>
 * <code class="docutils literal notranslate"><span class="pre">security_groups</span></code> is a dict of dict, not a list of dicts.
 * <code class="docutils literal notranslate"><span class="pre">tags</span></code> appears to be directly returned from boto3, since they’re a list of dicts.</p>
 <p>The following is what the sample output would look like, with the mistakes corrected.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="s">&quot;security_groups&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="s">"security_groups"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
 <span class="w">    </span><span class="p p-Indicator">{</span>
-<span class="w">        </span><span class="s">&quot;description&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;Created</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">ansible</span><span class="nv"> </span><span class="s">integration</span><span class="nv"> </span><span class="s">tests&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;group_id&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;sg-050dba5c3520cba71&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;group_name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;ansible-test-87988625-unknown5c5f67f3ad09-icmp-1&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;ip_permissions&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
-<span class="w">        </span><span class="s">&quot;ip_permissions_egress&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
-<span class="w">        </span><span class="s">&quot;owner_id&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;721066863947&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">        </span><span class="s">&quot;tags&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
-<span class="w">            </span><span class="s">&quot;Tag_One&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;Tag_One_Value&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"description"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"Created</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">ansible</span><span class="nv"> </span><span class="s">integration</span><span class="nv"> </span><span class="s">tests"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"group_id"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"sg-050dba5c3520cba71"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"group_name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"ansible-test-87988625-unknown5c5f67f3ad09-icmp-1"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"ip_permissions"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
+<span class="w">        </span><span class="s">"ip_permissions_egress"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[],</span>
+<span class="w">        </span><span class="s">"owner_id"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"721066863947"</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">"tags"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="w">            </span><span class="s">"Tag_One"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"Tag_One_Value"</span><span class="p p-Indicator">,</span>
 <span class="w">        </span><span class="p p-Indicator">},</span>
-<span class="w">        </span><span class="s">&quot;vpc_id&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;vpc-0cbc2380a326b8a0d&quot;</span>
+<span class="w">        </span><span class="s">"vpc_id"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"vpc-0cbc2380a326b8a0d"</span>
 <span class="w">    </span><span class="p p-Indicator">}</span>
 <span class="p p-Indicator">]</span>
 </pre></div>
@@ -782,8 +782,8 @@ playbooks. A deprecation should be added to the return values being replaced, in
 placed at least 2 years out, on the 1st of a month.</p>
 <p>For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Deprecate old `iam_user` return key to be replaced by `user` introduced on 2022-04-10</span>
-<span class="n">module</span><span class="o">.</span><span class="n">deprecate</span><span class="p">(</span><span class="s2">&quot;The &#39;iam_user&#39; return key is deprecated and will be replaced by &#39;user&#39;. Both values are returned for now.&quot;</span><span class="p">,</span>
-                 <span class="n">date</span><span class="o">=</span><span class="s1">&#39;2024-05-01&#39;</span><span class="p">,</span> <span class="n">collection_name</span><span class="o">=</span><span class="s1">&#39;community.aws&#39;</span><span class="p">)</span>
+<span class="n">module</span><span class="o">.</span><span class="n">deprecate</span><span class="p">(</span><span class="s2">"The 'iam_user' return key is deprecated and will be replaced by 'user'. Both values are returned for now."</span><span class="p">,</span>
+                 <span class="n">date</span><span class="o">=</span><span class="s1">'2024-05-01'</span><span class="p">,</span> <span class="n">collection_name</span><span class="o">=</span><span class="s1">'community.aws'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -794,7 +794,7 @@ placed at least 2 years out, on the 1st of a month.</p>
 example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">argument_spec</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
     <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">policy</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">),</span>
+        <span class="n">policy</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'json'</span><span class="p">),</span>
     <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
@@ -811,7 +811,7 @@ and returns True if they are different.</p>
 
 <span class="c1"># Get the policy from AWS</span>
 <span class="n">current_policy</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">aws_object</span><span class="o">.</span><span class="n">get_policy</span><span class="p">())</span>
-<span class="n">user_policy</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;policy&#39;</span><span class="p">))</span>
+<span class="n">user_policy</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'policy'</span><span class="p">))</span>
 
 <span class="c1"># Compare the user submitted policy to the current policy ignoring order</span>
 <span class="k">if</span> <span class="n">compare_policies</span><span class="p">(</span><span class="n">user_policy</span><span class="p">,</span> <span class="n">current_policy</span><span class="p">):</span>
@@ -833,8 +833,8 @@ that defaults to <code class="docutils literal notranslate"><span class="pre">No
 <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">argument_spec</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
     <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">tags</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
-        <span class="n">purge_tags</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">'dict'</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+        <span class="n">purge_tags</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">'bool'</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
@@ -947,7 +947,7 @@ the <code class="docutils literal notranslate"><span class="pre">meta/main.yml</
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">setup_botocore_pip</span>
 <span class="w">    </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">botocore_version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.20.24&quot;</span>
+<span class="w">      </span><span class="nt">botocore_version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.20.24"</span>
 </pre></div>
 </div>
 </section>
@@ -966,11 +966,11 @@ dependency in the <code class="docutils literal notranslate"><span class="pre">m
 <p>The <code class="docutils literal notranslate"><span class="pre">ec2_ami_id</span></code> fact can then be used in the tests.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create launch configuration 1</span>
 <span class="w">  </span><span class="nt">community.aws.ec2_lc</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">resource_prefix</span><span class="nv"> </span><span class="s">}}-lc1&#39;</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">ec2_ami_id</span><span class="nv"> </span><span class="s">}}&#39;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">'{{</span><span class="nv"> </span><span class="s">resource_prefix</span><span class="nv"> </span><span class="s">}}-lc1'</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">'{{</span><span class="nv"> </span><span class="s">ec2_ami_id</span><span class="nv"> </span><span class="s">}}'</span>
 <span class="w">    </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span>
-<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">ec2_instance_type</span><span class="nv"> </span><span class="s">}}&#39;</span>
-<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">sg.group_id</span><span class="nv"> </span><span class="s">}}&#39;</span>
+<span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="s">'{{</span><span class="nv"> </span><span class="s">ec2_instance_type</span><span class="nv"> </span><span class="s">}}'</span>
+<span class="w">    </span><span class="nt">security_groups</span><span class="p">:</span><span class="w"> </span><span class="s">'{{</span><span class="nv"> </span><span class="s">sg.group_id</span><span class="nv"> </span><span class="s">}}'</span>
 <span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/xvda</span>
 <span class="w">        </span><span class="nt">volume_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
@@ -1005,10 +1005,10 @@ for every call, it’s preferable to use <a class="reference external" href="htt
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set connection information for aws modules and run tasks</span>
 <span class="w">  </span><span class="nt">module_defaults</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">group/aws</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_access_key</span><span class="nv"> </span><span class="s">}}&quot;</span>
-<span class="w">      </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_secret_key</span><span class="nv"> </span><span class="s">}}&quot;</span>
-<span class="w">      </span><span class="nt">security_token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">security_token</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">default(omit)</span><span class="nv"> </span><span class="s">}}&quot;</span>
-<span class="w">      </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">aws_region</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="w">      </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">aws_access_key</span><span class="nv"> </span><span class="s">}}"</span>
+<span class="w">      </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">aws_secret_key</span><span class="nv"> </span><span class="s">}}"</span>
+<span class="w">      </span><span class="nt">security_token</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">security_token</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">default(omit)</span><span class="nv"> </span><span class="s">}}"</span>
+<span class="w">      </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">aws_region</span><span class="nv"> </span><span class="s">}}"</span>
 
 <span class="w">  </span><span class="nt">block</span><span class="p">:</span>
 

@@ -199,7 +199,7 @@ git<span class="w"> </span>push<span class="w"> </span>--set-upstream<span class
 <p>Create a new label <code class="docutils literal notranslate"><span class="pre">backport-&lt;major-version&gt;</span></code> (for example <code class="docutils literal notranslate"><span class="pre">backport-6</span></code> for release <code class="docutils literal notranslate"><span class="pre">6.0.0</span></code>).
 This can either be done through the <a class="reference external" href="https://github.com/ansible-collections/amazon.aws/labels">GitHub UI</a>
 or using the GH CLI if you have it installed and configured:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gh<span class="w"> </span>label<span class="w"> </span>create<span class="w"> </span>backport-6<span class="w"> </span>-c<span class="w"> </span>FFAA22<span class="w"> </span>--description<span class="w"> </span><span class="s2">&quot;PR should be backported to the stable-6 branch&quot;</span><span class="w"> </span>-R<span class="w"> </span>ansible-collections/amazon.aws
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gh<span class="w"> </span>label<span class="w"> </span>create<span class="w"> </span>backport-6<span class="w"> </span>-c<span class="w"> </span>FFAA22<span class="w"> </span>--description<span class="w"> </span><span class="s2">"PR should be backported to the stable-6 branch"</span><span class="w"> </span>-R<span class="w"> </span>ansible-collections/amazon.aws
 </pre></div>
 </div>
 <p>Create a pull request against the new branch updating any documentation links from <code class="docutils literal notranslate"><span class="pre">main</span></code> to the
@@ -297,7 +297,7 @@ information.</p>
 </pre></div>
 </div>
 <p><strong>plugins/module_utils/common.py:</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AMAZON_AWS_COLLECTION_VERSION</span> <span class="o">=</span> <span class="s2">&quot;6.0.0&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AMAZON_AWS_COLLECTION_VERSION</span> <span class="o">=</span> <span class="s2">"6.0.0"</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -424,7 +424,7 @@ git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> <
 git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>release/6.0.0/changelog-to-main
 git<span class="w"> </span>cherry-pick<span class="w"> </span>-n<span class="w"> </span><span class="m">6</span>.0.0
 git<span class="w"> </span>checkout<span class="w"> </span>origin/main<span class="w"> </span>galaxy.yml
-git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add changelogs from release 6.0.0 to main&quot;</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"Add changelogs from release 6.0.0 to main"</span>
 </pre></div>
 </div>
 <div class="admonition note">

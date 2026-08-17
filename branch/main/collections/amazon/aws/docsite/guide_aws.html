@@ -166,22 +166,22 @@
 <p>Authentication with the AWS-related modules is handled by either
 specifying your access and secret key as ENV variables or module arguments.</p>
 <p>For environment variables:</p>
-<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">export AWS_ACCESS_KEY_ID=&#39;AK123&#39;</span>
-<span class="l l-Scalar l-Scalar-Plain">export AWS_SECRET_ACCESS_KEY=&#39;abc123&#39;</span>
+<div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">export AWS_ACCESS_KEY_ID='AK123'</span>
+<span class="l l-Scalar l-Scalar-Plain">export AWS_SECRET_ACCESS_KEY='abc123'</span>
 </pre></div>
 </div>
 <p>For storing these in a vars_file, ideally encrypted with ansible-vault:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
-<span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--REMOVED--&quot;</span>
-<span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--REMOVED--&quot;</span>
+<span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">"--REMOVED--"</span>
+<span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">"--REMOVED--"</span>
 </pre></div>
 </div>
 <p>Note that if you store your credentials in vars_file, you need to refer to them in each AWS-module. For example:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">aws_access_key</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">aws_secret_key</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+<span class="w">    </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">aws_access_key</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">aws_secret_key</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"example-ssh-key"</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"..."</span>
 </pre></div>
 </div>
 <p>Or they can be specified using “module_defaults” at the top of a playbook.:</p>
@@ -190,20 +190,20 @@ specifying your access and secret key as ENV variables or module arguments.</p>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localhost</span>
 <span class="w">  </span><span class="nt">module_defaults</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">group/aws</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">aws_access_key</span> <span class="cp">}}</span><span class="s">&#39;</span>
-<span class="w">      </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">aws_secret_key</span> <span class="cp">}}</span><span class="s">&#39;</span>
-<span class="w">      </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="cp">{{</span> <span class="nv">region</span> <span class="cp">}}</span><span class="s">&#39;</span>
+<span class="w">      </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="s">'</span><span class="cp">{{</span> <span class="nv">aws_access_key</span> <span class="cp">}}</span><span class="s">'</span>
+<span class="w">      </span><span class="nt">aws_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">'</span><span class="cp">{{</span> <span class="nv">aws_secret_key</span> <span class="cp">}}</span><span class="s">'</span>
+<span class="w">      </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">'</span><span class="cp">{{</span> <span class="nv">region</span> <span class="cp">}}</span><span class="s">'</span>
 <span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
-<span class="w">        </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"example-ssh-key"</span>
+<span class="w">        </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"..."</span>
 </pre></div>
 </div>
 <p>Credentials can also be accessed from a <a class="reference external" href="https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html">Credentials Profile</a>.:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">aws_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"example-ssh-key"</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"..."</span>
 </pre></div>
 </div>
 </section>
@@ -222,7 +222,7 @@ specifying your access and secret key as ENV variables or module arguments.</p>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Provision an EC2 instance with a public IP address</span>
 <span class="w">      </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo</span>
-<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
+<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"example-ssh-key"</span>
 <span class="w">        </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">        </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span>
 <span class="w">        </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
@@ -246,7 +246,7 @@ specifying your access and secret key as ENV variables or module arguments.</p>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Provision an EC2 instance with a public IP address</span>
 <span class="w">      </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo</span>
-<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-ssh-key&quot;</span>
+<span class="w">        </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"example-ssh-key"</span>
 <span class="w">        </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">        </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span>
 <span class="w">        </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
@@ -259,7 +259,7 @@ specifying your access and secret key as ENV variables or module arguments.</p>
 
 <span class="w">  </span><span class="w w-Error"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Add all instance public IPs to host group</span>
 <span class="w">     </span><span class="nt">add_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hostname=</span><span class="cp">{{</span> <span class="nv">item.public_ip</span> <span class="cp">}}</span><span class="l l-Scalar l-Scalar-Plain"> groups=ec2hosts</span>
-<span class="w">     </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">result.instances</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">     </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">result.instances</span> <span class="cp">}}</span><span class="s">"</span>
 </pre></div>
 </div>
 <p>With the host group now created, a second play at the bottom of the same provisioning playbook file might now have some configuration steps:</p>
@@ -287,12 +287,12 @@ specifying your access and secret key as ENV variables or module arguments.</p>
 In case you only want allow traffic with AWS S3 service, you need to fetch the current IP ranges of AWS S3 for one region and apply them as an egress rule.:</p>
 <div class="highlight-YAML+Jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fetch raw ip ranges for aws s3</span>
 <span class="w">  </span><span class="nt">set_fact</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">raw_s3_ranges</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;aws_service_ip_ranges&#39;</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">&#39;eu-central-1&#39;</span><span class="o">,</span> <span class="nv">service</span><span class="o">=</span><span class="s1">&#39;S3&#39;</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="kp">True</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">raw_s3_ranges</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'aws_service_ip_ranges'</span><span class="o">,</span> <span class="nv">region</span><span class="o">=</span><span class="s1">'eu-central-1'</span><span class="o">,</span> <span class="nv">service</span><span class="o">=</span><span class="s1">'S3'</span><span class="o">,</span> <span class="nv">wantlist</span><span class="o">=</span><span class="kp">True</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">prepare list structure for ec2_group module</span>
 <span class="w">  </span><span class="nt">set_fact</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">s3_ranges</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">s3_ranges</span> <span class="o">|</span> <span class="nf">default</span><span class="o">([])</span> <span class="o">+</span> <span class="o">[{</span><span class="s1">&#39;proto&#39;</span><span class="o">:</span> <span class="s1">&#39;all&#39;</span><span class="o">,</span> <span class="s1">&#39;cidr_ip&#39;</span><span class="o">:</span> <span class="nv">item</span><span class="o">,</span> <span class="s1">&#39;rule_desc&#39;</span><span class="o">:</span> <span class="s1">&#39;S3 Service IP range&#39;</span><span class="o">}]</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">  </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">raw_s3_ranges</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">s3_ranges</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">s3_ranges</span> <span class="o">|</span> <span class="nf">default</span><span class="o">([])</span> <span class="o">+</span> <span class="o">[{</span><span class="s1">'proto'</span><span class="o">:</span> <span class="s1">'all'</span><span class="o">,</span> <span class="s1">'cidr_ip'</span><span class="o">:</span> <span class="nv">item</span><span class="o">,</span> <span class="s1">'rule_desc'</span><span class="o">:</span> <span class="s1">'S3 Service IP range'</span><span class="o">}]</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">  </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">raw_s3_ranges</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set S3 IP ranges to egress rules</span>
 <span class="w">  </span><span class="nt">ec2_group</span><span class="p">:</span>
@@ -304,7 +304,7 @@ In case you only want allow traffic with AWS S3 service, you need to fetch the c
 <span class="w">    </span><span class="nt">purge_rules</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">purge_rules_egress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
-<span class="w">    </span><span class="nt">rules_egress</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">s3_ranges</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">rules_egress</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">s3_ranges</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_s3_ip_ranges</span>
 </pre></div>

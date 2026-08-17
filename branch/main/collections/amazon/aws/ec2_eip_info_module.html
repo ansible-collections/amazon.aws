@@ -337,7 +337,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_vm_eips</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">my_vm_eips.addresses</span> <span class="o">|</span> <span class="nf">selectattr</span><span class="o">(</span><span class="s1">&#39;private_ip_address&#39;</span><span class="o">,</span> <span class="s1">&#39;equalto&#39;</span><span class="o">,</span> <span class="s1">&#39;10.0.0.5&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">my_vm_eips.addresses</span> <span class="o">|</span> <span class="nf">selectattr</span><span class="o">(</span><span class="s1">'private_ip_address'</span><span class="o">,</span> <span class="s1">'equalto'</span><span class="o">,</span> <span class="s1">'10.0.0.5'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List all EIP addresses for several VMs.</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_eip_info</span><span class="p">:</span>
@@ -347,7 +347,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-eip-
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-987654321</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_vms_eips</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List all EIP addresses using the &#39;Name&#39; tag as a filter.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">List all EIP addresses using the 'Name' tag as a filter.</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_eip_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">tag:Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">www.example.com</span>

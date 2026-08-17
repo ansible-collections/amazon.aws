@@ -477,19 +477,19 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <span class="w">    </span><span class="nt">volume_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vol-abcdef12</span>
 <span class="w">    </span><span class="nt">last_snapshot_min_age</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reset snapshot createVolumePermission (change permission to &quot;Private&quot;)</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reset snapshot createVolumePermission (change permission to "Private")</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
 <span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">purge_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission to add user IDs (specify purge_create_vol_permission=true to change permssion to &quot;Private&quot;)</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission to add user IDs (specify purge_create_vol_permission=true to change permssion to "Private")</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
 <span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">user_ids</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;123456789012&#39;</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;098765432109&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'123456789012'</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'098765432109'</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission - remove all except specified user_ids</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
@@ -497,7 +497,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">purge_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">user_ids</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;123456789012&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'123456789012'</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Replace (purge existing) snapshot createVolmePermission annd add user IDs</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
@@ -505,9 +505,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-snap
 <span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">purge_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">user_ids</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;111111111111&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'111111111111'</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission - make createVolumePermission &quot;Public&quot;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Modify snapshot createVolmePermission - make createVolumePermission "Public"</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_snapshot</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snap-06a6f641234567890</span>
 <span class="w">    </span><span class="nt">modify_create_vol_permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>

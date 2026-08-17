@@ -861,7 +861,7 @@ pass the <code class="ansible-option docutils literal notranslate"><strong><a cl
 <span class="c1"># Create a bucket, add a policy from a file, enable requester pays, enable versioning and tag</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span><span class="s1">&#39;policy.json&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'file'</span><span class="o">,</span><span class="s1">'policy.json'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">requester_pays</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">versioning</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
@@ -871,32 +871,32 @@ pass the <code class="ansible-option docutils literal notranslate"><strong><a cl
 <span class="c1"># Create a simple DigitalOcean Spaces bucket using their provided regional endpoint</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydobucket</span>
-<span class="w">    </span><span class="nt">endpoint_url</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;https://nyc3.digitaloceanspaces.com&#39;</span>
+<span class="w">    </span><span class="nt">endpoint_url</span><span class="p">:</span><span class="w"> </span><span class="s">'https://nyc3.digitaloceanspaces.com'</span>
 
 <span class="c1"># Create a bucket with AES256 encryption</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AES256&quot;</span>
+<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">"AES256"</span>
 
 <span class="c1"># Create a bucket with aws:kms encryption, KMS key</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;aws:kms&quot;</span>
-<span class="w">    </span><span class="nt">encryption_key_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;arn:aws:kms:us-east-1:1234/5678example&quot;</span>
+<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">"aws:kms"</span>
+<span class="w">    </span><span class="nt">encryption_key_id</span><span class="p">:</span><span class="w"> </span><span class="s">"arn:aws:kms:us-east-1:1234/5678example"</span>
 
 <span class="c1"># Create a bucket with aws:kms encryption, Bucket key</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">bucket_key_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;aws:kms&quot;</span>
+<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">"aws:kms"</span>
 
 <span class="c1"># Create a bucket with aws:kms encryption, default key</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;aws:kms&quot;</span>
+<span class="w">    </span><span class="nt">encryption</span><span class="p">:</span><span class="w"> </span><span class="s">"aws:kms"</span>
 
 <span class="c1"># Create a bucket with public policy block configuration</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
@@ -905,7 +905,7 @@ pass the <code class="ansible-option docutils literal notranslate"><strong><a cl
 <span class="w">    </span><span class="nt">public_access</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">block_public_acls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">      </span><span class="nt">ignore_public_acls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">      </span><span class="c1">## keys == &#39;false&#39; can be omitted, undefined keys defaults to &#39;false&#39;</span>
+<span class="w">      </span><span class="c1">## keys == 'false' can be omitted, undefined keys defaults to 'false'</span>
 <span class="w">      </span><span class="c1"># block_public_policy: false</span>
 <span class="w">      </span><span class="c1"># restrict_public_buckets: false</span>
 
@@ -931,7 +931,7 @@ pass the <code class="ansible-option docutils literal notranslate"><strong><a cl
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;null&quot;</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">"null"</span>
 
 <span class="c1"># This example grants public-read to everyone on bucket using ACL</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
@@ -960,11 +960,11 @@ pass the <code class="ansible-option docutils literal notranslate"><strong><a cl
 <span class="w">    </span><span class="nt">inventory</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket-inventory-id</span>
 <span class="w">        </span><span class="nt">destination</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;arn:aws:s3:::mys3inventorybucket&quot;</span>
+<span class="w">          </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="s">"arn:aws:s3:::mys3inventorybucket"</span>
 <span class="w">        </span><span class="nt">optional_fields</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;Size&quot;</span>
-<span class="w">        </span><span class="nt">included_object_versions</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;All&quot;</span>
-<span class="w">        </span><span class="nt">schedule</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Weekly&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"Size"</span>
+<span class="w">        </span><span class="nt">included_object_versions</span><span class="p">:</span><span class="w"> </span><span class="s">"All"</span>
+<span class="w">        </span><span class="nt">schedule</span><span class="p">:</span><span class="w"> </span><span class="s">"Weekly"</span>
 
 <span class="c1"># Enable bucket logging</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.s3_bucket</span><span class="p">:</span>
@@ -979,7 +979,7 @@ pass the <code class="ansible-option docutils literal notranslate"><strong><a cl
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mys3bucket</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">target_bucket</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="w">      </span><span class="nt">target_bucket</span><span class="p">:</span><span class="w"> </span><span class="s">""</span>
 </pre></div>
 </div>
 </section>

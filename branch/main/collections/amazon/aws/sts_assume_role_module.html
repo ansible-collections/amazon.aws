@@ -370,15 +370,15 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-sts-assu
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.sts_assume_role</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">access_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AKIA1EXAMPLE1EXAMPLE</span>
 <span class="w">    </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123456789abcdefghijklmnopqrstuvwxyzABCDE</span>
-<span class="w">    </span><span class="nt">role_arn</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;arn:aws:iam::123456789012:role/someRole&quot;</span>
-<span class="w">    </span><span class="nt">role_session_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;someRoleSession&quot;</span>
+<span class="w">    </span><span class="nt">role_arn</span><span class="p">:</span><span class="w"> </span><span class="s">"arn:aws:iam::123456789012:role/someRole"</span>
+<span class="w">    </span><span class="nt">role_session_name</span><span class="p">:</span><span class="w"> </span><span class="s">"someRoleSession"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">assumed_role</span>
 
 <span class="c1"># Use the assumed role above to tag an instance in account 123456789012</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_tag</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">assumed_role.sts_creds.access_key</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">assumed_role.sts_creds.secret_key</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">session_token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">assumed_role.sts_creds.session_token</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">access_key</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">assumed_role.sts_creds.access_key</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">assumed_role.sts_creds.secret_key</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">session_token</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">assumed_role.sts_creds.session_token</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">i-xyzxyz01</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>

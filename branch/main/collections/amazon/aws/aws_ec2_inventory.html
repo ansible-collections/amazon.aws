@@ -769,7 +769,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="c1"># The values for profile, access key, secret key and token can be hardcoded like:</span>
 <span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_profile</span>
 <span class="c1"># or you could use Jinja as:</span>
-<span class="c1"># profile: &quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;env&#39;</span><span class="o">,</span> <span class="s1">&#39;AWS_PROFILE&#39;</span><span class="o">)</span> <span class="o">|</span> <span class="nf">default</span><span class="o">(</span><span class="s1">&#39;aws_profile&#39;</span><span class="o">,</span> <span class="kp">true</span><span class="o">)</span> <span class="cp">}}</span><span class="c1">&quot;</span>
+<span class="c1"># profile: "</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'env'</span><span class="o">,</span> <span class="s1">'AWS_PROFILE'</span><span class="o">)</span> <span class="o">|</span> <span class="nf">default</span><span class="o">(</span><span class="s1">'aws_profile'</span><span class="o">,</span> <span class="kp">true</span><span class="o">)</span> <span class="cp">}}</span><span class="c1">"</span>
 <span class="c1"># Populate inventory with instances in these regions</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
@@ -791,13 +791,13 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:Name=Tag1,Name=Tag2</span><span class="w">  </span><span class="c1"># Return specific hosts only</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:CustomDNSName</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dns-name</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;tag:Name=Tag1,Name=Tag2&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;private-ip-address&#39;</span>
-<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;_&#39;</span>
-<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;tag:Name&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;test_literal&#39;</span><span class="w"> </span><span class="c1"># Using literal values for hostname</span>
-<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="w">       </span><span class="c1"># Hostname will be aws-test_literal</span>
-<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">'tag:Name=Tag1,Name=Tag2'</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">'private-ip-address'</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">'_'</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'tag:Name'</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">'test_literal'</span><span class="w"> </span><span class="c1"># Using literal values for hostname</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">'-'</span><span class="w">       </span><span class="c1"># Hostname will be aws-test_literal</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'aws'</span>
 
 <span class="c1"># Returns all the hostnames for a given instance</span>
 <span class="nt">allow_duplicated_hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -814,7 +814,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="nt">keyed_groups</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># Add e.g. x86_64 hosts to an arch_x86_64 group</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arch</span>
-<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;architecture&#39;</span>
+<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">'architecture'</span>
 <span class="w">  </span><span class="c1"># Add hosts to tag_Name_Value groups for each Name/Value tag pair</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag</span>
 <span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags</span>
@@ -822,18 +822,18 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
 <span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
 <span class="w">  </span><span class="c1"># Create security_groups_sg_abcd1234 group for each SG</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups|json_query(&quot;[].group_id&quot;)&#39;</span>
-<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">'security_groups|json_query("[].group_id")'</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'security_groups'</span>
 <span class="w">  </span><span class="c1"># Create a group for each value of the Application tag</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags.Application</span>
-<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">''</span>
 <span class="w">  </span><span class="c1"># Create a group per region e.g. aws_region_us_east_2</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placement.region</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_region</span>
-<span class="w">  </span><span class="c1"># Create a group (or groups) based on the value of a custom tag &quot;Role&quot; and add them to a metagroup called &quot;project&quot;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags[&#39;Role&#39;]</span>
+<span class="w">  </span><span class="c1"># Create a group (or groups) based on the value of a custom tag "Role" and add them to a metagroup called "project"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_tags['Role']</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
-<span class="w">    </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;project&quot;</span>
+<span class="w">    </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="s">"project"</span>
 <span class="c1"># Set individual variables with compose</span>
 <span class="nt">compose</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># Use the private IP address to connect to the host</span>
@@ -849,12 +849,12 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-1</span>
 <span class="nt">include_filters</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_second_tag&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'my_second_tag'</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_third_tag&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'my_third_tag'</span>
 <span class="nt">exclude_filters</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;my_first_tag&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'my_first_tag'</span>
 
 <span class="nn">---</span>
 
@@ -873,7 +873,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="nt">compose</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public_dns_name</span>
 <span class="nt">groups</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == &#39;vpc-####&#39;</span>
+<span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == 'vpc-####'</span>
 
 <span class="nn">---</span>
 
@@ -881,8 +881,8 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon.aws.aws_ec2</span>
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
-<span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws_&#39;</span>
-<span class="nt">hostvars_suffix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;_ec2&#39;</span>
+<span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'aws_'</span>
+<span class="nt">hostvars_suffix</span><span class="p">:</span><span class="w"> </span><span class="s">'_ec2'</span>
 
 <span class="nn">---</span>
 
@@ -891,7 +891,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="nt">regions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="nt">hostnames</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;tag:Name</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">replace(&#39;test&#39;,</span><span class="nv"> </span><span class="s">&#39;prod&#39;)&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"tag:Name</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">replace('test',</span><span class="nv"> </span><span class="s">'prod')"</span>
 
 <span class="nn">---</span>
 

@@ -338,7 +338,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-plac
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
-<span class="w">      </span><span class="cp">{{</span> <span class="nv">specific_ec2_placement_groups</span> <span class="o">|</span> <span class="nf">json_query</span><span class="o">(</span><span class="s2">&quot;[?name==&#39;my-cluster&#39;]&quot;</span><span class="o">)</span> <span class="cp">}}</span>
+<span class="w">      </span><span class="cp">{{</span> <span class="nv">specific_ec2_placement_groups</span> <span class="o">|</span> <span class="nf">json_query</span><span class="o">(</span><span class="s2">"[?name=='my-cluster']"</span><span class="o">)</span> <span class="cp">}}</span>
 </pre></div>
 </div>
 </section>

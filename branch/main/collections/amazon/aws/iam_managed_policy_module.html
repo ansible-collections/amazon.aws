@@ -418,42 +418,42 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a policy</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create IAM Managed Policy</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_managed_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ManagedPolicy&quot;</span>
-<span class="w">    </span><span class="nt">policy_description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;A</span><span class="nv"> </span><span class="s">Helpful</span><span class="nv"> </span><span class="s">managed</span><span class="nv"> </span><span class="s">policy&quot;</span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;managed_policy.json.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">"ManagedPolicy"</span>
+<span class="w">    </span><span class="nt">policy_description</span><span class="p">:</span><span class="w"> </span><span class="s">"A</span><span class="nv"> </span><span class="s">Helpful</span><span class="nv"> </span><span class="s">managed</span><span class="nv"> </span><span class="s">policy"</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'template'</span><span class="o">,</span> <span class="s1">'managed_policy.json.j2'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
 <span class="c1"># Update a policy with a new default version</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update an IAM Managed Policy with new default version</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_managed_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ManagedPolicy&quot;</span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span> <span class="s1">&#39;managed_policy_update.json&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">"ManagedPolicy"</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'file'</span><span class="o">,</span> <span class="s1">'managed_policy_update.json'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
 <span class="c1"># Update a policy with a new non default version</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update an IAM Managed Policy with a non default version</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_managed_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ManagedPolicy&quot;</span>
+<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">"ManagedPolicy"</span>
 <span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2012-10-17&quot;</span>
+<span class="w">      </span><span class="nt">Version</span><span class="p">:</span><span class="w"> </span><span class="s">"2012-10-17"</span>
 <span class="w">      </span><span class="nt">Statement</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Allow&quot;</span>
-<span class="w">          </span><span class="nt">Action</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;logs:CreateLogGroup&quot;</span>
-<span class="w">          </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="s">"Allow"</span>
+<span class="w">          </span><span class="nt">Action</span><span class="p">:</span><span class="w"> </span><span class="s">"logs:CreateLogGroup"</span>
+<span class="w">          </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="s">"*"</span>
 <span class="w">    </span><span class="nt">make_default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
 <span class="c1"># Update a policy and make it the only version and the default version</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update an IAM Managed Policy with default version as the only version</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_managed_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ManagedPolicy&quot;</span>
+<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">"ManagedPolicy"</span>
 <span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
 <span class="w">      </span><span class="no">{</span>
-<span class="w">        </span><span class="no">&quot;Version&quot;: &quot;2012-10-17&quot;,</span>
-<span class="w">        </span><span class="no">&quot;Statement&quot;:[{</span>
-<span class="w">          </span><span class="no">&quot;Effect&quot;: &quot;Allow&quot;,</span>
-<span class="w">          </span><span class="no">&quot;Action&quot;: &quot;logs:PutRetentionPolicy&quot;,</span>
-<span class="w">          </span><span class="no">&quot;Resource&quot;: &quot;*&quot;</span>
+<span class="w">        </span><span class="no">"Version": "2012-10-17",</span>
+<span class="w">        </span><span class="no">"Statement":[{</span>
+<span class="w">          </span><span class="no">"Effect": "Allow",</span>
+<span class="w">          </span><span class="no">"Action": "logs:PutRetentionPolicy",</span>
+<span class="w">          </span><span class="no">"Resource": "*"</span>
 <span class="w">        </span><span class="no">}]</span>
 <span class="w">      </span><span class="no">}</span>
 <span class="w">    </span><span class="nt">only_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
@@ -462,7 +462,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-mana
 <span class="c1"># Remove a policy</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove an existing IAM Managed Policy</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_managed_policy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ManagedPolicy&quot;</span>
+<span class="w">    </span><span class="nt">policy_name</span><span class="p">:</span><span class="w"> </span><span class="s">"ManagedPolicy"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 </pre></div>
 </div>
