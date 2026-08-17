@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_engine_versions_info - Refactored module to use shared utility functions from ``module_utils/rds`` for API calls, error handling, and retry logic (https://github.com/ansible-collections/amazon.aws/pull/3062).

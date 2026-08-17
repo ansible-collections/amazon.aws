@@ -133,10 +133,7 @@ def test_main_success(m_AnsibleAWSModule):
     rds_engine_versions_info.main()
 
     m_module.client.assert_called_with("rds")
-    m_module.exit_json.assert_called_once()
-    call_kwargs = m_module.exit_json.call_args[1]
-    assert call_kwargs["changed"] is False
-    assert "db_engine_versions" in call_kwargs
+    m_module.exit_json.assert_called_with(changed=False, db_engine_versions=[])
 
 
 @patch(mod_name + "._describe_db_engine_versions")
@@ -157,4 +154,4 @@ def test_main_failure(m_AnsibleAWSModule, m_describe):
     rds_engine_versions_info.main()
 
     m_module.client.assert_called_with("rds")
-    m_module.fail_json_aws.assert_called_with(e, "Couldn't get RDS engine versions.")
+    m_module.fail_json_aws.assert_called_with(e, msg="Couldn't get RDS engine versions.")

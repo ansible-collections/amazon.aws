@@ -338,10 +338,11 @@ def engine_versions_info(
 
     results = _describe_db_engine_versions(client, **params)
 
+    output = []
     for version in results:
-        version["Tags"] = boto3_tag_list_to_ansible_dict(version.pop("TagList", []))
-
-    return [camel_dict_to_snake_dict(version, ignore_list=["Tags"]) for version in results]
+        version["tags"] = boto3_tag_list_to_ansible_dict(version.pop("TagList", []))
+        output.append(camel_dict_to_snake_dict(version, ignore_list=["tags"]))
+    return output
 
 
 def main() -> None:
@@ -393,7 +394,7 @@ def main() -> None:
             ),
         )
     except AnsibleRDSError as e:
-        module.fail_json_aws(e, "Couldn't get RDS engine versions.")
+        module.fail_json_aws(e, msg="Couldn't get RDS engine versions.")
 
 
 if __name__ == "__main__":
