@@ -18,6 +18,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOT
 from ansible_collections.amazon.aws.plugins.module_utils.rds import Boto3ClientMethod
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_option_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
 from ansible_collections.amazon.aws.plugins.module_utils.rds import handle_errors
@@ -563,5 +564,51 @@ class TestDescribeDbClusters:
         )
 
         result = describe_db_clusters(client, DBClusterIdentifier="nonexistent")
+
+        assert result == []
+
+
+# =============================================================================
+# describe_option_groups
+# =============================================================================
+
+
+class TestDescribeOptionGroups:
+    def test_describe_option_groups_returns_list(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "OptionGroupsList": [
+                {"OptionGroupName": "og-1"},
+                {"OptionGroupName": "og-2"},
+            ]
+        }
+
+        result = describe_option_groups(client, OptionGroupName="og-1")
+
+        client.get_paginator.assert_called_with("describe_option_groups")
+        paginator.paginate.assert_called_with(OptionGroupName="og-1")
+        assert len(result) == 2
+        assert result[0]["OptionGroupName"] == "og-1"
+
+    def test_describe_option_groups_empty(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {"OptionGroupsList": []}
+
+        result = describe_option_groups(client)
+
+        assert result == []
+
+    def test_describe_option_groups_not_found_returns_empty(self):
+        client = MagicMock()
+        client.get_paginator.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "OptionGroupNotFoundFault", "Message": "not found"}},
+            "DescribeOptionGroups",
+        )
+
+        result = describe_option_groups(client, OptionGroupName="nonexistent")
 
         assert result == []
