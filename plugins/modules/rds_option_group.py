@@ -345,118 +345,113 @@ tags:
     }
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
+from botocore.exceptions import BotoCoreError
+from botocore.exceptions import ClientError
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_option_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
-try:
-    import botocore
-except ImportError:
-    pass  # caught by AnsibleAWSModule
 
-
-@AWSRetry.jittered_backoff(retries=10)
-def _describe_option_groups(client, **params):
-    try:
-        paginator = client.get_paginator("describe_option_groups")
-        return paginator.paginate(**params).build_full_result()["OptionGroupsList"][0]
-    except is_boto3_error_code("OptionGroupNotFoundFault"):
+def get_option_group(client, module: AnsibleAWSModule, option_group_name: str) -> Dict[str, Any]:
+    """Return attributes of a single RDS option group, or empty dict if not found."""
+    results = describe_option_groups(client, OptionGroupName=option_group_name)
+    if not results:
         return {}
-
-
-def get_option_group(client, module):
-    params = dict()
-    params["OptionGroupName"] = module.params.get("option_group_name")
-
-    try:
-        result = camel_dict_to_snake_dict(_describe_option_groups(client, **params))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't describe option groups.")
-
-    if result:
-        result["tags"] = get_tags(client, module, result["option_group_arn"])
-
+    result = camel_dict_to_snake_dict(results[0])
+    result["tags"] = get_tags(client, module, result["option_group_arn"])
     return result
 
 
-def create_option_group_options(client, module):
+def create_option_group_options(client, module: AnsibleAWSModule) -> bool:
+    """Add or update options in an existing option group."""
     changed = True
-    params = dict()
-    params["OptionGroupName"] = module.params.get("option_group_name")
-    options_to_include = module.params.get("options")
-    params["OptionsToInclude"] = snake_dict_to_camel_dict(options_to_include, capitalize_first=True)
+    params = {
+        "OptionGroupName": module.params["option_group_name"],
+        "OptionsToInclude": snake_dict_to_camel_dict(module.params["options"], capitalize_first=True),
+    }
 
     if module.params.get("apply_immediately"):
-        params["ApplyImmediately"] = module.params.get("apply_immediately")
+        params["ApplyImmediately"] = module.params["apply_immediately"]
 
     if module.check_mode:
         return changed
 
     try:
         client.modify_option_group(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to update Option Group.")
 
     return changed
 
 
-def remove_option_group_options(client, module, options_to_remove):
+def remove_option_group_options(client, module: AnsibleAWSModule, options_to_remove: List[str]) -> bool:
+    """Remove specified options from an option group."""
     changed = True
-    params = dict()
-    params["OptionGroupName"] = module.params.get("option_group_name")
-    params["OptionsToRemove"] = options_to_remove
+    params = {
+        "OptionGroupName": module.params["option_group_name"],
+        "OptionsToRemove": options_to_remove,
+    }
 
     if module.params.get("apply_immediately"):
-        params["ApplyImmediately"] = module.params.get("apply_immediately")
+        params["ApplyImmediately"] = module.params["apply_immediately"]
 
     if module.check_mode:
         return changed
 
     try:
         client.modify_option_group(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e)
+    except (ClientError, BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to remove options from Option Group.")
 
     return changed
 
 
-def create_option_group(client, module):
+def create_option_group(client, module: AnsibleAWSModule) -> bool:
+    """Create a new RDS option group."""
     changed = True
-    params = dict()
-    params["OptionGroupName"] = module.params.get("option_group_name")
-    params["EngineName"] = module.params.get("engine_name")
-    params["MajorEngineVersion"] = str(module.params.get("major_engine_version"))
-    params["OptionGroupDescription"] = module.params.get("option_group_description")
+    params = {
+        "OptionGroupName": module.params["option_group_name"],
+        "EngineName": module.params["engine_name"],
+        "MajorEngineVersion": str(module.params["major_engine_version"]),
+        "OptionGroupDescription": module.params["option_group_description"],
+    }
 
     if module.params.get("tags"):
-        params["Tags"] = ansible_dict_to_boto3_tag_list(module.params.get("tags"))
+        params["Tags"] = ansible_dict_to_boto3_tag_list(module.params["tags"])
     else:
-        params["Tags"] = list()
+        params["Tags"] = []
 
-        if module.check_mode:
-            return changed
+    if module.check_mode:
+        return changed
+
     try:
         client.create_option_group(aws_retry=True, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to create Option Group.")
 
     return changed
 
 
-def match_option_group_options(client, module):
+def match_option_group_options(client, module: AnsibleAWSModule) -> bool:
+    """Check if existing option group options differ from the desired options."""
     requires_update = False
     new_options = module.params.get("options")
 
-    # Get existing option groups and compare to our new options spec
-    current_option = get_option_group(client, module)
+    current_option = get_option_group(client, module, module.params["option_group_name"])
 
     if current_option["options"] == [] and new_options:
         requires_update = True
@@ -464,8 +459,6 @@ def match_option_group_options(client, module):
         for option in current_option["options"]:
             for setting_name in new_options:
                 if setting_name["option_name"] == option["option_name"]:
-                    # Security groups need to be handled separately due to different keys on request and what is
-                    # returned by the API
                     if any(
                         name in option.keys() - ["option_settings", "vpc_security_group_memberships"]
                         and setting_name[name] != option[name]
@@ -492,13 +485,14 @@ def match_option_group_options(client, module):
     return requires_update
 
 
-def compare_option_group(client, module):
+def compare_option_group(client, module: AnsibleAWSModule) -> Tuple[Optional[List[str]], Optional[List[str]]]:
+    """Determine which option names need to be added and removed."""
     to_be_added = None
     to_be_removed = None
-    current_option = get_option_group(client, module)
+    current_option = get_option_group(client, module, module.params["option_group_name"])
     new_options = module.params.get("options")
-    new_settings = set([item["option_name"] for item in new_options])
-    old_settings = set([item["option_name"] for item in current_option["options"]])
+    new_settings = set(item["option_name"] for item in new_options)
+    old_settings = set(item["option_name"] for item in current_option["options"])
 
     if new_settings != old_settings:
         to_be_added = list(new_settings - old_settings)
@@ -507,26 +501,57 @@ def compare_option_group(client, module):
     return to_be_added, to_be_removed
 
 
-def setup_option_group(client, module):
+def update_tags(client, module: AnsibleAWSModule, option_group: Dict[str, Any]) -> bool:
+    """Sync tags on an option group to match the desired state."""
+    if module.params.get("tags") is None:
+        return False
+
+    existing_tags = get_tags(client, module, option_group["option_group_arn"])
+    to_update, to_delete = compare_aws_tags(existing_tags, module.params["tags"], module.params["purge_tags"])
+    changed = bool(to_update or to_delete)
+
+    if module.check_mode:
+        return changed
+
+    if to_update:
+        try:
+            client.add_tags_to_resource(
+                aws_retry=True,
+                ResourceName=option_group["option_group_arn"],
+                Tags=ansible_dict_to_boto3_tag_list(to_update),
+            )
+        except (ClientError, BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Couldn't add tags to option group.")
+    if to_delete:
+        try:
+            client.remove_tags_from_resource(
+                aws_retry=True,
+                ResourceName=option_group["option_group_arn"],
+                TagKeys=to_delete,
+            )
+        except (ClientError, BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Couldn't remove tags from option group.")
+
+    return changed
+
+
+def setup_option_group(client, module: AnsibleAWSModule) -> Tuple[bool, Dict[str, Any]]:
+    """Create or update an option group (state=present)."""
     results = []
     changed = False
     to_be_added = None
     to_be_removed = None
 
-    # Check if there is an existing options group
-    existing_option_group = get_option_group(client, module)
+    existing_option_group = get_option_group(client, module, module.params["option_group_name"])
 
     if existing_option_group:
         results = existing_option_group
 
-        # Check tagging
         changed |= update_tags(client, module, existing_option_group)
 
         if module.params.get("options"):
-            # Check if existing options require updating
             update_required = match_option_group_options(client, module)
 
-            # Check if there are options to be added or removed
             if update_required:
                 to_be_added, to_be_removed = compare_option_group(client, module)
 
@@ -536,43 +561,33 @@ def setup_option_group(client, module):
             if to_be_removed:
                 changed |= remove_option_group_options(client, module, to_be_removed)
 
-            # If changed, get updated version of option group
             if changed:
-                results = get_option_group(client, module)
+                results = get_option_group(client, module, module.params["option_group_name"])
         else:
-            # No options were supplied. If options exist, remove them
-            current_option_group = get_option_group(client, module)
+            current_option_group = get_option_group(client, module, module.params["option_group_name"])
 
             if current_option_group["options"] != []:
-                # Here we would call our remove options function
-                options_to_remove = []
-
-                for option in current_option_group["options"]:
-                    options_to_remove.append(option["option_name"])
-
+                options_to_remove = [option["option_name"] for option in current_option_group["options"]]
                 changed |= remove_option_group_options(client, module, options_to_remove)
 
-            # If changed, get updated version of option group
             if changed:
-                results = get_option_group(client, module)
+                results = get_option_group(client, module, module.params["option_group_name"])
     else:
         changed = create_option_group(client, module)
 
         if module.params.get("options"):
             changed = create_option_group_options(client, module)
 
-        results = get_option_group(client, module)
+        results = get_option_group(client, module, module.params["option_group_name"])
 
     return changed, results
 
 
-def remove_option_group(client, module):
+def remove_option_group(client, module: AnsibleAWSModule) -> Tuple[bool, Dict[str, Any]]:
+    """Delete an option group (state=absent)."""
     changed = False
-    params = dict()
-    params["OptionGroupName"] = module.params.get("option_group_name")
 
-    # Check if there is an existing options group
-    existing_option_group = get_option_group(client, module)
+    existing_option_group = get_option_group(client, module, module.params["option_group_name"])
 
     if existing_option_group:
         if module.check_mode:
@@ -580,51 +595,11 @@ def remove_option_group(client, module):
 
         changed = True
         try:
-            client.delete_option_group(aws_retry=True, **params)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            client.delete_option_group(aws_retry=True, OptionGroupName=module.params["option_group_name"])
+        except (ClientError, BotoCoreError) as e:
             module.fail_json_aws(e, msg="Unable to delete option group.")
 
     return changed, {}
-
-
-def update_tags(client, module, option_group):
-    if module.params.get("tags") is None:
-        return False
-
-    try:
-        existing_tags = client.list_tags_for_resource(aws_retry=True, ResourceName=option_group["option_group_arn"])[
-            "TagList"
-        ]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't obtain option group tags.")
-
-    to_update, to_delete = compare_aws_tags(
-        boto3_tag_list_to_ansible_dict(existing_tags), module.params["tags"], module.params["purge_tags"]
-    )
-    changed = bool(to_update or to_delete)
-
-    if to_update:
-        try:
-            if module.check_mode:
-                return changed
-            client.add_tags_to_resource(
-                aws_retry=True,
-                ResourceName=option_group["option_group_arn"],
-                Tags=ansible_dict_to_boto3_tag_list(to_update),
-            )
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't add tags to option group.")
-    if to_delete:
-        try:
-            if module.check_mode:
-                return changed
-            client.remove_tags_from_resource(
-                aws_retry=True, ResourceName=option_group["option_group_arn"], TagKeys=to_delete
-            )
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't remove tags from option group.")
-
-    return changed
 
 
 def main():
@@ -647,17 +622,17 @@ def main():
         required_if=[["state", "present", ["engine_name", "major_engine_version", "option_group_description"]]],
     )
 
-    try:
-        client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS.")
+    client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
 
     state = module.params.get("state")
 
-    if state == "present":
-        changed, results = setup_option_group(client, module)
-    else:
-        changed, results = remove_option_group(client, module)
+    try:
+        if state == "present":
+            changed, results = setup_option_group(client, module)
+        else:
+            changed, results = remove_option_group(client, module)
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg="Couldn't manage option group.")
 
     module.exit_json(changed=changed, **results)
 
