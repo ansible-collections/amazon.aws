@@ -75,6 +75,13 @@ def describe_option_groups(client, **params: Dict) -> List[Dict[str, Any]]:
     return paginator.paginate(**params).build_full_result()["OptionGroupsList"]
 
 
+@RDSErrorHandler.list_error_handler("describe db subnet groups", [])
+@AWSRetry.jittered_backoff()
+def describe_db_subnet_groups(client, **params: Dict) -> List[Dict[str, Any]]:
+    paginator = client.get_paginator("describe_db_subnet_groups")
+    return paginator.paginate(**params).build_full_result()["DBSubnetGroups"]
+
+
 @RDSErrorHandler.list_error_handler("list tags for resource", [])
 @AWSRetry.jittered_backoff()
 def list_tags_for_resource(client, resource_arn: str) -> List[Dict[str, str]]:

@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_subnet_group - Refactored module to use the shared ``describe_db_subnet_groups`` and ``call_method`` helpers from ``module_utils/rds`` and standardized error handling on ``AnsibleRDSError``, removing the module-local backoff and duplicated ``try``/``except`` blocks (https://github.com/ansible-collections/amazon.aws/pull/XXXX).

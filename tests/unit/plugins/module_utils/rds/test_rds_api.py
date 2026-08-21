@@ -19,6 +19,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import Boto3ClientM
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_engine_versions
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_subnet_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_global_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_option_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
@@ -715,3 +716,48 @@ class TestDescribeDbEngineVersions:
         )
         assert len(result) == 1
 
+
+# =============================================================================
+# describe_db_subnet_groups
+# =============================================================================
+
+
+class TestDescribeDbSubnetGroups:
+    def test_describe_db_subnet_groups_returns_list(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "DBSubnetGroups": [
+                {"DBSubnetGroupName": "sg-1"},
+                {"DBSubnetGroupName": "sg-2"},
+            ]
+        }
+
+        result = describe_db_subnet_groups(client, DBSubnetGroupName="sg-1")
+
+        client.get_paginator.assert_called_with("describe_db_subnet_groups")
+        paginator.paginate.assert_called_with(DBSubnetGroupName="sg-1")
+        assert len(result) == 2
+        assert result[0]["DBSubnetGroupName"] == "sg-1"
+
+    def test_describe_db_subnet_groups_empty(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {"DBSubnetGroups": []}
+
+        result = describe_db_subnet_groups(client)
+
+        assert result == []
+
+    def test_describe_db_subnet_groups_not_found_returns_empty(self):
+        client = MagicMock()
+        client.get_paginator.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "DBSubnetGroupNotFoundFault", "Message": "not found"}},
+            "DescribeDBSubnetGroups",
+        )
+
+        result = describe_db_subnet_groups(client, DBSubnetGroupName="nonexistent")
+
+        assert result == []

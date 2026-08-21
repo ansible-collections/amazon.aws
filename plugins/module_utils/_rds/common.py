@@ -28,6 +28,7 @@ class RDSErrorHandler(AWSErrorHandler):
                 "DBClusterSnapshotNotFoundFault",
                 "GlobalClusterNotFoundFault",
                 "OptionGroupNotFoundFault",
+                "DBSubnetGroupNotFoundFault",
             ]
         )
 
