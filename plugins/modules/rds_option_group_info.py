@@ -24,12 +24,12 @@ options:
     marker:
         description:
             - If this parameter is specified, the response includes only records beyond the marker, up to the value specified by O(max_records).
-            - Allowed values are between V(20) and V(100).
         required: false
         type: str
     max_records:
         description:
             - The maximum number of records to include in the response.
+            - Allowed values are between V(20) and V(100).
         type: int
         default: 100
         required: false
@@ -235,58 +235,67 @@ result:
 
 """
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_option_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-@AWSRetry.jittered_backoff(retries=10)
-def _describe_option_groups(client, **params):
-    try:
-        paginator = client.get_paginator("describe_option_groups")
-        return paginator.paginate(**params).build_full_result()
-    except is_boto3_error_code("OptionGroupNotFoundFault"):
-        return {}
+def option_group_info(
+    client,
+    module: AnsibleAWSModule,
+    option_group_name: str,
+    engine_name: str,
+    major_engine_version: str,
+    marker: Optional[str],
+    max_records: int,
+) -> List[Dict[str, Any]]:
+    """Return attributes of RDS option group(s), optionally filtered.
 
+    Parameters:
+        client: boto3 rds client
+        module: AnsibleAWSModule
+        option_group_name: Name of a specific option group to describe
+        engine_name: Filter by database engine
+        major_engine_version: Filter by major engine version
+        marker: Pagination marker
+        max_records: Maximum number of records to return
 
-def list_option_groups(client, module):
-    option_groups = list()
-    params = dict()
-    params["OptionGroupName"] = module.params.get("option_group_name")
+    Returns:
+        List of option group attribute dicts in snake_case format
+    """
+    params = {}
 
-    if module.params.get("marker"):
-        params["Marker"] = module.params.get("marker")
-        if int(params["Marker"]) < 20 or int(params["Marker"]) > 100:
-            module.fail_json(msg="marker must be between 20 and 100 minutes")
+    if option_group_name:
+        params["OptionGroupName"] = option_group_name
+    if engine_name:
+        params["EngineName"] = engine_name
+    if major_engine_version:
+        params["MajorEngineVersion"] = major_engine_version
 
-    if module.params.get("max_records"):
-        params["MaxRecords"] = module.params.get("max_records")
-        if params["MaxRecords"] > 100:
-            module.fail_json(msg="The maximum number of records to include in the response is 100.")
+    if marker:
+        params["Marker"] = marker
 
-    params["EngineName"] = module.params.get("engine_name")
-    params["MajorEngineVersion"] = module.params.get("major_engine_version")
+    if max_records:
+        if max_records < 20 or max_records > 100:
+            module.fail_json(msg="The maximum number of records to include in the response must be between 20 and 100.")
+        params["MaxRecords"] = max_records
 
-    try:
-        result = _describe_option_groups(client, **params)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't describe option groups.")
+    results = describe_option_groups(client, **params)
 
-    for option_group in result["OptionGroupsList"]:
-        # Turn the boto3 result into ansible_friendly_snaked_names
-        converted_option_group = camel_dict_to_snake_dict(option_group)
-        converted_option_group["tags"] = get_tags(client, module, converted_option_group["option_group_arn"])
-        option_groups.append(converted_option_group)
+    output = []
+    for option_group in results:
+        option_group["Tags"] = get_tags(client, module, option_group["OptionGroupArn"])
+        output.append(camel_dict_to_snake_dict(option_group, ignore_list=["Tags"]))
 
-    return option_groups
+    return output
 
 
 def main():
@@ -310,15 +319,23 @@ def main():
         ],
     )
 
-    # Validate Requirements
+    client = module.client("rds")
+
     try:
-        connection = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
-
-    results = list_option_groups(connection, module)
-
-    module.exit_json(result=results)
+        module.exit_json(
+            changed=False,
+            result=option_group_info(
+                client,
+                module,
+                option_group_name=module.params.get("option_group_name"),
+                engine_name=module.params.get("engine_name"),
+                major_engine_version=module.params.get("major_engine_version"),
+                marker=module.params.get("marker"),
+                max_records=module.params.get("max_records"),
+            ),
+        )
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg="Could not describe option groups.")
 
 
 if __name__ == "__main__":
