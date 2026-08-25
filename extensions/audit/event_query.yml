@@ -31,7 +31,7 @@ amazon.aws.elb_application_lb_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "networking",
-        device_type: "load_balancer"
+        device_type: "load_balancer_application"
       },
     }
 
@@ -46,7 +46,7 @@ amazon.aws.elb_classic_lb_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "networking",
-        device_type: "load_balancer"
+        device_type: "load_balancer_classic"
       },
     }
 
