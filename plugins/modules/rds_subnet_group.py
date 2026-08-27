@@ -243,7 +243,7 @@ def get_subnet_group(client, module: AnsibleAWSModule) -> Optional[Dict[str, Any
     try:
         subnet_groups = describe_db_subnet_groups(client, DBSubnetGroupName=name)
     except AnsibleRDSError as e:
-        module.fail_json_aws(e, msg=f"Couldn't describe subnet group {name}")
+        module.fail_json_aws(e, msg=f"Could not describe subnet group {name}")
 
     if not subnet_groups:
         return None
