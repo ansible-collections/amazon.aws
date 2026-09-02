@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_instance_snapshot - Removed the redundant module-local ``AWSRetry.jittered_backoff()`` client retry decorator, relying solely on the shared ``call_method`` helper from ``module_utils/rds`` for retry handling, and simplified the ``present``/``absent`` logic (https://github.com/ansible-collections/amazon.aws/pull/3080).

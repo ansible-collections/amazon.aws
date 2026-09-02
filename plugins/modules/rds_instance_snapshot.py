@@ -240,22 +240,18 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
     snapshot_id = module.params.get("db_snapshot_identifier")
-    params = {"DBSnapshotIdentifier": snapshot_id}
     changed = False
 
     try:
         snapshot = get_snapshot(client, snapshot_id, "instance")
     except AnsibleRDSError as e:
         module.fail_json_aws(e, msg=f"Failed to get snapshot: {snapshot_id}")
-    if not snapshot:
-        module.exit_json(changed=changed)
-    elif snapshot and snapshot["Status"] != "deleting":
-        snapshot, changed = call_method(client, module, "delete_db_snapshot", params)
+    if snapshot and snapshot["Status"] != "deleting":
+        snapshot, changed = call_method(client, module, "delete_db_snapshot", {"DBSnapshotIdentifier": snapshot_id})
 
     module.exit_json(changed=changed)
 
@@ -354,7 +350,7 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-    client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
+    client = module.client("rds")
 
     state = module.params.get("state")
     if state == "absent":
