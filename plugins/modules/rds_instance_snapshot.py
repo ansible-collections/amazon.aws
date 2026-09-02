@@ -240,9 +240,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
 def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
+    """
+    Delete a DB snapshot if it exists and is not already being deleted.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+    """
     snapshot_id = module.params.get("db_snapshot_identifier")
     changed = False
 
@@ -257,6 +265,14 @@ def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
 
 
 def ensure_snapshot_present(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> None:
+    """
+    Create, copy, or update a DB snapshot to match the desired state.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+        params: Snapshot parameters formatted for the boto3 RDS client.
+    """
     source_id = module.params.get("source_db_snapshot_identifier")
     snapshot_id = module.params.get("db_snapshot_identifier")
     changed = False
@@ -286,6 +302,17 @@ def ensure_snapshot_present(client, module: AnsibleAWSModule, params: Dict[str, 
 
 
 def create_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> bool:
+    """
+    Create a new DB snapshot.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+        params: Snapshot parameters formatted for the boto3 RDS client.
+
+    Returns:
+        True if a change was made.
+    """
     method_params = format_rds_client_method_parameters(client, module, params, "create_db_snapshot", format_tags=True)
     _snapshot, changed = call_method(client, module, "create_db_snapshot", method_params)
 
@@ -293,6 +320,17 @@ def create_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) ->
 
 
 def copy_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> bool:
+    """
+    Copy a DB snapshot from a source snapshot if the target snapshot does not already exist.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+        params: Snapshot parameters formatted for the boto3 RDS client.
+
+    Returns:
+        True if a change was made.
+    """
     changed = False
     snapshot_id = module.params.get("db_snapshot_identifier")
     try:
@@ -311,6 +349,16 @@ def copy_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> b
 
 
 def modify_snapshot(client, module: AnsibleAWSModule) -> bool:
+    """
+    Update tags on an existing DB snapshot.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        True if a change was made.
+    """
     # TODO - add other modifications aside from purely tags
     changed = False
     snapshot_id = module.params.get("db_snapshot_identifier")
@@ -350,7 +398,7 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-    client = module.client("rds")
+    client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
 
     state = module.params.get("state")
     if state == "absent":
