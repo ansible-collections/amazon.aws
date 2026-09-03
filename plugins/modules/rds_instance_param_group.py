@@ -140,7 +140,14 @@ INT_MODIFIERS = {
 
 def convert_parameter(param: Dict[str, Any], value: Any) -> str:
     """
-    Allows setting parameters with 10M = 10* 1024 * 1024 and so on.
+    Converts parameter values with size modifiers (K, M, G, T) to their numeric equivalents.
+
+    Args:
+        param: Parameter metadata dict containing DataType
+        value: Parameter value to convert (string, bool, or int)
+
+    Returns:
+        str: Converted parameter value as a string
     """
     converted_value = value
 
@@ -216,7 +223,7 @@ def update_tags(module: AnsibleAWSModule, connection: Any, group_arn: str, tags:
         module: AnsibleAWSModule
         connection: boto3 RDS client
         group_arn: ARN of the parameter group
-        tags: Desired tags dict
+        tags: Desired tags dict or None to skip tag updates
 
     Returns:
         bool: True if tags changed, False if unchanged
