@@ -104,6 +104,12 @@ tags:
     returned: when O(state=present)
 """
 
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
 try:
     import botocore
 except ImportError:
@@ -132,7 +138,7 @@ INT_MODIFIERS = {
 }
 
 
-def convert_parameter(param, value):
+def convert_parameter(param: Dict[str, Any], value: Any) -> str:
     """
     Allows setting parameters with 10M = 10* 1024 * 1024 and so on.
     """
@@ -159,7 +165,7 @@ def convert_parameter(param, value):
     return str(converted_value)
 
 
-def update_parameters(module, connection):
+def update_parameters(module: AnsibleAWSModule, connection: Any) -> Tuple[bool, List[str]]:
     """
     Updates parameter group parameters by comparing desired values against current values.
 
@@ -202,7 +208,7 @@ def update_parameters(module, connection):
     return False, errors
 
 
-def update_tags(module, connection, group_arn, tags):
+def update_tags(module: AnsibleAWSModule, connection: Any, group_arn: str, tags: Optional[Dict[str, str]]) -> bool:
     """
     Updates tags on a parameter group.
 
@@ -225,7 +231,7 @@ def update_tags(module, connection, group_arn, tags):
     )
 
 
-def ensure_present(module, connection):
+def ensure_present(module: AnsibleAWSModule, connection: Any) -> None:
     """
     Ensures a DB parameter group exists with the specified configuration.
 
@@ -272,7 +278,7 @@ def ensure_present(module, connection):
     module.exit_json(changed=changed, errors=errors, **group)
 
 
-def ensure_absent(module, connection):
+def ensure_absent(module: AnsibleAWSModule, connection: Any) -> None:
     """
     Ensures a DB parameter group does not exist.
 
@@ -293,7 +299,7 @@ def ensure_absent(module, connection):
     module.exit_json(changed=True)
 
 
-def main():
+def main() -> None:
     argument_spec = dict(
         state=dict(required=True, choices=["present", "absent"]),
         name=dict(required=True),
