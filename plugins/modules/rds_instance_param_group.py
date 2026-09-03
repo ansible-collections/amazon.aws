@@ -104,8 +104,6 @@ tags:
     returned: when O(state=present)
 """
 
-from itertools import zip_longest
-
 try:
     import botocore
 except ImportError:
