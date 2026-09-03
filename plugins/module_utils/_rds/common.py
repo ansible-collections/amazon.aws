@@ -26,6 +26,7 @@ class RDSErrorHandler(AWSErrorHandler):
                 "DBClusterSnapshotNotFoundFault",
                 "DBInstanceNotFound",
                 "DBParameterGroupNotFound",
+                "DBParameterGroupNotFoundFault",
                 "DBSnapshotNotFound",
                 "DBSubnetGroupNotFoundFault",
                 "GlobalClusterNotFoundFault",
