@@ -19,19 +19,23 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSEr
 from ansible_collections.amazon.aws.plugins.module_utils.rds import Boto3ClientMethod
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import create_db_cluster_parameter_group
+from ansible_collections.amazon.aws.plugins.module_utils.rds import create_db_parameter_group
 from ansible_collections.amazon.aws.plugins.module_utils.rds import delete_db_cluster_parameter_group
+from ansible_collections.amazon.aws.plugins.module_utils.rds import delete_db_parameter_group
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameter_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_engine_versions
-from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_subnet_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instance_parameter_groups
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_subnet_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_global_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_option_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
 from ansible_collections.amazon.aws.plugins.module_utils.rds import handle_errors
 from ansible_collections.amazon.aws.plugins.module_utils.rds import modify_db_cluster_parameter_group
+from ansible_collections.amazon.aws.plugins.module_utils.rds import modify_db_parameter_group
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
 
 if not HAS_BOTO3:
@@ -946,3 +950,142 @@ class TestDescribeDbInstanceParameterGroups:
         result = describe_db_instance_parameter_groups(client, "nonexistent")
 
         assert result == []
+
+# =============================================================================
+# describe_db_parameters
+# =============================================================================
+
+class TestDescribeDbParameters:
+    def test_describe_db_parameters_returns_list(self):
+        """Test successful retrieval of parameters"""
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "Parameters": [
+                {"ParameterName": "max_connections", "ParameterValue": "100"},
+                {"ParameterName": "log_bin_trust_function_creators", "ParameterValue": "1"},
+            ]
+        }
+        
+        result = describe_db_parameters(client, "my-pg", source="user")
+        
+        client.get_paginator.assert_called_with("describe_db_parameters")
+        paginator.paginate.assert_called_with(DBParameterGroupName="my-pg", Source="user")
+        assert len(result) == 2
+    
+    def test_describe_db_parameters_not_found_returns_empty(self):
+        """Test DBParameterGroupNotFoundFault returns empty list via @RDSErrorHandler"""
+        client = MagicMock()
+        client.get_paginator.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "DBParameterGroupNotFoundFault", "Message": "not found"}},
+            "DescribeDBParameters",
+        )
+        
+        result = describe_db_parameters(client, "nonexistent")
+        
+        assert result == []
+
+# =============================================================================
+# create_db_parameter_group
+# =============================================================================
+
+class TestCreateDbParameterGroup:
+    def test_create_db_parameter_group_success(self):
+        """Test successful parameter group creation"""
+        client = MagicMock()
+        client.create_db_parameter_group.return_value = {
+            "DBParameterGroup": {"DBParameterGroupName": "my-pg"}
+        }
+        
+        result = create_db_parameter_group(
+            client,
+            DBParameterGroupName="my-pg",
+            DBParameterGroupFamily="mysql8.0",
+            Description="Test group"
+        )
+        
+        client.create_db_parameter_group.assert_called_once_with(
+            aws_retry=True,
+            DBParameterGroupName="my-pg",
+            DBParameterGroupFamily="mysql8.0",
+            Description="Test group"
+        )
+        assert result["DBParameterGroup"]["DBParameterGroupName"] == "my-pg"
+    
+    def test_create_db_parameter_group_error_raises_ansible_rds_error(self):
+        """Test @RDSErrorHandler converts ClientError to AnsibleRDSError"""
+        client = MagicMock()
+        client.create_db_parameter_group.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "DBParameterGroupAlreadyExistsFault", "Message": "exists"}},
+            "CreateDBParameterGroup",
+        )
+        
+        with pytest.raises(AnsibleRDSError):
+            create_db_parameter_group(client, DBParameterGroupName="my-pg")
+
+# =============================================================================
+# modify_db_parameter_group
+# =============================================================================
+
+class TestModifyDbParameterGroup:
+    def test_modify_db_parameter_group_small_list(self):
+        """Test modification with <20 parameters"""
+        client = MagicMock()
+        parameters = [
+            {"ParameterName": f"param{i}", "ParameterValue": str(i)} 
+            for i in range(10)
+        ]
+        
+        modify_db_parameter_group(client, "my-pg", parameters)
+        
+        client.modify_db_parameter_group.assert_called_once_with(
+            aws_retry=True,
+            DBParameterGroupName="my-pg",
+            Parameters=parameters
+        )
+    
+    def test_modify_db_parameter_group_chunking(self):
+        """Test chunking for >20 parameters (max 20 per request)"""
+        client = MagicMock()
+        parameters = [
+            {"ParameterName": f"param{i}", "ParameterValue": str(i)} 
+            for i in range(45)
+        ]
+        
+        modify_db_parameter_group(client, "my-pg", parameters)
+        
+        # Should be called 3 times: 20, 20, 5
+        assert client.modify_db_parameter_group.call_count == 3
+        
+        # Verify first call has 20 parameters
+        first_call_params = client.modify_db_parameter_group.call_args_list[0][1]["Parameters"]
+        assert len(first_call_params) == 20
+
+# =============================================================================
+# delete_db_parameter_group
+# =============================================================================
+
+class TestDeleteDbParameterGroup:
+    def test_delete_db_parameter_group_success(self):
+        """Test successful parameter group deletion"""
+        client = MagicMock()
+        client.delete_db_parameter_group.return_value = {}
+        
+        delete_db_parameter_group(client, "my-pg")
+        
+        client.delete_db_parameter_group.assert_called_once_with(
+            aws_retry=True,
+            DBParameterGroupName="my-pg"
+        )
+    
+    def test_delete_db_parameter_group_error_raises_ansible_rds_error(self):
+        """Test @RDSErrorHandler converts ClientError to AnsibleRDSError"""
+        client = MagicMock()
+        client.delete_db_parameter_group.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "InvalidDBParameterGroupStateFault", "Message": "in use"}},
+            "DeleteDBParameterGroup",
+        )
+        
+        with pytest.raises(AnsibleRDSError):
+            delete_db_parameter_group(client, "my-pg")
