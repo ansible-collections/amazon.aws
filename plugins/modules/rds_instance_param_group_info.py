@@ -67,8 +67,34 @@ db_instance_parameter_groups:
               }
 """
 
+from typing import Any
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instance_parameter_groups
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+
+def describe_rds_instance_parameter_group(connection: Any, module: AnsibleAWSModule) -> None:
+    """
+    Describes DB parameter groups and formats the response.
+    
+    Args:
+        connection: boto3 RDS client
+        module: AnsibleAWSModule
+    """
+    group_name = module.params.get("db_parameter_group_name")
+    results = []
+    
+    response = describe_db_instance_parameter_groups(connection, group_name)
+    if response:
+        for resource in response:
+            resource["tags"] = get_tags(connection, module, resource["DBParameterGroupArn"])
+            results.append(camel_dict_to_snake_dict(resource, ignore_list=["tags"]))
+    
+    module.exit_json(changed=False, db_instance_parameter_groups=results)
 
 
 def main() -> None:
@@ -81,12 +107,11 @@ def main() -> None:
         supports_check_mode=True,
     )
 
-    client = module.client("rds")
-    db_parameter_group_name = module.params.get("db_parameter_group_name")
-
-    result = describe_db_instance_parameter_groups(client, module, db_parameter_group_name)
-
-    module.exit_json(changed=False, db_instance_parameter_groups=result)
+    connection = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    try:
+        describe_rds_instance_parameter_group(connection, module)
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg="Failed to describe DB parameter groups")
 
 
 if __name__ == "__main__":
