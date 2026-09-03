@@ -323,7 +323,7 @@ def main() -> None:
     try:
         if state == "present":
             ensure_present(module, connection)
-        if state == "absent":
+        elif state == "absent":
             ensure_absent(module, connection)
     except AnsibleRDSError as e:
         module.fail_json_aws(e, msg="Failed to manage DB parameter group")
