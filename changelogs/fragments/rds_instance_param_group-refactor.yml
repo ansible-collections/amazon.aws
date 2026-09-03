@@ -1,0 +1,5 @@
+minor_changes:
+  - rds_instance_param_group - Refactored to use shared utilities from ``module_utils/_rds/api.py`` including ``describe_db_instance_parameter_groups``, ``describe_db_parameters``, ``create_db_parameter_group``, ``modify_db_parameter_group``, and ``delete_db_parameter_group`` for consistent error handling and reduced code duplication. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+  - rds_instance_param_group_info - Updated module to use refactored ``describe_db_instance_parameter_groups`` function with new signature that retrieves tags separately. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+  - module_utils/_rds/api - Added shared utility functions for DB parameter group operations with ``@RDSErrorHandler`` decorators for standardized error handling. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+  - module_utils/_rds/common - Added ``DBParameterGroupNotFoundFault`` to the list of not-found error codes handled by ``RDSErrorHandler``. (https://github.com/ansible-collections/amazon.aws/pull/3065)
