@@ -39,6 +39,10 @@ describe_db_cluster_parameters = _api.describe_db_cluster_parameters
 create_db_cluster_parameter_group = _api.create_db_cluster_parameter_group
 delete_db_cluster_parameter_group = _api.delete_db_cluster_parameter_group
 modify_db_cluster_parameter_group = _api.modify_db_cluster_parameter_group
+describe_db_parameter_group = _api.describe_db_parameters
+create_db_parameter_group = _api.create_db_parameter_group
+modify_db_parameter_group = _api.modify_db_parameter_group
+delete_db_parameter_group = _api.delete_db_parameter_group
 
 # waiters.py re-exports
 wait_for_instance_status = _waiters.wait_for_instance_status
