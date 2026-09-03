@@ -110,11 +110,6 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.parsing.convert_bool import BOOLEANS_TRUE
 
@@ -323,17 +318,13 @@ def main() -> None:
         supports_check_mode=True,
     )
 
-    try:
-        conn = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
-
+    connection = module.client("rds", retry_decorator=AWSRetry.jittered_backoff())
     state = module.params.get("state")
     try:
         if state == "present":
-            ensure_present(module, conn)
+            ensure_present(module, connection)
         if state == "absent":
-            ensure_absent(module, conn)
+            ensure_absent(module, connection)
     except AnsibleRDSError as e:
         module.fail_json_aws(e, msg="Failed to manage DB parameter group")
 
