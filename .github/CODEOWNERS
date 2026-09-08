@@ -1,0 +1,9 @@
+# CODEOWNERS for ansible-collections/amazon.aws
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# The @ansible-collections/cloud team is automatically requested for review
+# when a pull request modifies files matching these patterns.
+# Last matching pattern takes precedence.
+
+# Default: require review from the cloud team for all changes
+*                       @ansible-collections/cloud
