@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_ssm connection plugin - fix a reliable hang during Windows terminal setup where ``disable_windows_echo_command()`` sent a multi-line ``Add-Type`` here-string as a single interactive-session write; PowerShell's line-continuation handling over the SSM console never got past it. Rewritten as a single physical line using backtick escapes instead of embedded newlines (https://github.com/ansible-collections/amazon.aws/issues/3086).

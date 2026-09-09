@@ -232,21 +232,28 @@ class TerminalManager:
         # This is equivalent to 'stty -echo' on Linux
         command = (
             "Remove-Module PSReadLine -ErrorAction SilentlyContinue ; "
-            # Define P/Invoke for kernel32 console functions
-            "Add-Type -TypeDefinition @'\n"
-            "using System;\n"
-            "using System.Runtime.InteropServices;\n"
-            "public class ConsoleHelper {\n"
-            '    [DllImport("kernel32.dll", SetLastError = true)]\n'
-            "    public static extern IntPtr GetStdHandle(int nStdHandle);\n"
-            '    [DllImport("kernel32.dll", SetLastError = true)]\n'
-            "    public static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);\n"
-            '    [DllImport("kernel32.dll", SetLastError = true)]\n'
-            "    public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);\n"
-            "    public const int STD_INPUT_HANDLE = -10;\n"
-            "    public const uint ENABLE_ECHO_INPUT = 0x0004;\n"
-            "}\n"
-            "'@ -ErrorAction SilentlyContinue ; "
+            # Define P/Invoke for kernel32 console functions.
+            # CA-2572: this used to be a multi-line '@...'@ here-string, sent as a
+            # single stdin_write() containing embedded newlines. That reliably hung
+            # partway through on a Windows target, PowerShell's ">>" continuation-
+            # prompt handling over the SSM interactive console never got past line
+            # ~15 of the block. Rewritten as one physical line (backtick-n instead
+            # of a real newline byte, backtick-quote instead of a bare double quote)
+            # so nothing is sent that can trigger that continuation-prompt path;
+            # PowerShell still expands the backtick escapes into the equivalent
+            # multi-line C# source before handing it to Add-Type.
+            'Add-Type -TypeDefinition "using System;`n'
+            "using System.Runtime.InteropServices;`n"
+            "public class ConsoleHelper {`n"
+            '    [DllImport(`"kernel32.dll`", SetLastError = true)]`n'
+            "    public static extern IntPtr GetStdHandle(int nStdHandle);`n"
+            '    [DllImport(`"kernel32.dll`", SetLastError = true)]`n'
+            "    public static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);`n"
+            '    [DllImport(`"kernel32.dll`", SetLastError = true)]`n'
+            "    public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);`n"
+            "    public const int STD_INPUT_HANDLE = -10;`n"
+            "    public const uint ENABLE_ECHO_INPUT = 0x0004;`n"
+            '}" -ErrorAction SilentlyContinue ; '
             # Disable echo on stdin
             "$h = [ConsoleHelper]::GetStdHandle([ConsoleHelper]::STD_INPUT_HANDLE) ; "
             "$mode = [uint32]0 ; "

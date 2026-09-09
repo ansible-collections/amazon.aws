@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_ssm connection plugin - fix Windows module execution failing with ``invalid payload`` whenever ansible-core sends its standard ``type <file> | PowerShell -EncodedCommand <script>`` invocation shape. The S3-based execution path was silently discarding the piped ``type <file> |`` prefix while extracting the ``-EncodedCommand`` script, so the downloaded copy ran with no piped input at all. The piped prefix is now captured and reattached to the wrapper's own invocation of the downloaded script (https://github.com/ansible-collections/amazon.aws/issues/3087).

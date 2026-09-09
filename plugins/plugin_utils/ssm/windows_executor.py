@@ -103,7 +103,7 @@ class WindowsCommandExecutor:
         self._verbosity_display(6, f"EXEC_VIA_S3: Command content:\n{cmd_str}")
 
         # Extract PowerShell script from -EncodedCommand if present
-        script_to_upload = self._decode_powershell_command(cmd_str)
+        script_to_upload, pipe_prefix = self._decode_powershell_command(cmd_str)
 
         try:
             # Upload script to S3
@@ -115,7 +115,9 @@ class WindowsCommandExecutor:
                 stdin_url = self._upload_stdin_to_s3(stdin_key, in_data)
                 wrapper = self._generate_wrapper_with_stdin(presigned_url, stdin_url, mark_begin, mark_end)
             else:
-                wrapper = self._generate_wrapper_without_stdin(presigned_url, mark_begin, mark_end)
+                wrapper = self._generate_wrapper_without_stdin(
+                    presigned_url, mark_begin, mark_end, pipe_prefix=pipe_prefix
+                )
 
             # Execute wrapper command
             result = self._execute_wrapper(wrapper, mark_begin, mark_end)
@@ -131,7 +133,7 @@ class WindowsCommandExecutor:
             # Clean up S3 objects
             self._cleanup_s3_objects(s3_key, stdin_key)
 
-    def _decode_powershell_command(self, cmd_str: str) -> str:
+    def _decode_powershell_command(self, cmd_str: str) -> tuple[str, str]:
         """
         Extract PowerShell script from -EncodedCommand if present.
 
@@ -143,14 +145,42 @@ class WindowsCommandExecutor:
         this to plain text before uploading to S3 as UTF-8, otherwise the script will be
         double-encoded and fail to execute.
 
+        CA-2572: ansible-core's standard Windows module-invocation shape is
+        ``type <AnsiballZ file> | PowerShell -EncodedCommand <bootstrap_wrapper_b64>`` --
+        a native OS pipe that feeds the AnsiballZ file's content (module code + a
+        "\\0\\0\\0\\0"-delimited JSON payload) into the encoded script's ``$input``.
+        Because the regex below only locates ``-EncodedCommand`` and everything after
+        it, whatever comes before it on the command line -- including that ``type ... |``
+        pipe -- was previously discarded outright. The decoded script then ran standalone
+        with no piped input at all, so ``$input`` was empty and the script's own
+        ``$split_parts.Length -eq 2`` sanity check failed with "invalid payload" on every
+        single module invocation shaped this way. Now the piped prefix is captured
+        separately and reattached to the wrapper's own invocation of the downloaded
+        script, so the same native pipe still runs, just against the S3-downloaded copy
+        instead of the original inline command.
+
         :param cmd_str: The command string to check for -EncodedCommand
-        :returns: Either the decoded PowerShell script or the original command
+        :returns: A tuple of (script to upload, piped command prefix to reattach when
+            invoking it, or "" if the command had no such pipe).
         """
         script_to_upload = cmd_str
+        pipe_prefix = ""
         encoded_match = re.search(r'-EncodedCommand\s+["\']?([A-Za-z0-9+/=]+)["\']?', cmd_str)
 
         if encoded_match:
             self._verbosity_display(4, "EXEC_VIA_S3: Detected -EncodedCommand, decoding to extract PowerShell script")
+
+            # Anything before -EncodedCommand that ends in a pipe is a native command
+            # (e.g. `type <file> |`) whose stdout was meant to become this script's
+            # $input. Preserve it so it can be reattached to the wrapper's own
+            # invocation of the downloaded script below.
+            prefix_text = cmd_str[: encoded_match.start()]
+            if "|" in prefix_text:
+                pipe_prefix = prefix_text[: prefix_text.rfind("|") + 1].strip() + " "
+                self._verbosity_display(
+                    4, f"EXEC_VIA_S3: Detected piped input prefix, will reattach it: {pipe_prefix!r}"
+                )
+
             try:
                 # WARNING: -EncodedCommand contains base64-encoded UTF-16LE PowerShell script
                 # We MUST decode this to get the plain text script before uploading to S3
@@ -167,8 +197,9 @@ class WindowsCommandExecutor:
                 )
                 # Fall back to uploading the command line as-is
                 script_to_upload = cmd_str
+                pipe_prefix = ""
 
-        return script_to_upload
+        return script_to_upload, pipe_prefix
 
     def _upload_script_to_s3(self, s3_key: str, script: str) -> str:
         """
@@ -288,7 +319,9 @@ class WindowsCommandExecutor:
         )
         return wrapper
 
-    def _generate_wrapper_without_stdin(self, presigned_url: str, mark_begin: str, mark_end: str) -> str:
+    def _generate_wrapper_without_stdin(
+        self, presigned_url: str, mark_begin: str, mark_end: str, pipe_prefix: str = ""
+    ) -> str:
         """
         Generate PowerShell wrapper that downloads script from S3 and executes (no stdin).
 
@@ -307,6 +340,12 @@ class WindowsCommandExecutor:
         :param presigned_url: Presigned URL for the script
         :param mark_begin: Begin marker for output parsing
         :param mark_end: End marker for output parsing
+        :param pipe_prefix: CA-2572 -- an original native command (e.g. ``type <file> |``)
+            that was piping its stdout into the command's ``-EncodedCommand`` script as
+            that script's ``$input``. Reattached here, ahead of the downloaded copy's own
+            invocation, so scripts depending on piped stdin (e.g. ansible-core's own
+            bootstrap_wrapper.ps1) still receive it. Empty string if the original command
+            had no such pipe.
         :returns: PowerShell wrapper command as string
         """
         # No stdin: download script using WebClient and execute
@@ -326,7 +365,7 @@ class WindowsCommandExecutor:
             # WARNING: WriteAllText MUST use UTF8 encoding to preserve Unicode
             f"[System.IO.File]::WriteAllText($t,$s,[System.Text.Encoding]::UTF8) ; "
             f"echo '{mark_begin}' ; "
-            f"powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; "
+            f"{pipe_prefix}powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $t ; "
             f"$e=$LASTEXITCODE ; "
             f"Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue ; "
             f"echo '' ; echo $e ; echo '{mark_end}' "
