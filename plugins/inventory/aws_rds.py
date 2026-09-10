@@ -225,6 +225,8 @@ def _describe_db_clusters(connection, filters):
 class InventoryModule(AWSInventoryBase):
     NAME = "amazon.aws.aws_rds"
     INVENTORY_FILE_SUFFIXES = ("aws_rds.yml", "aws_rds.yaml")
+    # Version 2: Cache raw data instead of formatted inventory
+    CACHE_FORMAT_VERSION = 2
 
     def __init__(self):
         super().__init__()
@@ -236,28 +238,6 @@ class InventoryModule(AWSInventoryBase):
         if hosts:
             self._add_hosts(hosts=hosts, group=group)
             self.inventory.add_child("all", group)
-
-    def _populate_from_source(self, source_data):
-        hostvars = source_data.pop("_meta", {}).get("hostvars", {})
-        for group in source_data:
-            if group == "all":
-                continue
-            self.inventory.add_group(group)
-            hosts = source_data[group].get("hosts", [])
-            for host in hosts:
-                self._populate_host_vars([host], hostvars.get(host, {}), group)
-            self.inventory.add_child("all", group)
-
-    def _format_inventory(self, hosts):
-        results = {"_meta": {"hostvars": {}}}
-        group = "aws_rds"
-        results[group] = {"hosts": []}
-        for host in hosts:
-            hostname = _get_rds_hostname(host)
-            results[group]["hosts"].append(hostname)
-            h = self.inventory.get_host(hostname)
-            results["_meta"]["hostvars"][h.name] = h.vars
-        return results
 
     def _add_hosts(self, hosts, group):
         """
@@ -341,21 +321,17 @@ class InventoryModule(AWSInventoryBase):
         if "db-cluster-id" in filters and include_clusters:
             cluster_filters = ansible_dict_to_boto3_filter_list({"db-cluster-id": filters["db-cluster-id"]})
 
-        result_was_cached, cached_result = self.get_cached_result(path, cache)
-        if result_was_cached:
-            self._populate_from_source(cached_result)
-            return
+        result_was_cached, results = self.get_cached_result(path, cache)
+        if not result_was_cached:
+            results = self._get_all_db_hosts(
+                regions,
+                instance_filters,
+                cluster_filters,
+                strict_permissions,
+                statuses,
+                include_clusters,
+            )
+            # Cache the raw data
+            self.update_cached_result(path, cache, results)
 
-        results = self._get_all_db_hosts(
-            regions,
-            instance_filters,
-            cluster_filters,
-            strict_permissions,
-            statuses,
-            include_clusters,
-        )
         self._populate(results)
-
-        # Update the cache once we're done
-        formatted_inventory = self._format_inventory(results)
-        self.update_cached_result(path, cache, formatted_inventory)
