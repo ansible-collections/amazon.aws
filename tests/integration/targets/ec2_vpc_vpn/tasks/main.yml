@@ -65,6 +65,12 @@
       ansible.builtin.set_fact:
         vpn_id: "{{ tgw_vpn.vpn_connection_id }}"
 
+    - name: Create a CloudWatch Logs log group
+      amazon.aws.cloudwatchlogs_log_group:
+        log_group_name: "{{ resource_prefix }}-vpn-logs"
+        state: present
+      register: log_group
+
     # ============================================================
     - name: Test success with no parameters
       amazon.aws.ec2_vpc_vpn_info:
@@ -124,6 +130,95 @@
         that:
           - result.changed == false
           - result.vpn_connections != []
+
+  # ============================================================
+
+    - name: Enable VPN connection logging
+      amazon.aws.ec2_vpc_vpn:
+        customer_gateway_id: "{{ cgw.gateway.customer_gateway.customer_gateway_id }}"
+        vpn_gateway_id: "{{ vgw.vgw.id }}"
+        tunnel_options:
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
+        state: present
+      register: result
+
+    - name: Assert that changes are made
+      ansible.builtin.assert:
+        that:
+          - result.changed == true
+          - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
+          - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
+          - result.options[0].tunnel_options[0].startup_action == "start"
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
+          - result.options[1].tunnel_options[0].startup_action == "start"
+
+    - name: Enable VPN connection logging (idempotency)
+      amazon.aws.ec2_vpc_vpn:
+        customer_gateway_id: "{{ cgw.gateway.customer_gateway.customer_gateway_id }}"
+        vpn_gateway_id: "{{ vgw.vgw.id }}"
+        tunnel_options:
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: true
+                LogGroupArn: "{{ log_group.arn }}"
+                LogOutputFormat: json
+            StartupAction: start
+        state: present
+      register: result
+
+    - name: Assert that no changes are made
+      ansible.builtin.assert:
+        that:
+          - result.changed == false
+          - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
+          - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
+          - result.options[0].tunnel_options[0].startup_action == "start"
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == true
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_group_arn == log_group.arn
+          - result.options[1].tunnel_options[0].startup_action == "start"
+
+    - name: Disable VPN connection logging (idempotency)
+      amazon.aws.ec2_vpc_vpn:
+        customer_gateway_id: "{{ cgw.gateway.customer_gateway.customer_gateway_id }}"
+        vpn_gateway_id: "{{ vgw.vgw.id }}"
+        tunnel_options:
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: false
+            StartupAction: add
+          - LogOptions:
+              CloudWatchLogOptions:
+                LogEnabled: false
+            StartupAction: add
+        state: present
+      register: result
+
+    - name: Assert that no changes are made
+      ansible.builtin.assert:
+        that:
+          - result.changed == false
+          - result.options[0].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == false
+          - result.options[0].tunnel_options[0].startup_action == "add"
+          - result.options[1].tunnel_options[0].log_options.cloud_watch_log_options.log_enabled == false
+          - result.options[1].tunnel_options[0].startup_action == "add"
 
   # ============================================================
 
@@ -222,5 +317,11 @@
     - name: Delete transit gateway
       amazon.aws.ec2_transit_gateway:
         transit_gateway_id: "{{ tgw.transit_gateway.transit_gateway_id }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete CloudWatch Logs log group
+      amazon.aws.cloudwatchlogs_log_group:
+        log_group_name: "{{ resource_prefix }}-vpn-logs"
         state: absent
       ignore_errors: true
