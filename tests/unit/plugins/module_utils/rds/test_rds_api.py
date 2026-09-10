@@ -15,8 +15,13 @@ except ImportError:
     pass
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.module_utils.rds import Boto3ClientMethod
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
+from ansible_collections.amazon.aws.plugins.module_utils.rds import create_db_cluster_parameter_group
+from ansible_collections.amazon.aws.plugins.module_utils.rds import delete_db_cluster_parameter_group
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameter_groups
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_cluster_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_engine_versions
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_subnet_groups
@@ -25,6 +30,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_opt
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
 from ansible_collections.amazon.aws.plugins.module_utils.rds import handle_errors
+from ansible_collections.amazon.aws.plugins.module_utils.rds import modify_db_cluster_parameter_group
 from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
 
 if not HAS_BOTO3:
@@ -766,3 +772,126 @@ class TestDescribeDbSubnetGroups:
         result = describe_db_subnet_groups(client, DBSubnetGroupName="nonexistent")
 
         assert result == []
+
+
+# =============================================================================
+# describe_db_cluster_parameter_groups / describe_db_cluster_parameters
+# =============================================================================
+
+
+class TestDescribeDbClusterParameterGroups:
+    def test_describe_db_cluster_parameter_groups_returns_list(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "DBClusterParameterGroups": [{"DBClusterParameterGroupName": "pg-1"}]
+        }
+
+        result = describe_db_cluster_parameter_groups(client, DBClusterParameterGroupName="pg-1")
+
+        client.get_paginator.assert_called_with("describe_db_cluster_parameter_groups")
+        paginator.paginate.assert_called_with(DBClusterParameterGroupName="pg-1")
+        assert result == [{"DBClusterParameterGroupName": "pg-1"}]
+
+    def test_describe_db_cluster_parameter_groups_no_filter(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {"DBClusterParameterGroups": []}
+
+        result = describe_db_cluster_parameter_groups(client)
+
+        paginator.paginate.assert_called_with()
+        assert result == []
+
+    def test_describe_db_cluster_parameter_groups_not_found_returns_empty(self):
+        client = MagicMock()
+        client.get_paginator.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "DBParameterGroupNotFound", "Message": "not found"}},
+            "DescribeDBClusterParameterGroups",
+        )
+
+        result = describe_db_cluster_parameter_groups(client, DBClusterParameterGroupName="nonexistent")
+
+        assert result == []
+
+    def test_describe_db_cluster_parameter_groups_raises(self):
+        client = MagicMock()
+        client.get_paginator.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "AccessDenied", "Message": "denied"}},
+            "DescribeDBClusterParameterGroups",
+        )
+
+        with pytest.raises(AnsibleRDSError, match="Failed to describe db cluster parameter groups"):
+            describe_db_cluster_parameter_groups(client, DBClusterParameterGroupName="pg-1")
+
+
+class TestDescribeDbClusterParameters:
+    def test_describe_db_cluster_parameters_returns_list(self):
+        client = MagicMock()
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value.build_full_result.return_value = {
+            "Parameters": [{"ParameterName": "array_nulls", "ParameterValue": "1"}]
+        }
+
+        result = describe_db_cluster_parameters(client, DBClusterParameterGroupName="pg-1", Source="user")
+
+        client.get_paginator.assert_called_with("describe_db_cluster_parameters")
+        paginator.paginate.assert_called_with(DBClusterParameterGroupName="pg-1", Source="user")
+        assert result[0]["ParameterName"] == "array_nulls"
+
+    def test_describe_db_cluster_parameters_not_found_returns_empty(self):
+        client = MagicMock()
+        client.get_paginator.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "DBParameterGroupNotFound", "Message": "not found"}},
+            "DescribeDBClusterParameters",
+        )
+
+        result = describe_db_cluster_parameters(client, DBClusterParameterGroupName="nonexistent")
+
+        assert result == []
+
+
+class TestClusterParameterGroupMutations:
+    def test_create_db_cluster_parameter_group(self):
+        client = MagicMock()
+        client.create_db_cluster_parameter_group.return_value = {"DBClusterParameterGroup": {"a": "b"}}
+
+        result = create_db_cluster_parameter_group(client, DBClusterParameterGroupName="pg-1")
+
+        client.create_db_cluster_parameter_group.assert_called_once_with(
+            aws_retry=True, DBClusterParameterGroupName="pg-1"
+        )
+        assert result == {"DBClusterParameterGroup": {"a": "b"}}
+
+    def test_delete_db_cluster_parameter_group(self):
+        client = MagicMock()
+
+        delete_db_cluster_parameter_group(client, "pg-1")
+
+        client.delete_db_cluster_parameter_group.assert_called_once_with(
+            aws_retry=True, DBClusterParameterGroupName="pg-1"
+        )
+
+    def test_delete_db_cluster_parameter_group_missing_returns_false(self):
+        client = MagicMock()
+        client.delete_db_cluster_parameter_group.side_effect = botocore.exceptions.ClientError(
+            {"Error": {"Code": "DBParameterGroupNotFound", "Message": "not found"}},
+            "DeleteDBClusterParameterGroup",
+        )
+
+        assert delete_db_cluster_parameter_group(client, "pg-1") is False
+
+    def test_modify_db_cluster_parameter_group_chunks_parameters(self):
+        client = MagicMock()
+        parameters = [{"ParameterName": f"param{i}"} for i in range(25)]
+
+        modify_db_cluster_parameter_group(client, "pg-1", parameters)
+
+        assert client.modify_db_cluster_parameter_group.call_count == 2
+        first_call, second_call = client.modify_db_cluster_parameter_group.call_args_list
+        assert len(first_call.kwargs["Parameters"]) == 20
+        assert len(second_call.kwargs["Parameters"]) == 5
+        assert second_call.kwargs["DBClusterParameterGroupName"] == "pg-1"
