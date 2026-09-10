@@ -5,9 +5,9 @@
 
 import string
 import textwrap
+from urllib import parse as urlparse
 
 from ansible.module_utils.common.text.converters import to_native
-from ansible.module_utils.six.moves.urllib import parse as urlparse
 
 
 def _windows_callback_script(passwd=None):

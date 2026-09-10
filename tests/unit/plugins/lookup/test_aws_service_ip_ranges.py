@@ -98,7 +98,7 @@ class TestFetchIpRanges:
     @patch("ansible_collections.amazon.aws.plugins.lookup.aws_service_ip_ranges.ansible.module_utils.urls.open_url")
     def test_fetch_ip_ranges_http_error(self, mock_open_url, lookup_plugin):
         """Test that HTTP errors are properly handled"""
-        import ansible.module_utils.six.moves.urllib.error as urllib_error
+        import urllib.error as urllib_error
 
         mock_open_url.side_effect = urllib_error.HTTPError("url", 404, "Not Found", {}, None)
 
@@ -122,7 +122,7 @@ class TestFetchIpRanges:
     @patch("ansible_collections.amazon.aws.plugins.lookup.aws_service_ip_ranges.ansible.module_utils.urls.open_url")
     def test_fetch_ip_ranges_url_error(self, mock_open_url, lookup_plugin):
         """Test that URL errors are properly handled"""
-        import ansible.module_utils.six.moves.urllib.error as urllib_error
+        import urllib.error as urllib_error
 
         mock_open_url.side_effect = urllib_error.URLError("Connection refused")
 
