@@ -1,0 +1,8 @@
+---
+bugfixes:
+  - aws_ssm - apply the transfer bucket's server-side-encryption settings when uploading
+    files from the controller to the managed node (``put_file``), matching the existing
+    ``fetch_file`` behaviour. Previously the upload was made without encryption settings,
+    so buckets whose policy denies unencrypted ``PutObject`` requests rejected every file
+    transfer with ``AccessDenied``
+    (https://github.com/ansible-collections/amazon.aws/issues/3018).
