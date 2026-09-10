@@ -1,0 +1,2 @@
+bugfixes:
+  - ubuntu clients over ssm connection plugin failed with timeouts. dash on ubuntu needs oneline-commands without \n
