@@ -655,10 +655,12 @@ class Ec2Metadata:
 
     def get_instance_tags(self, tag_keys, data):
         tags = {}
+        tag_path = self.uri_instance_tags[len(self.uri_meta):].strip("/") # "tags/instance"
         for key in tag_keys:
-            value = data.get("ansible_ec2_tags_instance_{}".format(key))
-            if value is not None:
-                tags[key] = value
+          mangled_key = self._prefix % "-".join(tag_path.split('/') + [key])
+          value = data.get(mangled_key)
+          if value is not None:
+              tags[key] = value
         return tags
 
     def run(self):
@@ -672,7 +674,6 @@ class Ec2Metadata:
         self.fetch(self.uri_dynamic)  # populate _data with dynamic data
         dyndata = self._mangle_fields(self._data, self.uri_dynamic)
         data.update(dyndata)
-        data = self.fix_invalid_varnames(data)
 
         instance_tags_keys = self._fetch(self.uri_instance_tags)
         instance_tags_keys = instance_tags_keys.split("\n") if instance_tags_keys != "None" else []
@@ -684,6 +685,7 @@ class Ec2Metadata:
         # Maintain old key for backwards compatibility
         if "ansible_ec2_instance_identity_document_region" in data:
             data["ansible_ec2_placement_region"] = data["ansible_ec2_instance_identity_document_region"]
+        data = self.fix_invalid_varnames(data)
         return data
 
 
