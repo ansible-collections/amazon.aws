@@ -173,6 +173,7 @@ def boto3_resource_to_ansible_dict(
     normalize: bool = True,
     ignore_list: Optional[Sequence[str]] = None,
     nested_transforms: Optional[Mapping[str, Callable]] = None,
+    tagging_params: Optional[Mapping[str, str]] = None,
 ) -> AnsibleAWSResource:
     """
     Transforms boto3-style (CamelCase) resource to the ansible-style (snake_case).
@@ -183,12 +184,14 @@ def boto3_resource_to_ansible_dict(
     :param ignore_list: a list of keys, the contents of which should not be transformed
     :param nested_transforms: a mapping of keys to Callable, the Callable will only be passed the value for the key
                               in the resource dictionary
+    :param tagging_params: optional dict with tag_name_key_name and tag_value_key_name for boto3_tag_list_to_ansible_dict
     :return: dictionary representing the transformed resource
     """
     if not resource:
         return resource
     ignore_list = ignore_list or []
     nested_transforms = nested_transforms or {}
+    tagging_params = tagging_params or {}
 
     transformed_resource = deepcopy(resource)
     if normalize:
@@ -197,7 +200,7 @@ def boto3_resource_to_ansible_dict(
     ignore_list = [*ignore_list, *nested_transforms]
     camel_resource = camel_dict_to_snake_dict(transformed_resource, ignore_list=ignore_list)
     if transform_tags and "Tags" in resource:
-        camel_resource["tags"] = boto3_tag_list_to_ansible_dict(resource["Tags"])
+        camel_resource["tags"] = boto3_tag_list_to_ansible_dict(resource["Tags"], **tagging_params)
     if force_tags and "Tags" not in resource:
         camel_resource["tags"] = {}
 
@@ -211,6 +214,7 @@ def boto3_resource_list_to_ansible_dict(
     normalize: bool = True,
     ignore_list: Optional[Sequence[str]] = None,
     nested_transforms: Optional[Mapping[str, Callable]] = None,
+    tagging_params: Optional[Mapping[str, str]] = None,
 ) -> AnsibleAWSResourceList:
     """
     Transforms a list of boto3-style (CamelCase) resources to the ansible-style (snake_case).
@@ -221,12 +225,15 @@ def boto3_resource_list_to_ansible_dict(
     :param ignore_list: a list of keys, the contents of which should not be transformed
     :param nested_transforms: a mapping of keys to Callable, the Callable will only be passed the value for the key
                               in the resource dictionary
+    :param tagging_params: optional dict with tag_name_key_name and tag_value_key_name for boto3_tag_list_to_ansible_dict
     :return: list of dictionaries representing the transformed resources
     """
     if not resource_list:
         return resource_list
     return [
-        boto3_resource_to_ansible_dict(resource, transform_tags, force_tags, normalize, ignore_list, nested_transforms)
+        boto3_resource_to_ansible_dict(
+            resource, transform_tags, force_tags, normalize, ignore_list, nested_transforms, tagging_params
+        )
         for resource in resource_list
     ]
 
