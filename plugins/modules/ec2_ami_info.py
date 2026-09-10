@@ -152,6 +152,10 @@ images:
             description: An AWS account ID with permissions to launch the AMI.
             type: str
       sample: [{"group": "all"}, {"user_id": "123456789012"}]
+    imdsv2_enabled:
+      description: Whether the image has IMDSv2 enabled or not.
+      returned: When O(describe_image_attributes=true).
+      type: bool
     name:
       description: The name of the AMI that was provided during image creation.
       returned: always
@@ -277,6 +281,12 @@ def list_ec2_images(ec2_client, module, request_args):
                     ec2_client, attribute="launchPermission", image_id=image["image_id"]
                 ).get("LaunchPermissions", [])
                 image["launch_permissions"] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
+                imdsv2_enabled = describe_image_attribute(
+                    ec2_client, attribute="imdsSupport", image_id=image["image_id"]
+                ).get("ImdsSupport", {})
+                image["imdsv2_enabled"] = (
+                    True if "Value" in imdsv2_enabled and imdsv2_enabled["Value"] == "v2.0" else False
+                )
         except is_ansible_aws_error_code("AuthFailure"):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
             pass
