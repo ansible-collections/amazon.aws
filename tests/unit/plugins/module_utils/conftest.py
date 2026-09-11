@@ -56,7 +56,7 @@ def fixture_stdin(mocker, request):
         args = request.param
     elif isinstance(request.param, MutableMapping):
         if "ANSIBLE_MODULE_ARGS" not in request.param:
-            request.param = {"ANSIBLE_MODULE_ARGS": request.param}
+            request.param = {"ANSIBLE_MODULE_ARGS": request.param.copy()}
         if "_ansible_remote_tmp" not in request.param["ANSIBLE_MODULE_ARGS"]:
             request.param["ANSIBLE_MODULE_ARGS"]["_ansible_remote_tmp"] = "/tmp"
         if "_ansible_keep_remote_files" not in request.param["ANSIBLE_MODULE_ARGS"]:
