@@ -22,14 +22,16 @@
         tags:
           resource_prefix: "{{ resource_prefix }}"
       - name: "object_2.txt"
+    # Taxonomy values must be lowercase_with_underscores or the indirect-node
+    # rollup cannot bucket them.
     s3_bucket_facts:
-      device_type: "Bucket"
-      infra_bucket: "Storage"
-      infra_type: "PublicCloud"
+      device_type: "bucket"
+      infra_bucket: "storage"
+      infra_type: "public_cloud"
     s3_object_facts:
-      device_type: "Object"
-      infra_bucket: "Storage"
-      infra_type: "PublicCloud"
+      device_type: "object"
+      infra_bucket: "storage"
+      infra_type: "public_cloud"
   tasks:
     - block:
         # S3 buckets
@@ -56,16 +58,15 @@
             that:
               - node_count == expected_result  
           vars:
-            expected_result: 
-              - canonical_facts:
-                  name: "bucket-{{ resource_prefix }}-1"
-                  tags:
-                    resource_prefix: "{{ resource_prefix }}"
-                facts: "{{ s3_bucket_facts }}"
-              - canonical_facts:
-                  name: "bucket-{{ resource_prefix }}-2"
-                  tags: {}
-                facts: "{{ s3_bucket_facts }}"
+            expected_result:
+              - name: "bucket-{{ resource_prefix }}-1"
+                canonical_facts:
+                  bucket_name: "bucket-{{ resource_prefix }}-1"
+                facts: "{{ s3_bucket_facts | combine({'tags': {'resource_prefix': resource_prefix}}) }}"
+              - name: "bucket-{{ resource_prefix }}-2"
+                canonical_facts:
+                  bucket_name: "bucket-{{ resource_prefix }}-2"
+                facts: "{{ s3_bucket_facts | combine({'tags': {}}) }}"
 
         # S3 objects
         - name: Create S3 objects
@@ -94,16 +95,15 @@
             that:
               - node_count == expected_result  
           vars:
-            expected_result: 
-              - canonical_facts:
-                  name: "{{ s3_objects.0.name }}"
-                  tags:
-                    resource_prefix: "{{ resource_prefix }}"
-                facts: "{{ s3_object_facts }}"
-              - canonical_facts:
-                  name: "{{ s3_objects.1.name }}"
-                  tags: {}
-                facts: "{{ s3_object_facts }}"
+            expected_result:
+              - name: "{{ s3_objects.0.name }}"
+                canonical_facts:
+                  object_name: "{{ s3_objects.0.name }}"
+                facts: "{{ s3_object_facts | combine({'tags': {'resource_prefix': resource_prefix}}) }}"
+              - name: "{{ s3_objects.1.name }}"
+                canonical_facts:
+                  object_name: "{{ s3_objects.1.name }}"
+                facts: "{{ s3_object_facts | combine({'tags': {}}) }}"
 
       always:
         - name: Delete s3 objects from bucket

@@ -1,7 +1,13 @@
 {% for item in route_table_facts.route_tables %}
-- canonical_facts:
-    id: "{{ item.id }}"
-{% if item.tags != {} %}
+- name: "{{ item.tags.Name | default(item.route_table_id | default(item.id)) }}"
+  canonical_facts:
+    route_table_id: "{{ item.route_table_id | default(item.id) }}"
+  facts:
+    device_type: {{ networking_facts.route_table }}
+{% for key, value in networking_common_facts.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% if item.tags %}
     tags:
 {% for key, value in item.tags.items() %}
       {{ key }}: {{ value }}
@@ -9,9 +15,4 @@
 {% else %}
     tags: {}
 {% endif %}
-  facts:
-    device_type: {{ networking_facts.route_table }}
-{% for key, value in networking_common_facts.items()%}
-    {{ key }}: {{ value }}
-{% endfor %}
 {% endfor %}

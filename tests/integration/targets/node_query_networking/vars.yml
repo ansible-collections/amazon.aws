@@ -1,16 +1,19 @@
 ---
+# Taxonomy values must be lowercase_with_underscores (^[a-z0-9]+(_[a-z0-9]+)*$)
+# or the indirect-node rollup cannot bucket them; "PublicCloud" and
+# "public_cloud" become two separate buckets downstream.
 networking_common_facts:
-  infra_type: "PublicCloud"
-  infra_bucket: "Networking"
+  infra_type: "public_cloud"
+  infra_bucket: "networking"
 networking_facts:
-  vpc: "VPC"
-  subnet: "Subnet"
-  nat_gateway: "NAT Gateway"
-  igw: "Internet Gateway"
-  vgw: "Virtual Gateway"
-  route_table: "Route table"
-  vpn: "VPN Connection"
-  peering: "VPC Peering"
+  vpc: "vpc"
+  subnet: "subnet"
+  nat_gateway: "nat_gateway"
+  igw: "internet_gateway"
+  vgw: "virtual_gateway"
+  route_table: "route_table"
+  vpn: "vpn_connection"
+  peering: "vpc_peering"
 
 vpcs_info:
   - name: "{{ resource_prefix }}-1"
