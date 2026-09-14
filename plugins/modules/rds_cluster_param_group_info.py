@@ -102,13 +102,6 @@ db_cluster_parameter_groups:
         }
 """
 
-from typing import Any
-
-try:
-    import botocore
-except ImportError:
-    pass  # handled by AnsibleAWSModule
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
@@ -119,19 +112,33 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-def describe_rds_cluster_parameter_group(connection: Any, module: AnsibleAWSModule) -> None:
+def describe_rds_cluster_parameter_group(client, module: AnsibleAWSModule) -> None:
+    """Describe the requested RDS cluster parameter groups and exit the module with the result.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+
+    Raises:
+        AnsibleRDSError: If the parameter groups could not be described.
+    """
     group_name = module.params.get("name")
     include_parameters = module.params.get("include_parameters")
+
+    params = {}
+    if group_name is not None:
+        params["DBClusterParameterGroupName"] = group_name
+
     results = []
-    response = describe_db_cluster_parameter_groups(module, connection, group_name)
-    if response:
-        for resource in response:
-            resource["tags"] = get_tags(connection, module, resource["DBClusterParameterGroupArn"])
-            if include_parameters is not None:
-                resource["db_parameters"] = describe_db_cluster_parameters(
-                    module, connection, resource["DBClusterParameterGroupName"], include_parameters
-                )
-            results.append(camel_dict_to_snake_dict(resource, ignore_list=["tags"]))
+    for resource in describe_db_cluster_parameter_groups(client, **params):
+        resource["tags"] = get_tags(client, module, resource["DBClusterParameterGroupArn"])
+        if include_parameters is not None:
+            parameter_filters = {"DBClusterParameterGroupName": resource["DBClusterParameterGroupName"]}
+            if include_parameters != "all":
+                parameter_filters["Source"] = include_parameters
+            resource["db_parameters"] = describe_db_cluster_parameters(client, **parameter_filters)
+        results.append(camel_dict_to_snake_dict(resource, ignore_list=["tags"]))
+
     module.exit_json(changed=False, db_cluster_parameter_groups=results)
 
 
@@ -146,10 +153,8 @@ def main() -> None:
         supports_check_mode=True,
     )
 
-    try:
-        client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS.")
+    client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+
     try:
         describe_rds_cluster_parameter_group(client, module)
     except AnsibleRDSError as e:

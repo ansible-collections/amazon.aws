@@ -1,0 +1,16 @@
+minor_changes:
+  - rds_cluster_param_group - refactored the module onto the shared ``module_utils/rds`` helpers, removing the redundant
+    ``botocore`` import and connection ``try/except`` block
+    (https://github.com/ansible-collections/amazon.aws/pull/3089).
+  - rds_cluster_param_group - the parameter group returned by the create call is now reused, removing a redundant
+    ``describe_db_cluster_parameter_groups()`` call
+    (https://github.com/ansible-collections/amazon.aws/pull/3089).
+  - rds_cluster_param_group - the current parameters are now indexed by name when comparing them against the requested
+    ones, instead of the full list being scanned once per requested parameter
+    (https://github.com/ansible-collections/amazon.aws/pull/3089).
+  - rds_cluster_param_group_info - refactored the module onto the shared ``module_utils/rds`` helpers and removed the
+    redundant ``botocore`` import and connection ``try/except`` block
+    (https://github.com/ansible-collections/amazon.aws/pull/3089).
+  - module_utils/rds - ``describe_db_cluster_parameter_groups()`` and ``describe_db_cluster_parameters()`` now take a
+    boto3 client and ``**params`` like the other ``describe_*`` helpers, dropping the unused ``module`` argument
+    (https://github.com/ansible-collections/amazon.aws/pull/3089).
