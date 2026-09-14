@@ -1,2 +1,0 @@
-bugfixes:
-  - rds_option_group - ``state=absent`` no longer fails when the option group is deleted by another process between the existence check and the delete call; ``changed`` is now derived from the delete call's actual result instead of being pre-set to ``True`` (https://github.com/ansible-collections/amazon.aws/pull/3078).
