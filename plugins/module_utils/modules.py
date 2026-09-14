@@ -229,6 +229,9 @@ class AnsibleAWSModule:
         except AttributeError:
             response = None
 
+        # The traceback is surfaced in the `exception` field. On ansible-core
+        # >= 2.19 it is only reported when traceback capture has been enabled
+        # for the module; older cores always include it.
         failure = dict(msg=message, exception=last_traceback, **self._gather_versions())
 
         failure.update(kwargs)
