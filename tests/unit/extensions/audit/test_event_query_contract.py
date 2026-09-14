@@ -215,7 +215,7 @@ def emitted_record(query):
 
 
 def sub_object(expression):
-    block, _ = balanced_block(expression or "", 0)
+    block = balanced_block(expression or "", 0)[0]
     return dict(split_pairs(block)) if block else {}
 
 
