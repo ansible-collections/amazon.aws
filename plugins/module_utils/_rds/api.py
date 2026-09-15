@@ -7,6 +7,7 @@ from itertools import zip_longest
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 try:
@@ -295,29 +296,14 @@ def describe_db_cluster_parameter_groups(client, **params: Dict) -> List[Dict[st
     return paginator.paginate(**params).build_full_result()["DBClusterParameterGroups"]
 
 
+@RDSErrorHandler.list_error_handler("describe db parameter groups", [])
 @AWSRetry.jittered_backoff()
-def describe_db_instance_parameter_groups(connection: Any, module, db_parameter_group_name: str = None) -> List[dict]:
-    try:
-        if db_parameter_group_name:
-            result = connection.describe_db_parameter_groups(DBParameterGroupName=db_parameter_group_name)[
-                "DBParameterGroups"
-            ]
-        else:
-            result = connection.describe_db_parameter_groups()["DBParameterGroups"]
-
-        # Get tags
-        for parameter_group in result:
-            existing_tags = connection.list_tags_for_resource(ResourceName=parameter_group["DBParameterGroupArn"])[
-                "TagList"
-            ]
-            parameter_group["tags"] = boto3_tag_list_to_ansible_dict(existing_tags)
-
-        return [camel_dict_to_snake_dict(group, ignore_list=["tags"]) for group in result] if result else []
-    except is_boto3_error_code("DBParameterGroupNotFound"):
-        return []
-    except ClientError as e:
-        module.fail_json_aws(e, msg="Couldn't access parameter group information")
-    return result
+def describe_db_instance_parameter_groups(connection: Any, group_name: Optional[str]) -> List[Dict[str, Any]]:
+    params = {}
+    if group_name is not None:
+        params["DBParameterGroupName"] = group_name
+    paginator = connection.get_paginator("describe_db_parameter_groups")
+    return paginator.paginate(**params).build_full_result()["DBParameterGroups"]
 
 
 @RDSErrorHandler.list_error_handler("describe db cluster parameters", [])
@@ -327,14 +313,44 @@ def describe_db_cluster_parameters(client, **params: Dict) -> List[Dict[str, Any
     return paginator.paginate(**params).build_full_result()["Parameters"]
 
 
+@RDSErrorHandler.list_error_handler("describe db parameters", [])
+@AWSRetry.jittered_backoff()
+def describe_db_parameters(connection: Any, group_name: str, source: str = "all") -> List[Dict[str, Any]]:
+    paginator = connection.get_paginator("describe_db_parameters")
+    params = {"DBParameterGroupName": group_name}
+    if source != "all":
+        params["Source"] = source
+    return paginator.paginate(**params).build_full_result()["Parameters"]
+
+
 @RDSErrorHandler.common_error_handler("create db cluster parameter group")
 def create_db_cluster_parameter_group(client, **params: Dict) -> Dict[str, Any]:
     return client.create_db_cluster_parameter_group(aws_retry=True, **params)
 
 
+@RDSErrorHandler.common_error_handler("create db parameter group")
+def create_db_parameter_group(connection: Any, **params: Dict) -> Dict[str, Any]:
+    return connection.create_db_parameter_group(aws_retry=True, **params)
+
+
+@RDSErrorHandler.common_error_handler("modify db parameter group")
+def modify_db_parameter_group(connection: Any, group_name: str, parameters: List[Dict[str, Any]]) -> None:
+    # A maximum of 20 parameters can be modified in a single request, so we chunk them.
+    for chunk in zip_longest(*[iter(parameters)] * 20, fillvalue=None):
+        non_empty_chunk = [item for item in chunk if item]
+        connection.modify_db_parameter_group(
+            aws_retry=True, DBParameterGroupName=group_name, Parameters=non_empty_chunk
+        )
+
+
 @RDSErrorHandler.deletion_error_handler("delete db cluster parameter group")
 def delete_db_cluster_parameter_group(client, group_name: str) -> Dict[str, Any]:
     return client.delete_db_cluster_parameter_group(aws_retry=True, DBClusterParameterGroupName=group_name)
+
+
+@RDSErrorHandler.deletion_error_handler("delete db parameter group")
+def delete_db_parameter_group(connection: Any, group_name: str) -> Dict[str, Any]:
+    return connection.delete_db_parameter_group(aws_retry=True, DBParameterGroupName=group_name)
 
 
 @RDSErrorHandler.common_error_handler("modify db cluster parameter group")
