@@ -369,11 +369,6 @@ def _modify_option_group(client, **params: Any) -> Dict[str, Any]:
     return client.modify_option_group(aws_retry=True, **params)
 
 
-@RDSErrorHandler.common_error_handler("remove options from option group")
-def _remove_option_group_options(client, **params: Any) -> Dict[str, Any]:
-    return client.modify_option_group(aws_retry=True, **params)
-
-
 @RDSErrorHandler.common_error_handler("create option group")
 def _create_option_group(client, **params: Any) -> Dict[str, Any]:
     return client.create_option_group(aws_retry=True, **params)
@@ -437,7 +432,7 @@ def remove_option_group_options(client, module: AnsibleAWSModule, options_to_rem
     if module.check_mode:
         return changed
 
-    _remove_option_group_options(client, **params)
+    _modify_option_group(client, **params)
 
     return changed
 
