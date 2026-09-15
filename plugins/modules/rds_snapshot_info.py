@@ -355,6 +355,19 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_ta
 def common_snapshot_info(
     client, module: AnsibleAWSModule, describe_snapshots_method: Callable, params: Dict[str, Any]
 ) -> List[Dict[str, Any]]:
+    """
+    Retrieve and format snapshot information using the provided describe method.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+        describe_snapshots_method: The module_utils/rds function used to describe snapshots
+            (describe_db_cluster_snapshots or describe_db_snapshots).
+        params: Parameters formatted for the boto3 RDS client describe call.
+
+    Returns:
+        A list of snapshot attribute dicts, snake_cased and with tags converted to a dict.
+    """
     try:
         results = describe_snapshots_method(client, **params)
     except AnsibleRDSError as e:
@@ -368,6 +381,16 @@ def common_snapshot_info(
 
 
 def cluster_snapshot_info(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]:
+    """
+    Retrieve information about DB cluster snapshots matching the module's parameters.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        A list of cluster snapshot attribute dicts.
+    """
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     snapshot_type = module.params.get("snapshot_type")
     instance_name = module.params.get("db_cluster_identifier")
@@ -388,6 +411,16 @@ def cluster_snapshot_info(client, module: AnsibleAWSModule) -> List[Dict[str, An
 
 
 def instance_snapshot_info(client, module: AnsibleAWSModule) -> List[Dict[str, Any]]:
+    """
+    Retrieve information about DB instance snapshots matching the module's parameters.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        A list of instance snapshot attribute dicts.
+    """
     snapshot_id = module.params.get("db_snapshot_identifier")
     snapshot_type = module.params.get("snapshot_type")
     instance_name = module.params.get("db_instance_identifier")
