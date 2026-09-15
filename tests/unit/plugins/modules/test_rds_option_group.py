@@ -195,3 +195,32 @@ def test_create_option_group_check_mode_with_tags(m_describe):
 
     assert result is True
     conn.create_option_group.assert_not_called()
+
+
+@patch(mod_name + "._delete_option_group")
+@patch(mod_name + ".get_tags")
+@patch(mod_name + ".describe_option_groups")
+def test_remove_option_group_already_absent(m_describe, m_get_tags, m_delete):
+    """A delete racing with a concurrent deletion no-ops (deletion_error_handler returns False), not changed=True."""
+    conn = MagicMock()
+    module = MagicMock()
+    module.params = {"option_group_name": "test-og"}
+    module.check_mode = False
+    m_describe.return_value = [
+        {
+            "OptionGroupName": "test-og",
+            "OptionGroupArn": "arn:aws:rds:us-east-1:123456789012:og:test-og",
+            "EngineName": "mysql",
+            "MajorEngineVersion": "8.0",
+            "OptionGroupDescription": "test option group",
+            "Options": [],
+        }
+    ]
+    m_get_tags.return_value = {}
+    m_delete.return_value = False
+
+    changed, result = rds_option_group.remove_option_group(conn, module)
+
+    assert changed is False
+    assert result == {}
+    m_delete.assert_called_once_with(conn, OptionGroupName="test-og")

@@ -1,0 +1,4 @@
+minor_changes:
+  - rds_option_group - Removed direct ``botocore.exceptions`` imports and inline ``try``/``except`` blocks; option group create, modify, delete, and tagging calls are now made through small helper functions decorated with ``RDSErrorHandler``, standardizing error handling on ``AnsibleRDSError`` (https://github.com/ansible-collections/amazon.aws/pull/3078).
+bugfixes:
+  - rds_option_group - ``state=absent`` no longer fails when the option group is deleted by another process between the existence check and the delete call; ``changed`` is now derived from the delete call's actual result instead of being pre-set to ``True`` (https://github.com/ansible-collections/amazon.aws/pull/3078).

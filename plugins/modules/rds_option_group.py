@@ -351,19 +351,42 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from botocore.exceptions import BotoCoreError
-from botocore.exceptions import ClientError
-
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
+from ansible_collections.amazon.aws.plugins.module_utils.rds import RDSErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_option_groups
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
+
+
+@RDSErrorHandler.common_error_handler("update option group")
+def _modify_option_group(client, **params: Any) -> Dict[str, Any]:
+    return client.modify_option_group(aws_retry=True, **params)
+
+
+@RDSErrorHandler.common_error_handler("create option group")
+def _create_option_group(client, **params: Any) -> Dict[str, Any]:
+    return client.create_option_group(aws_retry=True, **params)
+
+
+@RDSErrorHandler.deletion_error_handler("delete option group")
+def _delete_option_group(client, **params: Any) -> Dict[str, Any]:
+    return client.delete_option_group(aws_retry=True, **params)
+
+
+@RDSErrorHandler.common_error_handler("add tags to option group")
+def _add_tags_to_resource(client, **params: Any) -> Dict[str, Any]:
+    return client.add_tags_to_resource(aws_retry=True, **params)
+
+
+@RDSErrorHandler.common_error_handler("remove tags from option group")
+def _remove_tags_from_resource(client, **params: Any) -> Dict[str, Any]:
+    return client.remove_tags_from_resource(aws_retry=True, **params)
 
 
 def get_option_group(client, module: AnsibleAWSModule, option_group_name: str) -> Dict[str, Any]:
@@ -390,10 +413,7 @@ def create_option_group_options(client, module: AnsibleAWSModule) -> bool:
     if module.check_mode:
         return changed
 
-    try:
-        client.modify_option_group(aws_retry=True, **params)
-    except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to update Option Group.")
+    _modify_option_group(client, **params)
 
     return changed
 
@@ -412,10 +432,7 @@ def remove_option_group_options(client, module: AnsibleAWSModule, options_to_rem
     if module.check_mode:
         return changed
 
-    try:
-        client.modify_option_group(aws_retry=True, **params)
-    except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to remove options from Option Group.")
+    _modify_option_group(client, **params)
 
     return changed
 
@@ -438,10 +455,7 @@ def create_option_group(client, module: AnsibleAWSModule) -> bool:
     if module.check_mode:
         return changed
 
-    try:
-        client.create_option_group(aws_retry=True, **params)
-    except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to create Option Group.")
+    _create_option_group(client, **params)
 
     return changed
 
@@ -514,23 +528,17 @@ def update_tags(client, module: AnsibleAWSModule, option_group: Dict[str, Any]) 
         return changed
 
     if to_update:
-        try:
-            client.add_tags_to_resource(
-                aws_retry=True,
-                ResourceName=option_group["option_group_arn"],
-                Tags=ansible_dict_to_boto3_tag_list(to_update),
-            )
-        except (ClientError, BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't add tags to option group.")
+        _add_tags_to_resource(
+            client,
+            ResourceName=option_group["option_group_arn"],
+            Tags=ansible_dict_to_boto3_tag_list(to_update),
+        )
     if to_delete:
-        try:
-            client.remove_tags_from_resource(
-                aws_retry=True,
-                ResourceName=option_group["option_group_arn"],
-                TagKeys=to_delete,
-            )
-        except (ClientError, BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't remove tags from option group.")
+        _remove_tags_from_resource(
+            client,
+            ResourceName=option_group["option_group_arn"],
+            TagKeys=to_delete,
+        )
 
     return changed
 
@@ -593,11 +601,7 @@ def remove_option_group(client, module: AnsibleAWSModule) -> Tuple[bool, Dict[st
         if module.check_mode:
             return True, {}
 
-        changed = True
-        try:
-            client.delete_option_group(aws_retry=True, OptionGroupName=module.params["option_group_name"])
-        except (ClientError, BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Unable to delete option group.")
+        changed = bool(_delete_option_group(client, OptionGroupName=module.params["option_group_name"]))
 
     return changed, {}
 
