@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_cluster_snapshot - Added docstrings to the module's helper functions, aligning the module with the style used by the shared ``module_utils/rds`` utilities (https://github.com/ansible-collections/amazon.aws/pull/3090).
