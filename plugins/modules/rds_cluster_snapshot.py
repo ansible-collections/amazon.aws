@@ -235,6 +235,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_snapshot
 
 
 def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
+    """
+    Delete a DB cluster snapshot if it exists and is not already being deleted.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+    """
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     changed = False
 
@@ -251,6 +258,17 @@ def ensure_snapshot_absent(client, module: AnsibleAWSModule) -> None:
 
 
 def copy_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> bool:
+    """
+    Copy a DB cluster snapshot from a source snapshot if the target snapshot does not already exist.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+        params: Snapshot parameters formatted for the boto3 RDS client.
+
+    Returns:
+        True if a change was made.
+    """
     changed = False
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
 
@@ -269,6 +287,14 @@ def copy_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> b
 
 
 def ensure_snapshot_present(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> None:
+    """
+    Create, copy, or update a DB cluster snapshot to match the desired state.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+        params: Snapshot parameters formatted for the boto3 RDS client.
+    """
     source_id = module.params.get("source_db_cluster_snapshot_identifier")
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
     changed = False
@@ -299,6 +325,17 @@ def ensure_snapshot_present(client, module: AnsibleAWSModule, params: Dict[str, 
 
 
 def create_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> bool:
+    """
+    Create a new DB cluster snapshot.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+        params: Snapshot parameters formatted for the boto3 RDS client.
+
+    Returns:
+        True if a change was made.
+    """
     method_params = format_rds_client_method_parameters(
         client, module, params, "create_db_cluster_snapshot", format_tags=True
     )
@@ -308,6 +345,16 @@ def create_snapshot(client, module: AnsibleAWSModule, params: Dict[str, Any]) ->
 
 
 def modify_snapshot(client, module: AnsibleAWSModule) -> bool:
+    """
+    Update tags on an existing DB cluster snapshot.
+
+    Args:
+        client: A boto3 RDS client.
+        module: The AnsibleAWSModule instance.
+
+    Returns:
+        True if a change was made.
+    """
     # TODO - add other modifications aside from purely tags
     changed = False
     snapshot_id = module.params.get("db_cluster_snapshot_identifier")
