@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_ssm connection plugin - fix hang on reboot by handling ValidationException when terminating already-disconnected sessions (https://github.com/ansible-collections/amazon.aws/issues/3044).
