@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.autoscaling_group module – Create or delete AWS AutoScaling Groups (ASGs) &mdash; Ansible collections  documentation</title>
@@ -766,14 +766,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create an autoscaling group using launch template</span>
 <span class="w">  </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_asg</span>
-<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'lb1'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'lb2'</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'eu-west-1a'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'eu-west-1b'</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;template-1&#39;</span>
+<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">'template-1'</span>
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'subnet-abcd1234'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'subnet-1a2b3c4d'</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
 <span class="w">        </span><span class="nt">propagate_at_launch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -820,16 +820,16 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example autoscaling group creation with a launch template</span>
 <span class="w">  </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_with_template</span>
-<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'lb1'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'lb2'</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'eu-west-1a'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'eu-west-1b'</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span>
-<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-example&#39;</span>
-<span class="w">      </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-123456&#39;</span>
+<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">'1'</span>
+<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">'lt-example'</span>
+<span class="w">      </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">'lt-123456'</span>
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'subnet-abcd1234'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'subnet-1a2b3c4d'</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
 <span class="w">        </span><span class="nt">propagate_at_launch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -839,12 +839,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example autoscaling group creation with a mixed instance policy</span>
 <span class="w">  </span><span class="nt">amazon.aws.autoscaling_group</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_with_policy</span>
-<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;lb1&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;lb2&#39;</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;eu-west-1a&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;eu-west-1b&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">load_balancers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'lb1'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'lb2'</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">availability_zones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'eu-west-1a'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'eu-west-1b'</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">launch_template</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1&#39;</span>
-<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-example&#39;</span>
-<span class="w">      </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;lt-123456&#39;</span>
+<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">'1'</span>
+<span class="w">      </span><span class="nt">launch_template_name</span><span class="p">:</span><span class="w"> </span><span class="s">'lt-example'</span>
+<span class="w">      </span><span class="nt">launch_template_id</span><span class="p">:</span><span class="w"> </span><span class="s">'lt-123456'</span>
 <span class="w">    </span><span class="nt">mixed_instances_policy</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">instance_types</span><span class="p">:</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3a.large</span>
@@ -856,7 +856,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <span class="w">    </span><span class="nt">min_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">    </span><span class="nt">desired_capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;subnet-abcd1234&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;subnet-1a2b3c4d&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">vpc_zone_identifier</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'subnet-abcd1234'</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">'subnet-1a2b3c4d'</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
 <span class="w">        </span><span class="nt">propagate_at_launch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>

@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.backup_selection_info module – Describe AWS Backup Selections &mdash; Ansible collections  documentation</title>
@@ -335,13 +335,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-s
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about all backup selections</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_selection_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">backup_plan_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_plan_name</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">backup_plan_name</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_plan_name</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a particular backup selection</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_selection_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">backup_plan_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_plan_name</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">backup_plan_name</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_plan_name</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">backup_selection_names</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_selection_name</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_selection_name</span> <span class="cp">}}</span><span class="s">"</span>
 </pre></div>
 </div>
 </section>

@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_key module – Create or delete an EC2 key pair &mdash; Ansible collections  documentation</title>
@@ -417,12 +417,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create key pair using provided key_material</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_keypair</span>
-<span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;ssh-rsa</span><span class="nv"> </span><span class="s">AAAAxyz...==</span><span class="nv"> </span><span class="s">me@example.com&#39;</span>
+<span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">'ssh-rsa</span><span class="nv"> </span><span class="s">AAAAxyz...==</span><span class="nv"> </span><span class="s">me@example.com'</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create key pair using key_material obtained using &#39;file&#39; lookup plugin</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create key pair using key_material obtained using 'file' lookup plugin</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_keypair</span>
-<span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;file&#39;</span><span class="o">,</span> <span class="s1">&#39;/path/to/public_key/id_rsa.pub&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'file'</span><span class="o">,</span> <span class="s1">'/path/to/public_key/id_rsa.pub'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create ED25519 key pair and save private key into a file</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
@@ -431,11 +431,11 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-key-
 <span class="w">    </span><span class="nt">file_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/aws_ssh_rsa</span>
 
 <span class="c1"># try creating a key pair with the name of an already existing keypair</span>
-<span class="c1"># but don&#39;t overwrite it even if the key is different (force=false)</span>
+<span class="c1"># but don't overwrite it even if the key is different (force=false)</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">try creating a key pair with name of an already existing keypair</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_existing_keypair</span>
-<span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;ssh-rsa</span><span class="nv"> </span><span class="s">AAAAxyz...==</span><span class="nv"> </span><span class="s">me@example.com&#39;</span>
+<span class="w">    </span><span class="nt">key_material</span><span class="p">:</span><span class="w"> </span><span class="s">'ssh-rsa</span><span class="nv"> </span><span class="s">AAAAxyz...==</span><span class="nv"> </span><span class="s">me@example.com'</span>
 <span class="w">    </span><span class="nt">force</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove key pair from AWS by name</span>

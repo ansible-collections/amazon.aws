@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.aws_ssm connection – connect to EC2 instances via AWS Systems Manager &mdash; Ansible collections  documentation</title>
@@ -449,8 +449,8 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">    </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ssm</span>
 <span class="w">    </span><span class="nt">ansible_aws_ssm_bucket_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nameofthebucket</span>
 <span class="w">    </span><span class="nt">ansible_aws_ssm_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-2</span>
-<span class="w">    </span><span class="c1"># When the S3 bucket isn&#39;t in the same region as the Instance</span>
-<span class="w">    </span><span class="c1"># Explicitly setting the addressing style to &#39;virtual&#39; may be necessary</span>
+<span class="w">    </span><span class="c1"># When the S3 bucket isn't in the same region as the Instance</span>
+<span class="w">    </span><span class="c1"># Explicitly setting the addressing style to 'virtual' may be necessary</span>
 <span class="w">    </span><span class="c1"># https://repost.aws/knowledge-center/s3-http-307-response</span>
 <span class="w">    </span><span class="nt">ansible_aws_ssm_s3_addressing_style</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">virtual</span>
 <span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
@@ -505,7 +505,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="c1">#   - us-east-1</span>
 <span class="c1"># hostnames:</span>
 <span class="c1">#   - instance-id</span>
-<span class="c1"># # This will return the Instances with the tag &quot;SSMTag&quot; set to &quot;ssmlinux&quot;</span>
+<span class="c1"># # This will return the Instances with the tag "SSMTag" set to "ssmlinux"</span>
 <span class="c1"># filters:</span>
 <span class="c1">#   tag:SSMTag: ssmlinux</span>
 <span class="c1"># -----------------------</span>
@@ -522,7 +522,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">      </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws-cli</span>
 
 <span class="c1"># Alternatively, you can use a tag (eg. Name) as hostname instead of InstanceID.</span>
-<span class="c1"># However,  &quot;ansible_host&quot; must still be set to the instance_id</span>
+<span class="c1"># However,  "ansible_host" must still be set to the instance_id</span>
 <span class="c1"># =======================================</span>
 <span class="c1"># # aws_ec2.yml (Dynamic Inventory - Linux)</span>
 <span class="c1"># plugin: aws_ec2</span>
@@ -542,7 +542,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="c1">#   - us-east-1</span>
 <span class="c1"># hostnames:</span>
 <span class="c1">#   - instance-id</span>
-<span class="c1"># # This will return the Instances with the tag &quot;SSMTag&quot; set to &quot;ssmwindows&quot;</span>
+<span class="c1"># # This will return the Instances with the tag "SSMTag" set to "ssmwindows"</span>
 <span class="c1"># filters:</span>
 <span class="c1">#   tag:SSMTag: ssmwindows</span>
 <span class="c1"># -----------------------</span>
@@ -571,7 +571,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">    </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_ssm</span>
 <span class="w">    </span><span class="nt">ansible_aws_ssm_bucket_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nameofthebucket</span>
 <span class="w">    </span><span class="nt">ansible_aws_ssm_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-2</span>
-<span class="w">    </span><span class="nt">ansible_aws_ssm_bucket_sse_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws:kms&#39;</span>
+<span class="w">    </span><span class="nt">ansible_aws_ssm_bucket_sse_mode</span><span class="p">:</span><span class="w"> </span><span class="s">'aws:kms'</span>
 <span class="w">    </span><span class="nt">ansible_aws_ssm_bucket_sse_kms_key_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alias/kms-key-alias</span>
 <span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install a Nginx Package</span>
@@ -614,15 +614,15 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create shell script</span>
 <span class="w">      </span><span class="nt">ansible.builtin.copy</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;0755&#39;</span>
-<span class="w">        </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;/tmp/date.sh&#39;</span>
+<span class="w">        </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="s">'0755'</span>
+<span class="w">        </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="s">'/tmp/date.sh'</span>
 <span class="w">        </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
 <span class="w">          </span><span class="no">#!/usr/bin/env bash</span>
 <span class="w">          </span><span class="no">date</span>
 
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Execute script from remote host</span>
 <span class="w">      </span><span class="nt">ansible.builtin.shell</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">cmd</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;/tmp/date.sh&#39;</span>
+<span class="w">        </span><span class="nt">cmd</span><span class="p">:</span><span class="w"> </span><span class="s">'/tmp/date.sh'</span>
 </pre></div>
 </div>
 <section id="authors">

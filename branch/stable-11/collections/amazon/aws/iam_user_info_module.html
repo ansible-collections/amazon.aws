@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.iam_user_info module – Gather IAM user(s) facts in AWS &mdash; Ansible collections  documentation</title>
@@ -348,20 +348,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-user
 <section id="examples">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: These examples do not set authentication details, see the AWS Guide for details.</span>
-<span class="c1"># Gather facts about &quot;test&quot; user.</span>
+<span class="c1"># Gather facts about "test" user.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"test"</span>
 
-<span class="c1"># Gather facts about all users in the &quot;dev&quot; group.</span>
+<span class="c1"># Gather facts about all users in the "dev" group.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dev&quot;</span>
+<span class="w">    </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="s">"dev"</span>
 
-<span class="c1"># Gather facts about all users with &quot;/division_abc/subdivision_xyz/&quot; path.</span>
+<span class="c1"># Gather facts about all users with "/division_abc/subdivision_xyz/" path.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get IAM user info</span>
 <span class="w">  </span><span class="nt">amazon.aws.iam_user_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/division_abc/subdivision_xyz/&quot;</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"/division_abc/subdivision_xyz/"</span>
 </pre></div>
 </div>
 </section>

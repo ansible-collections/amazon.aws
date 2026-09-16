@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.autoscaling_group_info module – Gather information about EC2 Auto Scaling Groups (ASGs) in AWS &mdash; Ansible collections  documentation</title>
@@ -363,13 +363,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-autoscal
 <span class="w">  </span><span class="nt">amazon.aws.autoscaling_group_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public-webserver-asg</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">asgs</span>
-<span class="w">  </span><span class="nt">failed_when</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">asgs.results</span> <span class="o">|</span> <span class="nf">length</span> <span class="o">==</span> <span class="m">0</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="nt">failed_when</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">asgs.results</span> <span class="o">|</span> <span class="nf">length</span> <span class="o">==</span> <span class="m">0</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fail if more than 1 group is found</span>
 <span class="w">  </span><span class="nt">amazon.aws.autoscaling_group_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public-webserver-asg</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">asgs</span>
-<span class="w">  </span><span class="nt">failed_when</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">asgs.results</span> <span class="o">|</span> <span class="nf">length</span> <span class="o">&gt;</span> <span class="m">1</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="nt">failed_when</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">asgs.results</span> <span class="o">|</span> <span class="nf">length</span> <span class="o">&gt;</span> <span class="m">1</span> <span class="cp">}}</span><span class="s">"</span>
 </pre></div>
 </div>
 </section>

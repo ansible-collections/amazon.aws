@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_vpc_peering module – create, delete, accept, and reject VPC peering connections between two VPCs. &mdash; Ansible collections  documentation</title>
@@ -404,150 +404,150 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Complete example to create and accept a local peering connection.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create local account EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-87654321&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-87654321"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"present"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Accept local EC2 VPC Peering request</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;accept&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"accept"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">action_peer</span>
 
 <span class="c1"># Complete example to delete a local peering connection.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create local account EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-87654321&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-87654321"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"present"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete a local EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;absent&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"absent"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="w">  </span><span class="c1"># Complete example to create and accept a cross account peering connection.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create cross account EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_owner_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;123456789012&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_owner_id</span><span class="p">:</span><span class="w"> </span><span class="s">"123456789012"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"present"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Accept EC2 VPC Peering Connection from remote account</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;bot03_profile_for_cross_account&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;accept&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="s">"bot03_profile_for_cross_account"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"accept"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="c1"># Complete example to create and accept an intra-region peering connection.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create intra-region EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;us-east-1&quot;</span>
-<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-87654321&quot;</span>
-<span class="w">    </span><span class="nt">peer_region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;us-west-2&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"us-east-1"</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-87654321"</span>
+<span class="w">    </span><span class="nt">peer_region</span><span class="p">:</span><span class="w"> </span><span class="s">"us-west-2"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"present"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">us-east-1</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">us-west-2</span><span class="nv"> </span><span class="s">VPC&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">us-east-1</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">us-west-2</span><span class="nv"> </span><span class="s">VPC"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Accept EC2 VPC Peering Connection from peer region</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peer</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;us-west-2&quot;</span>
-<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;accept&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"us-west-2"</span>
+<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"accept"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="c1"># Complete example to create and reject a local peering connection.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create local account EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-87654321&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-87654321"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"present"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject a local EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;reject&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"reject"</span>
 
 <span class="c1"># Complete example to create and accept a cross account peering connection.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create cross account EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_owner_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;123456789012&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_owner_id</span><span class="p">:</span><span class="w"> </span><span class="s">"123456789012"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"present"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Accept a cross account EC2 VPC Peering Connection request</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;bot03_profile_for_cross_account&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;accept&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="s">"bot03_profile_for_cross_account"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"accept"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 
 <span class="c1"># Complete example to create and reject a cross account peering connection.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create cross account EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vpc-12345678&quot;</span>
-<span class="w">    </span><span class="nt">peer_owner_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;123456789012&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;present&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_vpc_id</span><span class="p">:</span><span class="w"> </span><span class="s">"vpc-12345678"</span>
+<span class="w">    </span><span class="nt">peer_owner_id</span><span class="p">:</span><span class="w"> </span><span class="s">"123456789012"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"present"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22&quot;</span>
-<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CC1234&quot;</span>
-<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;phoenix&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="s">"Peering</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">21</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">VPC</span><span class="nv"> </span><span class="s">22"</span>
+<span class="w">      </span><span class="nt">CostCode</span><span class="p">:</span><span class="w"> </span><span class="s">"CC1234"</span>
+<span class="w">      </span><span class="nt">Project</span><span class="p">:</span><span class="w"> </span><span class="s">"phoenix"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject a cross account EC2 VPC Peering Connection</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peeriing</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ap-southeast-2&quot;</span>
-<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;bot03_profile_for_cross_account&quot;</span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;reject&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"ap-southeast-2"</span>
+<span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">    </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="s">"bot03_profile_for_cross_account"</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"reject"</span>
 </pre></div>
 </div>
 </section>
