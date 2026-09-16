@@ -1,178 +1,247 @@
 ---
+# Indirect node counting queries for the amazon.aws collection.
+#
+# These jq expressions run inside the Automation Platform controller
+# (awx/main/tasks/host_indirect.py) against each module's result, and their
+# output feeds subscription node counting. Nothing in this repository executes
+# them against a real module result, so
+# tests/unit/extensions/audit/test_event_query_contract.py asserts the contract
+# the controller imposes on the output.
+#
+# THE CONTRACT
+# ------------
+# name             must be present and never null. `if name is None: continue`
+#                  -- a record with no top-level `name` key is discarded.
+# canonical_facts  must be present, truthy, and free of null at ANY depth.
+#                  get_hashable_form() accepts int/float/str/bool/dict/list/
+#                  tuple and raises UnhashableFacts on anything else, including
+#                  null; the caller catches it and skips the record. A single
+#                  null field silently discards the whole node, with the job
+#                  still green.
+# canonical_facts  is the ONLY dedup key (`results[hashable_facts]`), so it must
+#                  hold identity and nothing else. Anything in it that changes
+#                  over the life of a resource counts that resource again.
+# facts            must carry infra_type, infra_bucket and device_type, and
+#                  their values must be lowercase_with_underscores
+#                  (^[a-z0-9]+(_[a-z0-9]+)*$) so the rollup can bucket them.
+#                  `facts` is not hashed, so volatile attributes belong here.
+#
+# A jq *error* is caught one level up, at the event, so a single query that
+# raises discards the audit records of every other module in that event too.
+# `.instances[]` raises "Cannot iterate over null" whenever the module did not
+# return that key; every source below is therefore `[]?`-guarded and the
+# result is type-checked before it is indexed.
+
 # COMPUTE
 
+# .name is not a key of ec2_instance_info's return; the display name is the
+# Name tag, falling back to the instance id so it is never null.
+# state.name and tags were in canonical_facts: stopping and starting an
+# instance, or editing a tag, counted the same instance again. Both moved to
+# facts, which is not hashed.
 amazon.aws.ec2_instance_info:
   query: >-
-    .instances[] | select(. != null) | {
-      name: (.name // .tags.Name // "UNKNOWN"),  # unique identifier for the resource
+    .instances[]? | select(type == "object") | select(.instance_id != null) |
+    {
+      name: (.tags.Name // .instance_id),
       canonical_facts: {
-      id: .instance_id,
-      status: .state.name,
-      tags: (.tags // {}),
+        instance_id: .instance_id
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Compute",
-        device_type: "EC2"
-        },
+        infra_type: "public_cloud",
+        infra_bucket: "compute",
+        device_type: "ec2",
+        status: (.state.name // "unknown"),
+        tags: (.tags // {})
       }
+    }
 
 # NETWORKING
 
+# No top-level `name` was emitted, so every load balancer was discarded by the
+# controller. The ARN is the stable identity; the name can be reused after a
+# load balancer is deleted.
 amazon.aws.elb_application_lb_info:
   query: >-
-    .load_balancers[] | select(. != null) |
+    .load_balancers[]? | select(type == "object") |
+    select(.load_balancer_arn != null) |
     {
+      name: (.load_balancer_name // .load_balancer_arn),
       canonical_facts: {
-        name: .load_balancer_name,
-        status: .state.code,
-        tags: (.tags // {}),
+        load_balancer_arn: .load_balancer_arn
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "ApplicationLoadBalancer"
-      },
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "application_load_balancer",
+        status: (.state.code // "unknown"),
+        tags: (.tags // {})
+      }
     }
 
+# A classic load balancer's return carries no ARN, so the name is the only
+# available identity.
 amazon.aws.elb_classic_lb_info:
   query: >-
-    .elbs[] | select(. != null) |
+    .elbs[]? | select(type == "object") |
+    select(.load_balancer_name != null) |
     {
+      name: .load_balancer_name,
       canonical_facts: {
-        name: .load_balancer_name,
-        tags: (.tags // {}),
+        load_balancer_name: .load_balancer_name
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "ClassicLoadBalancer"
-      },
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "classic_load_balancer",
+        tags: (.tags // {})
+      }
     }
 
 amazon.aws.ec2_vpc_net_info:
   query: >-
-    .vpcs[] | select(. != null) | {
-        name: (.name // .tags.Name // "UNKNOWN"),
-        canonical_facts: {
-          id: .id,
-          status: .state,
-          tags: (.tags // {})
-        },
-        facts: {
-          infra_type: "PublicCloud",
-          infra_bucket: "Networking",
-          device_type: "VPC"
-        }
+    .vpcs[]? | select(type == "object") |
+    select((.vpc_id // .id) != null) |
+    {
+      name: (.tags.Name // .vpc_id // .id),
+      canonical_facts: {
+        vpc_id: (.vpc_id // .id)
+      },
+      facts: {
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "vpc",
+        status: (.state // "unknown"),
+        tags: (.tags // {})
       }
+    }
 
 amazon.aws.ec2_vpc_subnet_info:
   query: >-
-    .subnets[] | select(. != null) | {
+    .subnets[]? | select(type == "object") |
+    select((.subnet_id // .id) != null) |
+    {
+      name: (.tags.Name // .subnet_id // .id),
       canonical_facts: {
-        id: .id,
-        status: .state,
-        tags: (.tags // {})
+        subnet_id: (.subnet_id // .id)
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Subnet"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "subnet",
+        status: (.state // "unknown"),
+        tags: (.tags // {})
       }
     }
 
 amazon.aws.ec2_vpc_nat_gateway_info:
   query: >-
-    .result[] | select(. != null) |
+    .result[]? | select(type == "object") |
+    select(.nat_gateway_id != null) |
     {
+      name: (.tags.Name // .nat_gateway_id),
       canonical_facts: {
-        id: .nat_gateway_id,
-        status: .state,
-        tags: (.tags // {})
+        nat_gateway_id: .nat_gateway_id
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "NAT Gateway"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "nat_gateway",
+        status: (.state // "unknown"),
+        tags: (.tags // {})
       }
     }
 
+# `.attachments | map(...)` raised "Cannot iterate over null" for a detached
+# gateway, which discarded the audit records of every module in that event,
+# not just this one. The attachment list is also not identity -- attaching a
+# gateway to a VPC counted it again -- so it is now a fact, built with `[]?`.
 amazon.aws.ec2_vpc_igw_info:
   query: >-
-    .internet_gateways[] | select(. != null) |
+    .internet_gateways[]? | select(type == "object") |
+    select(.internet_gateway_id != null) |
     {
+      name: (.tags.Name // .internet_gateway_id),
       canonical_facts: {
-        id: .internet_gateway_id,
-        status: (.attachments | map({vpc_id: .vpc_id, status: .state})),
-        tags: (.tags // {})
+        internet_gateway_id: .internet_gateway_id
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Internet Gateway"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "internet_gateway",
+        attached_vpc_ids: [.attachments[]? | .vpc_id? // empty],
+        tags: (.tags // {})
       }
     }
 
 amazon.aws.ec2_vpc_vgw_info:
   query: >-
-    .virtual_gateways[] | select(. != null) |
+    .virtual_gateways[]? | select(type == "object") |
+    select(.vpn_gateway_id != null) |
     {
+      name: (.resource_tags.Name // .tags.Name // .vpn_gateway_id),
       canonical_facts: {
-        id: .vpn_gateway_id,
-        status: .state,
-        tags: (.resource_tags // {})
+        vpn_gateway_id: .vpn_gateway_id
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Virtual Gateway"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "virtual_gateway",
+        status: (.state // "unknown"),
+        tags: (.resource_tags // {})
       }
     }
 
 amazon.aws.ec2_vpc_route_table_info:
   query: >-
-    .route_tables[] | select(. != null) |
+    .route_tables[]? | select(type == "object") |
+    select((.route_table_id // .id) != null) |
     {
+      name: (.tags.Name // .route_table_id // .id),
       canonical_facts: {
-        id: .route_table_id,
-        tags: (.tags // {})
+        route_table_id: (.route_table_id // .id)
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Route table"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "route_table",
+        tags: (.tags // {})
       }
     }
 
 amazon.aws.ec2_vpc_vpn_info:
   query: >-
-    .vpn_connections[] | select(. != null) |
+    .vpn_connections[]? | select(type == "object") |
+    select(.vpn_connection_id != null) |
     {
+      name: (.tags.Name // .vpn_connection_id),
       canonical_facts: {
-        id: .vpn_connection_id,
-        status: .state,
-        tags: (.tags // {})
+        vpn_connection_id: .vpn_connection_id
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "VPN Connection"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "vpn_connection",
+        status: (.state // "unknown"),
+        tags: (.tags // {})
       }
     }
 
 amazon.aws.ec2_vpc_peering_info:
   query: >-
-    .vpc_peering_connections[] | select(. != null) |
+    .vpc_peering_connections[]? | select(type == "object") |
+    select(.vpc_peering_connection_id != null) |
     {
+      name: (.tags.Name // .vpc_peering_connection_id),
       canonical_facts: {
-        id: .vpc_peering_connection_id,
-        status: .status.code,
-        tags: (.tags // {})
+        vpc_peering_connection_id: .vpc_peering_connection_id
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "VPC Peering"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "vpc_peering",
+        status: (.status.code // "unknown"),
+        tags: (.tags // {})
       }
     }
 
@@ -180,68 +249,83 @@ amazon.aws.ec2_vpc_peering_info:
 
 amazon.aws.s3_bucket_info:
   query: >-
-    .buckets[] | select(. != null) |
+    .buckets[]? | select(type == "object") | select(.name != null) |
     {
+      name: .name,
       canonical_facts: {
-        name: .name,
-        tags: (.bucket_tagging // {})
+        bucket_name: .name
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Bucket"
+        infra_type: "public_cloud",
+        infra_bucket: "storage",
+        device_type: "bucket",
+        tags: (.bucket_tagging // {})
       }
     }
 
+# object_info is only returned when both bucket_name and object_name are set;
+# otherwise the module returns s3_keys and `.object_info[]` raised "Cannot
+# iterate over null", discarding the whole event. object_name is set by
+# describe_s3_object() at runtime but is absent from the RETURN block, so the
+# guard below is what proves it is present rather than the documentation.
 amazon.aws.s3_object_info:
   query: >-
-    .object_info[] | select(. != null) |
+    .object_info[]? | select(type == "object") |
+    select(.object_name != null) |
     {
+      name: .object_name,
       canonical_facts: {
-        name: .object_name,
-        tags: (.object_tagging // {})
+        object_name: .object_name
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Object"
+        infra_type: "public_cloud",
+        infra_bucket: "storage",
+        device_type: "object",
+        tags: (.object_tagging // {})
       }
     }
 
 # DATABASE
 
+# dbi_resource_id is the Region-unique immutable identifier.
+# db_instance_identifier is user-supplied and can be changed, so keeping both
+# in canonical_facts counted a renamed instance twice; the identifier is now
+# the display name and the fact, and the resource id alone is the key.
 amazon.aws.rds_instance_info:
   query: >-
-    .instances[] | select(. != null) |
+    .instances[]? | select(type == "object") |
+    select((.dbi_resource_id // .db_instance_arn) != null) |
     {
+      name: (.db_instance_identifier // .dbi_resource_id // .db_instance_arn),
       canonical_facts: {
-        id: .dbi_resource_id,  # AWS Region-unique, immutable identifier for the DB instance.
-        name: .db_instance_identifier,  # The user-supplied DB cluster identifier.
-        tags: (.tags // {}),
-        status: .db_instance_status
-
+        dbi_resource_id: (.dbi_resource_id // .db_instance_arn)
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Database",
-        device_type: "Instance"
+        infra_type: "public_cloud",
+        infra_bucket: "database",
+        device_type: "database_instance",
+        db_instance_identifier: (.db_instance_identifier // "unknown"),
+        status: (.db_instance_status // "unknown"),
+        tags: (.tags // {})
       }
     }
 
 amazon.aws.rds_cluster_info:
   query: >-
-    .clusters[] | select(. != null) |
+    .clusters[]? | select(type == "object") |
+    select((.db_cluster_resource_id // .db_cluster_arn) != null) |
     {
+      name: (.db_cluster_identifier // .db_cluster_resource_id //
+             .db_cluster_arn),
       canonical_facts: {
-        id: .db_cluster_resource_id,  # The AWS Region-unique, immutable identifier for the DB cluster.
-        name: .db_cluster_identifier,  # The user-supplied DB cluster identifier.
-        tags: (.tags // {}),
-        status: .status
-
+        db_cluster_resource_id: (.db_cluster_resource_id // .db_cluster_arn)
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Database",
-        device_type: "Cluster"
+        infra_type: "public_cloud",
+        infra_bucket: "database",
+        device_type: "database_cluster",
+        db_cluster_identifier: (.db_cluster_identifier // "unknown"),
+        status: (.status // "unknown"),
+        tags: (.tags // .tag_list // {})
       }
     }

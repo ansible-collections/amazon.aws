@@ -26,10 +26,13 @@
           Created_by: Ansible Indirect NodeQuery Count integration tests
       - name: "{{ resource_prefix }}-instance-2"
 
+    # Taxonomy values must be lowercase_with_underscores or the indirect-node
+    # rollup cannot bucket them. "Instance" is also ambiguous across
+    # collections; "database_instance" says which kind.
     rds_instance_facts:
-      device_type: "Instance"
-      infra_bucket: "Database"
-      infra_type: "PublicCloud"
+      device_type: "database_instance"
+      infra_bucket: "database"
+      infra_type: "public_cloud"
 
   tasks:
     - block:
@@ -69,21 +72,25 @@
             that:
               - node_count == expected_result  
           vars:
-            expected_result: 
-              - canonical_facts:
-                  id: "{{ instance_1.dbi_resource_id }}"
-                  name: "{{ resource_prefix }}-instance-1"
-                  status: "{{ instance_1.db_instance_status }}"
-                  tags:
-                    Name: "{{ resource_prefix }}-instance-1"
-                    Created_by: Ansible Indirect NodeQuery Count integration tests
-                facts: "{{ rds_instance_facts }}"
-              - canonical_facts:
-                  id: "{{ instance_2.dbi_resource_id }}"
-                  name: "{{ resource_prefix }}-instance-2"
-                  status: "{{ instance_2.db_instance_status }}"
-                  tags: {}
-                facts: "{{ rds_instance_facts }}"
+            # db_instance_identifier is user-supplied and can be changed, so
+            # it is a fact rather than part of the dedup key; the Region-unique
+            # dbi_resource_id is the identity.
+            instance_1_tags:
+              Name: "{{ resource_prefix }}-instance-1"
+              Created_by: Ansible Indirect NodeQuery Count integration tests
+            expected_result:
+              - name: "{{ resource_prefix }}-instance-1"
+                canonical_facts:
+                  dbi_resource_id: "{{ instance_1.dbi_resource_id }}"
+                facts: >-
+                  {{ rds_instance_facts | combine({'db_instance_identifier': resource_prefix ~ '-instance-1',
+                                                   'status': instance_1.db_instance_status, 'tags': instance_1_tags}) }}
+              - name: "{{ resource_prefix }}-instance-2"
+                canonical_facts:
+                  dbi_resource_id: "{{ instance_2.dbi_resource_id }}"
+                facts: >-
+                  {{ rds_instance_facts | combine({'db_instance_identifier': resource_prefix ~ '-instance-2',
+                                                   'status': instance_2.db_instance_status, 'tags': {}}) }}
 
       always:        
         - name: Delete RDS instances
