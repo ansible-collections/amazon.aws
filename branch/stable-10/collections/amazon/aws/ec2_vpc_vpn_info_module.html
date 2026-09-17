@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_vpc_vpn_info module – Gather information about EC2 VPN Connections in AWS &mdash; Ansible collections  documentation</title>
@@ -337,13 +337,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a filtered list of  EC2 VPN Connections, based on tags</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_vpn_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">      </span><span class="s">&quot;tag:Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;test-connection&quot;</span>
+<span class="w">      </span><span class="s">"tag:Name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"test-connection"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpn_conn_info</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about EC2 VPN Connections by specifying connection IDs</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_vpn_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">      </span><span class="s">&quot;vpn-gateway-id&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;vgw-cbe66beb&quot;</span>
+<span class="w">      </span><span class="s">"vpn-gateway-id"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"vgw-cbe66beb"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpn_conn_info</span>
 </pre></div>
 </div>

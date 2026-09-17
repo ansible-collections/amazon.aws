@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.cloudformation_info module – Obtain information about an AWS CloudFormation stack &mdash; Ansible collections  documentation</title>
@@ -405,18 +405,18 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">output</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">debug</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">output</span><span class="o">[</span><span class="s1">&#39;cloudformation&#39;</span><span class="o">][</span><span class="s1">&#39;my-cloudformation-stack&#39;</span><span class="o">]</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">output</span><span class="o">[</span><span class="s1">'cloudformation'</span><span class="o">][</span><span class="s1">'my-cloudformation-stack'</span><span class="o">]</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="c1"># Get stack outputs, when you have the stack name available as a fact</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">set_fact</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">stack_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-awesome-stack</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudformation_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">stack_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">stack_name</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">stack_name</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">stack_name</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_stack</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">debug</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">my_stack.cloudformation</span><span class="o">[</span><span class="nv">stack_name</span><span class="o">]</span><span class="nv">.stack_outputs</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">my_stack.cloudformation</span><span class="o">[</span><span class="nv">stack_name</span><span class="o">]</span><span class="nv">.stack_outputs</span> <span class="cp">}}</span><span class="s">"</span>
 
 <span class="c1"># Get all stack information about a stack</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.cloudformation_info</span><span class="p">:</span>
@@ -429,12 +429,12 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudfor
 <span class="w">    </span><span class="nt">stack_resources</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">stack_policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
-<span class="c1"># Fail if the stack doesn&#39;t exist</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">try to get info about a stack but fail if it doesn&#39;t exist</span>
+<span class="c1"># Fail if the stack doesn't exist</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">try to get info about a stack but fail if it doesn't exist</span>
 <span class="w">  </span><span class="nt">amazon.aws.cloudformation_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">stack_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nonexistent-stack</span>
 <span class="w">    </span><span class="nt">all_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">  </span><span class="nt">failed_when</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cloudformation[&#39;nonexistent-stack&#39;] is undefined</span>
+<span class="w">  </span><span class="nt">failed_when</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cloudformation['nonexistent-stack'] is undefined</span>
 </pre></div>
 </div>
 </section>

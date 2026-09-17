@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_instance_info module – Gather information about ec2 instances in AWS &mdash; Ansible collections  documentation</title>
@@ -385,20 +385,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about any instance with a tag key Name and value Example</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">      </span><span class="s">&quot;tag:Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example</span>
+<span class="w">      </span><span class="s">"tag:Name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about any instance in states &quot;shutting-down&quot;, &quot;stopping&quot;, &quot;stopped&quot;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about any instance in states "shutting-down", "stopping", "stopped"</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">instance-state-name</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;shutting-down&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;stopping&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;stopped&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">instance-state-name</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"shutting-down"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"stopping"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"stopped"</span><span class="p p-Indicator">]</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about any instance with Name beginning with RHEL and an uptime of at least 60 minutes</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">ec2_region</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">ec2_region</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">uptime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">      </span><span class="s">&quot;tag:Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;RHEL-*&quot;</span>
-<span class="w">      </span><span class="nt">instance-state-name</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;running&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="s">"tag:Name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"RHEL-*"</span>
+<span class="w">      </span><span class="nt">instance-state-name</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"running"</span><span class="p p-Indicator">]</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ec2_node_info</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather information about a particular instance using ID and include kernel attribute</span>

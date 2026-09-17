@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.route53_info module – Retrieves Route 53 details using AWS methods &mdash; Ansible collections  documentation</title>
@@ -507,23 +507,23 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-route53-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example for using next_marker</span>
 <span class="w">  </span><span class="nt">amazon.aws.route53_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">query</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hosted_zone</span>
-<span class="w">    </span><span class="nt">next_marker</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">first_info.NextMarker</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">next_marker</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">first_info.NextMarker</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">max_items</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">  </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;NextMarker&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">first_info&quot;</span>
+<span class="w">  </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"'NextMarker'</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">first_info"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">retrieve host entries starting with host1.workshop.test.io</span>
 <span class="w">  </span><span class="nt">block</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">grab zone id</span>
 <span class="w">      </span><span class="nt">amazon.aws.route53_zone</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">zone</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test.io&quot;</span>
+<span class="w">        </span><span class="nt">zone</span><span class="p">:</span><span class="w"> </span><span class="s">"test.io"</span>
 <span class="w">      </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWSINFO</span>
 
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">grab Route53 record information</span>
 <span class="w">      </span><span class="nt">amazon.aws.route53_info</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A</span>
 <span class="w">        </span><span class="nt">query</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">record_sets</span>
-<span class="w">        </span><span class="nt">hosted_zone_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">AWSINFO.zone_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
-<span class="w">        </span><span class="nt">start_record_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;host1.workshop.test.io&quot;</span>
+<span class="w">        </span><span class="nt">hosted_zone_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">AWSINFO.zone_id</span> <span class="cp">}}</span><span class="s">"</span>
+<span class="w">        </span><span class="nt">start_record_name</span><span class="p">:</span><span class="w"> </span><span class="s">"host1.workshop.test.io"</span>
 <span class="w">      </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RECORDS</span>
 </pre></div>
 </div>

@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.kms_key module – Perform various KMS key management tasks &mdash; Ansible collections  documentation</title>
@@ -598,13 +598,13 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-kms-key-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update IAM policy on an existing KMS key</span>
 <span class="w">  </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-kms-key</span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{&quot;Version&quot;:</span><span class="nv"> </span><span class="s">&quot;2012-10-17&quot;,</span><span class="nv"> </span><span class="s">&quot;Id&quot;:</span><span class="nv"> </span><span class="s">&quot;my-kms-key-permissions&quot;,</span><span class="nv"> </span><span class="s">&quot;Statement&quot;:</span><span class="nv"> </span><span class="s">[</span><span class="nv"> </span><span class="s">{</span><span class="nv"> </span><span class="s">&lt;SOME</span><span class="nv"> </span><span class="s">STATEMENT&gt;</span><span class="nv"> </span><span class="s">}</span><span class="nv"> </span><span class="s">]}&#39;</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">'{"Version":</span><span class="nv"> </span><span class="s">"2012-10-17",</span><span class="nv"> </span><span class="s">"Id":</span><span class="nv"> </span><span class="s">"my-kms-key-permissions",</span><span class="nv"> </span><span class="s">"Statement":</span><span class="nv"> </span><span class="s">[</span><span class="nv"> </span><span class="s">{</span><span class="nv"> </span><span class="s">&lt;SOME</span><span class="nv"> </span><span class="s">STATEMENT&gt;</span><span class="nv"> </span><span class="s">}</span><span class="nv"> </span><span class="s">]}'</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example using lookup for policy json</span>
 <span class="w">  </span><span class="nt">amazon.aws.kms_key</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-kms-key</span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;kms_iam_policy_template.json.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span><span class="s1">'template'</span><span class="o">,</span> <span class="s1">'kms_iam_policy_template.json.j2'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 </pre></div>
 </div>

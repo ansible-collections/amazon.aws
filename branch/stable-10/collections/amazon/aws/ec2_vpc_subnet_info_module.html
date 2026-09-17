@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_vpc_subnet_info module – Gather information about EC2 VPC subnets in AWS &mdash; Ansible collections  documentation</title>
@@ -344,7 +344,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="c1"># Gather information about any VPC subnet with a tag key Name and value Example</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_vpc_subnet_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
-<span class="w">      </span><span class="s">&quot;tag:Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example</span>
+<span class="w">      </span><span class="s">"tag:Name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example</span>
 
 <span class="c1"># Gather information about any VPC subnet within VPC with ID vpc-abcdef00</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_vpc_subnet_info</span><span class="p">:</span>
@@ -358,7 +358,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">amazon.aws.ec2_vpc_subnet_info</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">filters</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">vpc-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc-abcdef00</span>
-<span class="w">      </span><span class="s">&quot;tag:Name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">      </span><span class="s">"tag:Name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">item</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">  </span><span class="nt">loop</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">publicA</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">publicB</span>
@@ -366,7 +366,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet_info</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">set_fact</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">subnet_ids</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">subnet_info.results</span> <span class="o">|</span> <span class="nf">sum</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;subnets&#39;</span><span class="o">,</span> <span class="nv">start</span><span class="o">=[])</span> <span class="o">|</span> <span class="nf">map</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">&#39;subnet_id&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">subnet_ids</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">subnet_info.results</span> <span class="o">|</span> <span class="nf">sum</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">'subnets'</span><span class="o">,</span> <span class="nv">start</span><span class="o">=[])</span> <span class="o">|</span> <span class="nf">map</span><span class="o">(</span><span class="nv">attribute</span><span class="o">=</span><span class="s1">'subnet_id'</span><span class="o">)</span> <span class="cp">}}</span><span class="s">"</span>
 </pre></div>
 </div>
 </section>

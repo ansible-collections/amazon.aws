@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.backup_tag module – Manage tags on backup plan, backup vault, recovery point &mdash; Ansible collections  documentation</title>
@@ -361,7 +361,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-t
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Add tags on a resource</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_tag</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">CamelCaseKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CamelCaseValue</span>
@@ -372,14 +372,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-t
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove only specified tags on a resource</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_tag</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">CamelCaseKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CamelCaseValue</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove all tags except for specified tags</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_tag</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">test_tag_key_1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag_tag_value_1</span>
@@ -388,14 +388,14 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-backup-t
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update value of tag key on a resource</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_tag</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">test_tag_key_1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag_tag_value_NEW_1</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove all of the tags on a resource</span>
 <span class="w">  </span><span class="nt">amazon.aws.backup_tag</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">backup_resource_arn</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
 <span class="w">    </span><span class="nt">purge_tags</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>

@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.cloudtrail module – manage CloudTrail create, delete, update &mdash; Ansible collections  documentation</title>
@@ -487,9 +487,9 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudtra
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">    </span><span class="nt">is_multi_region_trail</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">enable_log_file_validation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">cloudwatch_logs_role_arn</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;arn:aws:iam::123456789012:role/CloudTrail_CloudWatchLogs_Role&quot;</span>
-<span class="w">    </span><span class="nt">cloudwatch_logs_log_group_arn</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;arn:aws:logs:us-east-1:123456789012:log-group:CloudTrail/DefaultLogGroup:*&quot;</span>
-<span class="w">    </span><span class="nt">kms_key_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;alias/MyAliasName&quot;</span>
+<span class="w">    </span><span class="nt">cloudwatch_logs_role_arn</span><span class="p">:</span><span class="w"> </span><span class="s">"arn:aws:iam::123456789012:role/CloudTrail_CloudWatchLogs_Role"</span>
+<span class="w">    </span><span class="nt">cloudwatch_logs_log_group_arn</span><span class="p">:</span><span class="w"> </span><span class="s">"arn:aws:logs:us-east-1:123456789012:log-group:CloudTrail/DefaultLogGroup:*"</span>
+<span class="w">    </span><span class="nt">kms_key_id</span><span class="p">:</span><span class="w"> </span><span class="s">"alias/MyAliasName"</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
 <span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
@@ -499,8 +499,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-cloudtra
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 <span class="w">    </span><span class="nt">s3_bucket_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mylogbucket</span>
-<span class="w">    </span><span class="nt">kms_key_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012&quot;</span>
-<span class="w">    </span><span class="c1"># simply &quot;12345678-1234-1234-1234-123456789012&quot; would be valid too.</span>
+<span class="w">    </span><span class="nt">kms_key_id</span><span class="p">:</span><span class="w"> </span><span class="s">"arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"</span>
+<span class="w">    </span><span class="c1"># simply "12345678-1234-1234-1234-123456789012" would be valid too.</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pause logging the trail we just created</span>
 <span class="w">  </span><span class="nt">amazon.aws.cloudtrail</span><span class="p">:</span>

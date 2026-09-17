@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_security_group module – Maintain an EC2 security group &mdash; Ansible collections  documentation</title>
@@ -677,7 +677,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example using security group rule descriptions</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_security_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">name</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">name</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg with rule descriptions</span>
 <span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc-xxxxxxxx</span>
 <span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
@@ -689,7 +689,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example using ICMP types and codes</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_security_group</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">name</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">name</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg for ICMP</span>
 <span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc-xxxxxxxx</span>
 <span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
@@ -738,7 +738,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <span class="w">        </span><span class="c1"># the containing group name may be specified here</span>
 <span class="w">        </span><span class="nt">group_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">proto</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all</span>
-<span class="w">        </span><span class="c1"># in the &#39;proto&#39; attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number</span>
+<span class="w">        </span><span class="c1"># in the 'proto' attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number</span>
 <span class="w">        </span><span class="c1"># other than tcp, udp, icmp, or 58 (ICMPv6), traffic on all ports is allowed, regardless of any ports that</span>
 <span class="w">        </span><span class="c1"># you specify.</span>
 <span class="w">        </span><span class="nt">from_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10050</span><span class="w"> </span><span class="c1"># this value is ignored</span>
@@ -761,7 +761,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">an example2 EC2 group</span>
 <span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12345</span>
 <span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
-<span class="w">      </span><span class="c1"># &#39;ports&#39; rule keyword was introduced in version 2.4. It accepts a single</span>
+<span class="w">      </span><span class="c1"># 'ports' rule keyword was introduced in version 2.4. It accepts a single</span>
 <span class="w">      </span><span class="c1"># port value or a list of values including ranges (from_port-to_port).</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">proto</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp</span>
 <span class="w">        </span><span class="nt">ports</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">22</span>
@@ -794,7 +794,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-secu
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-edcd9784</span>
 <span class="w">  </span><span class="nt">diff</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Delete</span><span class="nv"> </span><span class="s">group</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">its</span><span class="nv"> </span><span class="s">id&quot;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Delete</span><span class="nv"> </span><span class="s">group</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">its</span><span class="nv"> </span><span class="s">id"</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_security_group</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">group_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sg-33b4ee5b</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>

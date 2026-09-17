@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_vpc_endpoint module – Create and delete AWS VPC endpoints &mdash; Ansible collections  documentation</title>
@@ -465,7 +465,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
 <span class="w">    </span><span class="nt">vpc_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc-12345678</span>
 <span class="w">    </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">com.amazonaws.ap-southeast-2.s3</span>
-<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="nv"> </span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span> <span class="s1">&#39;template&#39;</span><span class="o">,</span> <span class="s1">&#39;endpoint_policy.json.j2&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="nv"> </span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="nv"> </span><span class="cp">{{</span> <span class="nv">lookup</span><span class="o">(</span> <span class="s1">'template'</span><span class="o">,</span> <span class="s1">'endpoint_policy.json.j2'</span><span class="o">)</span> <span class="cp">}}</span><span class="nv"> </span><span class="s">"</span>
 <span class="w">    </span><span class="nt">route_table_ids</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rtb-12345678</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rtb-87654321</span>
@@ -485,7 +485,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete newly created vpc endpoint</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_endpoint</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
-<span class="w">    </span><span class="nt">vpc_endpoint_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">new_vpc_endpoint.result</span><span class="o">[</span><span class="s1">&#39;VpcEndpointId&#39;</span><span class="o">]</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">vpc_endpoint_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">new_vpc_endpoint.result</span><span class="o">[</span><span class="s1">'VpcEndpointId'</span><span class="o">]</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ap-southeast-2</span>
 </pre></div>
 </div>

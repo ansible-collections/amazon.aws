@@ -150,8 +150,8 @@ It gives the EC2 instance details dynamically to manage the AWS infrastructure.<
 <p>If your Ansible controller is not in AWS, authentication is handled by either
 specifying your access and secret key as ENV variables or inventory plugin arguments.</p>
 <p>For environment variables:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s1">&#39;AK123&#39;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s1">&#39;abc123&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s1">'AK123'</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s1">'abc123'</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">AWS_SECURITY_TOKEN</span></code> environment variable can also be used, but is only supported for backward compatibility.
@@ -178,11 +178,11 @@ You can change the location of the shared credentials file by setting the <code 
 <span class="nt">aws_profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 
 <span class="c1"># You could use Jinja2 to attach the AWS profile from the environment variable.</span>
-<span class="nt">aws_profile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">lookup(&#39;env&#39;,</span><span class="nv"> </span><span class="s">&#39;AWS_PROFILE&#39;)</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">default(&#39;dev-profile&#39;,</span><span class="nv"> </span><span class="s">true)</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="nt">aws_profile</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">lookup('env',</span><span class="nv"> </span><span class="s">'AWS_PROFILE')</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">default('dev-profile',</span><span class="nv"> </span><span class="s">true)</span><span class="nv"> </span><span class="s">}}"</span>
 </pre></div>
 </div>
 <p>You can also set your AWS profile as an ENV variable:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s1">&#39;test-profile&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s1">'test-profile'</span>
 </pre></div>
 </div>
 <p>If your Ansible controller is running on an EC2 instance with an assigned IAM Role, the credential may be omitted.
@@ -232,20 +232,20 @@ You should still provide AWS credentials with enough privilege to perform the As
 
 <span class="w">  </span><span class="c1"># This option allows displaying the private ip addresses using `tag:Name` as a prefix.</span>
 <span class="w">  </span><span class="c1"># `name` can be one of the options specified in http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options.</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;private-ip-address&#39;</span>
-<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;_&#39;</span>
-<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;tag:Name&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">'private-ip-address'</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">'_'</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'tag:Name'</span>
 
 <span class="w">  </span><span class="c1"># Using literal values for hostname</span>
 <span class="w">  </span><span class="c1"># # Hostname will be aws-test_literal</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;test_literal&#39;</span>
-<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;-&#39;</span>
-<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">'test_literal'</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">'-'</span>
+<span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'aws'</span>
 
 <span class="w">  </span><span class="c1"># To use tags as hostnames use the syntax `tag:Name=Value` to use the hostname `Name_Value`, or</span>
 <span class="w">  </span><span class="c1"># `tag:Name` to use the value of the Name tag. If value provided does not exist in the above options,</span>
 <span class="w">  </span><span class="c1"># it will be used as a literal string.</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;tag:Tag1=Test1,Tag2=Test2&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">'tag:Tag1=Test1,Tag2=Test2'</span>
 
 <span class="w">  </span><span class="c1"># Use dns-name attribute as hostname</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dns-name</span>
@@ -275,7 +275,7 @@ The prefix will be the name of the host group that is to be concatenated with th
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arch</span>
 <span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">architecture</span>
 <span class="w">  </span><span class="nt">value</span><span class="p">:</span>
-<span class="w">      </span><span class="s">&#39;x86_64&#39;</span>
+<span class="w">      </span><span class="s">'x86_64'</span>
 
 <span class="c1"># This creates host groups based on availability zone.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">az</span>
@@ -292,28 +292,28 @@ The prefix will be the name of the host group that is to be concatenated with th
 <span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_type</span>
 
 <span class="c1"># This creates host groups using security_groups id, e.g., `security_groups_sg_abcd1234` group for each security group.</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups|json_query(&quot;[].group_id&quot;)&#39;</span>
-<span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;security_groups&#39;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">'security_groups|json_query("[].group_id")'</span>
+<span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'security_groups'</span>
 
 <span class="c1"># This creates a host group for each value of the Application tag.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags.Application</span>
-<span class="w">  </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span>
+<span class="w">  </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">''</span>
 
 <span class="c1"># This creates a host group per region e.g., `aws_region_us_east_2`.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placement.region</span>
 <span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aws_region</span>
 
 <span class="c1"># This creates host groups based on the value of a custom tag `Role` and adds them to a metagroup called `project`.</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags[&#39;Role&#39;]</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags['Role']</span>
 <span class="w">  </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
-<span class="w">  </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;project&quot;</span>
+<span class="w">  </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="s">"project"</span>
 
 <span class="c1"># This creates a common parent group for all EC2 availability zones.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">placement.availability_zone</span>
 <span class="w">  </span><span class="nt">parent_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">all_ec2_zones</span>
 
 <span class="c1"># This creates a group per distro (distro_CentOS, distro_Debian) and assigns the hosts that have matching values to it,</span>
-<span class="c1"># using the default separator &quot;_&quot;.</span>
+<span class="c1"># using the default separator "_".</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">distro</span>
 <span class="w">  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible_distribution</span>
 </pre></div>
@@ -326,11 +326,11 @@ The prefix will be the name of the host group that is to be concatenated with th
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">groups</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># This created two groups - `Production` and `PreProduction` based on tags</span>
 <span class="w">  </span><span class="c1"># These conditionals are expressed using Jinja2 syntax.</span>
-<span class="w">  </span><span class="nt">redhat</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;Production&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment&quot;</span>
-<span class="w">  </span><span class="nt">ubuntu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;PreProduction&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment&quot;</span>
+<span class="w">  </span><span class="nt">redhat</span><span class="p">:</span><span class="w"> </span><span class="s">"'Production'</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment"</span>
+<span class="w">  </span><span class="nt">ubuntu</span><span class="p">:</span><span class="w"> </span><span class="s">"'PreProduction'</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">tags.Environment"</span>
 
 <span class="w">  </span><span class="c1"># This created a libvpc group based on specific condition on `vpc_id`.</span>
-<span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == &#39;vpc-####&#39;</span>
+<span class="w">  </span><span class="nt">libvpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_id == 'vpc-####'</span>
 </pre></div>
 </div>
 </section>
@@ -343,15 +343,15 @@ The prefix will be the name of the host group that is to be concatenated with th
 
 <span class="w">  </span><span class="c1"># This sets location_vars variable as a dictionary with location as a key.</span>
 <span class="w">  </span><span class="nt">location_vars</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;east_coast&quot;</span>
-<span class="w">    </span><span class="nt">server_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ansible_hostname</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">regex_replace</span><span class="nv"> </span><span class="s">(&#39;(.{6})(.{2}).*&#39;,</span><span class="nv"> </span><span class="s">&#39;\\2&#39;)&quot;</span>
+<span class="w">    </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">"east_coast"</span>
+<span class="w">    </span><span class="nt">server_type</span><span class="p">:</span><span class="w"> </span><span class="s">"ansible_hostname</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">regex_replace</span><span class="nv"> </span><span class="s">('(.{6})(.{2}).*',</span><span class="nv"> </span><span class="s">'\\2')"</span>
 
 <span class="w">  </span><span class="c1"># This sets location variable.</span>
-<span class="w">  </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;east_coast&#39;&quot;</span>
+<span class="w">  </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">"'east_coast'"</span>
 
 <span class="w">  </span><span class="c1"># This lets you connect over SSM to the instance id.</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">instance_id</span>
-<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;amazon.aws.aws_ssm&#39;</span>
+<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">'amazon.aws.aws_ssm'</span>
 
 <span class="w">  </span><span class="c1"># This defines combinations of host servers, IP addresses, and related SSH private keys.</span>
 <span class="w">  </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">private_ip_address</span>
@@ -359,12 +359,12 @@ The prefix will be the name of the host group that is to be concatenated with th
 <span class="w">  </span><span class="nt">ansible_ssh_private_key_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/private_key_file</span>
 
 <span class="w">  </span><span class="c1"># This sets the ec2_security_group_ids variable.</span>
-<span class="w">  </span><span class="nt">ec2_security_group_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">security_groups | map(attribute=&#39;group_id&#39;) | list |  join(&#39;,&#39;)</span>
+<span class="w">  </span><span class="nt">ec2_security_group_ids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">security_groups | map(attribute='group_id') | list |  join(',')</span>
 
 <span class="w">  </span><span class="c1"># Host variables that are strings need to be wrapped with two sets of quotes.</span>
 <span class="w">  </span><span class="c1"># See https://docs.ansible.com/ansible/latest/plugins/inventory.html#using-inventory-plugins for details.</span>
-<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;amazon.aws.aws_ssm&quot;&#39;</span>
-<span class="w">  </span><span class="nt">ansible_user</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&quot;ssm-user&quot;&#39;</span>
+<span class="w">  </span><span class="nt">ansible_connection</span><span class="p">:</span><span class="w"> </span><span class="s">'"amazon.aws.aws_ssm"'</span>
+<span class="w">  </span><span class="nt">ansible_user</span><span class="p">:</span><span class="w"> </span><span class="s">'"ssm-user"'</span>
 </pre></div>
 </div>
 </section>
@@ -374,14 +374,14 @@ The prefix will be the name of the host group that is to be concatenated with th
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">include_filters</span><span class="p">:</span>
 <span class="c1"># This includes everything in the inventory that has the following tags.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Project</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;planets&#39;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'planets'</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Environment</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;demo&#39;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'demo'</span>
 
 <span class="c1"># This excludes everything from the inventory that has the following tag:Name.</span>
 <span class="nt">exclude_filters</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;{{</span><span class="nv"> </span><span class="s">resource_prefix</span><span class="nv"> </span><span class="s">}}_3&#39;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'{{</span><span class="nv"> </span><span class="s">resource_prefix</span><span class="nv"> </span><span class="s">}}_3'</span>
 </pre></div>
 </div>
 </section>
@@ -422,7 +422,7 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-*&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-*'</span>
 <span class="nt">hostnames</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:Name</span>
 <span class="nt">use_contrib_script_compatible_sanitization</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
@@ -431,48 +431,48 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 </div>
 <p>After providing any required options, you can view the populated inventory with <code class="docutils literal notranslate"><span class="pre">ansible-inventory</span> <span class="pre">-i</span> <span class="pre">demo.aws_ec2.yml</span> <span class="pre">--list</span></code>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
-  &quot;_meta&quot;: {
-      &quot;hostvars&quot;: {
-          &quot;instance-01&quot;: {
-              &quot;aws_ami_launch_index_ec2&quot;: 0,
-              &quot;aws_architecture_ec2&quot;: &quot;x86_64&quot;,
+  "_meta": {
+      "hostvars": {
+          "instance-01": {
+              "aws_ami_launch_index_ec2": 0,
+              "aws_architecture_ec2": "x86_64",
               ...
-              &quot;ebs_optimized&quot;: false,
-              &quot;ec2_tag_Environment&quot;: &quot;dev&quot;,
-              &quot;ec2_tag_Name&quot;: &quot;instance-01&quot;,
-              &quot;ec2_tag_Tag1&quot;: &quot;Test1&quot;,
-              &quot;ec2_tag_Tag2&quot;: &quot;Test2&quot;,
-              &quot;ena_support&quot;: true,
-              &quot;enclave_options&quot;: {
-                  &quot;enabled&quot;: false
+              "ebs_optimized": false,
+              "ec2_tag_Environment": "dev",
+              "ec2_tag_Name": "instance-01",
+              "ec2_tag_Tag1": "Test1",
+              "ec2_tag_Tag2": "Test2",
+              "ena_support": true,
+              "enclave_options": {
+                  "enabled": false
               },
               ...
           },
-          &quot;instance-02&quot;: {
+          "instance-02": {
             ...
-            &quot;ebs_optimized&quot;: false,
-            &quot;ec2_tag_Environment&quot;: &quot;dev&quot;,
-            &quot;ec2_tag_Name&quot;: &quot;instance-02&quot;,
-            &quot;ec2_tag_Tag1&quot;: &quot;Test3&quot;,
-            &quot;ec2_tag_Tag2&quot;: &quot;Test4&quot;,
-            &quot;ena_support&quot;: true,
-            &quot;enclave_options&quot;: {
-                &quot;enabled&quot;: false
+            "ebs_optimized": false,
+            "ec2_tag_Environment": "dev",
+            "ec2_tag_Name": "instance-02",
+            "ec2_tag_Tag1": "Test3",
+            "ec2_tag_Tag2": "Test4",
+            "ena_support": true,
+            "enclave_options": {
+                "enabled": false
             },
             ...
           }
       }
   },
-  all&quot;: {
-        &quot;children&quot;: [
-            &quot;aws_ec2&quot;,
-            &quot;ungrouped&quot;
+  all": {
+        "children": [
+            "aws_ec2",
+            "ungrouped"
         ]
     },
-    &quot;aws_ec2&quot;: {
-        &quot;hosts&quot;: [
-            &quot;instance-01&quot;,
-            &quot;instance-02&quot;
+    "aws_ec2": {
+        "hosts": [
+            "instance-01",
+            "instance-02"
         ]
     }
 }
@@ -488,51 +488,51 @@ To replicate behavior of replace_dash_in_groups = True with constructed groups, 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-*&#39;</span>
-<span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;aws_&#39;</span>
-<span class="nt">hostvars_suffix</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;_ec2&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-*'</span>
+<span class="nt">hostvars_prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'aws_'</span>
+<span class="nt">hostvars_suffix</span><span class="p">:</span><span class="w"> </span><span class="s">'_ec2'</span>
 <span class="nt">hostnames</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag:Name</span>
 </pre></div>
 </div>
 <p>Now the output of <code class="docutils literal notranslate"><span class="pre">ansible-inventory</span> <span class="pre">-i</span> <span class="pre">demo.aws_ec2.yml</span> <span class="pre">--list</span></code>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
-  &quot;_meta&quot;: {
-      &quot;hostvars&quot;: {
-          &quot;instance-01&quot;: {
-              &quot;aws_ami_launch_index_ec2&quot;: 0,
-              &quot;aws_architecture_ec2&quot;: &quot;x86_64&quot;,
-              &quot;aws_block_device_mappings_ec2&quot;: [
+  "_meta": {
+      "hostvars": {
+          "instance-01": {
+              "aws_ami_launch_index_ec2": 0,
+              "aws_architecture_ec2": "x86_64",
+              "aws_block_device_mappings_ec2": [
                   {
-                      &quot;device_name&quot;: &quot;/dev/sda1&quot;,
-                      &quot;ebs&quot;: {
-                          &quot;attach_time&quot;: &quot;2022-06-27T09:04:57+00:00&quot;,
-                          &quot;delete_on_termination&quot;: true,
-                          &quot;status&quot;: &quot;attached&quot;,
-                          &quot;volume_id&quot;: &quot;vol-06e065bca44e6eae5&quot;
+                      "device_name": "/dev/sda1",
+                      "ebs": {
+                          "attach_time": "2022-06-27T09:04:57+00:00",
+                          "delete_on_termination": true,
+                          "status": "attached",
+                          "volume_id": "vol-06e065bca44e6eae5"
                       }
                   }
               ],
-              &quot;aws_capacity_reservation_specification_ec2&quot;: {
-                  &quot;capacity_reservation_preference&quot;: &quot;open&quot;
+              "aws_capacity_reservation_specification_ec2": {
+                  "capacity_reservation_preference": "open"
               }
               ...,
           },
-          &quot;instance-02&quot;: {
+          "instance-02": {
             ...,
           }
       }
   },
-  all&quot;: {
-        &quot;children&quot;: [
-            &quot;aws_ec2&quot;,
-            &quot;ungrouped&quot;
+  all": {
+        "children": [
+            "aws_ec2",
+            "ungrouped"
         ]
     },
-    &quot;aws_ec2&quot;: {
-        &quot;hosts&quot;: [
-            &quot;instance-01&quot;,
-            &quot;instance-02&quot;
+    "aws_ec2": {
+        "hosts": [
+            "instance-01",
+            "instance-02"
         ]
     }
 }
@@ -607,25 +607,25 @@ You can can define plugin-specific cache settings in the config file:</p>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-2</span>
 <span class="nt">keyed_groups</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># add hosts to tag_Name_value groups for each aws_ec2 host&#39;s tags.Name variable.</span>
+<span class="w">  </span><span class="c1"># add hosts to tag_Name_value groups for each aws_ec2 host's tags.Name variable.</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tags.Name</span>
 <span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag_Name_</span>
-<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">""</span>
 <span class="nt">groups</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># add hosts to the group dev if any of the dictionary&#39;s keys or values is the word &#39;dev&#39;.</span>
-<span class="w">  </span><span class="nt">development</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&#39;dev&#39;</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">(tags|list)&quot;</span>
+<span class="w">  </span><span class="c1"># add hosts to the group dev if any of the dictionary's keys or values is the word 'dev'.</span>
+<span class="w">  </span><span class="nt">development</span><span class="p">:</span><span class="w"> </span><span class="s">"'dev'</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">(tags|list)"</span>
 <span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-01&#39;</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-03&#39;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-01'</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-03'</span>
 <span class="nt">include_filters</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-02&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-04&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-02'</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-04'</span>
 <span class="nt">exclude_filters</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">tag:Name</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-03&#39;</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;instance-04&#39;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-03'</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'instance-04'</span>
 <span class="nt">hostnames</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># You can also specify a list in order of precedence for hostname variables.</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip-address</span>
@@ -661,7 +661,7 @@ You can can define plugin-specific cache settings in the config file:</p>
 
 <span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run Shell Command</span>
-<span class="w">      </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo &quot;Hello World&quot;</span>
+<span class="w">      </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo "Hello World"</span>
 </pre></div>
 </div>
 </section>

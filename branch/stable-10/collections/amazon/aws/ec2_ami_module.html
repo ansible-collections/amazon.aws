@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_ami module – Create or destroy an image (AMI) in EC2 &mdash; Ansible collections  documentation</title>
@@ -722,7 +722,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 <span class="w">    </span><span class="nt">root_device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
 <span class="w">    </span><span class="nt">device_mapping</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
-<span class="w">        </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">snapshot_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">        </span><span class="nt">snapshot_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">snapshot_id</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">wait</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
 <span class="w">    </span><span class="nt">boot_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uefi</span>
@@ -731,37 +731,37 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-ami-
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deregister/Delete AMI (keep associated snapshots)</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">delete_snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deregister AMI (delete associated snapshots too)</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">delete_snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update AMI Launch Permissions, making it public</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">launch_permissions</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">group_names</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;all&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">group_names</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'all'</span><span class="p p-Indicator">]</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow AMI to be launched by another account</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">launch_permissions</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">user_ids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;123456789012&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">user_ids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'123456789012'</span><span class="p p-Indicator">]</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update AMI Launch Permissions, share AMI across an Organization and Organizational Units</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_ami</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">instance.image_id</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">launch_permissions</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">org_arns</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;arn:aws:organizations::123456789012:organization/o-123ab4cdef&#39;</span><span class="p p-Indicator">]</span>
-<span class="w">      </span><span class="nt">org_unit_arns</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5example&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">org_arns</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'arn:aws:organizations::123456789012:organization/o-123ab4cdef'</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">org_unit_arns</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'arn:aws:organizations::123456789012:ou/o-123example/ou-1234-5example'</span><span class="p p-Indicator">]</span>
 </pre></div>
 </div>
 </section>

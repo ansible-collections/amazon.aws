@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.25.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>amazon.aws.ec2_instance module – Create &amp; manage EC2 instances &mdash; Ansible collections  documentation</title>
@@ -1188,8 +1188,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a public IP address</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-compute-instance&quot;</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"public-compute-instance"</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"prod-ssh-key"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">c5.large</span>
 <span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
@@ -1201,10 +1201,10 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance and Add EBS</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-withebs-instance&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"public-withebs-instance"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"prod-ssh-key"</span>
 <span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 <span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
@@ -1214,7 +1214,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance and Add EBS volume from a snapshot</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-withebs-instance&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"public-withebs-instance"</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-1234567890</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
@@ -1225,7 +1225,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create EC2 instance with termination protection turned on</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-ec2-instance&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"my-ec2-instance"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
@@ -1234,7 +1234,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with a cpu_options</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-cpuoption-instance&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"public-cpuoption-instance"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">Environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Testing</span>
@@ -1249,32 +1249,32 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance and have it begin a Tower callback on boot</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tower-callback-test&quot;</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"tower-callback-test"</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"prod-ssh-key"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 <span class="w">    </span><span class="nt">tower_callback</span><span class="p">:</span>
 <span class="w">      </span><span class="c1"># IP or hostname of tower server</span>
 <span class="w">      </span><span class="nt">tower_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2.3.4</span>
 <span class="w">      </span><span class="nt">job_template_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">876</span>
-<span class="w">      </span><span class="nt">host_config_key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;[secret</span><span class="nv"> </span><span class="s">config</span><span class="nv"> </span><span class="s">key</span><span class="nv"> </span><span class="s">goes</span><span class="nv"> </span><span class="s">here]&#39;</span>
+<span class="w">      </span><span class="nt">host_config_key</span><span class="p">:</span><span class="w"> </span><span class="s">'[secret</span><span class="nv"> </span><span class="s">config</span><span class="nv"> </span><span class="s">key</span><span class="nv"> </span><span class="s">goes</span><span class="nv"> </span><span class="s">here]'</span>
 <span class="w">    </span><span class="nt">network_interfaces</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">assign_public_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
 <span class="w">    </span><span class="nt">cpu_credit_specification</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unlimited</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">SomeThing</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;A</span><span class="nv"> </span><span class="s">value&quot;</span>
+<span class="w">      </span><span class="nt">SomeThing</span><span class="p">:</span><span class="w"> </span><span class="s">"A</span><span class="nv"> </span><span class="s">value"</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with ENI (An existing ENI ID is required)</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"public-eni-instance"</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"prod-ssh-key"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">network_interfaces_ids</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">"eni-12345"</span>
 <span class="w">        </span><span class="nt">device_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span>
+<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">"eni_on"</span>
 <span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">device_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/dev/sda1</span>
 <span class="w">        </span><span class="nt">ebs</span><span class="p">:</span>
@@ -1284,20 +1284,20 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add second ENI interface</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-eni-instance&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"public-eni-instance"</span>
 <span class="w">    </span><span class="nt">network_interfaces_ids</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-12345&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">"eni-12345"</span>
 <span class="w">        </span><span class="nt">device_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni-67890&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">"eni-67890"</span>
 <span class="w">        </span><span class="nt">device_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
 <span class="w">    </span><span class="nt">tags</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eni_on&quot;</span>
+<span class="w">      </span><span class="nt">Env</span><span class="p">:</span><span class="w"> </span><span class="s">"eni_on"</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t2.micro</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start an instance with metadata options</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;public-metadataoptions-instance&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"public-metadataoptions-instance"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5calable</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">t3.small</span>
 <span class="w">    </span><span class="nt">image_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ami-123456</span>
@@ -1361,8 +1361,8 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-inst
 <span class="c1"># launches a mac instance with HostResourceGroupArn and LicenseSpecifications</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start a mac instance with a host resource group and license specifications</span>
 <span class="w">  </span><span class="nt">amazon.aws.ec2_instance</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;mac-compute-instance&quot;</span>
-<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;prod-ssh-key&quot;</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"mac-compute-instance"</span>
+<span class="w">    </span><span class="nt">key_name</span><span class="p">:</span><span class="w"> </span><span class="s">"prod-ssh-key"</span>
 <span class="w">    </span><span class="nt">vpc_subnet_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subnet-5ca1ab1e</span>
 <span class="w">    </span><span class="nt">instance_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mac1.metal</span>
 <span class="w">    </span><span class="nt">security_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
