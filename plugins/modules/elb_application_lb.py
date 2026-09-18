@@ -73,6 +73,13 @@ options:
     type: bool
     version_added: 3.2.0
     version_added_collection: community.aws
+  http_xff_header_processing_mode:
+    description:
+      - How the load balancer modifies the X-Forwarded-For header before sending the request to the target.
+      - Defaults to V(append).
+    type: str
+    choices: [append, preserve, remove]
+    version_added: 12.0.0
   idle_timeout:
     description:
       - The number of seconds to wait before an idle connection is closed.
@@ -1049,6 +1056,7 @@ def build_argument_spec():
         http_drop_invalid_header_fields=dict(type="bool"),
         http_x_amzn_tls_version_and_cipher_suite=dict(type="bool"),
         http_xff_client_port=dict(type="bool"),
+        http_xff_header_processing_mode=dict(type="str", choices=["append", "preserve", "remove"]),
         idle_timeout=dict(type="int"),
         listeners=dict(
             type="list",

@@ -488,6 +488,7 @@ class TestBuildElbAttributesUpdateList:
         alb.http_drop_invalid_header_fields = None
         alb.http_x_amzn_tls_version_and_cipher_suite = None
         alb.http_xff_client_port = None
+        alb.http_xff_header_processing_mode = None
         alb.waf_fail_open = None
 
         result = alb._build_elb_attributes_update_list()
@@ -512,6 +513,7 @@ class TestBuildElbAttributesUpdateList:
         alb.http_drop_invalid_header_fields = None
         alb.http_x_amzn_tls_version_and_cipher_suite = None
         alb.http_xff_client_port = None
+        alb.http_xff_header_processing_mode = None
         alb.waf_fail_open = None
 
         result = alb._build_elb_attributes_update_list()
@@ -538,6 +540,7 @@ class TestBuildElbAttributesUpdateList:
         alb.http_drop_invalid_header_fields = None
         alb.http_x_amzn_tls_version_and_cipher_suite = None
         alb.http_xff_client_port = None
+        alb.http_xff_header_processing_mode = None
         alb.waf_fail_open = None
 
         result = alb._build_elb_attributes_update_list()
@@ -562,6 +565,7 @@ class TestBuildElbAttributesUpdateList:
         alb.http_drop_invalid_header_fields = None
         alb.http_x_amzn_tls_version_and_cipher_suite = None
         alb.http_xff_client_port = None
+        alb.http_xff_header_processing_mode = None
         alb.waf_fail_open = None
 
         result = alb._build_elb_attributes_update_list()
@@ -577,6 +581,7 @@ class TestBuildElbAttributesUpdateList:
             "routing_http_drop_invalid_header_fields_enabled": "false",
             "routing_http_x_amzn_tls_version_and_cipher_suite_enabled": "false",
             "routing_http_xff_client_port_enabled": "false",
+            "routing_http_xff_header_processing_mode": "append",
             "waf_fail_open_enabled": "false",
         }
         alb.access_logs_enabled = None
@@ -589,10 +594,11 @@ class TestBuildElbAttributesUpdateList:
         alb.http_drop_invalid_header_fields = True  # Changed
         alb.http_x_amzn_tls_version_and_cipher_suite = True  # Changed
         alb.http_xff_client_port = True  # Changed
+        alb.http_xff_header_processing_mode = "preserve"  # Changed
         alb.waf_fail_open = True  # Changed
 
         result = alb._build_elb_attributes_update_list()
-        assert len(result) == 5
+        assert len(result) == 6
         assert {"Key": "routing.http.desync_mitigation_mode", "Value": "strictest"} in result
         assert {"Key": "routing.http.drop_invalid_header_fields.enabled", "Value": "true"} in result
         assert {
@@ -600,6 +606,7 @@ class TestBuildElbAttributesUpdateList:
             "Value": "true",
         } in result
         assert {"Key": "routing.http.xff_client_port.enabled", "Value": "true"} in result
+        assert {"Key": "routing.http.xff_header_processing.mode", "Value": "preserve"} in result
         assert {"Key": "waf.fail_open.enabled", "Value": "true"} in result
 
 
@@ -621,6 +628,7 @@ class TestCompareElbAttributes:
         alb.http_drop_invalid_header_fields = None
         alb.http_x_amzn_tls_version_and_cipher_suite = None
         alb.http_xff_client_port = None
+        alb.http_xff_header_processing_mode = None
         alb.waf_fail_open = None
 
         result = alb.compare_elb_attributes()
@@ -641,6 +649,7 @@ class TestCompareElbAttributes:
         alb.http_drop_invalid_header_fields = None
         alb.http_x_amzn_tls_version_and_cipher_suite = None
         alb.http_xff_client_port = None
+        alb.http_xff_header_processing_mode = None
         alb.waf_fail_open = None
 
         result = alb.compare_elb_attributes()
