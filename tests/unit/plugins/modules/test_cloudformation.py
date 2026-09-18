@@ -150,7 +150,7 @@ def test_missing_template_body():
     assert exc_info.match("FAIL")
     assert not m.exit_args
     assert (
-        "Either 'template', 'template_body' or 'template_url' is required when the stack does not exist."
+        "Either 'template_body' or 'template_url' is required when the stack does not exist."
         == m.exit_kwargs["msg"]
     )
 

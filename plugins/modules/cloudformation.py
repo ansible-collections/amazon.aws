@@ -48,18 +48,6 @@ options:
     default: present
     choices: [ present, absent ]
     type: str
-  template:
-    description:
-      - The local path of the CloudFormation template.
-      - This must be the full path to the file, relative to the working directory. If using roles this may look
-        like V(roles/cloudformation/files/cloudformation-example.json).
-      - If O(state=present) and the stack does not exist yet, either O(template), O(template_body) or O(template_url)
-        must be specified (but only one of them).
-      - If O(state=present), the stack does exist, and neither O(template),
-        O(template_body) nor O(template_url) are specified, the previous template will be reused.
-      - The O(template) parameter has been deprecated and will be remove in a release after
-        2026-05-01. It is recommended to use O(template_body) with the P(ansible.builtin.template#lookup) lookup plugin.
-    type: path
   notification_arns:
     description:
       - A comma separated list of Simple Notification Service (SNS) topic ARNs to publish stack related events.
@@ -89,9 +77,9 @@ options:
     description:
       - Location of file containing the template body. The URL must point to a template (max size 307,200 bytes) located in an
         S3 bucket in the same region as the stack.
-      - If O(state=present) and the stack does not exist yet, either O(template), O(template_body) or O(template_url)
+      - If O(state=present) and the stack does not exist yet, either O(template_body) or O(template_url)
         must be specified (but only one of them).
-      - If O(state=present), the stack does exist, and neither O(template), O(template_body) nor O(template_url) are specified,
+      - If O(state=present), the stack does exist, and neither O(template_body) nor O(template_url) are specified,
         the previous template will be reused.
     type: str
   create_changeset:
@@ -122,9 +110,9 @@ options:
   template_body:
     description:
       - Template body. Use this to pass in the actual body of the CloudFormation template.
-      - If O(state=present) and the stack does not exist yet, either O(template), O(template_body) or O(template_url)
+      - If O(state=present) and the stack does not exist yet, either O(template_body) or O(template_url)
         must be specified (but only one of them).
-      - If O(state=present), the stack does exist, and neither O(template), O(template_body) nor O(template_url)
+      - If O(state=present), the stack does exist, and neither O(template_body) nor O(template_url)
         are specified, the previous template will be reused.
     type: str
   events_limit:
@@ -174,8 +162,6 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    # The template parameter has been deprecated, use template_body with lookup instead.
-    # template: "files/cloudformation-example.json"
     template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     template_parameters:
       KeyName: "jmartin"
@@ -192,8 +178,6 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    # The template parameter has been deprecated, use template_body with lookup instead.
-    # template: "roles/cloudformation/files/cloudformation-example.json"
     template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     role_arn: 'arn:aws:iam::123456789012:role/cloudformation-iam-role'
 
@@ -244,7 +228,7 @@ EXAMPLES = r"""
     stack_name: "ansible-cloudformation"
     state: "present"
     region: "us-east-1"
-    template: "files/cloudformation-example.json"
+    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     template_parameters:
       DBSnapshotIdentifier:
         use_previous_value: true
@@ -391,7 +375,7 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
 def create_stack(module, stack_params, cfn, events_limit):
     if "TemplateBody" not in stack_params and "TemplateURL" not in stack_params:
         module.fail_json(
-            msg="Either 'template', 'template_body' or 'template_url' is required when the stack does not exist."
+            msg="Either 'template_body' or 'template_url' is required when the stack does not exist."
         )
 
     # 'TimeoutInMinutes', 'EnableTerminationProtection' and
@@ -426,7 +410,7 @@ def list_changesets(cfn, stack_name):
 
 def create_changeset(module, stack_params, cfn, events_limit):
     if "TemplateBody" not in stack_params and "TemplateURL" not in stack_params:
-        module.fail_json(msg="Either 'template' or 'template_url' is required.")
+        module.fail_json(msg="Either 'template_body' or 'template_url' is required.")
     if module.params["changeset_name"] is not None:
         stack_params["ChangeSetName"] = module.params["changeset_name"]
 
@@ -659,13 +643,6 @@ def main():
         stack_name=dict(required=True),
         template_parameters=dict(required=False, type="dict", default={}),
         state=dict(default="present", choices=["present", "absent"]),
-        template=dict(
-            default=None,
-            required=False,
-            type="path",
-            removed_at_date="2026-05-01",
-            removed_from_collection="amazon.aws",
-        ),
         notification_arns=dict(default=None, required=False),
         stack_policy=dict(default=None, required=False),
         stack_policy_body=dict(default=None, required=False, type="json"),
@@ -689,7 +666,7 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[["template_url", "template", "template_body"], ["disable_rollback", "on_create_failure"]],
+        mutually_exclusive=[["template_url", "template_body"], ["disable_rollback", "on_create_failure"]],
         supports_check_mode=True,
     )
 
@@ -712,10 +689,7 @@ def main():
     state = module.params["state"]
     stack_params["StackName"] = module.params["stack_name"]
 
-    if module.params["template"] is not None:
-        with open(module.params["template"], "r") as template_fh:
-            stack_params["TemplateBody"] = template_fh.read()
-    elif module.params["template_body"] is not None:
+    if module.params["template_body"] is not None:
         stack_params["TemplateBody"] = module.params["template_body"]
     elif module.params["template_url"] is not None:
         stack_params["TemplateURL"] = module.params["template_url"]
