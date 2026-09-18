@@ -316,6 +316,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb_2
       check_mode: true
@@ -346,6 +347,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         idle_timeout: 120
         ip_address_type: dualstack
         waf_fail_open: true
@@ -367,6 +369,7 @@
           - alb_2.routing_http_drop_invalid_header_fields_enabled | bool
           - alb_2.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - alb_2.routing_http_xff_client_port_enabled | bool
+          - alb_2.routing_http_xff_header_processing_mode == 'preserve'
           - alb_2.idle_timeout_timeout_seconds == "120"
           - alb_2.waf_fail_open_enabled | bool
 
@@ -391,6 +394,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb_2
       check_mode: true
@@ -422,6 +426,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb_2
 
@@ -441,6 +446,7 @@
           - alb_2.routing_http_drop_invalid_header_fields_enabled | bool
           - alb_2.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - alb_2.routing_http_xff_client_port_enabled | bool
+          - alb_2.routing_http_xff_header_processing_mode == 'preserve'
           - alb_2.idle_timeout_timeout_seconds == "120"
           - alb_2.waf_fail_open_enabled | bool
 
@@ -490,6 +496,7 @@
           - not alb.routing_http_drop_invalid_header_fields_enabled | bool
           - not alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - not alb.routing_http_xff_client_port_enabled | bool
+          - alb.routing_http_xff_header_processing_mode == 'append'
           - not alb.waf_fail_open_enabled | bool
 
     - name: Create an ALB with ip address type (idempotence) - check_mode
@@ -535,6 +542,7 @@
           - not alb.routing_http_drop_invalid_header_fields_enabled | bool
           - not alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - not alb.routing_http_xff_client_port_enabled | bool
+          - alb.routing_http_xff_header_processing_mode == 'append'
           - not alb.waf_fail_open_enabled | bool
 
     # ------------------------------------------------------------------------------------------
@@ -557,6 +565,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
       check_mode: true
@@ -583,6 +592,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
     - ansible.builtin.assert:
@@ -594,6 +604,7 @@
           - alb.routing_http_drop_invalid_header_fields_enabled | bool
           - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - alb.routing_http_xff_client_port_enabled | bool
+          - alb.routing_http_xff_header_processing_mode == 'preserve'
           - alb.waf_fail_open_enabled | bool
 
     - name: Update an ALB with different attributes (idempotence) - check_mode
@@ -614,6 +625,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
       check_mode: true
@@ -640,6 +652,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
     - ansible.builtin.assert:
@@ -651,6 +664,7 @@
           - alb.routing_http_drop_invalid_header_fields_enabled | bool
           - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - alb.routing_http_xff_client_port_enabled | bool
+          - alb.routing_http_xff_header_processing_mode == 'preserve'
           - alb.waf_fail_open_enabled | bool
 
     # ------------------------------------------------------------------------------------------
@@ -673,6 +687,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
       check_mode: true
@@ -699,6 +714,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
     - ansible.builtin.assert:
@@ -710,6 +726,7 @@
           - alb.routing_http_drop_invalid_header_fields_enabled | bool
           - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - alb.routing_http_xff_client_port_enabled | bool
+          - alb.routing_http_xff_header_processing_mode == 'preserve'
           - alb.waf_fail_open_enabled | bool
 
     - name: Update an ALB with different ip address type (idempotence) - check_mode
@@ -730,6 +747,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
       check_mode: true
@@ -756,6 +774,7 @@
         http_drop_invalid_header_fields: true
         http_x_amzn_tls_version_and_cipher_suite: true
         http_xff_client_port: true
+        http_xff_header_processing_mode: preserve
         waf_fail_open: true
       register: alb
     - ansible.builtin.assert:
@@ -767,6 +786,7 @@
           - alb.routing_http_drop_invalid_header_fields_enabled | bool
           - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
           - alb.routing_http_xff_client_port_enabled | bool
+          - alb.routing_http_xff_header_processing_mode == 'preserve'
           - alb.waf_fail_open_enabled | bool
 
     # ------------------------------------------------------------------------------------------
