@@ -1,0 +1,2 @@
+minor_changes:
+  - elb_application_lb - add ``http_xff_header_processing_mode`` to set whether the load balancer appends, preserves, or removes the X-Forwarded-For header (https://github.com/ansible-collections/amazon.aws/issues/3098).
