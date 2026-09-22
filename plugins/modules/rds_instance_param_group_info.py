@@ -77,23 +77,24 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
+
 def describe_rds_instance_parameter_group(connection: Any, module: AnsibleAWSModule) -> None:
     """
     Describes DB parameter groups and formats the response.
-    
+
     Args:
         connection: boto3 RDS client
         module: AnsibleAWSModule
     """
     group_name = module.params.get("db_parameter_group_name")
     results = []
-    
+
     response = describe_db_instance_parameter_groups(connection, group_name)
     if response:
         for resource in response:
             resource["tags"] = get_tags(connection, module, resource["DBParameterGroupArn"])
             results.append(camel_dict_to_snake_dict(resource, ignore_list=["tags"]))
-    
+
     module.exit_json(changed=False, db_instance_parameter_groups=results)
 
 
