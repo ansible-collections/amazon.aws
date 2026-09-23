@@ -111,6 +111,10 @@ class S3ClientManager:
                     f"'{url}'"
                 )  # fmt: skip
         elif method == "put":
+            # The controller uploads the file to S3 with upload_fileobj(ExtraArgs=put_args),
+            # so the bucket's server-side-encryption settings must be applied here too,
+            # otherwise buckets enforcing encryption on PutObject reject the transfer.
+            put_args, _put_headers = generate_encryption_settings(bucket_sse_mode, bucket_sse_kms_key_id)
             url = self.get_url("get_object", bucket_name, s3_path, "GET")
             if is_windows:
                 # Use .NET File.WriteAllBytes instead of -OutFile to properly handle unicode paths

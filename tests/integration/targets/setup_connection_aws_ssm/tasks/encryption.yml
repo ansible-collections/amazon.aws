@@ -42,3 +42,28 @@
     bucket_key_enabled: "{{ s3_bucket_encryption | default(false) }}"
   when:
     - encrypted_bucket | default(false)
+
+# When the connection plugin is expected to send encryption headers
+# (bucket_sse_mode is set in the inventory), reject any upload that
+# lacks them.  Default bucket encryption alone can't catch a missing
+# header because S3 then encrypts the object anyway (see issue 3018).
+- name: Ensure bucket denies uploads without encryption headers
+  amazon.aws.s3_bucket:
+    name: "{{ s3_bucket_name }}"
+    region: "{{ s3_bucket_region | default(omit) }}"
+    policy: "{{ deny_unencrypted_uploads_policy | to_json }}"
+  vars:
+    deny_unencrypted_uploads_policy:
+      Version: "2012-10-17"
+      Statement:
+        - Sid: DenyIncorrectEncryptionHeader
+          Effect: Deny
+          Principal: "*"
+          Action: "s3:PutObject"
+          Resource: "arn:aws:s3:::{{ s3_bucket_name }}/*"
+          Condition:
+            StringNotEquals:
+              s3:x-amz-server-side-encryption: "aws:kms"
+  when:
+    - encrypted_bucket | default(false)
+    - not (s3_bucket_encryption | default(false))
