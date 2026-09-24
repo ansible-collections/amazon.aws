@@ -29,6 +29,43 @@ If you should discover that the bug you're trying to file already exists in an i
 you can help by verifying the behavior of the reported bug with a comment in that
 issue, or by reporting any additional information
 
+## Development Setup
+
+### Pre-commit Hooks
+
+This collection uses [prek](https://github.com/j178/prek) to manage Git pre-commit
+hooks, catching formatting and lint problems at commit time rather than in CI.
+prek is a drop-in replacement for `pre-commit` and consumes the same
+`.pre-commit-config.yaml`. CI enforces `ansible-lint` as a required status check, so
+running the hooks locally keeps your commits green before you push.
+
+Install prek (either option works):
+
+```
+# Recommended, using pipx:
+pipx install prek
+
+# Or using pip:
+pip install prek
+```
+
+Then enable the hooks in your clone:
+
+```
+prek install
+```
+
+`prek install` sets up the Git hook so the configured hooks run automatically on
+each `git commit`. To run all hooks manually against every file:
+
+```
+prek run --all-files
+```
+
+The current hook set applies basic hygiene checks (trailing whitespace, end-of-file
+newlines, large-file guard, line endings, and blocking direct commits to `main`) and
+runs `ansible-lint`.
+
 ## Writing New Code
 
 New modules should be submitted to the [community.aws](https://github.com/ansible-collections/community.aws) collection.
@@ -71,7 +108,7 @@ and permissions to create IAM roles.
 You could also deploy [the policies used by the CI](https://github.com/mattclay/aws-terminator/tree/master/aws/policy).
 
 All modules MUST have integration tests for new features.
-Bug fixes for modules that currently have integration tests SHOULD have tests added.  
+Bug fixes for modules that currently have integration tests SHOULD have tests added.
 
 Once you're able to run integration tests for the existing code,
 now start by adding tests in `tests/integration/targets`
