@@ -505,7 +505,7 @@ def create_or_update_role(module, client, role_name):
     # Get the role again
     role = get_iam_role(client, role_name)
     role["AttachedPolicies"] = list_iam_role_attached_policies(client, role_name)
-    camel_role = normalize_iam_role(role, _v7_compat=True)
+    camel_role = normalize_iam_role(role)
 
     module.exit_json(changed=changed, iam_role=camel_role)
 

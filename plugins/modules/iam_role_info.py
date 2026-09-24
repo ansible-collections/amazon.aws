@@ -178,7 +178,7 @@ def describe_iam_roles(client, name, path_prefix):
     else:
         roles = list_iam_roles(client, path=path_prefix)
     roles = [r for r in roles if r is not None]
-    return [normalize_iam_role(expand_iam_role(client, role), _v7_compat=True) for role in roles]
+    return [normalize_iam_role(expand_iam_role(client, role)) for role in roles]
 
 
 def main():
