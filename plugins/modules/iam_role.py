@@ -510,28 +510,6 @@ def create_or_update_role(module, client, role_name):
     module.exit_json(changed=changed, iam_role=camel_role)
 
 
-def create_instance_profiles(client, check_mode, role_name, path):
-    # Fetch existing Profiles
-    role_profiles = list_iam_instance_profiles(client, role=role_name)
-    # Profile already exists
-    if any(p["InstanceProfileName"] == role_name for p in role_profiles):
-        return False
-
-    named_profile = list_iam_instance_profiles(client, name=role_name)
-    if named_profile:
-        raise AnsibleIAMAlreadyExistsError(f"profile {role_name} already exists")
-
-    if check_mode:
-        return True
-
-    path = path or "/"
-    # Make sure an instance profile is created
-    create_iam_instance_profile(client, role_name, path, {})
-    add_role_to_iam_instance_profile(client, role_name, role_name)
-
-    return True
-
-
 def remove_instance_profiles(client, check_mode, role_name, delete_instance_profile):
     """Removes the role from instance profiles and deletes the instance profile if
     delete_instance_profile is set
