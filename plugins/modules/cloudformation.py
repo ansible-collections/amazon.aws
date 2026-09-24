@@ -162,7 +162,7 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
+    template_body: "{{ lookup('ansible.builtin.file', 'cloudformation-example.json') }}"
     template_parameters:
       KeyName: "jmartin"
       DiskType: "ephemeral"
@@ -178,7 +178,7 @@ EXAMPLES = r"""
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
+    template_body: "{{ lookup('ansible.builtin.file', 'cloudformation-example.json') }}"
     role_arn: 'arn:aws:iam::123456789012:role/cloudformation-iam-role'
 
 - name: delete a stack
@@ -211,7 +211,7 @@ EXAMPLES = r"""
     state: present
     region: us-east-1
     disable_rollback: true
-    template_body: "{{ lookup('template', 'cloudformation.j2') }}"
+    template_body: "{{ lookup('ansible.builtin.template', 'cloudformation.j2') }}"
     template_parameters:
       KeyName: jmartin
       DiskType: ephemeral
@@ -228,7 +228,7 @@ EXAMPLES = r"""
     stack_name: "ansible-cloudformation"
     state: "present"
     region: "us-east-1"
-    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
+    template_body: "{{ lookup('ansible.builtin.file', 'cloudformation-example.json') }}"
     template_parameters:
       DBSnapshotIdentifier:
         use_previous_value: true
