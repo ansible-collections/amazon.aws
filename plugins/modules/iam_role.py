@@ -237,9 +237,7 @@ import json
 from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
-from ansible_collections.amazon.aws.plugins.module_utils.iam import add_role_to_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
-from ansible_collections.amazon.aws.plugins.module_utils.iam import create_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import delete_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_role
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_instance_profiles
