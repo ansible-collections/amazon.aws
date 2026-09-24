@@ -4,7 +4,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"
@@ -15,7 +14,9 @@
       TagA: ValueA
   check_mode: true
   register: iam_role
-- ansible.builtin.assert:
+
+- name: Verify complex role creation in check mode
+  ansible.builtin.assert:
     that:
       - iam_role is changed
 
@@ -23,7 +24,9 @@
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
-- ansible.builtin.assert:
+
+- name: Verify role does not exist after check mode
+  ansible.builtin.assert:
     that:
       - role_info is succeeded
       - role_info.iam_roles | length == 0
@@ -33,7 +36,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"
@@ -43,7 +45,9 @@
     tags:
       TagA: ValueA
   register: iam_role
-- ansible.builtin.assert:
+
+- name: Verify complex role was created with all attributes
+  ansible.builtin.assert:
     that:
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
@@ -63,7 +67,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"
@@ -74,7 +77,9 @@
       TagA: ValueA
   register: iam_role
   check_mode: true
-- ansible.builtin.assert:
+
+- name: Verify complex role idempotency in check mode
+  ansible.builtin.assert:
     that:
       - iam_role is not changed
 
@@ -83,7 +88,6 @@
     name: "{{ test_role }}"
     assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
     boundary: "{{ boundary_policy }}"
-    create_instance_profile: false
     description: Ansible Test Role {{ resource_prefix }}
     managed_policy:
       - "{{ safe_managed_policy }}"
@@ -93,7 +97,9 @@
     tags:
       TagA: ValueA
   register: iam_role
-- ansible.builtin.assert:
+
+- name: Verify complex role idempotency
+  ansible.builtin.assert:
     that:
       - iam_role is not changed
       - iam_role.iam_role.role_name == test_role
@@ -102,7 +108,9 @@
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
-- ansible.builtin.assert:
+
+- name: Verify complex role has all expected attributes
+  ansible.builtin.assert:
     that:
       - role_info is succeeded
       - role_info.iam_roles | length == 1

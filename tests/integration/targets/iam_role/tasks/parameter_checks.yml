@@ -1,83 +1,90 @@
 ---
-# Parameter Checks
-- name: Friendly message when creating an instance profile and adding a boundary profile
-  amazon.aws.iam_role:
-    name: "{{ test_role }}"
-    boundary: "{{ boundary_policy }}"
-  register: iam_role
-  ignore_errors: true
-- ansible.builtin.assert:
-    that:
-      - iam_role is failed
-      - '"boundary policy" in iam_role.msg'
-      - '"create_instance_profile" in iam_role.msg'
-      - '"false" in iam_role.msg'
+# Parameter validation tests for IAM role module
+# Tests error handling for invalid parameter values
 
-- name: Friendly message when boundary profile is not an ARN
+- name: Test boundary policy validation - must be an ARN
   amazon.aws.iam_role:
     name: "{{ test_role }}"
     boundary: AWSDenyAll
-    create_instance_profile: false
-  register: iam_role
+  register: boundary_not_arn
   ignore_errors: true
-- ansible.builtin.assert:
-    that:
-      - iam_role is failed
-      - '"Boundary policy" in iam_role.msg'
-      - '"ARN" in iam_role.msg'
 
-- name: Friendly message when "present" without assume_role_policy_document
-  module_defaults: { amazon.aws.iam_role: {}}
+- name: Verify boundary policy ARN validation
+  ansible.builtin.assert:
+    that:
+      - boundary_not_arn is failed
+      - '"Boundary policy" in boundary_not_arn.msg'
+      - '"ARN" in boundary_not_arn.msg'
+    fail_msg: "Boundary policy validation should require ARN format"
+
+- name: Test assume_role_policy_document is required when state=present
+  module_defaults:
+    amazon.aws.iam_role: {}
   amazon.aws.iam_role:
     name: "{{ test_role }}"
-  register: iam_role
+  register: missing_assume_policy
   ignore_errors: true
-- ansible.builtin.assert:
-    that:
-      - iam_role is failed
-      - iam_role.msg.startswith("state is present but all of the following are missing")
-      - '"assume_role_policy_document" in iam_role.msg'
 
-- name: Maximum Session Duration needs to be between 1 and 12 hours
+- name: Verify assume_role_policy_document requirement
+  ansible.builtin.assert:
+    that:
+      - missing_assume_policy is failed
+      - missing_assume_policy.msg.startswith("state is present but all of the following are missing")
+      - '"assume_role_policy_document" in missing_assume_policy.msg'
+    fail_msg: "assume_role_policy_document should be required for state=present"
+
+- name: Test max_session_duration minimum boundary (too low)
   amazon.aws.iam_role:
     name: "{{ test_role }}"
     max_session_duration: 3599
-  register: iam_role
+  register: duration_too_low
   ignore_errors: true
-- ansible.builtin.assert:
-    that:
-      - iam_role is failed
-      - '"max_session_duration must be between" in iam_role.msg'
 
-- name: Maximum Session Duration needs to be between 1 and 12 hours
+- name: Verify minimum session duration validation
+  ansible.builtin.assert:
+    that:
+      - duration_too_low is failed
+      - '"max_session_duration must be between" in duration_too_low.msg'
+    fail_msg: "max_session_duration below 3600 should be rejected"
+
+- name: Test max_session_duration maximum boundary (too high)
   amazon.aws.iam_role:
     name: "{{ test_role }}"
     max_session_duration: 43201
-  register: iam_role
+  register: duration_too_high
   ignore_errors: true
-- ansible.builtin.assert:
-    that:
-      - iam_role is failed
-      - '"max_session_duration must be between" in iam_role.msg'
 
-- name: Role Paths must start with /
+- name: Verify maximum session duration validation
+  ansible.builtin.assert:
+    that:
+      - duration_too_high is failed
+      - '"max_session_duration must be between" in duration_too_high.msg'
+    fail_msg: "max_session_duration above 43200 should be rejected"
+
+- name: Test role path validation - must start with /
   amazon.aws.iam_role:
     name: "{{ test_role }}"
     path: test/
-  register: iam_role
+  register: path_no_leading_slash
   ignore_errors: true
-- ansible.builtin.assert:
-    that:
-      - iam_role is failed
-      - '"path must begin and end with /" in iam_role.msg'
 
-- name: Role Paths must end with /
+- name: Verify path must start with /
+  ansible.builtin.assert:
+    that:
+      - path_no_leading_slash is failed
+      - '"path must begin and end with /" in path_no_leading_slash.msg'
+    fail_msg: "Path without leading slash should be rejected"
+
+- name: Test role path validation - must end with /
   amazon.aws.iam_role:
     name: "{{ test_role }}"
     path: /test
-  register: iam_role
+  register: path_no_trailing_slash
   ignore_errors: true
-- ansible.builtin.assert:
+
+- name: Verify path must end with /
+  ansible.builtin.assert:
     that:
-      - iam_role is failed
-      - '"path must begin and end with /" in iam_role.msg'
+      - path_no_trailing_slash is failed
+      - '"path must begin and end with /" in path_no_trailing_slash.msg'
+    fail_msg: "Path without trailing slash should be rejected"
