@@ -228,7 +228,7 @@ EXAMPLES = r"""
     stack_name: "ansible-cloudformation"
     state: "present"
     region: "us-east-1"
-    template: "files/cloudformation-example.json"
+    template_body: "{{ lookup('file', 'cloudformation-example.json') }}"
     template_parameters:
       DBSnapshotIdentifier:
         use_previous_value: true
