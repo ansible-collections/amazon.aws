@@ -70,7 +70,6 @@
       amazon.aws.iam_role:
         name: "{{ iam_role_name }}"
         state: absent
-        delete_instance_profile: true
       ignore_errors: true  # noqa: ignore-errors
       when: iam_role_vars_file.stat.exists is true
 
