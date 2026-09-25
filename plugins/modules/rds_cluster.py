@@ -239,9 +239,11 @@ options:
           - For Aurora MySQL that could be V(5.6.10a), V(5.7.12).
           - Aurora PostgreSQL example, V(9.6.3).
         type: str
-    final_snapshot_identifier:
+    final_db_snapshot_identifier:
         description:
           - The DB cluster snapshot identifier of the new DB cluster snapshot created when O(skip_final_snapshot=false).
+        aliases:
+          - final_snapshot_identifier
         type: str
     force_backtrack:
         description:
@@ -371,7 +373,7 @@ options:
     skip_final_snapshot:
         description:
           - Whether a final DB cluster snapshot is created before the DB cluster is deleted.
-          - If this is V(false), O(final_snapshot_identifier) must be provided.
+          - If this is V(false), O(final_db_snapshot_identifier) must be provided.
         type: bool
         default: false
     snapshot_identifier:
@@ -462,6 +464,12 @@ EXAMPLES = r"""
     tags:
       Name: "cluster-{{ resource_prefix }}"
       Created_By: "Ansible_rds_cluster_integration_test"
+    state: absent
+
+- name: Delete Aurora cluster and create a final snapshot
+  amazon.aws.rds_cluster:
+    cluster_id: "{{ cluster_id }}"
+    final_db_snapshot_identifier: "cluster-{{ resource_prefix }}-final-snapshot"
     state: absent
 
 - name: Restore cluster from source snapshot
@@ -1119,7 +1127,7 @@ def main():
         allocated_storage=dict(type="int"),
         storage_type=dict(type="str", choices=["io1", "aurora", "aurora-iopt1"]),
         iops=dict(type="int"),
-        final_snapshot_identifier=dict(),
+        final_db_snapshot_identifier=dict(aliases=["final_snapshot_identifier"]),
         force_backtrack=dict(type="bool"),
         kms_key_id=dict(),
         master_user_password=dict(aliases=["password"], no_log=True),
@@ -1227,10 +1235,10 @@ def main():
     if (
         module.params["state"] == "absent"
         and module.params["skip_final_snapshot"] is False
-        and module.params["final_snapshot_identifier"] is None
+        and module.params["final_db_snapshot_identifier"] is None
     ):
         module.fail_json(
-            msg="skip_final_snapshot is False but all of the following are missing: final_snapshot_identifier"
+            msg="skip_final_snapshot is False but all of the following are missing: final_db_snapshot_identifier"
         )
 
     changed = False

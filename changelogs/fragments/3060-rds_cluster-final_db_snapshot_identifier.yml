@@ -1,0 +1,2 @@
+bugfixes:
+  - rds_cluster - fix ``final_snapshot_identifier`` being silently dropped when deleting a DB cluster with ``skip_final_snapshot=false``, which made the deletion fail. The option is now ``final_db_snapshot_identifier``, matching ``rds_instance`` and the ``FinalDBSnapshotIdentifier`` API parameter, with ``final_snapshot_identifier`` kept as an alias (https://github.com/ansible-collections/amazon.aws/issues/3060).
