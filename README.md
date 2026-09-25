@@ -54,7 +54,7 @@ For more information about communication, see the [Ansible communication guide](
 
 ### Ansible version compatibility
 
-The collection supports ansible-core versions based on `requires_ansible` in [meta/runtime.yml](meta/runtime.yml):
+The collection supports ansible-core versions based on `requires_ansible` in [meta/runtime.yml](https://github.com/ansible-collections/amazon.aws/blob/stable-11/meta/runtime.yml):
 - Tested with Ansible Core 2.17.0 and later, and the current development version of Ansible. Ansible Core versions prior to 2.17.0 are not supported.
 
 ### Python version compatibility
