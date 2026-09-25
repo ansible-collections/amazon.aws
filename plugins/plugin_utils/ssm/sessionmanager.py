@@ -27,6 +27,7 @@ if typing.TYPE_CHECKING:
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils.common.text.converters import to_text
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 
 
@@ -405,11 +406,15 @@ class SSMSessionManager:
         )
 
     def terminate(self) -> None:
+        self.verbosity_display(2, f"TERMINATING SSM CONNECTION TO: {self.instance_id}")
+
         if self._process_mgr:
             self._process_mgr.terminate()
         if self._session_id and self._client:
             try:
                 self._client.terminate_session(SessionId=self._session_id)
+            except is_boto3_error_code("ValidationException") as e:
+                self.verbosity_display(3, f"TERMINATING SSM CONNECTION: ValidationException - {to_text(e)}")
             except ReferenceError:
                 # Client may have been garbage collected during cleanup
                 pass
