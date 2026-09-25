@@ -165,7 +165,7 @@ EXAMPLES = r"""
 
 - name: Retrieve keys that begin with the prefix /my/desired/
   amazon.aws.s3_object_info:
-    bucket: mybucket
+    bucket_name: mybucket
     prefix: /my/desired/
 """
 
