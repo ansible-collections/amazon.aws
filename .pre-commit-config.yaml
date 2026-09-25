@@ -1,0 +1,39 @@
+---
+# Managed with prek (https://github.com/j178/prek), a drop-in replacement for
+# pre-commit. See CONTRIBUTING.md for setup and usage.
+#
+# Hook set: basic hygiene hooks + ansible-lint. ruff-check / ruff-format hooks
+# are intentionally deferred to a later change.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: &excluded_paths |
+          (?x)^(
+            tests/unit/plugins/modules/placebo_recordings/.*|
+            tests/unit/plugins/modules/fixtures/.*|
+            tests/integration/.*|
+            tests/sanity/ignore-.*\.txt|
+            \.github/workflows/(integration|integration_check)\.yml
+          )$
+      - id: end-of-file-fixer
+        exclude: *excluded_paths
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-yaml
+        args:
+          - --allow-multiple-documents
+        exclude: *excluded_paths
+      - id: mixed-line-ending
+        exclude: *excluded_paths
+        args:
+          - --fix=lf
+      - id: no-commit-to-branch
+        args:
+          - -b main
+
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v26.6.0
+    hooks:
+      - id: ansible-lint

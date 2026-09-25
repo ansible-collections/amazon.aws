@@ -24,7 +24,7 @@ Authentication
 ==============
 
 If your Ansible controller is not in AWS, authentication is handled by either
-specifying your access and secret key as ENV variables or inventory plugin arguments. 
+specifying your access and secret key as ENV variables or inventory plugin arguments.
 
 For environment variables:
 
@@ -77,10 +77,10 @@ If your Ansible controller is running on an EC2 instance with an assigned IAM Ro
 See the documentation for the controller `for more details <https://docs.ansible.com/ansible-tower/latest/html/userguide/inventories.html#ug-source-ec2>`_.
 
 You can also use the ARN of the IAM role to assume to perform the inventory lookup.
-This can be useful for connecting across different accounts, or to limit user access. 
+This can be useful for connecting across different accounts, or to limit user access.
 To do so, you should specify the ``iam_role_arn``.
 You should still provide AWS credentials with enough privilege to perform the AssumeRole action.
-       
+
 .. code-block:: yaml
 
     # demo.aws_ec2.yml
@@ -132,24 +132,24 @@ Some examples are shown below:
   hostnames:
     # This option allows displaying the public ip addresses.
     - ip-address
-  
+
     # This option allows displaying the private ip addresses using `tag:Name` as a prefix.
     # `name` can be one of the options specified in http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options.
     - name: 'private-ip-address'
       separator: '_'
       prefix: 'tag:Name'
-    
+
     # Using literal values for hostname
     # # Hostname will be aws-test_literal
     - name: 'test_literal'
-      separator: '-'       
+      separator: '-'
       prefix: 'aws'
-  
+
     # To use tags as hostnames use the syntax `tag:Name=Value` to use the hostname `Name_Value`, or
     # `tag:Name` to use the value of the Name tag. If value provided does not exist in the above options,
     # it will be used as a literal string.
     - name: 'tag:Tag1=Test1,Tag2=Test2'
-    
+
     # Use dns-name attribute as hostname
     - dns-name
 
@@ -177,23 +177,23 @@ Some examples are shown below:
     # This creates host groups based on architecture.
     - prefix: arch
       key: architecture
-    
+
     # This creates host groups based on `x86_64` architecture.
     - prefix: arch
       key: architecture
       value:
           'x86_64'
-    
+
     # This creates host groups based on availability zone.
     - prefix: az
       key: placement.availability_zone
-    
+
     # If the EC2 tag Name had the value `redhat` the tag variable would be: `tag_Name_redhat`.
     # Similarly, if a tag existed for an AWS EC2 instance as `Applications` with the value of `nodejs` the
     # variable would be: `tag_Applications_nodejs`.
     - prefix: tag
       key: ec2_tags
-    
+
     # This creates host groups using instance_type, e.g., `instance_type_z3_tiny`.
     - prefix: instance_type
       key: instance_type
@@ -201,7 +201,7 @@ Some examples are shown below:
     # This creates host groups using security_groups id, e.g., `security_groups_sg_abcd1234` group for each security group.
     - key: 'security_groups|json_query("[].group_id")'
       prefix: 'security_groups'
-    
+
     # This creates a host group for each value of the Application tag.
     - key: ec2_tags.Application
       separator: ''
@@ -214,11 +214,11 @@ Some examples are shown below:
     - key: ec2_tags['Role']
       prefix: foo
       parent_group: "project"
-    
+
     # This creates a common parent group for all EC2 availability zones.
     - key: placement.availability_zone
       parent_group: all_ec2_zones
-    
+
     # This creates a group per distro (distro_CentOS, distro_Debian) and assigns the hosts that have matching values to it,
     # using the default separator "_".
     - prefix: distro
@@ -259,7 +259,7 @@ Some examples are shown below:
     location_vars:
       location: "east_coast"
       server_type: "ansible_hostname | regex_replace ('(.{6})(.{2}).*', '\\2')"
-    
+
     # This sets location variable.
     location: "'east_coast'"
 
@@ -294,7 +294,7 @@ Some examples are shown below:
       - 'planets'
   - tag:Environment:
       - 'demo'
-  
+
   # This excludes everything from the inventory that has the following tag:Name.
   exclude_filters:
   - tag:Name:
@@ -318,7 +318,7 @@ Some examples are shown below:
       - dev
       - qa
     instance.group-id: sg-xxxxxxxx
-   
+
     # This selects only instances with tag `Name` fulfilling specific conditions.
     - tag:Name:
       - dev-*
@@ -619,7 +619,7 @@ If you want to use dynamic inventory inside the playbook, you just need to menti
     - name: Ansible Test Playbook
       gather_facts: false
       hosts: tag_Name_instance_02
-      
+
       tasks:
         - name: Run Shell Command
           command: echo "Hello World"
