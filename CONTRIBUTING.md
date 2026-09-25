@@ -39,17 +39,20 @@ prek is a drop-in replacement for `pre-commit` and consumes the same
 `.pre-commit-config.yaml`. CI enforces `ansible-lint` as a required status check, so
 running the hooks locally keeps your commits green before you push.
 
-Install prek (either option works):
+Install prek (any of these work):
 
 ```
-# Recommended, using pipx:
+# Recommended, using uv:
+uv tool install prek
+
+# Using pipx:
 pipx install prek
 
 # Or using pip:
 pip install prek
 ```
 
-Then enable the hooks in your clone:
+Then enable the hooks:
 
 ```
 prek install

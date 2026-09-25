@@ -3,26 +3,10 @@ name: ansible-lint
 
 on: [workflow_call] # allow this workflow to be called from other workflows
 
-permissions:
-  contents: read
-
 jobs:
   ansible-lint:
-    name: ansible-lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.12"
-
-      - name: Install ansible-lint
-        run: python -m pip install --upgrade pip 'ansible-lint>=26.6.0' jmespath
-
-      - name: Run ansible-lint
-        run: ansible-lint -v
+    # Run the "ansible-lint" tox env so the lint configuration (deps, skip-list,
+    # excludes) lives in tox.ini and stays consistent between local and CI runs.
+    uses: ansible-network/github_actions/.github/workflows/tox.yml@4678c74a7d712d55e663c88f66eec6d9c3642550 # @main as of 2026-09-21
+    with:
+      envname: "ansible-lint"
