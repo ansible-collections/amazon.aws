@@ -22,7 +22,6 @@
         name: "ansible-test-{{ tiny_prefix }}-aws-ssm-role"
         assume_role_policy_document: "{{ lookup('file', 'ec2-trust-policy.json') }}"
         state: present
-        create_instance_profile: true
         managed_policy:
           - AmazonSSMManagedInstanceCore
         wait: true

@@ -461,17 +461,13 @@ def normalize_iam_instance_profile(profile: BotoResource) -> AnsibleAWSResource:
     return transformed_profile
 
 
-def normalize_iam_role(role: BotoResource, _v7_compat: bool = False) -> AnsibleAWSResource:
+def normalize_iam_role(role: BotoResource) -> AnsibleAWSResource:
     """
     Converts a boto3 format IAM instance role into "Ansible" format
-
-    _v7_compat is deprecated and will be removed in release after 2026-05-01 DO NOT USE.
     """
     transforms = {"InstanceProfiles": _normalize_iam_instance_profiles}
     ignore_list = ["AssumeRolePolicyDocument"]
     transformed_role = boto3_resource_to_ansible_dict(role, nested_transforms=transforms, ignore_list=ignore_list)
-    if _v7_compat and role.get("AssumeRolePolicyDocument"):
-        transformed_role["assume_role_policy_document_raw"] = role["AssumeRolePolicyDocument"]
     return transformed_role
 
 
