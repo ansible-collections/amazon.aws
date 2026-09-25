@@ -1,0 +1,4 @@
+bugfixes:
+  - module_utils - fix fail_json_aws() to work with Python 3.14 and ansible-core 2.19+ by using try/except
+    to detect fail_json exception parameter support instead of traceback.format_exc() which fails outside
+    exception context in Python 3.14 (https://github.com/ansible-collections/amazon.aws/pull/3103).
