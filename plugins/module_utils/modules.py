@@ -210,8 +210,6 @@ class AnsibleAWSModule:
         function for converting exceptions thrown by AWS SDK modules,
         botocore, boto3 and boto, into nice error messages.
         """
-        last_traceback = traceback.format_exc()
-
         # to_native is trusted to handle exceptions that str() could
         # convert to text.
         try:
@@ -229,17 +227,23 @@ class AnsibleAWSModule:
         except AttributeError:
             response = None
 
-        # The traceback is surfaced in the `exception` field. On ansible-core
-        # >= 2.19 it is only reported when traceback capture has been enabled
-        # for the module; older cores always include it.
-        failure = dict(msg=message, exception=last_traceback, **self._gather_versions())
-
+        failure = dict(msg=message, **self._gather_versions())
         failure.update(kwargs)
 
         if response is not None:
             failure.update(**camel_dict_to_snake_dict(response))
 
-        self.fail_json(**failure)
+        # ansible-core >= 2.19 has a keyword-only exception parameter that
+        # accepts BaseException objects and handles traceback formatting.
+        # This is required for Python 3.14+ where traceback.format_exc()
+        # doesn't work outside the exception handler context.
+        # Try the new API first, fall back to manual formatting for older cores.
+        try:
+            self.fail_json(exception=exception, **failure)
+        except TypeError:
+            # Older ansible-core doesn't support the exception parameter
+            failure["exception"] = "".join(traceback.format_exception(exception))
+            self.fail_json(**failure)
 
     def fail_json_aws_error(self, exception) -> NoReturn:
         """A helper to call the right failure mode after catching an AnsibleAWSError"""
