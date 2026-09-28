@@ -14,6 +14,9 @@ placebo
 # Used for indirect node count tests targets
 jq
 # Used for event source AWS integration tests
-ansible-rulebook
-ansible-runner
-aiobotocore[botocore]
+# Temporarily disabled due to Python 3.15 compatibility issue with jpy transitive dependency
+# See: https://github.com/jpy-consortium/jpy/issues/243
+# The event_source_aws_cloudtrail test is disabled, so these dependencies are not currently needed
+# ansible-rulebook
+# ansible-runner
+# aiobotocore[botocore]
