@@ -767,35 +767,34 @@ vpc_security_groups:
       sample: "sg-12345678"
 """
 
-
-from typing import Any
-from typing import Dict
-from typing import Optional
-
 try:
-    from botocore.exceptions import BotoCoreError
-    from botocore.exceptions import ClientError
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
-from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_clusters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
-from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import wait_for_cluster_status
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 
 
-def get_add_role_options(
-    params_dict: Dict[str, Any], cluster: Dict[str, Any]
-) -> Dict[str, Any]:
-    """Check if an IAM role needs to be added to the cluster."""
+@AWSRetry.jittered_backoff(retries=10)
+def _describe_db_clusters(**params):
+    try:
+        paginator = client.get_paginator("describe_db_clusters")
+        return paginator.paginate(**params).build_full_result()["DBClusters"][0]
+    except is_boto3_error_code("DBClusterNotFoundFault"):
+        return {}
+
+
+def get_add_role_options(params_dict, cluster):
     current_role_arns = [role["RoleArn"] for role in cluster.get("AssociatedRoles", [])]
     role = params_dict["RoleArn"]
     if role is not None and role not in current_role_arns:
@@ -803,8 +802,7 @@ def get_add_role_options(
     return {}
 
 
-def get_backtrack_options(params_dict: Dict[str, Any]) -> Dict[str, Any]:
-    """Build parameters for the backtrack_db_cluster API call."""
+def get_backtrack_options(params_dict):
     options = ["BacktrackTo", "DBClusterIdentifier", "UseEarliestTimeOnPointInTimeUnavailable"]
     if params_dict["BacktrackTo"] is not None:
         options = dict((k, params_dict[k]) for k in options if params_dict[k] is not None)
@@ -814,81 +812,252 @@ def get_backtrack_options(params_dict: Dict[str, Any]) -> Dict[str, Any]:
     return {}
 
 
-def get_method_name(
-    module: AnsibleAWSModule, cluster: Dict[str, Any]
-) -> Optional[str]:
-    """Determine the boto3 RDS method to call based on desired state and cluster existence."""
+def get_create_options(params_dict):
+    options = [
+        "AvailabilityZones",
+        "BacktrackWindow",
+        "BackupRetentionPeriod",
+        "PreferredBackupWindow",
+        "CharacterSetName",
+        "DBClusterIdentifier",
+        "DBClusterParameterGroupName",
+        "DBSubnetGroupName",
+        "DatabaseName",
+        "EnableCloudwatchLogsExports",
+        "EnableIAMDatabaseAuthentication",
+        "KmsKeyId",
+        "Engine",
+        "EngineMode",
+        "EngineVersion",
+        "PreferredMaintenanceWindow",
+        "MasterUserPassword",
+        "MasterUsername",
+        "OptionGroupName",
+        "Port",
+        "ReplicationSourceIdentifier",
+        "SourceRegion",
+        "StorageEncrypted",
+        "Tags",
+        "VpcSecurityGroupIds",
+        "EngineMode",
+        "ScalingConfiguration",
+        "DeletionProtection",
+        "EnableHttpEndpoint",
+        "CopyTagsToSnapshot",
+        "Domain",
+        "DomainIAMRoleName",
+        "EnableGlobalWriteForwarding",
+        "GlobalClusterIdentifier",
+        "AllocatedStorage",
+        "DBClusterInstanceClass",
+        "StorageType",
+        "Iops",
+        "EngineMode",
+        "ServerlessV2ScalingConfiguration",
+    ]
+
+    return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
+
+
+def get_modify_options(params_dict, force_update_password):
+    options = [
+        "ApplyImmediately",
+        "BacktrackWindow",
+        "BackupRetentionPeriod",
+        "PreferredBackupWindow",
+        "DBClusterIdentifier",
+        "DBClusterParameterGroupName",
+        "EnableIAMDatabaseAuthentication",
+        "EngineVersion",
+        "PreferredMaintenanceWindow",
+        "MasterUserPassword",
+        "NewDBClusterIdentifier",
+        "OptionGroupName",
+        "Port",
+        "VpcSecurityGroupIds",
+        "EnableIAMDatabaseAuthentication",
+        "CloudwatchLogsExportConfiguration",
+        "DeletionProtection",
+        "EnableHttpEndpoint",
+        "CopyTagsToSnapshot",
+        "EnableGlobalWriteForwarding",
+        "Domain",
+        "DomainIAMRoleName",
+        "AllocatedStorage",
+        "DBClusterInstanceClass",
+        "StorageType",
+        "Iops",
+        "EngineMode",
+        "ServerlessV2ScalingConfiguration",
+    ]
+    modify_options = dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
+    if not force_update_password:
+        modify_options.pop("MasterUserPassword", None)
+    return modify_options
+
+
+def get_delete_options(params_dict):
+    options = ["DBClusterIdentifier", "FinalSnapshotIdentifier", "SkipFinalSnapshot"]
+    return dict((k, params_dict[k]) for k in options if params_dict[k] is not None)
+
+
+def get_restore_s3_options(params_dict):
+    options = [
+        "AvailabilityZones",
+        "BacktrackWindow",
+        "BackupRetentionPeriod",
+        "CharacterSetName",
+        "DBClusterIdentifier",
+        "DBClusterParameterGroupName",
+        "DBSubnetGroupName",
+        "DatabaseName",
+        "EnableCloudwatchLogsExports",
+        "EnableIAMDatabaseAuthentication",
+        "Engine",
+        "EngineVersion",
+        "KmsKeyId",
+        "MasterUserPassword",
+        "MasterUsername",
+        "OptionGroupName",
+        "Port",
+        "PreferredBackupWindow",
+        "PreferredMaintenanceWindow",
+        "S3BucketName",
+        "S3IngestionRoleArn",
+        "S3Prefix",
+        "SourceEngine",
+        "SourceEngineVersion",
+        "StorageEncrypted",
+        "Tags",
+        "VpcSecurityGroupIds",
+        "DeletionProtection",
+        "EnableHttpEndpoint",
+        "CopyTagsToSnapshot",
+        "Domain",
+        "DomainIAMRoleName",
+    ]
+
+    return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
+
+
+def get_restore_snapshot_options(params_dict):
+    options = [
+        "AvailabilityZones",
+        "BacktrackWindow",
+        "DBClusterIdentifier",
+        "DBSubnetGroupName",
+        "DatabaseName",
+        "EnableCloudwatchLogsExports",
+        "EnableIAMDatabaseAuthentication",
+        "Engine",
+        "EngineVersion",
+        "KmsKeyId",
+        "OptionGroupName",
+        "Port",
+        "SnapshotIdentifier",
+        "Tags",
+        "VpcSecurityGroupIds",
+        "DBClusterParameterGroupName",
+        "DeletionProtection",
+        "CopyTagsToSnapshot",
+        "Domain",
+        "DomainIAMRoleName",
+    ]
+    return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
+
+
+def get_restore_cluster_options(params_dict):
+    options = [
+        "BacktrackWindow",
+        "DBClusterIdentifier",
+        "DBSubnetGroupName",
+        "EnableCloudwatchLogsExports",
+        "EnableIAMDatabaseAuthentication",
+        "KmsKeyId",
+        "OptionGroupName",
+        "Port",
+        "RestoreToTime",
+        "RestoreType",
+        "SourceDBClusterIdentifier",
+        "Tags",
+        "UseLatestRestorableTime",
+        "VpcSecurityGroupIds",
+        "DeletionProtection",
+        "CopyTagsToSnapshot",
+        "Domain",
+        "DomainIAMRoleName",
+    ]
+    return dict((k, v) for k, v in params_dict.items() if k in options and v is not None)
+
+
+def get_rds_method_attribute_name(cluster):
     state = module.params["state"]
     creation_source = module.params["creation_source"]
+    method_name = None
+    method_options_name = None
 
     if state == "absent":
         if cluster and cluster["Status"] not in ["deleting", "deleted"]:
-            return "delete_db_cluster"
+            method_name = "delete_db_cluster"
+            method_options_name = "get_delete_options"
     elif state == "started":
         if cluster and cluster["Status"] not in ["starting", "started", "available"]:
-            return "start_db_cluster"
+            method_name = "start_db_cluster"
+            method_options_name = "get_modify_options"
     elif state == "stopped":
         if cluster and cluster["Status"] not in ["stopping", "stopped"]:
-            return "stop_db_cluster"
+            method_name = "stop_db_cluster"
+            method_options_name = "get_modify_options"
     else:
         if cluster:
-            return "modify_db_cluster"
+            method_name = "modify_db_cluster"
+            method_options_name = "get_modify_options"
         elif creation_source == "snapshot":
-            return "restore_db_cluster_from_snapshot"
+            method_name = "restore_db_cluster_from_snapshot"
+            method_options_name = "get_restore_snapshot_options"
         elif creation_source == "s3":
-            return "restore_db_cluster_from_s3"
+            method_name = "restore_db_cluster_from_s3"
+            method_options_name = "get_restore_s3_options"
         elif creation_source == "cluster":
-            return "restore_db_cluster_to_point_in_time"
+            method_name = "restore_db_cluster_to_point_in_time"
+            method_options_name = "get_restore_cluster_options"
         else:
-            return "create_db_cluster"
+            method_name = "create_db_cluster"
+            method_options_name = "get_create_options"
 
-    return None
+    return method_name, method_options_name
 
 
-def add_role(
-    client, module: AnsibleAWSModule, params: Dict[str, Any]
-) -> None:
-    """Add an IAM role to a DB cluster."""
+def add_role(params):
     if not module.check_mode:
         try:
             client.add_role_to_db_cluster(**params)
-        except (BotoCoreError, ClientError) as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(
                 e, msg=f"Unable to add role {params['RoleArn']} to cluster {params['DBClusterIdentifier']}"
             )
         wait_for_cluster_status(client, module, params["DBClusterIdentifier"], "cluster_available")
 
 
-def backtrack_cluster(
-    client, module: AnsibleAWSModule, params: Dict[str, Any]
-) -> None:
-    """Backtrack a DB cluster to a specific timestamp."""
+def backtrack_cluster(params):
     if not module.check_mode:
         try:
             client.backtrack_db_cluster(**params)
-        except (BotoCoreError, ClientError) as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg=f"Unable to backtrack cluster {params['DBClusterIdentifier']}")
         wait_for_cluster_status(client, module, params["DBClusterIdentifier"], "cluster_available")
 
 
-def get_cluster(
-    client, module: AnsibleAWSModule, db_cluster_id: str
-) -> Dict[str, Any]:
-    """Return attributes of a single DB cluster, or empty dict if not found."""
+def get_cluster(db_cluster_id):
     try:
-        clusters = describe_db_clusters(client, DBClusterIdentifier=db_cluster_id)
-    except AnsibleRDSError as e:
+        return _describe_db_clusters(DBClusterIdentifier=db_cluster_id)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to describe DB clusters")
-    return clusters[0] if clusters else {}
 
 
-def changing_cluster_options(
-    module: AnsibleAWSModule, modify_params: Dict[str, Any], current_cluster: Dict[str, Any]
-) -> Dict[str, Any]:
-    """Compare desired parameters against current cluster state and return only parameters that need to change."""
-
+def changing_cluster_options(modify_params, current_cluster):
     changing_params = {}
-    apply_immediately = modify_params.pop("ApplyImmediately", None)
+    apply_immediately = modify_params.pop("ApplyImmediately")
     db_cluster_id = modify_params.pop("DBClusterIdentifier")
 
     enable_cloudwatch_logs_export = modify_params.pop("EnableCloudwatchLogsExports", None)
@@ -991,34 +1160,24 @@ def changing_cluster_options(
     return changing_params
 
 
-def ensure_present(
-    client, module: AnsibleAWSModule, cluster: Dict[str, Any], parameters: Dict[str, Any], method_name: str
-) -> bool:
-    """Create a new cluster or modify an existing one."""
+def ensure_present(cluster, parameters, method_name, method_options_name):
     changed = False
 
     if not cluster:
-        filtered = format_rds_client_method_parameters(client, module, parameters, method_name, format_tags=True)
-        call_method(client, module, method_name, filtered)
+        if parameters.get("Tags") is not None:
+            parameters["Tags"] = ansible_dict_to_boto3_tag_list(parameters["Tags"])
+
+        call_method(client, module, method_name, eval(method_options_name)(parameters))
         changed = True
     else:
         if get_backtrack_options(parameters):
             backtrack_cluster(client, module, get_backtrack_options(parameters))
             changed = True
         else:
-            # EnableCloudwatchLogsExports is used by changing_cluster_options to compute
-            # CloudwatchLogsExportConfiguration, but it's not a valid modify_db_cluster parameter
-            # itself, so extract it before filtering.
-            enable_cloudwatch_logs = parameters.pop("EnableCloudwatchLogsExports", None)
-
-            filtered = format_rds_client_method_parameters(client, module, parameters, method_name, format_tags=False)
-            if not module.params["force_update_password"]:
-                filtered.pop("MasterUserPassword", None)
-
-            if enable_cloudwatch_logs is not None:
-                filtered["EnableCloudwatchLogsExports"] = enable_cloudwatch_logs
-
-            modify_options = changing_cluster_options(module, filtered, cluster)
+            modifiable_options = eval(method_options_name)(
+                parameters, force_update_password=module.params["force_update_password"]
+            )
+            modify_options = changing_cluster_options(modifiable_options, cluster)
             if modify_options:
                 call_method(client, module, method_name, modify_options)
                 changed = True
@@ -1050,10 +1209,7 @@ def ensure_present(
     return changed
 
 
-def handle_remove_from_global_db(
-    client, module: AnsibleAWSModule, cluster: Dict[str, Any]
-) -> bool:
-    """Remove a DB cluster from a global database cluster."""
+def handle_remove_from_global_db(cluster):
     global_cluster_id = module.params.get("global_cluster_identifier")
     db_cluster_id = module.params.get("db_cluster_identifier")
     db_cluster_arn = cluster["DBClusterArn"]
@@ -1063,7 +1219,7 @@ def handle_remove_from_global_db(
 
     try:
         client.remove_from_global_cluster(DbClusterIdentifier=db_cluster_arn, GlobalClusterIdentifier=global_cluster_id)
-    except (BotoCoreError, ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(
             e, msg=f"Failed to remove cluster {db_cluster_id} from global DB cluster {global_cluster_id}."
         )
@@ -1081,6 +1237,9 @@ def handle_remove_from_global_db(
 
 
 def main():
+    global module
+    global client
+
     arg_spec = dict(
         state=dict(choices=["present", "absent", "started", "stopped"], default="present"),
         creation_source=dict(type="str", choices=["snapshot", "s3", "cluster"]),
@@ -1182,7 +1341,12 @@ def main():
         supports_check_mode=True,
     )
 
-    client = module.client("rds", retry_decorator=AWSRetry.jittered_backoff(retries=10))
+    retry_decorator = AWSRetry.jittered_backoff(retries=10)
+
+    try:
+        client = module.client("rds", retry_decorator=retry_decorator)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     if module.params.get("engine") and module.params["engine"] in ("mysql", "postgres"):
         if module.params["state"] == "present":
@@ -1210,12 +1374,12 @@ def main():
             )
 
     module.params["db_cluster_identifier"] = module.params["db_cluster_identifier"].lower()
-    cluster = get_cluster(client, module, module.params["db_cluster_identifier"])
+    cluster = get_cluster(module.params["db_cluster_identifier"])
 
     if module.params["new_db_cluster_identifier"]:
         module.params["new_db_cluster_identifier"] = module.params["new_db_cluster_identifier"].lower()
 
-        if get_cluster(client, module, module.params["new_db_cluster_identifier"]):
+        if get_cluster(module.params["new_db_cluster_identifier"]):
             module.fail_json(
                 f"A new cluster ID {module.params['new_db_cluster_identifier']} was provided but it already exists"
             )
@@ -1236,32 +1400,31 @@ def main():
     changed = False
 
     parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
-    method_name = get_method_name(module, cluster)
+    method_name, method_options_name = get_rds_method_attribute_name(cluster)
 
     if method_name:
         if method_name == "delete_db_cluster":
             if cluster and module.params.get("remove_from_global_db"):
                 if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
-                    changed = handle_remove_from_global_db(client, module, cluster)
+                    changed = handle_remove_from_global_db(cluster)
 
-            delete_params = format_rds_client_method_parameters(client, module, parameters, method_name, format_tags=False)
-            call_method(client, module, method_name, delete_params)
+            call_method(client, module, method_name, eval(method_options_name)(parameters))
             changed = True
         else:
-            changed |= ensure_present(client, module, cluster, parameters, method_name)
+            changed |= ensure_present(cluster, parameters, method_name, method_options_name)
 
     if not module.check_mode and module.params["new_db_cluster_identifier"] and module.params["apply_immediately"]:
         cluster_id = module.params["new_db_cluster_identifier"]
     else:
         cluster_id = module.params["db_cluster_identifier"]
 
-    if cluster_id and get_cluster(client, module, cluster_id) and module.params.get("remove_from_global_db"):
+    if cluster_id and get_cluster(cluster_id) and module.params.get("remove_from_global_db"):
         if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
             if changed:
                 wait_for_cluster_status(client, module, cluster_id, "cluster_available")
-        changed |= handle_remove_from_global_db(client, module, cluster)
+        changed |= handle_remove_from_global_db(cluster)
 
-    result = camel_dict_to_snake_dict(get_cluster(client, module, cluster_id))
+    result = camel_dict_to_snake_dict(get_cluster(cluster_id))
 
     if result:
         result["tags"] = get_tags(client, module, result["db_cluster_arn"])
