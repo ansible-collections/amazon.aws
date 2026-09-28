@@ -68,7 +68,13 @@ def test_option_group_info_by_engine(m_describe, m_get_tags):
     m_get_tags.return_value = {}
 
     result = option_group_info(
-        conn, module, option_group_name="", engine_name="mysql", major_engine_version="8.0", marker=None, max_records=100
+        conn,
+        module,
+        option_group_name="",
+        engine_name="mysql",
+        major_engine_version="8.0",
+        marker=None,
+        max_records=100,
     )
 
     assert len(result) == 2
@@ -86,7 +92,13 @@ def test_option_group_info_no_results(m_describe, m_get_tags):
     m_describe.return_value = []
 
     result = option_group_info(
-        conn, module, option_group_name="nonexistent", engine_name="", major_engine_version="", marker=None, max_records=100
+        conn,
+        module,
+        option_group_name="nonexistent",
+        engine_name="",
+        major_engine_version="",
+        marker=None,
+        max_records=100,
     )
 
     assert result == []

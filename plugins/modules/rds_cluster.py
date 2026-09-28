@@ -792,9 +792,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import wait_for_clu
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 
-def get_add_role_options(
-    params_dict: Dict[str, Any], cluster: Dict[str, Any]
-) -> Dict[str, Any]:
+def get_add_role_options(params_dict: Dict[str, Any], cluster: Dict[str, Any]) -> Dict[str, Any]:
     """Check if an IAM role needs to be added to the cluster."""
     current_role_arns = [role["RoleArn"] for role in cluster.get("AssociatedRoles", [])]
     role = params_dict["RoleArn"]
@@ -814,9 +812,7 @@ def get_backtrack_options(params_dict: Dict[str, Any]) -> Dict[str, Any]:
     return {}
 
 
-def get_method_name(
-    module: AnsibleAWSModule, cluster: Dict[str, Any]
-) -> Optional[str]:
+def get_method_name(module: AnsibleAWSModule, cluster: Dict[str, Any]) -> Optional[str]:
     """Determine the boto3 RDS method to call based on desired state and cluster existence."""
     state = module.params["state"]
     creation_source = module.params["creation_source"]
@@ -845,9 +841,7 @@ def get_method_name(
     return None
 
 
-def add_role(
-    client, module: AnsibleAWSModule, params: Dict[str, Any]
-) -> None:
+def add_role(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> None:
     """Add an IAM role to a DB cluster."""
     if not module.check_mode:
         try:
@@ -859,9 +853,7 @@ def add_role(
         wait_for_cluster_status(client, module, params["DBClusterIdentifier"], "cluster_available")
 
 
-def backtrack_cluster(
-    client, module: AnsibleAWSModule, params: Dict[str, Any]
-) -> None:
+def backtrack_cluster(client, module: AnsibleAWSModule, params: Dict[str, Any]) -> None:
     """Backtrack a DB cluster to a specific timestamp."""
     if not module.check_mode:
         try:
@@ -871,9 +863,7 @@ def backtrack_cluster(
         wait_for_cluster_status(client, module, params["DBClusterIdentifier"], "cluster_available")
 
 
-def get_cluster(
-    client, module: AnsibleAWSModule, db_cluster_id: str
-) -> Dict[str, Any]:
+def get_cluster(client, module: AnsibleAWSModule, db_cluster_id: str) -> Dict[str, Any]:
     """Return attributes of a single DB cluster, or empty dict if not found."""
     try:
         clusters = describe_db_clusters(client, DBClusterIdentifier=db_cluster_id)
@@ -1050,9 +1040,7 @@ def ensure_present(
     return changed
 
 
-def handle_remove_from_global_db(
-    client, module: AnsibleAWSModule, cluster: Dict[str, Any]
-) -> bool:
+def handle_remove_from_global_db(client, module: AnsibleAWSModule, cluster: Dict[str, Any]) -> bool:
     """Remove a DB cluster from a global database cluster."""
     global_cluster_id = module.params.get("global_cluster_identifier")
     db_cluster_id = module.params.get("db_cluster_identifier")
@@ -1244,7 +1232,9 @@ def main():
                 if cluster["Engine"] in ["aurora", "aurora-mysql", "aurora-postgresql"]:
                     changed = handle_remove_from_global_db(client, module, cluster)
 
-            delete_params = format_rds_client_method_parameters(client, module, parameters, method_name, format_tags=False)
+            delete_params = format_rds_client_method_parameters(
+                client, module, parameters, method_name, format_tags=False
+            )
             call_method(client, module, method_name, delete_params)
             changed = True
         else:

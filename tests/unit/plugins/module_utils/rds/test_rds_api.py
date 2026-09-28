@@ -951,6 +951,7 @@ class TestDescribeDbInstanceParameterGroups:
 
         assert result == []
 
+
 # =============================================================================
 # describe_db_parameters
 # =============================================================================
@@ -987,6 +988,7 @@ class TestDescribeDbParameters:
 
         assert result == []
 
+
 # =============================================================================
 # create_db_parameter_group
 # =============================================================================
@@ -996,22 +998,14 @@ class TestCreateDbParameterGroup:
     def test_create_db_parameter_group_success(self):
         """Test successful parameter group creation"""
         client = MagicMock()
-        client.create_db_parameter_group.return_value = {
-            "DBParameterGroup": {"DBParameterGroupName": "my-pg"}
-        }
+        client.create_db_parameter_group.return_value = {"DBParameterGroup": {"DBParameterGroupName": "my-pg"}}
 
         result = create_db_parameter_group(
-            client,
-            DBParameterGroupName="my-pg",
-            DBParameterGroupFamily="mysql8.0",
-            Description="Test group"
+            client, DBParameterGroupName="my-pg", DBParameterGroupFamily="mysql8.0", Description="Test group"
         )
 
         client.create_db_parameter_group.assert_called_once_with(
-            aws_retry=True,
-            DBParameterGroupName="my-pg",
-            DBParameterGroupFamily="mysql8.0",
-            Description="Test group"
+            aws_retry=True, DBParameterGroupName="my-pg", DBParameterGroupFamily="mysql8.0", Description="Test group"
         )
         assert result["DBParameterGroup"]["DBParameterGroupName"] == "my-pg"
 
@@ -1026,6 +1020,7 @@ class TestCreateDbParameterGroup:
         with pytest.raises(AnsibleRDSError):
             create_db_parameter_group(client, DBParameterGroupName="my-pg")
 
+
 # =============================================================================
 # modify_db_parameter_group
 # =============================================================================
@@ -1035,26 +1030,18 @@ class TestModifyDbParameterGroup:
     def test_modify_db_parameter_group_small_list(self):
         """Test modification with <20 parameters"""
         client = MagicMock()
-        parameters = [
-            {"ParameterName": f"param{i}", "ParameterValue": str(i)}
-            for i in range(10)
-        ]
+        parameters = [{"ParameterName": f"param{i}", "ParameterValue": str(i)} for i in range(10)]
 
         modify_db_parameter_group(client, "my-pg", parameters)
 
         client.modify_db_parameter_group.assert_called_once_with(
-            aws_retry=True,
-            DBParameterGroupName="my-pg",
-            Parameters=parameters
+            aws_retry=True, DBParameterGroupName="my-pg", Parameters=parameters
         )
 
     def test_modify_db_parameter_group_chunking(self):
         """Test chunking for >20 parameters (max 20 per request)"""
         client = MagicMock()
-        parameters = [
-            {"ParameterName": f"param{i}", "ParameterValue": str(i)}
-            for i in range(45)
-        ]
+        parameters = [{"ParameterName": f"param{i}", "ParameterValue": str(i)} for i in range(45)]
 
         modify_db_parameter_group(client, "my-pg", parameters)
 
@@ -1064,6 +1051,7 @@ class TestModifyDbParameterGroup:
         # Verify first call has 20 parameters
         first_call_params = client.modify_db_parameter_group.call_args_list[0][1]["Parameters"]
         assert len(first_call_params) == 20
+
 
 # =============================================================================
 # delete_db_parameter_group
@@ -1078,10 +1066,7 @@ class TestDeleteDbParameterGroup:
 
         delete_db_parameter_group(client, "my-pg")
 
-        client.delete_db_parameter_group.assert_called_once_with(
-            aws_retry=True,
-            DBParameterGroupName="my-pg"
-        )
+        client.delete_db_parameter_group.assert_called_once_with(aws_retry=True, DBParameterGroupName="my-pg")
 
     def test_delete_db_parameter_group_error_raises_ansible_rds_error(self):
         """Test @RDSErrorHandler converts ClientError to AnsibleRDSError"""
