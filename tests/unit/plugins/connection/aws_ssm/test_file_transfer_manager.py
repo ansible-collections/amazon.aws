@@ -126,7 +126,7 @@ class TestFileTransferManager:
 
         mock_file_content = b"dummy content"
         mock_file = BytesIO(mock_file_content)
-        with patch("builtins.open", return_value=mock_file) as mocked_open:
+        with patch("builtins.open", return_value=mock_file):
             result = file_transfer_manager._handle_put(
                 "in_path", "out_path", [{"command": "test-cmd", "method": "get"}], "s3_path", {}
             )
