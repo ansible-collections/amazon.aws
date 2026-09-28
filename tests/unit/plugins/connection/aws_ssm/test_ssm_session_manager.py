@@ -266,6 +266,43 @@ class TestSSMSessionManager:
         session._client.terminate_session.assert_called_once_with(SessionId=session_id)
         assert not session._session_id
 
+    def test_terminate_with_validation_exception(self):
+        """Test that ValidationException is caught when terminating already-disconnected session."""
+        from botocore.exceptions import ClientError
+
+        session = self.create_session_manager()
+        session_id = MagicMock()
+        session._session_id = session_id
+        session._process_mgr = MagicMock()
+
+        # Simulate AWS throwing ValidationException when session is already terminated
+        session._client.terminate_session.side_effect = ClientError(
+            {"Error": {"Code": "ValidationException", "Message": "Session is not connected"}},
+            "TerminateSession",
+        )
+
+        # Should not raise exception, just log and clear session_id
+        session.terminate()
+        session._process_mgr.terminate.assert_called_once()
+        session._client.terminate_session.assert_called_once_with(SessionId=session_id)
+        assert not session._session_id
+
+    def test_terminate_with_reference_error(self):
+        """Test that ReferenceError is caught when client has been garbage collected."""
+        session = self.create_session_manager()
+        session_id = MagicMock()
+        session._session_id = session_id
+        session._process_mgr = MagicMock()
+
+        # Simulate client being garbage collected during cleanup
+        session._client.terminate_session.side_effect = ReferenceError("weakly-referenced object no longer exists")
+
+        # Should not raise exception, just clear session_id
+        session.terminate()
+        session._process_mgr.terminate.assert_called_once()
+        session._client.terminate_session.assert_called_once_with(SessionId=session_id)
+        assert not session._session_id
+
     @pytest.mark.parametrize("parameters", [None, {"Session": "Parameters"}])
     @pytest.mark.parametrize("document_name", [True, False])
     @patch("json.dumps")
