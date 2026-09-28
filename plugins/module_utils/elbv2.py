@@ -500,6 +500,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         self.http_drop_invalid_header_fields = module.params.get("http_drop_invalid_header_fields")
         self.http_x_amzn_tls_version_and_cipher_suite = module.params.get("http_x_amzn_tls_version_and_cipher_suite")
         self.http_xff_client_port = module.params.get("http_xff_client_port")
+        self.http_xff_header_processing_mode = module.params.get("http_xff_header_processing_mode")
         self.waf_fail_open = module.params.get("waf_fail_open")
 
         if self.elb is not None and self.elb["Type"] != "application":
@@ -569,6 +570,13 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         if self._attribute_differs(self.http_xff_client_port, "routing_http_xff_client_port_enabled"):
             self._add_attribute_update(
                 update_attributes, "routing.http.xff_client_port.enabled", self.http_xff_client_port
+            )
+
+        if self._attribute_differs(self.http_xff_header_processing_mode, "routing_http_xff_header_processing_mode"):
+            self._add_attribute_update(
+                update_attributes,
+                "routing.http.xff_header_processing.mode",
+                self.http_xff_header_processing_mode,
             )
 
         if self._attribute_differs(self.waf_fail_open, "waf_fail_open_enabled"):
