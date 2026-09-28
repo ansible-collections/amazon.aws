@@ -228,9 +228,7 @@ def update_tags(module: AnsibleAWSModule, connection: Any, group_arn: str, tags:
 
     existing_tags = get_tags(connection, module, group_arn)
 
-    return ensure_tags(
-        connection, module, group_arn, existing_tags, tags, module.params["purge_tags"]
-    )
+    return ensure_tags(connection, module, group_arn, existing_tags, tags, module.params["purge_tags"])
 
 
 def ensure_present(module: AnsibleAWSModule, connection: Any) -> None:

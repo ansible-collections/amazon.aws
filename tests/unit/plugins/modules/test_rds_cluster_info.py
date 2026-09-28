@@ -39,9 +39,7 @@ def test_cluster_info_one_cluster(m_describe_db_clusters, m_get_tags):
         }
     ]
     m_describe_db_clusters.assert_called_with(conn, DBClusterIdentifier=cluster_id)
-    m_get_tags.assert_called_once_with(
-        conn, module, "arn:aws:rds:us-east-2:123456789012:cluster:" + cluster_id
-    )
+    m_get_tags.assert_called_once_with(conn, module, "arn:aws:rds:us-east-2:123456789012:cluster:" + cluster_id)
 
 
 @patch(mod_name + ".get_tags")
@@ -68,9 +66,7 @@ def test_cluster_info_all_clusters_with_filters(m_describe_db_clusters, m_get_ta
     assert len(result) == 2
     assert result[0]["db_cluster_identifier"] == "first-cluster"
     assert result[1]["db_cluster_identifier"] == "second-cluster"
-    m_describe_db_clusters.assert_called_with(
-        conn, Filters=[{"Name": "engine", "Values": ["aurora-mysql"]}]
-    )
+    m_describe_db_clusters.assert_called_with(conn, Filters=[{"Name": "engine", "Values": ["aurora-mysql"]}])
     assert m_get_tags.call_count == 2
 
 
