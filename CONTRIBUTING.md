@@ -155,11 +155,27 @@ First, install `tox` into your virtual environment:
 pip install tox
 ```
 
-To run all unit tests:
+To see the available tox environments:
+
+```bash
+tox list
+```
+
+To run unit tests in a specific environment matching your Python and
+ansible-core versions:
 
 ```bash
 tox -e ansible2.20-py312-without_constraints
 ```
+
+To run the full unit-test matrix, use the `unit` tox label:
+
+```bash
+tox -m unit
+```
+
+For a faster check of the supported range, use `tox -m unit-oldest` or
+`tox -m unit-newest`.
 
 To run a specific test file or filter by test name, use the `-k` flag rather than
 passing a file path directly (file paths resolve relative to the repo root and break
@@ -169,33 +185,33 @@ the collection namespace resolution inside tox):
 tox -e ansible2.20-py312-without_constraints -- -k test_aws_sqs_queue -v
 ```
 
-See `tox.ini` for the full list of available environments (ansible-core versions and
-Python version combinations).
+See `tox.ini` for details about the available ansible-core and Python version
+combinations.
 
-> **Note:** Do not use `pytest` or `ansible-test units` directly — they will fail with
-> `ModuleNotFoundError: No module named 'ansible_collections'` because the collection
-> namespace is not on `sys.path` without the tox setup.
+> **Note:** Running `pytest` directly does not set up the collection namespace and can
+> fail with `ModuleNotFoundError: No module named 'ansible_collections'`. Use tox for
+> local unit tests, or use `ansible-test units --docker` as described in the Ansible
+> developer documentation.
 
 ### Linting
 
-Two linters are enforced in CI. Run them against changed files before submitting a PR:
-
-**Black** (code formatting):
+The CI lint job runs every tox environment labeled `lint`. Run the complete lint suite
+against the collection with:
 
 ```bash
-tox -e black-lint -- <path/to/file>
+tox -m lint
 ```
 
-**Flake8** (style and error checking):
+To automatically fix formatting issues, run the format environments:
 
 ```bash
-tox -e flake8-lint -- <path/to/file>
+tox -m format
 ```
 
-To auto-fix formatting issues (rather than just checking), use the `black` environment:
+To check coverage for new or changed code, run the unit tests first and then:
 
 ```bash
-tox -e black -- <path/to/file>
+tox -e diff-cover
 ```
 
 ## More information about contributing
