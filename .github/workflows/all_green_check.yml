@@ -37,16 +37,23 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
+          enable-cache: true
+          # Pin the interpreter explicitly. tox-uv defaults to
+          # uv_python_preference=system, so without this the py314 tox
+          # environment would fall back to downloading an interpreter on
+          # every run rather than reusing a known one.
           python-version: "3.14"
 
-      - name: Install tox
-        run: python -m pip install --upgrade pip tox
+      # Installs the locked developer toolchain (tox + tox-uv-bare) from
+      # uv.lock, so CI runs the same tox version as a local checkout.
+      - name: Install developer toolchain
+        run: uv sync --dev --locked
 
       - name: Run unit tests with coverage (tox)
-        run: tox -e ansible2.20-py314-with_constraints
+        run: uv run tox -e ansible2.20-py314-with_constraints
 
       - name: Rewrite coverage paths to be repo-relative
         run: |
