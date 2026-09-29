@@ -15,7 +15,7 @@ The following tests run on every pull request:
 | Job | Description | Python Versions | ansible-core Versions |
 | --- | ----------- | --------------- | --------------------- |
 | Changelog | Checks for the presence of changelog fragments | 3.12 | devel |
-| Linters | Runs `black` and `flake8` on plugins and tests | 3.10 | devel |
+| Linters | Runs `ruff` and `pylint` on plugins and tests | 3.10 | devel |
 | Sanity | Runs ansible sanity checks | See compatibility table below | devel, stable-2.17, stable-2.18, stable-2.19, stable-2.20 |
 | Unit tests | Executes unit test cases | See compatibility table below | devel, stable-2.17, stable-2.18, stable-2.19, stable-2.20 |
 | Integration tests | Executes integration test suites (handled by Zuul) | >=3.8 | Zuul build pipeline |

@@ -141,7 +141,9 @@ class AnsibleAWSModule:
                 continue
             try:
                 found_operational_request = re.search(r"OperationModel\(name=.*?\)", ln)
-                operation_request = found_operational_request.group(0)[  # pyright: ignore[reportOptionalMemberAccess]
+                operation_request = found_operational_request.group(
+                    0
+                )[  # pyright: ignore[reportOptionalMemberAccess]
                     20:-1
                 ]
                 resource = re.search(r"https://.*?\.", ln).group(0)[8:-1]  # pyright: ignore[reportOptionalMemberAccess]

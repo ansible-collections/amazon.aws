@@ -7,4 +7,4 @@
 
 # This should be directly imported by modules, rather than importing from here.
 # The import is being kept for backwards compatibility.
-from ansible.module_utils.compat.version import LooseVersion  # pylint: disable=unused-import
+from ansible.module_utils.compat.version import LooseVersion as LooseVersion  # pylint: disable=unused-import
