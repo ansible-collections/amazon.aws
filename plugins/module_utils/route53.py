@@ -10,7 +10,8 @@ import typing
 if typing.TYPE_CHECKING:
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
-from ansible_collections.amazon.aws.plugins.module_utils._route53.common import (  # pylint: disable=unused-import
+# pylint: disable-next=unused-import,useless-import-alias
+from ansible_collections.amazon.aws.plugins.module_utils._route53.common import (
     AnsibleRoute53Error as AnsibleRoute53Error,
 )
 from ansible_collections.amazon.aws.plugins.module_utils._route53.common import Route53ErrorHandler

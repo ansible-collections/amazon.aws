@@ -30,6 +30,7 @@ select = [
 ]
 # F401 re-exports use `import X as X` (or noqa for renamed aliases). unfixable is a
 # safety net so `ruff check --fix` cannot delete intentional re-exports.
+# Same-name aliases need pylint useless-import-alias silenced for ansible-test sanity.
 # E402: Ansible DOCUMENTATION/EXAMPLES/RETURN blocks above imports (validate-modules).
 # E501: line length owned by ruff format (line-length = 120).
 # E203/E741: carried from the previous flake8 ignore set (F811/F841 re-enabled).

@@ -38,25 +38,36 @@ don't need to be wrapped in the backoff decorator.
 """
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
-from .arn import parse_aws_arn as parse_aws_arn  # pylint: disable=unused-import
+# pylint: disable-next=unused-import,useless-import-alias
+from .arn import parse_aws_arn as parse_aws_arn
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
-from .botocore import HAS_BOTO3 as HAS_BOTO3  # pylint: disable=unused-import
-from .botocore import (  # pylint: disable=unused-import
-    get_boto3_client_method_parameters as get_boto3_client_method_parameters,
-)
-from .botocore import is_boto3_error_code as is_boto3_error_code  # pylint: disable=unused-import
-from .botocore import is_boto3_error_message as is_boto3_error_message  # pylint: disable=unused-import
-from .botocore import normalize_boto3_result as normalize_boto3_result  # pylint: disable=unused-import
+# pylint: disable-next=unused-import,useless-import-alias
+from .botocore import HAS_BOTO3 as HAS_BOTO3
+
+# pylint: disable-next=unused-import,useless-import-alias
+from .botocore import get_boto3_client_method_parameters as get_boto3_client_method_parameters
+
+# pylint: disable-next=unused-import,useless-import-alias
+from .botocore import is_boto3_error_code as is_boto3_error_code
+
+# pylint: disable-next=unused-import,useless-import-alias
+from .botocore import is_boto3_error_message as is_boto3_error_message
+
+# pylint: disable-next=unused-import,useless-import-alias
+from .botocore import normalize_boto3_result as normalize_boto3_result
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
-from .exceptions import AnsibleAWSError as AnsibleAWSError  # pylint: disable=unused-import
+# pylint: disable-next=unused-import,useless-import-alias
+from .exceptions import AnsibleAWSError as AnsibleAWSError
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
-from .modules import AnsibleAWSModule as AnsibleAWSModule  # pylint: disable=unused-import
+# pylint: disable-next=unused-import,useless-import-alias
+from .modules import AnsibleAWSModule as AnsibleAWSModule
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
-from .transformation import scrub_none_parameters as scrub_none_parameters  # pylint: disable=unused-import
+# pylint: disable-next=unused-import,useless-import-alias
+from .transformation import scrub_none_parameters as scrub_none_parameters
 
 # We will also export HAS_BOTO3 so end user modules can use it.
 __all__ = ("AnsibleAWSModule", "HAS_BOTO3", "is_boto3_error_code", "is_boto3_error_message")
