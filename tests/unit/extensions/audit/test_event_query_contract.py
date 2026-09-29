@@ -583,16 +583,22 @@ def normalize_expression(expression):
 def name_is_unique(name_expression, identity_values):
     """True if `name` is as unique as the dedup key itself.
 
-    Two shapes qualify. Either `name` *is* one of the canonical_facts values,
-    or it concatenates all of them -- ``.server_name + ":" + .tool_name``
-    against a key of ``{server_name, tool_name}`` is exactly as discriminating
-    as the key, so it cannot collide where the key does not.
+    The bar is *all* of the canonical_facts values, not any one of them. A
+    single-field key is satisfied by that one field; a compound key needs
+    every part, because ``name: .server`` against a key of ``{server, tool}``
+    collides for every second tool on the same server -- and those records
+    dedup apart, which is exactly what makes the collision reachable.
+
+    So two shapes qualify: `name` is the sole value of a one-field key, or it
+    concatenates all of them -- ``.server_name + ":" + .tool_name`` against a
+    key of ``{server_name, tool_name}`` is exactly as discriminating as the
+    key, so it cannot collide where the key does not.
     """
     name = normalize_expression(name_expression)
     values = [normalize_expression(value) for value in identity_values]
     if not values:
         return False
-    if name in values:
+    if len(values) == 1 and name == values[0]:
         return True
 
     text = name
