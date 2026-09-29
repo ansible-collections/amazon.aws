@@ -37,16 +37,17 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          python-version: "3.14"
+          enable-cache: true
+          python-version: "3.14" # tox-uv defaults to the system interpreter otherwise
 
-      - name: Install tox
-        run: python -m pip install --upgrade pip tox
+      - name: Install developer toolchain
+        run: uv sync --dev --locked # fails if uv.lock drifts from pyproject.toml
 
       - name: Run unit tests with coverage (tox)
-        run: tox -e ansible2.20-py314-with_constraints
+        run: uv run tox -e ansible2.20-py314-with_constraints
 
       - name: Rewrite coverage paths to be repo-relative
         run: |

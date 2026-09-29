@@ -405,3 +405,7 @@ tests/integration/cloud-config-aws.ini
 .ansible
 .vscode
 .scannerwork/
+
+# uv virtualenv and ADE-generated config; uv.lock itself IS committed.
+.venv/
+.ansible.cfg
