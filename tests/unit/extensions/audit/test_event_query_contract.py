@@ -267,6 +267,60 @@ def record_is_collected_into_an_array(query):
     return any(frame in ("[", "map(") for frame in stack)
 
 
+# Builtins that turn the record into something that is not a record. `flatten`
+# is the one that actually shipped: it reads as a no-op next to an array
+# constructor, so removing the `[ ... ]` and leaving the `| flatten` looks like
+# a complete fix. It is not -- `flatten` on an object iterates `.[]` and
+# returns an *array of that object's values*, so {name, canonical_facts, facts}
+# comes back as ["...", {...}, {...}] and the controller's `.get` raises on it
+# exactly as it would on a collected array.
+RESHAPING_FILTER = re.compile(
+    r"\A\s*(flatten|to_entries|keys|keys_unsorted|unique|unique_by|sort|sort_by"
+    r"|add|tostring|tojson|length|type|paths|leaf_paths|map)\b"
+)
+
+
+def record_is_reshaped_downstream(query):
+    """The filter the record is piped into, if that filter destroys the object.
+
+    `record_is_collected_into_an_array` looks at what encloses the record;
+    this looks at what happens to it afterwards. Same failure either way --
+    the top-level output stops being an object and
+    `data.get('canonical_facts')` raises.
+
+    Only pipes at or outside the record's own bracket depth count. A pipe
+    nested inside the record is shaping one of its *values*, which is fine.
+    """
+    source = strip_comments(query)
+    record = emitted_record(source)
+    if not record:
+        return None
+
+    index = source.index(record) + len(record)
+    depth = 0
+    in_string = False
+    while index < len(source):
+        char = source[index]
+        if in_string:
+            if char == "\\":
+                index += 2
+                continue
+            if char == '"':
+                in_string = False
+        elif char == '"':
+            in_string = True
+        elif char in "[({":
+            depth += 1
+        elif char in "])}":
+            depth -= 1
+        elif char == "|" and depth <= 0:
+            match = RESHAPING_FILTER.match(source[index + 1:])
+            if match:
+                return match.group(1)
+        index += 1
+    return None
+
+
 READERS = re.compile(r"\b(?:test|match|capture|contains|split|startswith"
                      r"|endswith|ltrimstr|rtrimstr|sub|gsub|inside)\s*\(")
 
@@ -653,6 +707,25 @@ def test_emits_objects_not_an_array(module):
         "raises AttributeError and loses every audit record for the job. "
         "Emit a stream -- `.xs[] | {...}` -- instead of `[ ... ]` or `map(...)`."
         % module
+    )
+
+
+@pytest.mark.parametrize("module", MODULES)
+def test_the_record_is_not_reshaped_downstream(module):
+    """Nothing downstream of the record may turn it back into a non-object.
+
+    The other half of the same rule. `| flatten` on an object returns an
+    array of its values, `| to_entries` returns an array of pairs, and the
+    controller's `data.get('canonical_facts')` raises on both -- uncaught,
+    so every audit record for the job is lost.
+    """
+    reshaper = record_is_reshaped_downstream(QUERIES[module])
+    assert reshaper is None, (
+        "%s pipes its record into `%s`, which does not return an object. "
+        "The controller calls `data.get('canonical_facts')` on each top-level "
+        "output, so this raises AttributeError and loses every audit record "
+        "for the job. Drop the `| %s` -- the record is already the shape the "
+        "controller wants." % (module, reshaper, reshaper)
     )
 
 
