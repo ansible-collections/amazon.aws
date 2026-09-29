@@ -1,0 +1,12 @@
+---
+name: ansible-lint
+
+on: [workflow_call] # allow this workflow to be called from other workflows
+
+jobs:
+  ansible-lint:
+    # Run the "ansible-lint" tox env so the lint configuration (deps, skip-list,
+    # excludes) lives in tox.ini and stays consistent between local and CI runs.
+    uses: ansible-network/github_actions/.github/workflows/tox.yml@4678c74a7d712d55e663c88f66eec6d9c3642550 # @main as of 2026-09-21
+    with:
+      envname: "ansible-lint"

@@ -25,3 +25,24 @@ updates:
     labels:
       - "dependencies"
       - "github_actions"
+
+  # Monitor pre-commit hook versions for updates
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    # Keep commit messages conventional and concise
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    # Limit number of open PRs
+    open-pull-requests-limit: 5
+    # Add labels for easy identification
+    labels:
+      - "dependencies"
+      - "pre-commit"
+    # ansible-lint frequently ships breaking changes; bump it manually to keep
+    # CI stable (see PR discussion). Its version is also pinned in tox.ini.
+    ignore:
+      - dependency-name: "ansible-lint"
