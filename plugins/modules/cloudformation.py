@@ -374,9 +374,7 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
 
 def create_stack(module, stack_params, cfn, events_limit):
     if "TemplateBody" not in stack_params and "TemplateURL" not in stack_params:
-        module.fail_json(
-            msg="Either 'template_body' or 'template_url' is required when the stack does not exist."
-        )
+        module.fail_json(msg="Either 'template_body' or 'template_url' is required when the stack does not exist.")
 
     # 'TimeoutInMinutes', 'EnableTerminationProtection' and
     # 'OnFailure' only apply on creation, not update.
