@@ -219,6 +219,54 @@ def sub_object(expression):
     return dict(split_pairs(block)) if block else {}
 
 
+ARRAY_PRODUCING_CALL = re.compile(r"\b(map|map_values)\s*$")
+
+
+def record_is_collected_into_an_array(query):
+    """True if the emitted record sits inside an array constructor or map().
+
+    The controller iterates ``compiled_jq.input(res).all()`` and calls
+    ``data.get('canonical_facts')`` on each element, so every top-level output
+    must be an *object*. A query shaped ``[ .xs[] | {...} ]`` or
+    ``.xs | map({...})`` produces a single *list* output instead, and
+    ``list.get`` raises AttributeError -- which `_execute_jq_query` does not
+    catch, because it only wraps the jq call itself. The exception escapes
+    `build_indirect_host_data` and loses the whole job's records.
+
+    Emit a stream (``.xs[] | {...}``) rather than a collected array.
+    """
+    source = strip_comments(query)
+    record = emitted_record(source)
+    if not record:
+        return False
+    position = source.index(record)
+
+    stack = []
+    in_string = False
+    index = 0
+    while index < position:
+        char = source[index]
+        if in_string:
+            if char == "\\":
+                index += 2
+                continue
+            if char == '"':
+                in_string = False
+        elif char == '"':
+            in_string = True
+        elif char == "[":
+            stack.append("[")
+        elif char == "(":
+            stack.append("map(" if ARRAY_PRODUCING_CALL.search(source[:index]) else "(")
+        elif char == "{":
+            stack.append("{")
+        elif char in "])}" and stack:
+            stack.pop()
+        index += 1
+
+    return any(frame in ("[", "map(") for frame in stack)
+
+
 READERS = re.compile(r"\b(?:test|match|capture|contains|split|startswith"
                      r"|endswith|ltrimstr|rtrimstr|sub|gsub|inside)\s*\(")
 
@@ -524,6 +572,81 @@ def test_emits_a_name_that_cannot_be_null(module):
     assert not can_be_null(pairs["name"], proven_non_null(QUERIES[module])), (
         "%s: `name` can evaluate to null (%s). Give it a non-null fallback or "
         "guard the record with select()." % (module, pairs["name"])
+    )
+
+
+def normalize_expression(expression):
+    """Collapse whitespace so two spellings of one expression compare equal."""
+    return " ".join((expression or "").split())
+
+
+def name_is_unique(name_expression, identity_values):
+    """True if `name` is as unique as the dedup key itself.
+
+    Two shapes qualify. Either `name` *is* one of the canonical_facts values,
+    or it concatenates all of them -- ``.server_name + ":" + .tool_name``
+    against a key of ``{server_name, tool_name}`` is exactly as discriminating
+    as the key, so it cannot collide where the key does not.
+    """
+    name = normalize_expression(name_expression)
+    values = [normalize_expression(value) for value in identity_values]
+    if not values:
+        return False
+    if name in values:
+        return True
+
+    text = name
+    while outer_parens_match(text):
+        text = text[1:-1].strip()
+    operands = {normalize_expression(part) for part in split_top(text, "+")}
+    return all(value in operands for value in values)
+
+
+@pytest.mark.parametrize("module", MODULES)
+def test_name_is_unique_within_a_job(module):
+    """`name` must be an identity expression, not a display name.
+
+    IndirectManagedNodeAudit declares unique_together = [('name', 'job')] and
+    the controller bulk_create()s every record for a job in one transaction.
+    Two resources that dedup apart on canonical_facts but share a `name` --
+    two VMs both called "web" in different folders, two EC2 instances both
+    tagged Name=web -- raise IntegrityError, which rolls back the whole
+    transaction and loses every audit record for that job, not just the
+    colliding pair. The rollback takes `event_queries_processed` with it, so
+    the fallback task re-picks the job and fails again until it ages out.
+
+    Emit the identifier as `name` and the display name as `facts.name`, which
+    is not constrained.
+    """
+    pairs = dict(split_pairs(emitted_record(QUERIES[module])))
+    identity = sub_object(pairs.get("canonical_facts", ""))
+
+    assert name_is_unique(pairs["name"], identity.values()), (
+        "%s: `name` is %s, which is neither one of the canonical_facts values "
+        "(%s) nor a concatenation of all of them. `name` must be unique per "
+        "job -- a display name is not. Emit an identifier as `name` and report "
+        "the friendly name in `facts.name`."
+        % (module, pairs["name"], ", ".join(identity.values()) or "none")
+    )
+
+
+@pytest.mark.parametrize("module", MODULES)
+def test_emits_objects_not_an_array(module):
+    """Every top-level jq output must be an object, not a list.
+
+    host_indirect.py iterates `compiled_jq.input(res).all()` and immediately
+    calls `data.get('canonical_facts')`. A query that collects its records --
+    `[ .xs[] | {...} ]` or `.xs | map({...})` -- emits one *list*, and
+    `list.get` raises AttributeError. `_execute_jq_query` does not catch it
+    (it wraps only the jq call), so it escapes `build_indirect_host_data` and
+    takes down every record for the job.
+    """
+    assert not record_is_collected_into_an_array(QUERIES[module]), (
+        "%s collects its records into an array. The controller calls "
+        "`data.get('canonical_facts')` on each top-level output, so a list "
+        "raises AttributeError and loses every audit record for the job. "
+        "Emit a stream -- `.xs[] | {...}` -- instead of `[ ... ]` or `map(...)`."
+        % module
     )
 
 
