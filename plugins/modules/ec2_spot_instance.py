@@ -163,7 +163,7 @@ options:
             type: list
             elements: dict
             suboptions:
-              ipv6address:
+              ipv6_address:
                 description: The IPv6 address.
                 type: str
           network_interface_id:
@@ -556,7 +556,7 @@ def main() -> None:
         device_index=dict(type="int"),
         groups=dict(type="list", elements="str"),
         ipv6_address_count=dict(type="int"),
-        ipv6_addresses=dict(type="list", elements="dict", options=dict(ipv6address=dict(type="str"))),
+        ipv6_addresses=dict(type="list", elements="dict", options=dict(ipv6_address=dict(type="str"))),
         network_interface_id=dict(type="str"),
         private_ip_address=dict(type="str"),
         private_ip_addresses=dict(type="list", elements="dict"),
