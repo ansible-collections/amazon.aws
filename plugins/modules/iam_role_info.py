@@ -206,8 +206,6 @@ def main():
             module.fail_json(msg=validation_error)
 
     if path_prefix:
-        if not (path_prefix.startswith("/") and path_prefix.endswith("/")):
-            module.fail_json(msg="path_prefix must begin and end with /")
         validation_error = validate_iam_identifiers("role", path=path_prefix)
         if validation_error:
             module.fail_json(msg=validation_error)
