@@ -1,0 +1,2 @@
+bugfixes:
+  - module_utils/acm - fix ``KeyError`` when listing ACM certificates that have no ``DomainName``, for example a certificate imported without a valid domain name. The certificate ARN is now used in error messages instead (https://github.com/ansible-collections/amazon.aws/issues/2405).

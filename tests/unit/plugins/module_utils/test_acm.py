@@ -345,3 +345,46 @@ def test_acm_service_manager_get_certificates(acm_service_mgr, domain_name, arn,
         acm_service_mgr.get_certificates(domain_name=domain_name, statuses=MagicMock(), arn=arn, only_tags=tags)
         == results
     )
+
+
+@pytest.mark.parametrize(
+    "domain_name,expected_arns",
+    [
+        (None, ["arn:aws:1", "arn:aws:2"]),
+        ("ansible.com", ["arn:aws:1"]),
+    ],
+)
+def test_acm_service_manager_get_certificates_without_domain_name(acm_service_mgr, domain_name, expected_arns):
+    # A certificate imported without a valid domain name is listed without a DomainName key
+    all_certificates = [
+        {"CertificateArn": "arn:aws:1", "DomainName": "ansible.com"},
+        {"CertificateArn": "arn:aws:2"},
+    ]
+
+    acm_service_mgr.list_certificates_with_backoff = MagicMock()
+    acm_service_mgr.list_certificates_with_backoff.return_value = all_certificates
+
+    acm_service_mgr.describe_certificate_with_backoff = MagicMock()
+    acm_service_mgr.describe_certificate_with_backoff.side_effect = lambda *args, **kwargs: {
+        "Status": "ISSUED",
+        "CertificateArn": args[0],
+    }
+
+    acm_service_mgr.get_certificate_with_backoff = MagicMock()
+    acm_service_mgr.get_certificate_with_backoff.return_value = {}
+
+    acm_service_mgr.list_certificate_tags_with_backoff = MagicMock()
+    acm_service_mgr.list_certificate_tags_with_backoff.return_value = []
+
+    results = acm_service_mgr.get_certificates(domain_name=domain_name, statuses=MagicMock(), arn=None, only_tags=None)
+
+    assert [cert["certificate_arn"] for cert in results] == expected_arns
+
+    # The certificate ARN is used in error messages when the domain name is missing
+    if "arn:aws:2" in expected_arns:
+        acm_service_mgr.describe_certificate_with_backoff.assert_any_call(
+            "arn:aws:2",
+            module=acm_service_mgr.module,
+            error="Couldn't obtain certificate metadata for domain arn:aws:2",
+            ignore_error_codes=["ResourceNotFoundException"],
+        )
