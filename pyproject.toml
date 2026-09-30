@@ -17,7 +17,7 @@ line-length = 120
 exclude = [".tox", "tests/output"]
 
 [tool.ruff.lint]
-# Curated select = black/isort/flynt/flake8/pyflakes parity (ACA-7240 Path A).
+# Curated select = black/isort/flynt/flake8/pyflakes parity
 # Do not use ruff's version-dependent default ruleset.
 select = [
     "E",     # pycodestyle errors (flake8)
