@@ -238,7 +238,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.arn import validate_aws
 from ansible_collections.amazon.aws.plugins.module_utils.iam import AnsibleIAMError
 from ansible_collections.amazon.aws.plugins.module_utils.iam import IAMErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.iam import convert_managed_policy_names_to_arns
-from ansible_collections.amazon.aws.plugins.module_utils.iam import delete_iam_instance_profile
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_iam_role
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_instance_profiles
 from ansible_collections.amazon.aws.plugins.module_utils.iam import list_iam_role_attached_policies
@@ -508,9 +507,8 @@ def create_or_update_role(module, client, role_name):
     module.exit_json(changed=changed, iam_role=camel_role)
 
 
-def remove_instance_profiles(client, check_mode, role_name, delete_instance_profile):
-    """Removes the role from instance profiles and deletes the instance profile if
-    delete_instance_profile is set
+def remove_instance_profiles(client, check_mode, role_name):
+    """Removes the role from instance profiles
     """
 
     instance_profiles = list_iam_instance_profiles(client, role=role_name)
@@ -523,11 +521,6 @@ def remove_instance_profiles(client, check_mode, role_name, delete_instance_prof
     for profile in instance_profiles:
         profile_name = profile["InstanceProfileName"]
         remove_role_from_iam_instance_profile(client, profile_name, role_name)
-        if not delete_instance_profile:
-            continue
-        # Delete the instance profile if the role and profile names match
-        if profile_name == role_name:
-            delete_iam_instance_profile(client, profile_name)
 
 
 @IAMErrorHandler.deletion_error_handler("delete role")
@@ -544,7 +537,7 @@ def destroy_role(client, check_mode, role_name):
     # - attached instance profiles
     # - attached managed policies
     # - embedded inline policies
-    remove_instance_profiles(client, check_mode, role_name, False)
+    remove_instance_profiles(client, check_mode, role_name)
     update_managed_policies(client, check_mode, role_name, [], True)
     remove_inline_policies(client, role_name)
 
