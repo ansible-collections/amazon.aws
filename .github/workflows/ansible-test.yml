@@ -14,7 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         ansible-core-version:
-          - stable-2.17
           - stable-2.18
           - stable-2.19
           - stable-2.20
@@ -50,11 +49,6 @@ jobs:
           - ansible-core-version: stable-2.18
             python-version: "3.10"
           - ansible-core-version: stable-2.18
-            python-version: "3.14"
-          # stable-2.17 excludes
-          - ansible-core-version: stable-2.17
-            python-version: "3.13"
-          - ansible-core-version: stable-2.17
             python-version: "3.14"
     steps:
       - name: Perform sanity testing
@@ -70,14 +64,12 @@ jobs:
       fail-fast: false
       matrix:
         ansible-core-version:
-          - stable-2.17
           - stable-2.18
           - stable-2.19
           - stable-2.20
           - milestone
           - devel
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
@@ -106,11 +98,6 @@ jobs:
           - ansible-core-version: stable-2.18
             python-version: "3.10"
           - ansible-core-version: stable-2.18
-            python-version: "3.14"
-          # stable-2.17 excludes
-          - ansible-core-version: stable-2.17
-            python-version: "3.13"
-          - ansible-core-version: stable-2.17
             python-version: "3.14"
     steps:
       - name: Perform unit testing
