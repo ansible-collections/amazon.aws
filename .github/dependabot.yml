@@ -45,4 +45,4 @@ updates:
     # ansible-lint frequently ships breaking changes; bump it manually to keep
     # CI stable (see PR discussion). Its version is also pinned in tox.ini.
     ignore:
-      - dependency-name: "ansible-lint"
+      - dependency-name: "https://github.com/ansible/ansible-lint"
