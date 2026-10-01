@@ -21,6 +21,7 @@ notes:
     role will be used for authentication.
   - The C(tags) host variable is deprecated and will be removed in a release after 2026-12-01.
     Use C(ec2_tags) instead to avoid conflicts with Ansible reserved variable names.
+    Set O(use_deprecated_tags=false) to disable the C(tags) host variable, and this warning, before then.
   - The C(ec2_tags) host variable was added in version 11.2.0.
   - The C(use_contrib_script_compatible_ec2_tag_keys) option is deprecated and will be removed in a release after 2026-12-01.
     Use the C(ec2_tags) structure instead (e.g. use C(ec2_tags.TAGNAME) rather than C(ec2_tag_TAGNAME)).
@@ -130,6 +131,17 @@ options:
     type: bool
     default: false
     version_added: 1.5.0
+  use_deprecated_tags:
+    description:
+      - Whether to include the deprecated C(tags) host variable alongside C(ec2_tags).
+      - Set to V(false) to stop the plugin from adding the C(tags) host variable, which also
+        disables this plugin's C(tags) deprecation warning and Ansible's reserved variable
+        name warning for C(tags).
+      - The use of this feature is deprecated and will be removed in a release after 2026-12-01.
+        Use the C(ec2_tags) structure instead.
+    type: bool
+    default: true
+    version_added: 12.0.0
   hostvars_prefix:
     description:
       - The prefix for host variables names coming from AWS.
@@ -356,6 +368,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.common import get_collection_info
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
@@ -494,11 +507,17 @@ def _prepare_host_vars(
     hostvars_prefix=None,
     hostvars_suffix=None,
     use_contrib_script_compatible_ec2_tag_keys=False,
+    use_deprecated_tags=True,
 ):
     host_vars = camel_dict_to_snake_dict(original_host_vars, ignore_list=["Tags"])
     host_vars["ec2_tags"] = boto3_tag_list_to_ansible_dict(original_host_vars.get("Tags", []))
-    # ec2_tags is the new key, tags is deprecated but kept for backward compatibility
-    host_vars["tags"] = host_vars["ec2_tags"]
+    if use_deprecated_tags:
+        # ec2_tags is the new key, tags is deprecated but kept for backward compatibility
+        host_vars["tags"] = host_vars["ec2_tags"]
+    else:
+        # camel_dict_to_snake_dict() above already renamed the raw 'Tags' key to 'tags';
+        # drop it so the deprecated host variable is fully absent, not just left unconverted.
+        host_vars.pop("tags", None)
 
     # Allow easier grouping by region
     host_vars["placement"]["region"] = host_vars["placement"]["availability_zone"][:-1]
@@ -860,6 +879,7 @@ class InventoryModule(AWSInventoryBase):
         hostvars_prefix=None,
         hostvars_suffix=None,
         use_contrib_script_compatible_ec2_tag_keys=False,
+        use_deprecated_tags=True,
     ):
         for group in groups:
             group = self.inventory.add_group(group)
@@ -871,6 +891,7 @@ class InventoryModule(AWSInventoryBase):
                 hostvars_prefix=hostvars_prefix,
                 hostvars_suffix=hostvars_suffix,
                 use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+                use_deprecated_tags=use_deprecated_tags,
             )
             self.inventory.add_child("all", group)
 
@@ -882,6 +903,7 @@ class InventoryModule(AWSInventoryBase):
         hostvars_prefix=None,
         hostvars_suffix=None,
         use_contrib_script_compatible_ec2_tag_keys=False,
+        use_deprecated_tags=True,
     ):
         for host in hosts:
             if allow_duplicated_hosts:
@@ -896,6 +918,7 @@ class InventoryModule(AWSInventoryBase):
                 hostvars_prefix,
                 hostvars_suffix,
                 use_contrib_script_compatible_ec2_tag_keys,
+                use_deprecated_tags,
             )
             for name in hostname_list:
                 yield to_text(name), host_vars
@@ -909,6 +932,7 @@ class InventoryModule(AWSInventoryBase):
         hostvars_prefix=None,
         hostvars_suffix=None,
         use_contrib_script_compatible_ec2_tag_keys=False,
+        use_deprecated_tags=True,
     ):
         """
         :param hosts: a list of hosts to be added to a group
@@ -918,6 +942,7 @@ class InventoryModule(AWSInventoryBase):
         :param str hostvars_prefix: starts the hostvars variable name with this prefix
         :param str hostvars_suffix: ends the hostvars variable name with this suffix
         :param bool use_contrib_script_compatible_ec2_tag_keys: transform the host name with the legacy naming system
+        :param bool use_deprecated_tags: if true, also expose the deprecated 'tags' host variable
         """
 
         for name, host_vars in self.iter_entry(
@@ -927,6 +952,7 @@ class InventoryModule(AWSInventoryBase):
             hostvars_prefix=hostvars_prefix,
             hostvars_suffix=hostvars_suffix,
             use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+            use_deprecated_tags=use_deprecated_tags,
         ):
             self.inventory.add_host(name, group=group)
             for k, v in host_vars.items():
@@ -954,13 +980,8 @@ class InventoryModule(AWSInventoryBase):
     def parse(self, inventory, loader, path, cache=True):
         super().parse(inventory, loader, path, cache=cache)
 
-        self.display.deprecated(
-            "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
-            date="2026-12-01",
-            collection_name="amazon.aws",
-        )
-
         # get user specifications
+        collection_name = get_collection_info()["name"]
         regions = self.get_option("regions")
         include_filters = self.build_include_filters()
         exclude_filters = self.get_option("exclude_filters")
@@ -972,14 +993,22 @@ class InventoryModule(AWSInventoryBase):
         hostvars_suffix = self.get_option("hostvars_suffix")
         use_contrib_script_compatible_sanitization = self.get_option("use_contrib_script_compatible_sanitization")
         use_contrib_script_compatible_ec2_tag_keys = self.get_option("use_contrib_script_compatible_ec2_tag_keys")
+        use_deprecated_tags = self.get_option("use_deprecated_tags")
         use_ssm_inventory = self.get_option("use_ssm_inventory")
+
+        if use_deprecated_tags:
+            self.display.deprecated(
+                "The 'tags' host variable is deprecated. Use 'ec2_tags' instead.",
+                date="2026-12-01",
+                collection_name=collection_name,
+            )
 
         if use_contrib_script_compatible_sanitization:
             self.display.deprecated(
                 "The 'use_contrib_script_compatible_sanitization' option is deprecated. "
                 "Use Ansible's default group name sanitization instead.",
                 date="2026-12-01",
-                collection_name="amazon.aws",
+                collection_name=collection_name,
             )
 
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
@@ -989,7 +1018,7 @@ class InventoryModule(AWSInventoryBase):
                 "The 'use_contrib_script_compatible_ec2_tag_keys' option is deprecated. "
                 "Use the 'ec2_tags' structure instead.",
                 date="2026-12-01",
-                collection_name="amazon.aws",
+                collection_name=collection_name,
             )
 
         if not all(isinstance(element, (dict, str)) for element in hostnames):
@@ -1010,6 +1039,7 @@ class InventoryModule(AWSInventoryBase):
             hostvars_prefix=hostvars_prefix,
             hostvars_suffix=hostvars_suffix,
             use_contrib_script_compatible_ec2_tag_keys=use_contrib_script_compatible_ec2_tag_keys,
+            use_deprecated_tags=use_deprecated_tags,
         )
 
         self.update_cached_result(path, cache, results)
