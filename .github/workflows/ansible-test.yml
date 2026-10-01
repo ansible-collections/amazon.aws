@@ -17,6 +17,7 @@ jobs:
           - stable-2.18
           - stable-2.19
           - stable-2.20
+          - stable-2.21
           - milestone
           - devel
         python-version:
@@ -34,6 +35,11 @@ jobs:
           - ansible-core-version: milestone
             python-version: "3.10"
           - ansible-core-version: milestone
+            python-version: "3.11"
+          # stable-2.21 excludes
+          - ansible-core-version: stable-2.21
+            python-version: "3.10"
+          - ansible-core-version: stable-2.21
             python-version: "3.11"
           # stable-2.20 excludes
           - ansible-core-version: stable-2.20
@@ -67,6 +73,7 @@ jobs:
           - stable-2.18
           - stable-2.19
           - stable-2.20
+          - stable-2.21
           - milestone
           - devel
         python-version:
@@ -83,6 +90,11 @@ jobs:
           - ansible-core-version: milestone
             python-version: "3.10"
           - ansible-core-version: milestone
+            python-version: "3.11"
+          # stable-2.21 excludes
+          - ansible-core-version: stable-2.21
+            python-version: "3.10"
+          - ansible-core-version: stable-2.21
             python-version: "3.11"
           # stable-2.20 excludes
           - ansible-core-version: stable-2.20
