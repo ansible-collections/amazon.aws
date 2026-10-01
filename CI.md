@@ -65,4 +65,3 @@ These are outlined in `.github/workflows/ansible-test.yml` exclusions.
 | stable-2.20 | 3.12, 3.13, 3.14 | 3.12, 3.13, 3.14 |
 | stable-2.19 | 3.11, 3.12, 3.13 | 3.11, 3.12, 3.13 |
 | stable-2.18 | 3.11, 3.12, 3.13 | 3.11, 3.12, 3.13 |
-| stable-2.17 | 3.10, 3.11, 3.12 | 3.10, 3.11, 3.12 |
