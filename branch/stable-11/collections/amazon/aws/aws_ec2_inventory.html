@@ -691,6 +691,21 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-use_deprecated_tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-deprecated-tags"><strong>use_deprecated_tags</strong></p>
+<a class="ansibleOptionLink" href="#parameter-use_deprecated_tags" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<p><em class="ansible-option-versionadded">added in amazon.aws 12.0.0</em></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Whether to include the deprecated <code class="docutils literal notranslate"><span class="pre">tags</span></code> host variable alongside <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code>.</p>
+<p>Set to <code class="ansible-value docutils literal notranslate"><span class="pre">false</span></code> to stop the plugin from adding the <code class="docutils literal notranslate"><span class="pre">tags</span></code> host variable, which also disables this plugin’s <code class="docutils literal notranslate"><span class="pre">tags</span></code> deprecation warning and Ansible’s reserved variable name warning for <code class="docutils literal notranslate"><span class="pre">tags</span></code>.</p>
+<p>The use of this feature is deprecated and will be removed in a release after 2026-12-01. Use the <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> structure instead.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_extra_vars"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-extra-vars"><strong>use_extra_vars</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_extra_vars" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in ansible-core 2.11</em></p>
@@ -713,7 +728,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-use_ssm_inventory"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-ssm-inventory"><strong>use_ssm_inventory</strong></p>
 <a class="ansibleOptionLink" href="#parameter-use_ssm_inventory" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 <p><em class="ansible-option-versionadded">added in amazon.aws 6.0.0</em></p>
@@ -743,7 +758,7 @@ For example, an ansible.cfg entry (further up in the list) is overwritten by an 
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>If no credentials are provided and the control node has an associated IAM instance profile then the role will be used for authentication.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">tags</span></code> host variable is deprecated and will be removed in a release after 2026-12-01. Use <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> instead to avoid conflicts with Ansible reserved variable names.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">tags</span></code> host variable is deprecated and will be removed in a release after 2026-12-01. Use <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> instead to avoid conflicts with Ansible reserved variable names. Set <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-aws-ec2-inventory-parameter-use-deprecated-tags"><span class="std std-ref"><span class="pre">use_deprecated_tags=false</span></span></a></code> to disable the <code class="docutils literal notranslate"><span class="pre">tags</span></code> host variable, and this warning, before then.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> host variable was added in version 11.2.0.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_ec2_tag_keys</span></code> option is deprecated and will be removed in a release after 2026-12-01. Use the <code class="docutils literal notranslate"><span class="pre">ec2_tags</span></code> structure instead (e.g. use <code class="docutils literal notranslate"><span class="pre">ec2_tags.TAGNAME</span></code> rather than <code class="docutils literal notranslate"><span class="pre">ec2_tag_TAGNAME</span></code>).</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">use_contrib_script_compatible_sanitization</span></code> option is deprecated and will be removed in a release after 2026-12-01. Use Ansible’s default group name sanitization instead.</p></li>
