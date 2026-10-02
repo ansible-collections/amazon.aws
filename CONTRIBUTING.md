@@ -140,6 +140,80 @@ Then create a pull request.
 If you're struggling with running integration tests locally, don't worry.
 After creating a pull request the GitHub Actions will automatically test for you.
 
+## Running Tests Locally
+
+### Unit Tests
+
+Unit tests are run via [tox](https://tox.wiki/). The collection uses fully-qualified
+`ansible_collections.amazon.aws.*` imports, which require the Ansible collection loader
+to resolve the namespace correctly. `tox` handles this automatically by syncing the
+collection into a managed environment before running `pytest`.
+
+First, install `tox` into your virtual environment:
+
+```bash
+pip install tox
+```
+
+To see the available tox environments:
+
+```bash
+tox list
+```
+
+To run unit tests in a specific environment matching your Python and
+ansible-core versions:
+
+```bash
+tox -e ansible2.20-py312-without_constraints
+```
+
+To run the full unit-test matrix, use the `unit` tox label:
+
+```bash
+tox -m unit
+```
+
+For a faster check of the supported range, use `tox -m unit-oldest` or
+`tox -m unit-newest`.
+
+To run a specific test file or filter by test name, use the `-k` flag rather than
+passing a file path directly (file paths resolve relative to the repo root and break
+the collection namespace resolution inside tox):
+
+```bash
+tox -e ansible2.20-py312-without_constraints -- -k test_aws_sqs_queue -v
+```
+
+See `tox.ini` for details about the available ansible-core and Python version
+combinations.
+
+> **Note:** Running `pytest` directly does not set up the collection namespace and can
+> fail with `ModuleNotFoundError: No module named 'ansible_collections'`. Use tox for
+> local unit tests, or use `ansible-test units --docker` as described in the Ansible
+> developer documentation.
+
+### Linting
+
+The CI lint job runs every tox environment labeled `lint`. Run the complete lint suite
+against the collection with:
+
+```bash
+tox -m lint
+```
+
+To automatically fix formatting issues, run the format environments:
+
+```bash
+tox -m format
+```
+
+To check coverage for new or changed code, run the unit tests first and then:
+
+```bash
+tox -e diff-cover
+```
+
 ## More information about contributing
 
 General information about setting up your Python environment, testing modules,
