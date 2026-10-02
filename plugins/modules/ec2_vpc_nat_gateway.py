@@ -35,6 +35,7 @@ options:
       - The ID of the VPC in which to create a regional NAT gateway.
       - Required when O(availability_mode=regional) and O(state=present).
       - Mutually exclusive with O(subnet_id).
+      - This option requires botocore >= 1.41.0
     type: str
     version_added: 12.0.0
   allocation_id:
