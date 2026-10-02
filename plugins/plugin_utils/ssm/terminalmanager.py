@@ -190,8 +190,8 @@ class TerminalManager:
             self.connection.verbosity_display(5, f"WRAP_COMMAND: Original command length: {len(cmd)} bytes")
             self.connection.verbosity_display(6, f"WRAP_COMMAND: Full original command:\n{to_text(cmd)}")
             wrapped_cmd = (
-                f"printf '%s\\n' '{mark_begin}' ;\n"
-                f"echo | {cmd} ;\n"
+                f"printf '%s\\n' '{mark_begin}' ;"
+                f"echo | {cmd} ;"
                 f"printf '\\n%s\\n%s\\n' \"$?\" '{mark_end}' ;\n"
             )  # fmt: skip
             self.connection.verbosity_display(5, f"WRAP_COMMAND: Wrapped command length: {len(wrapped_cmd)} bytes")
