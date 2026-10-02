@@ -37,7 +37,7 @@ options:
       - Mutually exclusive with O(subnet_id).
       - This option requires botocore >= 1.41.0
     type: str
-    version_added: 12.0.0
+    version_added: 12.1.0
   allocation_id:
     description:
       - The id of the elastic IP allocation. If this is not passed and the
