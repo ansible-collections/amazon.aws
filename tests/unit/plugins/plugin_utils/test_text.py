@@ -20,7 +20,7 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
         ("\x1b]0;Window Title\x07Hello", True, "Hello"),
         # CSI sequences
         ("\x1b[31mRed text\x1b[0m", True, "Red text"),
-        ("\x9B31mRed text\x9B0m", True, "Red text"),
+        ("\x9b31mRed text\x9b0m", True, "Red text"),
         # Mixed ANSI codes
         ("\x1b[1;32m\x1b]0;Title\x07Bold Green\x1b[0m", True, "Bold Green"),
         # Windows line ending replacement
