@@ -16,3 +16,11 @@ build_ignore:
   - "*cloud-config-aws.ini"
   - "*cloud-config-aws.yml"
   - changelogs/.plugin-cache.yaml
+  # Local developer environment artifacts, never part of the published artifact.
+  # "collections" and ".tox" are listed here because "ade install --editable"
+  # appends them itself; pre-declaring them keeps galaxy.yml unmodified after a
+  # contributor runs the documented setup sequence.
+  - .venv
+  - .ansible.cfg
+  - collections
+  - .tox

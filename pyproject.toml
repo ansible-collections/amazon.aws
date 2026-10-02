@@ -1,3 +1,41 @@
+[project]
+# This tree is an Ansible collection, not a Python distribution. The [project]
+# table exists so that uv can manage a reproducible developer environment; it is
+# never built or published to PyPI (see [tool.uv] package = false below).
+#
+# Dependencies are deliberately NOT consolidated here:
+#   - runtime (AWS SDK) deps  -> requirements.txt
+#   - unit test deps          -> tests/unit/requirements.txt
+#   - integration test deps   -> tests/integration/requirements.txt
+#   - developer tooling       -> [dependency-groups] dev, below
+name = "amazon-aws"
+# uv requires project.version, but this tree is never packaged or published, so
+# the value is inert. Deliberately NOT mirrored from galaxy.yml: the collection
+# version is bumped every release and a copy here would silently drift.
+version = "0.0.0"
+description = "Developer toolchain for the amazon.aws Ansible collection"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+# Matches the oldest interpreter in the tox envlist (ansible-core 2.17 / py310).
+# Revisit when the supported-Python floor changes.
+requires-python = ">=3.10"
+
+[dependency-groups]
+# Developer tooling only. Test-specific dependencies stay in
+# tests/{unit,integration}/requirements.txt so that ansible-test keeps working
+# without uv. tox provisions each environment's own deps from tox.ini, and
+# tox-uv-bare makes it do so through uv instead of pip.
+dev = [
+    "tox>=4.52.1",
+    "tox-uv-bare>=1.35.0",
+    "prek",
+]
+
+[tool.uv]
+# Virtual project: uv builds a .venv and installs the dev group into it, but
+# never tries to build or install this tree as a package.
+package = false
+
 [tool.black]
 skip-string-normalization = false
 line-length = 120

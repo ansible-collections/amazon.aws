@@ -31,6 +31,42 @@ issue, or by reporting any additional information
 
 ## Development Setup
 
+### Environment setup
+
+This collection uses [uv](https://docs.astral.sh/uv/) to manage the developer
+toolchain. The toolchain is pinned in `uv.lock`, which is committed, so every
+contributor and CI resolve exactly the same versions.
+
+First, [install uv](https://docs.astral.sh/uv/getting-started/installation/)
+(once per machine):
+
+```
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# or, with Homebrew
+brew install uv
+```
+
+Then, from a clean checkout:
+
+```
+uv sync --dev                                  # create .venv from uv.lock
+uv run prek install                            # enable the git pre-commit hooks
+uv pip install -r requirements.txt             # AWS SDK runtime dependencies
+uv tool install ansible-dev-environment        # once per machine
+ade install --editable --no-seed .             # editable collection install
+```
+
+`ade install --editable` puts this checkout on the Ansible collection path as
+`ansible_collections/amazon/aws`, which is required for the collection's imports
+to resolve. It generates a local `.ansible.cfg` and a `.venv`; both are
+git-ignored and excluded from the built Galaxy artifact.
+
+> **Note:** runtime dependencies will move to `meta/ee-requirements.txt` as part
+> of the dependency consolidation work. Until then, install them from
+> `requirements.txt` as shown above.
+
 ### Pre-commit Hooks
 
 This collection uses [prek](https://github.com/j178/prek) to manage Git pre-commit
@@ -39,35 +75,34 @@ prek is a drop-in replacement for `pre-commit` and consumes the same
 `.pre-commit-config.yaml`. CI enforces `ansible-lint` as a required status check, so
 running the hooks locally keeps your commits green before you push.
 
-Install prek (any of these work):
+`prek` is part of the `dev` dependency group, so `uv sync --dev` (above) already
+installs it into `.venv`; there is no separate install step. `uv run prek install`
+sets up the Git hook so the configured hooks run automatically on each `git commit`.
+To run all hooks manually against every file:
 
 ```
-# Recommended, using uv:
-uv tool install prek
-
-# Using pipx:
-pipx install prek
-
-# Or using pip:
-pip install prek
-```
-
-Then enable the hooks:
-
-```
-prek install
-```
-
-`prek install` sets up the Git hook so the configured hooks run automatically on
-each `git commit`. To run all hooks manually against every file:
-
-```
-prek run --all-files
+uv run prek run --all-files
 ```
 
 The current hook set applies basic hygiene checks (trailing whitespace, end-of-file
 newlines, large-file guard, line endings, and blocking direct commits to `main`) and
 runs `ansible-lint`.
+
+### Running tests and linters
+
+`tox` and the `tox-uv-bare` plugin are part of the dev group, so tox provisions
+its environments through uv with no separate pip bootstrap:
+
+```
+uv run tox -m lint                             # linters (black, isort, flynt, flake8)
+uv run tox -m unit                             # the full unit test matrix
+uv run tox -e ansible2.20-py314-with_constraints   # a single unit environment
+uv run tox -l                                  # list every environment
+```
+
+Test dependencies are deliberately not in `pyproject.toml`; they live in
+`tests/unit/requirements.txt` and `tests/integration/requirements.txt` so that
+`ansible-test` keeps working without uv.
 
 ## Writing New Code
 
