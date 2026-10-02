@@ -1,20 +1,23 @@
 ---
-- name: Remove IAM Role (CHECK MODE)
+- name: Remove IAM Role (check mode)
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   check_mode: true
   register: iam_role
-- ansible.builtin.assert:
+
+- name: Verify role removal is detected in check mode
+  ansible.builtin.assert:
     that:
       - iam_role is changed
 
-- name: Iam_role_info after deleting role in check mode
+- name: Get role info after check mode deletion
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
-- ansible.builtin.assert:
+
+- name: Verify role still exists after check mode
+  ansible.builtin.assert:
     that:
       - role_info is succeeded
       - role_info.iam_roles | length == 1
@@ -23,38 +26,43 @@
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   register: iam_role
-- ansible.builtin.assert:
+
+- name: Verify role was removed
+  ansible.builtin.assert:
     that:
       - iam_role is changed
 
-- name: Iam_role_info after deleting role
+- name: Get role info after deletion
   amazon.aws.iam_role_info:
     name: "{{ test_role }}"
   register: role_info
-- ansible.builtin.assert:
+
+- name: Verify role no longer exists
+  ansible.builtin.assert:
     that:
       - role_info is succeeded
       - role_info.iam_roles | length == 0
 
-- name: Remove IAM Role (should be gone already) - check mode
+- name: Remove IAM Role (idempotency - check mode)
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
-  register: iam_role
   check_mode: true
-- ansible.builtin.assert:
+  register: iam_role
+
+- name: Verify role removal idempotency in check mode
+  ansible.builtin.assert:
     that:
       - iam_role is not changed
 
-- name: Remove IAM Role (should be gone already)
+- name: Remove IAM Role (idempotency)
   amazon.aws.iam_role:
     state: absent
     name: "{{ test_role }}"
-    delete_instance_profile: true
   register: iam_role
-- ansible.builtin.assert:
+
+- name: Verify role removal idempotency
+  ansible.builtin.assert:
     that:
       - iam_role is not changed

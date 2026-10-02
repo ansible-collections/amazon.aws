@@ -15,7 +15,6 @@
       amazon.aws.iam_role:
         name: "{{ backup_iam_role_name }}"
         assume_role_policy_document: '{{ lookup("file", "backup-policy.json") }}'
-        create_instance_profile: false
         description: Ansible AWS Backup Role
         managed_policy:
           - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup

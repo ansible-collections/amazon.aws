@@ -32,11 +32,16 @@
             name: "{{ iam_role_name }}"
             assume_role_policy_document: "{{ lookup('file', 'files/ec2-trust-policy.json') }}"
             state: present
-            create_instance_profile: true
             managed_policy:
               - AmazonSSMManagedInstanceCore
             wait: true
           register: role_output
+
+        - name: Create instance profile for role
+          amazon.aws.iam_instance_profile:
+            name: "{{ iam_role_name }}"
+            role: "{{ iam_role_name }}"
+            state: present
 
         - name: Create EC2 instance
           amazon.aws.ec2_instance:
@@ -100,6 +105,12 @@
             std_hostname: "{{ resource_prefix }}-inventory-std"
 
       always:
+        - name: Delete instance profile
+          amazon.aws.iam_instance_profile:
+            name: "{{ iam_role_name }}"
+            state: absent
+          ignore_errors: true
+
         - name: Delete IAM role
           amazon.aws.iam_role:
             name: "{{ iam_role_name }}"
