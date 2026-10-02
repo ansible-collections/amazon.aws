@@ -508,8 +508,7 @@ def create_or_update_role(module, client, role_name):
 
 
 def remove_instance_profiles(client, check_mode, role_name):
-    """Removes the role from instance profiles
-    """
+    """Removes the role from instance profiles"""
 
     instance_profiles = list_iam_instance_profiles(client, role=role_name)
     if not instance_profiles:
