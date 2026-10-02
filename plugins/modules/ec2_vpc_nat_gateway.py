@@ -51,6 +51,8 @@ options:
       - Regional NAT gateways are VPC-scoped, automatically span multiple
         availability zones, and require O(vpc_id) instead of O(subnet_id).
       - Regional NAT gateways only support O(connectivity_type=public).
+      - This option requires botocore >= 1.41.0
+      
     choices: ["zonal", "regional"]
     default: "zonal"
     type: str
