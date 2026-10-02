@@ -16,8 +16,8 @@ The following tests run on every pull request:
 | --- | ----------- | --------------- | --------------------- |
 | Changelog | Checks for the presence of changelog fragments | 3.12 | devel |
 | Linters | Runs `black` and `flake8` on plugins and tests | 3.10 | devel |
-| Sanity | Runs ansible sanity checks | See compatibility table below | devel, stable-2.17, stable-2.18, stable-2.19, stable-2.20 |
-| Unit tests | Executes unit test cases | See compatibility table below | devel, stable-2.17, stable-2.18, stable-2.19, stable-2.20 |
+| Sanity | Runs ansible sanity checks | See compatibility table below | devel, stable-2.18, stable-2.19, stable-2.20, stable-2.21 |
+| Unit tests | Executes unit test cases | See compatibility table below | devel, stable-2.18, stable-2.19, stable-2.20, stable-2.21 |
 | Integration tests | Executes integration test suites (handled by Zuul) | >=3.8 | Zuul build pipeline |
 
 ### Python Version Compatibility by ansible-core Version
@@ -26,8 +26,8 @@ These are outlined in the collection's [/tox.ini](/tox.ini) file (`envlist`) and
 
 | ansible-core Version | Sanity Tests | Unit Tests |
 | -------------------- | ------------ | ---------- |
-| devel | 3.12, 3.13, 3.14 | 3.12, 3.13 |
-| stable-2.20 | 3.12, 3.13, 3.14 | 3.12, 3.13 |
+| devel | 3.13, 3.14, 3.15 | 3.13, 3.14, 3.15 |
+| stable-2.21 | 3.12, 3.13, 3.14 | 3.12, 3.13, 3.14 |
+| stable-2.20 | 3.12, 3.13, 3.14 | 3.12, 3.13, 3.14 |
 | stable-2.19 | 3.11, 3.12, 3.13 | 3.11, 3.12, 3.13 |
 | stable-2.18 | 3.11, 3.12, 3.13 | 3.11, 3.12, 3.13 |
-| stable-2.17 | 3.10, 3.11, 3.12 | 3.10, 3.11, 3.12 |

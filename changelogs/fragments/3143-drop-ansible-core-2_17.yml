@@ -1,0 +1,6 @@
+breaking_changes:
+  - Support for ansible-core < 2.18 has been dropped. The collection now requires ansible-core >= 2.18.0 and Python >= 3.11
+    (https://github.com/ansible-collections/amazon.aws/pull/3143).
+minor_changes:
+  - CI test matrices updated against ansible-core 2.21 in addition to 2.18, 2.19, and 2.20
+    (https://github.com/ansible-collections/amazon.aws/pull/3143).
