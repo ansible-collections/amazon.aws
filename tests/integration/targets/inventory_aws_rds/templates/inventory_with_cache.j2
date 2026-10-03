@@ -9,5 +9,8 @@ session_token: '{{ security_token }}'
 {% endif %}
 regions:
   - '{{ aws_region }}'
+keyed_groups:
+  - key: engine
+    prefix: rds
 filters:
   db-instance-id: "{{ instance_id }}"
