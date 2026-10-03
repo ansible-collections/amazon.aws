@@ -134,6 +134,7 @@
         tags:
           snake_case_key: a_snake_case_value
           camelCaseKey: aCamelCaseValue
+          kebab-case-key: a-kebab-case-value
         wait: true
       register: ec2_instance
 
@@ -158,6 +159,7 @@
         tags:
           snake_case_key: a_snake_case_value
           camelCaseKey: aCamelCaseValue
+          kebab-case-key: a-kebab-case-value
         wait: true
       register: ec2_instance_py2
 

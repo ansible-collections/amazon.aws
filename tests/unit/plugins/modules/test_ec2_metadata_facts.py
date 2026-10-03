@@ -99,3 +99,21 @@ packages: ['httpie']
 
     m_fetch_url.return_value = (io.BytesIO(user_data), {"status": 200})
     assert ec2_instance._fetch("http://169.254.169.254/latest/user-data") == user_data.decode("utf-8")
+
+def test_get_instance_tags(ec2_instance):
+    instance_tags_keys = [
+        "CamelCaseName",
+        "snake_case_key",
+        "kebab-case-name",
+    ]
+    data = {
+        "ansible_ec2_tags-instance-CamelCaseName": "CamelCaseValue",
+        "ansible_ec2_tags-instance-snake_case_key": "snake_case_value",
+        "ansible_ec2_tags-instance-kebab-case-name": "kebab-case-value",
+    }
+    expected = {
+        "CamelCaseName": "CamelCaseValue",
+        "snake_case_key": "snake_case_value",
+        "kebab-case-name": "kebab-case-value",
+    }
+    assert ec2_instance.get_instance_tags(instance_tags_keys, data) == expected
