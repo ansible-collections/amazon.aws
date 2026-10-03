@@ -4,16 +4,16 @@
 amazon.aws.ec2_instance_info:
   query: >-
     .instances[] | select(. != null) | {
-      name: (.name // .tags.Name // "UNKNOWN"),  # unique identifier for the resource
+      name: (.name // .tags.Name // "UNKNOWN"),
       canonical_facts: {
       id: .instance_id,
       status: .state.name,
       tags: (.tags // {}),
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Compute",
-        device_type: "EC2"
+        infra_type: "public_cloud",
+        infra_bucket: "compute",
+        device_type: "virtual_machine"
         },
       }
 
@@ -29,9 +29,9 @@ amazon.aws.elb_application_lb_info:
         tags: (.tags // {}),
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "ApplicationLoadBalancer"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "load_balancer_application"
       },
     }
 
@@ -44,9 +44,9 @@ amazon.aws.elb_classic_lb_info:
         tags: (.tags // {}),
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "ClassicLoadBalancer"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "load_balancer_classic"
       },
     }
 
@@ -60,9 +60,9 @@ amazon.aws.ec2_vpc_net_info:
           tags: (.tags // {})
         },
         facts: {
-          infra_type: "PublicCloud",
-          infra_bucket: "Networking",
-          device_type: "VPC"
+          infra_type: "public_cloud",
+          infra_bucket: "networking",
+          device_type: "vpc"
         }
       }
 
@@ -75,9 +75,9 @@ amazon.aws.ec2_vpc_subnet_info:
         tags: (.tags // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Subnet"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "vpc"
       }
     }
 
@@ -91,9 +91,9 @@ amazon.aws.ec2_vpc_nat_gateway_info:
         tags: (.tags // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "NAT Gateway"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "nat_gateway"
       }
     }
 
@@ -107,9 +107,9 @@ amazon.aws.ec2_vpc_igw_info:
         tags: (.tags // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Internet Gateway"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "internet_gateway"
       }
     }
 
@@ -123,9 +123,9 @@ amazon.aws.ec2_vpc_vgw_info:
         tags: (.resource_tags // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Virtual Gateway"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "vpn_gateway"
       }
     }
 
@@ -138,9 +138,9 @@ amazon.aws.ec2_vpc_route_table_info:
         tags: (.tags // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "Route table"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "router"
       }
     }
 
@@ -154,9 +154,9 @@ amazon.aws.ec2_vpc_vpn_info:
         tags: (.tags // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "VPN Connection"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "vpn_gateway"
       }
     }
 
@@ -170,9 +170,9 @@ amazon.aws.ec2_vpc_peering_info:
         tags: (.tags // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Networking",
-        device_type: "VPC Peering"
+        infra_type: "public_cloud",
+        infra_bucket: "networking",
+        device_type: "vpc_peering"
       }
     }
 
@@ -187,9 +187,9 @@ amazon.aws.s3_bucket_info:
         tags: (.bucket_tagging // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Bucket"
+        infra_type: "public_cloud",
+        infra_bucket: "storage",
+        device_type: "object_storage"
       }
     }
 
@@ -202,9 +202,9 @@ amazon.aws.s3_object_info:
         tags: (.object_tagging // {})
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Storage",
-        device_type: "Object"
+        infra_type: "public_cloud",
+        infra_bucket: "storage",
+        device_type: "object_storage"
       }
     }
 
@@ -222,9 +222,9 @@ amazon.aws.rds_instance_info:
 
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Database",
-        device_type: "Instance"
+        infra_type: "public_cloud",
+        infra_bucket: "database",
+        device_type: "database_relational"
       }
     }
 
@@ -240,8 +240,8 @@ amazon.aws.rds_cluster_info:
 
       },
       facts: {
-        infra_type: "PublicCloud",
-        infra_bucket: "Database",
-        device_type: "Cluster"
+        infra_type: "public_cloud",
+        infra_bucket: "database",
+        device_type: "database_relational"
       }
     }
