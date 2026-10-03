@@ -486,7 +486,7 @@ def ensure_routes(
                 )
         else:
             if match[0] == "replace":
-                if route_spec.get("DestinationCidrBlock"):
+                if route_spec.get("DestinationCidrBlock") or route_spec.get("DestinationIpv6CidrBlock"):
                     route_specs_to_recreate.append(route_spec)
                 else:
                     module.warn(f"Skipping recreating route {route_spec} because it has no destination cidr block.")
