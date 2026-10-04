@@ -72,6 +72,7 @@ options:
     - name: AWS_SECRET_ACCESS_KEY
     - name: AWS_SECRET_KEY
     version_added: 1.3.0
+    secret: true
   session_token:
     description:
     - The STS session token to use when connecting via session-manager.
@@ -83,6 +84,7 @@ options:
     env:
     - name: AWS_SESSION_TOKEN
     version_added: 1.3.0
+    secret: true
   instance_id:
     description: The EC2 instance ID.
     vars:
