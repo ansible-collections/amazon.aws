@@ -28,7 +28,6 @@ if typing.TYPE_CHECKING:
     from typing import Dict
     from typing import List
     from typing import Optional
-    from typing import Union
 
     from ..botocore import ClientType
 
@@ -64,9 +63,9 @@ def set_security_groups(
 ) -> Dict[str, str | List[str]]:
     params = {}
     if enforce_security_group_inbound_rules_on_private_link_traffic:
-        params[
-            "EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic"
-        ] = enforce_security_group_inbound_rules_on_private_link_traffic
+        params["EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic"] = (
+            enforce_security_group_inbound_rules_on_private_link_traffic
+        )
     return client.set_security_groups(LoadBalancerArn=load_balancer_arn, SecurityGroups=security_groups, **params)
 
 

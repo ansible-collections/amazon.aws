@@ -2,8 +2,8 @@
 # Managed with prek (https://github.com/j178/prek), a drop-in replacement for
 # pre-commit. See CONTRIBUTING.md for setup and usage.
 #
-# Hook set: basic hygiene hooks + ansible-lint. ruff-check / ruff-format hooks
-# are intentionally deferred to a later change.
+# Hook set: basic hygiene + ruff (check/format) + ansible-lint.
+# ruff rev must match [tool.ruff] required-version and tox ruff deps (0.16.9).
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -32,6 +32,14 @@ repos:
       - id: no-commit-to-branch
         args:
           - -b main
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff-check
+        args:
+          - --fix
+      - id: ruff-format
 
   - repo: https://github.com/ansible/ansible-lint
     rev: v26.6.0
