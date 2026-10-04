@@ -60,6 +60,7 @@ options:
     - name: AWS_ACCESS_KEY_ID
     - name: AWS_ACCESS_KEY
     version_added: 1.3.0
+    type: str
   secret_key:
     description:
     - The STS secret key to use when connecting via session-manager.
@@ -72,6 +73,7 @@ options:
     - name: AWS_SECRET_ACCESS_KEY
     - name: AWS_SECRET_KEY
     version_added: 1.3.0
+    type: str
     secret: true
   session_token:
     description:
@@ -84,11 +86,13 @@ options:
     env:
     - name: AWS_SESSION_TOKEN
     version_added: 1.3.0
+    type: str
     secret: true
   instance_id:
     description: The EC2 instance ID.
     vars:
     - name: ansible_aws_ssm_instance_id
+    type: str
   region:
     description: The region the EC2 instance is located.
     vars:
@@ -97,6 +101,7 @@ options:
     - name: AWS_REGION
     - name: AWS_DEFAULT_REGION
     default: 'us-east-1'
+    type: str
   endpoint_url:
     description:
     - URL to connect to instead of the default AWS endpoints.
@@ -106,15 +111,18 @@ options:
     version_added: 11.3.0
     vars:
     - name: ansible_aws_ssm_endpoint_url
+    type: str
   bucket_name:
     description: The name of the S3 bucket used for file transfers.
     vars:
     - name: ansible_aws_ssm_bucket_name
+    type: str
   bucket_endpoint_url:
     description: The S3 endpoint URL of the bucket used for file transfers.
     vars:
     - name: ansible_aws_ssm_bucket_endpoint_url
     version_added: 5.3.0
+    type: str
   plugin:
     description:
     - This defines the location of the session-manager-plugin binary.
@@ -125,6 +133,7 @@ options:
     - name: ansible_aws_ssm_plugin
     env:
     - name: AWS_SESSION_MANAGER_PLUGIN
+    type: str
   profile:
     description:
     - Sets AWS profile to use.
@@ -137,6 +146,7 @@ options:
     - name: AWS_PROFILE
     - name: AWS_DEFAULT_PROFILE
     version_added: 1.5.0
+    type: str
   reconnection_retries:
     description: Number of attempts to connect.
     default: 3
@@ -156,11 +166,13 @@ options:
     version_added: 2.2.0
     vars:
     - name: ansible_aws_ssm_bucket_sse_mode
+    type: str
   bucket_sse_kms_key_id:
     description: KMS key id to use when encrypting objects using C(bucket_sse_mode=aws:kms). Ignored otherwise.
     version_added: 2.2.0
     vars:
     - name: ansible_aws_ssm_bucket_sse_kms_key_id
+    type: str
   ssm_document:
     description:
     - SSM Session document to use when connecting.
@@ -170,6 +182,7 @@ options:
     vars:
     - name: ansible_aws_ssm_document
     version_added: 5.2.0
+    type: str
   s3_addressing_style:
     description:
     - The addressing style to use when using S3 URLs.
@@ -182,6 +195,7 @@ options:
     version_added: 5.2.0
     vars:
     - name: ansible_aws_ssm_s3_addressing_style
+    type: str
 """
 
 EXAMPLES = r"""
