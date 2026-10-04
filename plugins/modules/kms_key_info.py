@@ -279,126 +279,12 @@ kms_keys:
       sample: false
 """
 
-import json
-
-try:
-    import botocore
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
-from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.kms import AnsibleKMSError
+from ansible_collections.amazon.aws.plugins.module_utils.kms import AnsibleKMSPermissionsError
+from ansible_collections.amazon.aws.plugins.module_utils.kms import canonicalize_alias_name
+from ansible_collections.amazon.aws.plugins.module_utils.kms import get_key_details as _get_key_details
+from ansible_collections.amazon.aws.plugins.module_utils.kms import get_kms_keys
 from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
-
-# Caching lookup for aliases
-_aliases = dict()
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_kms_keys_with_backoff(connection):
-    paginator = connection.get_paginator("list_keys")
-    return paginator.paginate().build_full_result()
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_kms_aliases_with_backoff(connection):
-    paginator = connection.get_paginator("list_aliases")
-    return paginator.paginate().build_full_result()
-
-
-def get_kms_aliases_lookup(connection):
-    if not _aliases:
-        for alias in get_kms_aliases_with_backoff(connection)["Aliases"]:
-            # Not all aliases are actually associated with a key
-            if "TargetKeyId" in alias:
-                # strip off leading 'alias/' and add it to key's aliases
-                if alias["TargetKeyId"] in _aliases:
-                    _aliases[alias["TargetKeyId"]].append(alias["AliasName"][6:])
-                else:
-                    _aliases[alias["TargetKeyId"]] = [alias["AliasName"][6:]]
-    return _aliases
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_kms_tags_with_backoff(connection, key_id, **kwargs):
-    return connection.list_resource_tags(KeyId=key_id, **kwargs)
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_kms_grants_with_backoff(connection, key_id, **kwargs):
-    params = dict(KeyId=key_id)
-    if kwargs.get("tokens"):
-        params["GrantTokens"] = kwargs["tokens"]
-    paginator = connection.get_paginator("list_grants")
-    return paginator.paginate(**params).build_full_result()
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_kms_metadata_with_backoff(connection, key_id):
-    return connection.describe_key(KeyId=key_id)
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def list_key_policies_with_backoff(connection, key_id):
-    paginator = connection.get_paginator("list_key_policies")
-    return paginator.paginate(KeyId=key_id).build_full_result()
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_key_policy_with_backoff(connection, key_id, policy_name):
-    return connection.get_key_policy(KeyId=key_id, PolicyName=policy_name)
-
-
-@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
-def get_enable_key_rotation_with_backoff(connection, key_id):
-    try:
-        current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
-    except is_boto3_error_code(["AccessDeniedException", "UnsupportedOperationException"]):
-        return None
-
-    return current_rotation_status.get("KeyRotationEnabled")
-
-
-def canonicalize_alias_name(alias):
-    if alias is None:
-        return None
-    if alias.startswith("alias/"):
-        return alias
-    return "alias/" + alias
-
-
-def get_kms_tags(connection, module, key_id):
-    # Handle pagination here as list_resource_tags does not have
-    # a paginator
-    kwargs = {}
-    tags = []
-    more = True
-    while more:
-        try:
-            tag_response = get_kms_tags_with_backoff(connection, key_id, **kwargs)
-            tags.extend(tag_response["Tags"])
-        except is_boto3_error_code("AccessDeniedException"):
-            tag_response = {}
-        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to obtain key tags")
-        if tag_response.get("NextMarker"):
-            kwargs["Marker"] = tag_response["NextMarker"]
-        else:
-            more = False
-    return tags
-
-
-def get_kms_policies(connection, module, key_id):
-    try:
-        policies = list_key_policies_with_backoff(connection, key_id)["PolicyNames"]
-        return [get_key_policy_with_backoff(connection, key_id, policy)["Policy"] for policy in policies]
-    except is_boto3_error_code("AccessDeniedException"):
-        return []
-    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to obtain key policies")
 
 
 def key_matches_filter(key, filtr):
@@ -425,59 +311,28 @@ def key_matches_filters(key, filters):
 
 
 def get_key_details(connection, module, key_id, tokens=None):
+    """
+    Wrapper around module_utils get_key_details that handles permission errors with module warnings.
+
+    Args:
+        connection: boto3 KMS client
+        module: AnsibleAWSModule instance for warnings
+        key_id: KMS key ID, ARN, or alias
+        tokens: optional list of grant tokens
+
+    Returns:
+        Dictionary with key details or None if not found/permission denied
+    """
     if not tokens:
-        tokens = []
+        tokens = None  # Normalize empty list to None
+
     try:
-        result = get_kms_metadata_with_backoff(connection, key_id)["KeyMetadata"]
-        # Make sure we have the canonical ARN, we might have been passed an alias
-        key_id = result["Arn"]
-    except is_boto3_error_code("NotFoundException"):
+        return _get_key_details(
+            connection, key_id, grant_tokens=tokens, pending_deletion=module.params.get("pending_deletion", False)
+        )
+    except AnsibleKMSPermissionsError as e:
+        module.warn(str(e))
         return None
-    except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
-        module.warn(f"Permission denied fetching key metadata ({key_id})")
-        return None
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to obtain key metadata")
-    result["KeyArn"] = result.pop("Arn")
-
-    try:
-        aliases = get_kms_aliases_lookup(connection)
-    except is_boto3_error_code("AccessDeniedException"):
-        module.warn("Permission denied fetching key aliases")
-        aliases = {}
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to obtain aliases")
-    # We can only get aliases for our own account, so we don't need the full ARN
-    result["aliases"] = aliases.get(result["KeyId"], [])
-    result["enable_key_rotation"] = get_enable_key_rotation_with_backoff(connection, key_id)
-
-    if module.params.get("pending_deletion"):
-        return camel_dict_to_snake_dict(result)
-
-    try:
-        result["grants"] = get_kms_grants_with_backoff(connection, key_id, tokens=tokens)["Grants"]
-    except is_boto3_error_code("AccessDeniedException"):
-        module.warn(f"Permission denied fetching key grants ({key_id})")
-        result["grants"] = []
-    except (
-        botocore.exceptions.ClientError,
-        botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to obtain key grants")
-
-    tags = get_kms_tags(connection, module, key_id)
-
-    result = camel_dict_to_snake_dict(result)
-    result["tags"] = boto3_tag_list_to_ansible_dict(tags, "TagKey", "TagValue")
-    policies = get_kms_policies(connection, module, key_id)
-    result["key_policies"] = [json.loads(policy) for policy in policies]
-    return result
 
 
 def get_kms_info(connection, module):
@@ -494,10 +349,7 @@ def get_kms_info(connection, module):
             return [details]
         return []
     else:
-        try:
-            keys = get_kms_keys_with_backoff(connection)["Keys"]
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to obtain keys")
+        keys = get_kms_keys(connection)["Keys"]
         return [get_key_details(connection, module, key["KeyId"]) for key in keys]
 
 
@@ -515,14 +367,14 @@ def main():
 
     try:
         connection = module.client("kms")
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to connect to AWS")
 
-    all_keys = get_kms_info(connection, module)
-    filtered_keys = [key for key in all_keys if key_matches_filters(key, module.params["filters"])]
-    ret_params = dict(kms_keys=filtered_keys)
+        all_keys = get_kms_info(connection, module)
+        filtered_keys = [key for key in all_keys if key_matches_filters(key, module.params["filters"])]
+        ret_params = dict(kms_keys=filtered_keys)
 
-    module.exit_json(**ret_params)
+        module.exit_json(**ret_params)
+    except AnsibleKMSError as e:
+        module.fail_json_aws_error(e)
 
 
 if __name__ == "__main__":

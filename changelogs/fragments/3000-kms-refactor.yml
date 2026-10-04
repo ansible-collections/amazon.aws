@@ -1,0 +1,9 @@
+---
+bugfixes:
+  - kms_key - fix incorrect ``changed`` status when policy comparison failed due to transient API errors. The module now properly retries policy fetches and only reports ``changed`` when policies actually differ (https://github.com/ansible-collections/amazon.aws/pull/3016).
+minor_changes:
+  - kms_key - refactored KMS module_utils to improve maintainability and consistency (https://github.com/ansible-collections/amazon.aws/pull/3016).
+  - kms_key - added warning when unable to fetch key rotation status due to permissions or unsupported key type (https://github.com/ansible-collections/amazon.aws/pull/3016).
+  - kms_key_info - refactored to use consolidated module_utils functions (https://github.com/ansible-collections/amazon.aws/pull/3016).
+  - module_utils.kms - created comprehensive KMS module_utils with error handling, retry logic, and data transformations (https://github.com/ansible-collections/amazon.aws/pull/3016).
+  - module_utils.transformation - added ``tagging_params`` parameter to ``boto3_resource_to_ansible_dict`` to support custom tag key names like ``TagKey``/``TagValue`` (https://github.com/ansible-collections/amazon.aws/pull/3016).

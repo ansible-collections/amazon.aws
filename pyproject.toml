@@ -4,7 +4,6 @@ line-length = 120
 target-version = ['py38', 'py39']
 extend-exclude = '''
 /(
-  | plugins/module_utils/_version.py
   | \.tox
   | tests/output
 )/
@@ -14,6 +13,7 @@ extend-exclude = '''
 revision = "origin/main.."
 
 src = [
+    "extensions",
     "plugins",
     "tests/unit",
     "tests/integration",
@@ -26,6 +26,7 @@ line_length = 120
 skip = [".tox", "tests/output"]
 
 src_paths = [
+    "extensions",
     "plugins",
     "tests/unit",
     "tests/integration",
@@ -58,16 +59,107 @@ disable_error_code = ["import-untyped"]
 
 [tool.ruff]
 line-length = 120
-exclude = [".tox", "tests/output"]
+target-version = "py39"
+exclude = [
+    ".tox",
+    "tests/output",
+]
 
 [tool.ruff.lint]
-# "F401" - unused-imports - We use these imports to maintain historic Interfaces
-# "E402" - import not at top of file - General Ansible style puts the documentation at the top.
-unfixable = ["F401"]
-ignore = ["F401", "E402"]
+# Enable rule categories
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "UP",    # pyupgrade
+    "C90",   # mccabe complexity
+    "N",     # pep8-naming
+    "RUF",   # ruff-specific rules
+]
+
+ignore = [
+    # Ansible-specific patterns
+    "E402",  # module-level-import-not-at-top-of-file - Ansible puts DOCUMENTATION first
+    "UP009", # utf-8-encoding-declaration - Ansible modules require this for compatibility
+
+    # Python 3.10+ syntax (we support 3.9+)
+    "UP007", # non-pep604-annotation-union - Use Union[X, Y] not X | Y (requires 3.10+)
+    "UP045", # non-pep604-annotation-optional - Use Optional[X] not X | None (requires 3.10+)
+
+    # TODO: Enable before 12.0.0 release (Sept/Oct 2026)
+    # These modernizations are valid for Python 3.9+ but complicate backporting
+    "UP006", # non-pep585-annotation - Use list[str] not List[str]
+    "UP035", # deprecated-import - Import from collections.abc, use builtin types
+
+    # TODO: Refactor complex functions (technical debt)
+    "C901",  # complex-structure - 29 functions exceed complexity threshold
+
+    # Flake8 compatibility (from existing config)
+    # E123, E125, W503 - Not implemented in ruff (deprecated/invalid PEP-8 rules)
+    "E203",  # whitespace before ':' (conflicts with formatter)
+    "E501",  # line too long (handled by formatter at 120 chars)
+    "E741",  # ambiguous variable name (too strict for AWS API names)
+    "F811",  # redefinition of unused name
+    "F841",  # local variable assigned but never used
+
+    # Naming exceptions for Ansible/AWS patterns
+    "N802",  # function name should be lowercase (AWS API methods use CamelCase)
+    "N803",  # argument name should be lowercase (AWS API parameters)
+    "N806",  # variable in function should be lowercase (AWS API responses)
+    "N818",  # exception name should end with Error - too disruptive to change existing exceptions
+]
+
+# Rules that cannot be auto-fixed (require manual intervention)
+unfixable = [
+    "F401",  # unused-import - Don't auto-remove due to historic interfaces
+    "F841",  # unused-variable - May break compatibility
+]
+
+[tool.ruff.lint.isort]
+# Match existing isort config
+force-single-line = true
+known-third-party = ["botocore", "boto3"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "ansible-core",
+    "ansible-amazon-aws",
+    "ansible-community-aws",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+"ansible-core" = ["ansible"]
+"ansible-amazon-aws" = ["ansible_collections.amazon.aws"]
+"ansible-community-aws" = ["ansible_collections.community.aws"]
+
+[tool.ruff.lint.mccabe]
+# Match existing pylint cyclomatic complexity setting
+max-complexity = 15
+
+[tool.ruff.format]
+# Match black config
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.per-file-ignores]
+# ec2_metadata_facts supports Python < 3.9
+"plugins/modules/ec2_metadata_facts.py" = ["UP030", "UP031", "UP032"]
+# ec2_security_group list flattening needs broader refactoring
+"plugins/modules/ec2_security_group.py" = ["RUF017"]
+# Pytest fixtures must be imported to be available
+"tests/unit/plugins/conftest.py" = ["F401"]
 
 [tool.pylint.main]
 ignore = [".tox", "tests/output"]
+
+[tool.pylint.imports]
+allow-reexport-from-package = true
 
 [tool.pytest.ini_options]
 xfail_strict = true
