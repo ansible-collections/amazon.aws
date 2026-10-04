@@ -31,6 +31,42 @@ options:
         type: int
         default: 60
         version_added: 8.2.0
+    ec2_metadata_token_uri:
+        description:
+            - This option is for testing purpuse.
+            - If not specified, V(http://169.254.169.254/latest/api/token) is used.
+        type: str
+        version_added: 8.3.0
+    ec2_metadata_uri:
+        description:
+            - This option is for testing purpuse.
+            - If not specified, V(http://169.254.169.254/latest/meta-data/) is used.
+        type: str
+        version_added: 8.3.0
+    ec2_metadata_instance_tags_uri:
+        description:
+            - This option is for testing purpuse.
+            - If not specified, V(http://169.254.169.254/latest/meta-data/tags/instance) is used.
+        type: str
+        version_added: 8.3.0
+    ec2_sshdata_uri:
+        description:
+            - This option is for testing purpuse.
+            - If not specified, V(http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key) is used.
+        type: str
+        version_added: 8.3.0
+    ec2_userdata_uri:
+        description:
+            - This option is for testing purpuse.
+            - If not specified, V(http://169.254.169.254/latest/user-data/) is used.
+        type: str
+        version_added: 8.3.0
+    ec2_dynamicdata_uri:
+        description:
+            - This option is for testing purpuse.
+            - If not specified, V(http://169.254.169.254/latest/dynamic/) is used.
+        type: str
+        version_added: 8.3.0
 """
 
 EXAMPLES = r"""
@@ -690,6 +726,12 @@ class Ec2Metadata:
 def main():
     argument_spec = dict(
         metadata_token_ttl_seconds=dict(required=False, default=60, type="int", no_log=False),
+        ec2_metadata_token_uri=dict(required=False, default=None, type="str"),
+        ec2_metadata_uri=dict(required=False, default=None, type="str"),
+        ec2_metadata_instance_tags_uri=dict(required=False, default=None, type="str"),
+        ec2_sshdata_uri=dict(required=False, default=None, type="str"),
+        ec2_userdata_uri=dict(required=False, default=None, type="str"),
+        ec2_dynamicdata_uri=dict(required=False, default=None, type="str"),
     )
 
     module = AnsibleModule(
@@ -702,7 +744,15 @@ def main():
     if metadata_token_ttl_seconds <= 0 or metadata_token_ttl_seconds > 21600:
         module.fail_json(msg="The option 'metadata_token_ttl_seconds' must be set to a value between 1 and 21600.")
 
-    ec2_metadata_facts = Ec2Metadata(module).run()
+    ec2_metadata_facts = Ec2Metadata(
+        module,
+        ec2_metadata_token_uri=module.params["ec2_metadata_token_uri"],
+        ec2_metadata_uri=module.params["ec2_metadata_uri"],
+        ec2_metadata_instance_tags_uri=module.params["ec2_metadata_instance_tags_uri"],
+        ec2_sshdata_uri=module.params["ec2_sshdata_uri"],
+        ec2_userdata_uri=module.params["ec2_userdata_uri"],
+        ec2_dynamicdata_uri=module.params["ec2_dynamicdata_uri"],
+    ).run()
     ec2_metadata_facts_result = dict(changed=False, ansible_facts=ec2_metadata_facts)
 
     module.exit_json(**ec2_metadata_facts_result)
