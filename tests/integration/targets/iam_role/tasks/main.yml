@@ -28,9 +28,11 @@
     amazon.aws.iam_role:
       assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
   block:
-    - ansible.builtin.set_fact:
+    - name: Set assume deny policy fact
+      ansible.builtin.set_fact:
         assume_deny_policy: '{{ lookup("file", "deny-assume.json") | from_json }}'
-    - ansible.builtin.include_tasks: parameter_checks.yml
+    - name: Run parameter checks
+      ansible.builtin.include_tasks: parameter_checks.yml
     - name: Create Safe IAM Managed Policy
       amazon.aws.iam_managed_policy:
         state: present
@@ -38,43 +40,85 @@
         policy_description: A safe (deny-all) managed policy
         policy: "{{ lookup('file', 'deny-all.json') }}"
       register: create_managed_policy
-    - ansible.builtin.assert:
+    - name: Assert Safe IAM managed policy creation succeeded
+      ansible.builtin.assert:
         that:
           - create_managed_policy is succeeded
 
     # ===================================================================
-    - ansible.builtin.include_tasks: instance_profile.yml
-    - ansible.builtin.include_tasks: creation_deletion.yml
-    - ansible.builtin.include_tasks: max_session_update.yml
-    - ansible.builtin.include_tasks: description_update.yml
-    - ansible.builtin.include_tasks: tags_update.yml
-    - ansible.builtin.include_tasks: policy_update.yml
-    - ansible.builtin.include_tasks: inline_policy_update.yml
-    - ansible.builtin.include_tasks: role_removal.yml
-    - ansible.builtin.include_tasks: boundary_policy.yml
-    - ansible.builtin.include_tasks: complex_role_creation.yml
+    - name: Run instance profile tasks
+      ansible.builtin.include_tasks: instance_profile.yml
+    - name: Run role creation and deletion tasks
+      ansible.builtin.include_tasks: creation_deletion.yml
+    - name: Run max session duration update tasks
+      ansible.builtin.include_tasks: max_session_update.yml
+    - name: Run description update tasks
+      ansible.builtin.include_tasks: description_update.yml
+    - name: Run tag update tasks
+      ansible.builtin.include_tasks: tags_update.yml
+    - name: Run policy update tasks
+      ansible.builtin.include_tasks: policy_update.yml
+    - name: Run inline policy update tasks
+      ansible.builtin.include_tasks: inline_policy_update.yml
+    - name: Run role removal tasks
+      ansible.builtin.include_tasks: role_removal.yml
+    - name: Run boundary policy tasks
+      ansible.builtin.include_tasks: boundary_policy.yml
+    - name: Run complex role creation tasks
+      ansible.builtin.include_tasks: complex_role_creation.yml
   always:
     # ===================================================================
     # Cleanup
+
+    - name: Remove IAM Instance Profile
+      amazon.aws.iam_instance_profile:
+        state: absent
+        name: "{{ test_role }}"
+      register: iam_instance_profile_delete
+      failed_when: >-
+        iam_instance_profile_delete is failed and
+        ('NoSuchEntity' not in iam_instance_profile_delete.msg) and
+        ('NoSuchEntityException' not in iam_instance_profile_delete.msg) and
+        ('EntityNotFound' not in iam_instance_profile_delete.msg)
 
     - name: Remove IAM Role
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
-        delete_instance_profile: true
-      ignore_errors: true
+      register: iam_role_delete
+      failed_when: >-
+        iam_role_delete is failed and
+        ('NoSuchEntity' not in iam_role_delete.msg) and
+        ('NoSuchEntityException' not in iam_role_delete.msg) and
+        ('EntityNotFound' not in iam_role_delete.msg)
+
     - name: Remove IAM Role (with path)
       amazon.aws.iam_role:
         state: absent
         name: "{{ test_role }}"
         path: "{{ test_path }}"
-        delete_instance_profile: true
-      ignore_errors: true
+      register: iam_role_path_delete
+      failed_when: >-
+        iam_role_path_delete is failed and
+        ('NoSuchEntity' not in iam_role_path_delete.msg) and
+        ('NoSuchEntityException' not in iam_role_path_delete.msg) and
+        ('EntityNotFound' not in iam_role_path_delete.msg)
     - name: Iam_role_info after Role deletion
       amazon.aws.iam_role_info:
         name: "{{ test_role }}"
-      ignore_errors: true
+      register: iam_role_info_delete
+      failed_when: >-
+        iam_role_info_delete is failed and
+        ('NoSuchEntity' not in iam_role_info_delete.msg) and
+        ('NoSuchEntityException' not in iam_role_info_delete.msg) and
+        ('EntityNotFound' not in iam_role_info_delete.msg)
     - name: Remove test managed policy
       amazon.aws.iam_managed_policy:
         state: absent
         policy_name: "{{ custom_policy_name }}"
+      register: managed_policy_delete
+      failed_when: >-
+        managed_policy_delete is failed and
+        ('NoSuchEntity' not in managed_policy_delete.msg) and
+        ('NoSuchEntityException' not in managed_policy_delete.msg) and
+        ('EntityNotFound' not in managed_policy_delete.msg)
