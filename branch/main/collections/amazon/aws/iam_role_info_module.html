@@ -256,7 +256,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-iam-role
 <td><div class="ansible-option-cell"><p>Prefix of role to restrict IAM role search for.</p>
 <p>Mutually exclusive with <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-parameter-name"><span class="std std-ref"><span class="pre">name</span></span></a></strong></code>.</p>
 <p><code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-parameter-path"><span class="std std-ref"><span class="pre">path</span></span></a></strong></code> and <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-parameter-prefix"><span class="std std-ref"><span class="pre">prefix</span></span></a></strong></code> were added as aliases in release 7.2.0.</p>
-<p>In a release after 2026-05-01 paths must begin and end with <code class="docutils literal notranslate"><span class="pre">/</span></code>. Prior to this paths will automatically have <code class="docutils literal notranslate"><span class="pre">/</span></code> added as appropriate to ensure that they start and end with <code class="docutils literal notranslate"><span class="pre">/</span></code>.</p>
+<p>Paths must begin and end with <code class="docutils literal notranslate"><span class="pre">/</span></code>.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -389,17 +389,6 @@ snake_case. This behaviour changed in release 8.0.0.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="return-iam_roles/assume_role_policy_document_raw"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-assume-role-policy-document-raw"><strong>assume_role_policy_document_raw</strong></p>
-<a class="ansibleOptionLink" href="#return-iam_roles/assume_role_policy_document_raw" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
-<p><em class="ansible-option-versionadded">added in amazon.aws 5.3.0</em></p>
-</div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Note: this return value has been deprecated and will be removed in a release after
-2026-05-01. <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-assume-role-policy-document"><span class="std std-ref"><span class="pre">iam_roles.assume_role_policy_document</span></span></a></code> and <code class="ansible-return-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-assume-role-policy-document-raw"><span class="std std-ref"><span class="pre">iam_roles.assume_role_policy_document_raw</span></span></a></code>
-now use the same format.</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-create-date"><strong>create_date</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -408,7 +397,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-10-23T00:05:08+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/inline_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-inline-policies"><strong>inline_policies</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/inline_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -417,7 +406,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/instance_profiles"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-instance-profiles"><strong>instance_profiles</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/instance_profiles" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -425,7 +414,7 @@ now use the same format.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/instance_profiles/arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-instance-profiles-arn"><strong>arn</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/instance_profiles/arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -434,7 +423,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:instance-profile/AnsibleTestEC2Policy&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/instance_profiles/create_date"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-instance-profiles-create-date"><strong>create_date</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/instance_profiles/create_date" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -443,7 +432,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2017-10-23T00:05:08+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/instance_profiles/instance_profile_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-instance-profiles-instance-profile-id"><strong>instance_profile_id</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/instance_profiles/instance_profile_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -452,7 +441,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AROAII7ABCD123456EFGH&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/instance_profiles/instance_profile_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-instance-profiles-instance-profile-name"><strong>instance_profile_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/instance_profiles/instance_profile_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -461,7 +450,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AnsibleTestEC2Policy&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/instance_profiles/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-instance-profiles-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/instance_profiles/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -470,7 +459,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/instance_profiles/roles"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-instance-profiles-roles"><strong>roles</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/instance_profiles/roles" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -479,7 +468,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[]</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/managed_policies"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-managed-policies"><strong>managed_policies</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/managed_policies" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">complex</span></p>
 </div></td>
@@ -487,7 +476,7 @@ now use the same format.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/managed_policies/policy_arn"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-managed-policies-policy-arn"><strong>policy_arn</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/managed_policies/policy_arn" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -496,7 +485,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;arn:aws:iam::123456789012:policy/AnsibleTestEC2Policy&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/managed_policies/policy_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-managed-policies-policy-name"><strong>policy_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/managed_policies/policy_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -505,7 +494,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AnsibleTestEC2Policy&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/path"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/path" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -514,7 +503,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/role_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-role-id"><strong>role_id</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/role_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -523,7 +512,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AROAII7ABCD123456EFGH&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/role_name"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-role-name"><strong>role_name</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/role_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -532,7 +521,7 @@ now use the same format.</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;AnsibleTestRole&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-iam_roles/tags"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-iam-role-info-module-return-iam-roles-tags"><strong>tags</strong></p>
 <a class="ansibleOptionLink" href="#return-iam_roles/tags" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
