@@ -47,25 +47,27 @@ jobs:
         run: uv sync --dev --locked # fails if uv.lock drifts from pyproject.toml
 
       - name: Run unit tests with coverage (tox)
-        run: uv run tox -e ansible2.20-py314-with_constraints
+        # Dedicated env covers plugins/ AND extensions/ (tox-ansible unit coverage
+        # is scoped to plugins/ only). See [testenv:coverage] in tox.ini.
+        run: uv run tox -e coverage
 
-      - name: Rewrite coverage paths to be repo-relative
+      - name: Locate coverage.xml artifact
         run: |
           COVERAGE_FILE=$(find .tox -name coverage.xml -type f 2>/dev/null | head -1)
+          if [[ -z "$COVERAGE_FILE" ]] && [[ -f coverage.xml ]]; then
+            COVERAGE_FILE=coverage.xml
+          fi
           if [[ -z "$COVERAGE_FILE" ]]; then
             echo "::error::coverage.xml not found under .tox"
             exit 1
           fi
-          # Coverage XML uses absolute paths; use absolute prefix so the replacement matches
           COVERAGE_FILE=$(realpath "$COVERAGE_FILE")
-          # Ensure path stays within workspace (avoid symlink escape)
           case "$COVERAGE_FILE" in
             "$GITHUB_WORKSPACE"/*) ;;
             *) echo "::error::coverage.xml path outside workspace"; exit 1 ;;
           esac
-          export COLLECTION_PATH=$(dirname "$COVERAGE_FILE")
-          export COVERAGE_FILE
           echo "COVERAGE_FILE=$COVERAGE_FILE" >> $GITHUB_ENV
+          echo "Found coverage at $COVERAGE_FILE"
       - name: Upload coverage artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

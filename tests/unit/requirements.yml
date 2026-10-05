@@ -1,0 +1,8 @@
+---
+# Collection dependencies for unit tests (installed by tox-ansible / ade).
+# While amazon.aws is a -dev version, track community.aws main; release
+# branches should switch to the matching stable-* branch or Galaxy version.
+collections:
+  - name: https://github.com/ansible-collections/community.aws.git
+    type: git
+    version: main
