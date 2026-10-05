@@ -475,7 +475,6 @@ def create_or_update_role(module, client, role_name):
     check_mode = module.check_mode
     wait = module.params.get("wait")
     wait_timeout = module.params.get("wait_timeout")
-    path = module.params.get("path")
     purge_policies = module.params.get("purge_policies")
     managed_policies = module.params.get("managed_policies")
     if managed_policies:
