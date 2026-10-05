@@ -60,7 +60,7 @@ cover `extensions/`:
 - **Reports**: HTML (`--cov-report html`) and Cobertura XML (`--cov-report xml`).
 - **Output**: `coverage.xml` is written under the `coverage` tox environment directory in `.tox/`.
 
-The CI coverage job runs `tox -e coverage` so that a single, consistent coverage report
+The CI coverage job runs `uv run tox -e coverage` so that a single, consistent coverage report
 covering both `plugins/` and `extensions/` is produced for SonarCloud.
 
 ### `pyproject.toml` (coverage and `pytest`)
@@ -88,19 +88,19 @@ Two workflows implement the integration:
 Flow:
 
 1. PR or `push` triggers **`all_green`** (linters, sanity, units, coverage).
-2. The **coverage** job runs `tox -e coverage`, locates `coverage.xml` under `.tox`, and uploads it as the `coverage` artifact.
+2. The **coverage** job runs `uv run tox -e coverage`, locates `coverage.xml` under `.tox`, and uploads it as the `coverage` artifact.
 3. When **`all_green`** completes successfully, the **SonarCloud** workflow is triggered.
 4. The SonarCloud job checks out the repo at the run's commit, downloads the `coverage` artifact, sets `COVERAGE_PATHS`, and runs the scanner with `sonar.python.coverage.reportPaths` set so SonarCloud receives the coverage report.
 
-### `all_green_check.yml`: coverage job
+### `coverage.yml` (called from `all_green_check.yml`)
 
-- **Trigger**: Same as `all_green` (`pull_request` and push to `main` and `stable-*`). The coverage job runs on every such run (linters/sanity only run on `pull_request`; units and coverage always run).
+- **Trigger**: Invoked by **`all_green`** on `pull_request` and push to `main` / `stable-*` (same as units; always runs).
 - **Steps**:
   1. Checkout repository.
-  2. Set up Python 3.14 and install `tox`.
-  3. Run `tox -e coverage` to execute unit tests and generate `coverage.xml` (plugins/ + extensions/) under `.tox`.
+  2. Set up uv (Python 3.14) and run `uv sync --dev --locked`.
+  3. Run `uv run tox -e coverage` to execute unit tests and generate `coverage.xml` (plugins/ + extensions/) under `.tox`.
   4. Locate `coverage.xml` under `.tox` (or repo root fallback).
-  5. Upload `coverage.xml` as the artifact named `coverage`.
+  5. Upload `coverage.xml` as the artifact named `coverage` (attached to the caller `all_green` run for SonarCloud).
 - **Gate**: The **`all_green`** job only succeeds when linters (on PRs), sanity (on PRs), units, and coverage all succeed (or are skipped where allowed).
 
 ### `sonarcloud.yml`: finalize job
@@ -121,7 +121,8 @@ Coverage is only passed to the scanner when the download step finds at least one
 
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
-| `all_green` | `.github/workflows/all_green_check.yml` | `pull_request`, push to `main` and `stable-*` | Run linters, sanity, units, and coverage; gate on success |
+| `all_green` | `.github/workflows/all_green_check.yml` | `pull_request`, push to `main` and `stable-*` | Call linters, sanity, units, and coverage workflows; gate on success |
+| Coverage | `.github/workflows/coverage.yml` | `workflow_call` from `all_green` | Run `uv run tox -e coverage` and upload `coverage` artifact |
 | SonarCloud | `.github/workflows/sonarcloud.yml` | After `all_green` completes successfully | Download coverage from `all_green` run and run SonarScanner with PR or branch analysis |
 
 | Artifact / config | Source | Use |

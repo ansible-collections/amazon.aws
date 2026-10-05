@@ -42,7 +42,7 @@ uv run tox -e sanity-py3.14-2.20 --ansible
 # Oldest-supported ansible-core/Python with pinned boto3/botocore (tox.ini)
 uv run tox -e unit-constraints
 
-# Coverage XML for diff-cover / Sonar (plugins/ + extensions/; used by the all_green coverage job)
+# Coverage XML for diff-cover / Sonar (plugins/ + extensions/; used by .github/workflows/coverage.yml)
 uv run tox -e coverage
 uv run tox -e diff-cover
 ```
