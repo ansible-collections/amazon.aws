@@ -471,6 +471,11 @@ def create_metric_alarm(connection, module, params):
         if not alarm["Dimensions"]:
             alarm.pop("Dimensions", None)
 
+        # CloudWatch keeps dimensions in the order the alarm was created with, so compare them sorted
+        for config in [alarm, params]:
+            if config.get("Dimensions"):
+                config["Dimensions"] = sorted(config["Dimensions"], key=lambda d: d["Name"])
+
         # Exclude certain props from change detection
         for key in [
             "ActionsEnabled",

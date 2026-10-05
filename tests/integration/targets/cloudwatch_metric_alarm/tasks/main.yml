@@ -509,6 +509,151 @@
           - ec2_instance_metric_mutually_exclusive.failed
           - '"parameters are mutually exclusive" in ec2_instance_metric_mutually_exclusive.msg'
 
+    # CloudWatch keeps dimensions in the order the alarm was created with, reordering them must not cause changes
+    - name: Create alarm with multiple dimensions
+      amazon.aws.cloudwatch_metric_alarm:
+        dimensions:
+          TargetGroup: targetgroup/{{ resource_prefix }}-a/1234567890abcdef
+          LoadBalancer: app/{{ resource_prefix }}/1234567890abcdef
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: HealthyHostCount
+        namespace: AWS/ApplicationELB
+        statistic: Minimum
+        comparison: LessThanThreshold
+        threshold: 1.0
+        period: 60
+        evaluation_periods: 3
+      register: alarm_multiple_dimensions
+
+    - name: Verify that an alarm with multiple dimensions was created
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_dimensions.changed
+          - alarm_multiple_dimensions.dimensions | map(attribute='Name') | sort == ['LoadBalancer', 'TargetGroup']
+
+    - name: Create alarm with multiple dimensions in reversed order (idempotent) (check mode)
+      amazon.aws.cloudwatch_metric_alarm:
+        dimensions:
+          LoadBalancer: app/{{ resource_prefix }}/1234567890abcdef
+          TargetGroup: targetgroup/{{ resource_prefix }}-a/1234567890abcdef
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: HealthyHostCount
+        namespace: AWS/ApplicationELB
+        statistic: Minimum
+        comparison: LessThanThreshold
+        threshold: 1.0
+        period: 60
+        evaluation_periods: 3
+      check_mode: true
+      register: alarm_multiple_dimensions_reversed_check
+
+    - name: Create alarm with multiple dimensions in reversed order (idempotent)
+      amazon.aws.cloudwatch_metric_alarm:
+        dimensions:
+          LoadBalancer: app/{{ resource_prefix }}/1234567890abcdef
+          TargetGroup: targetgroup/{{ resource_prefix }}-a/1234567890abcdef
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: HealthyHostCount
+        namespace: AWS/ApplicationELB
+        statistic: Minimum
+        comparison: LessThanThreshold
+        threshold: 1.0
+        period: 60
+        evaluation_periods: 3
+      register: alarm_multiple_dimensions_reversed
+
+    - name: Verify alarm with multiple dimensions in reversed order does not register as changed
+      ansible.builtin.assert:
+        that:
+          - not alarm_multiple_dimensions_reversed_check.changed
+          - not alarm_multiple_dimensions_reversed.changed
+
+    - name: Update dimension value of alarm with multiple dimensions in reversed order (check mode)
+      amazon.aws.cloudwatch_metric_alarm:
+        dimensions:
+          LoadBalancer: app/{{ resource_prefix }}/1234567890abcdef
+          TargetGroup: targetgroup/{{ resource_prefix }}-b/1234567890abcdef
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: HealthyHostCount
+        namespace: AWS/ApplicationELB
+        statistic: Minimum
+        comparison: LessThanThreshold
+        threshold: 1.0
+        period: 60
+        evaluation_periods: 3
+      check_mode: true
+      register: alarm_multiple_dimensions_update_check
+
+    - name: Get info on alarm with multiple dimensions
+      amazon.aws.cloudwatch_metric_alarm_info:
+        alarm_names:
+          - "{{ alarm_full_name }}"
+      register: alarm_info_multiple_dimensions_update_check
+
+    - name: Verify that dimensions were not changed in check mode
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_dimensions_update_check.changed
+          - alarm_info_multiple_dimensions_update_check.metric_alarms[0].dimensions | selectattr('name', 'equalto', 'TargetGroup') | map(attribute='value') | first == 'targetgroup/' ~ resource_prefix ~ '-a/1234567890abcdef'
+
+    - name: Update dimension value of alarm with multiple dimensions in reversed order
+      amazon.aws.cloudwatch_metric_alarm:
+        dimensions:
+          LoadBalancer: app/{{ resource_prefix }}/1234567890abcdef
+          TargetGroup: targetgroup/{{ resource_prefix }}-b/1234567890abcdef
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: HealthyHostCount
+        namespace: AWS/ApplicationELB
+        statistic: Minimum
+        comparison: LessThanThreshold
+        threshold: 1.0
+        period: 60
+        evaluation_periods: 3
+      register: alarm_multiple_dimensions_update
+
+    - name: Verify that dimensions were changed
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_dimensions_update.changed
+          - alarm_multiple_dimensions_update.dimensions | selectattr('Name', 'equalto', 'TargetGroup') | map(attribute='Value') | first == 'targetgroup/' ~ resource_prefix ~ '-b/1234567890abcdef'
+
+    - name: Update dimension value of alarm with multiple dimensions in original order (idempotent)
+      amazon.aws.cloudwatch_metric_alarm:
+        dimensions:
+          TargetGroup: targetgroup/{{ resource_prefix }}-b/1234567890abcdef
+          LoadBalancer: app/{{ resource_prefix }}/1234567890abcdef
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: HealthyHostCount
+        namespace: AWS/ApplicationELB
+        statistic: Minimum
+        comparison: LessThanThreshold
+        threshold: 1.0
+        period: 60
+        evaluation_periods: 3
+      register: alarm_multiple_dimensions_update_idempotent
+
+    - name: Verify that updated alarm with multiple dimensions does not register as changed
+      ansible.builtin.assert:
+        that:
+          - not alarm_multiple_dimensions_update_idempotent.changed
+
+    - name: Delete alarm with multiple dimensions
+      amazon.aws.cloudwatch_metric_alarm:
+        state: absent
+        name: "{{ alarm_full_name }}"
+      register: alarm_multiple_dimensions_deletion
+
+    - name: Verify that the alarm with multiple dimensions reports deleted
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_dimensions_deletion.changed
+
     - name: Create alarm without dimensions
       amazon.aws.cloudwatch_metric_alarm:
         state: present
