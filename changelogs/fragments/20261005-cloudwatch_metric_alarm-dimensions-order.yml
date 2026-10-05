@@ -1,3 +1,3 @@
 ---
 bugfixes:
-  - cloudwatch_metric_alarm - Fix idempotency when ``dimensions`` contains more than one dimension in a different order than the existing alarm. CloudWatch keeps dimensions in the order the alarm was created with, so the module now ignores the order when comparing them (https://github.com/ansible-collections/amazon.aws/pull/XXXX).
+  - cloudwatch_metric_alarm - Fix idempotency when ``dimensions`` contains more than one dimension in a different order than the existing alarm. CloudWatch keeps dimensions in the order the alarm was created with, so the module now ignores the order when comparing them (https://github.com/ansible-collections/amazon.aws/pull/3152).
