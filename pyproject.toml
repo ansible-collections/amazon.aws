@@ -1,3 +1,25 @@
+[project]
+# Developer-environment metadata for uv; never built/published (tool.uv package = false).
+# Runtime/test deps stay out: requirements.txt, tests/{unit,integration}/requirements.txt.
+name = "amazon-aws"
+# uv requires a version even though this project is never packaged. Not mirrored
+# from galaxy.yml on purpose, so it doesn't need bumping every release.
+version = "0.0.0"
+description = "Developer toolchain for the amazon.aws Ansible collection"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.10"  # matches the oldest tox envlist interpreter (ansible-core 2.17)
+
+[dependency-groups]
+dev = [
+    "tox>=4.52.1",
+    "tox-uv-bare>=1.35.0",  # lets tox provision envs via uv instead of pip
+    "prek",
+]
+
+[tool.uv]
+package = false
+
 [tool.flake8]
 # Kept for flake8-cognitive-complexity (CCR001). Style linting is owned by ruff.
 show-source = true
