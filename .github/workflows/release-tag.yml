@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate Release Log
-        uses: ansible-collections/amazon.aws/.github/actions/ansible_release_log@main
+        uses: $/.github/actions/ansible_release_log@b0d828478edee81ca004521bb71d49fbf9d8b455 # main as of 2026-10-05
         with:
           release: ${{ github.ref_name }}
 
@@ -27,7 +27,7 @@ jobs:
       - generate-release-log
     steps:
       - name: Generate Release
-        uses: ansible-collections/amazon.aws/.github/actions/ansible_release_tag@main
+        uses: $/.github/actions/ansible_release_tag@b0d828478edee81ca004521bb71d49fbf9d8b455 # main as of 2026-10-05
         with:
           release: ${{ github.ref_name }}
           collection-name: amazon.aws

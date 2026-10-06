@@ -12,4 +12,4 @@ on:
 
 jobs:
   galaxy-import:
-    uses: ansible-network/github_actions/.github/workflows/galaxy_importer.yml@4eb390a8c86b0c1eae9a87624a117193839579ef  # main, authored on May 5, 2023
+    uses: ansible-network/github_actions/.github/workflows/galaxy_importer.yml@4678c74a7d712d55e663c88f66eec6d9c3642550  # main as of 2026-10-05
