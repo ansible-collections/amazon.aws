@@ -63,7 +63,7 @@ amazon.aws.ec2_instance_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "compute",
-        device_type: "ec2",
+        device_type: "virtual_machine",
         status: (.state.name // "unknown"),
         tags: (.tags // {}),
         name: (.tags.Name // .instance_id)
@@ -87,7 +87,7 @@ amazon.aws.elb_application_lb_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "networking",
-        device_type: "application_load_balancer",
+        device_type: "load_balancer",
         status: (.state.code // "unknown"),
         tags: (.tags // {}),
         name: (.load_balancer_name // .load_balancer_arn)
@@ -108,7 +108,7 @@ amazon.aws.elb_classic_lb_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "networking",
-        device_type: "classic_load_balancer",
+        device_type: "load_balancer",
         tags: (.tags // {})
       }
     }
@@ -205,7 +205,7 @@ amazon.aws.ec2_vpc_vgw_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "networking",
-        device_type: "virtual_gateway",
+        device_type: "vpn_gateway",
         status: (.state // "unknown"),
         tags: (.resource_tags // {}),
         name: (.resource_tags.Name // .tags.Name // .vpn_gateway_id)
@@ -224,7 +224,7 @@ amazon.aws.ec2_vpc_route_table_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "networking",
-        device_type: "route_table",
+        device_type: "router",
         tags: (.tags // {}),
         name: (.tags.Name // .route_table_id // .id)
       }
@@ -242,7 +242,7 @@ amazon.aws.ec2_vpc_vpn_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "networking",
-        device_type: "vpn_connection",
+        device_type: "vpn_gateway",
         status: (.state // "unknown"),
         tags: (.tags // {}),
         name: (.tags.Name // .vpn_connection_id)
@@ -281,7 +281,7 @@ amazon.aws.s3_bucket_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "storage",
-        device_type: "bucket",
+        device_type: "object_storage",
         tags: (.bucket_tagging // {})
       }
     }
@@ -303,7 +303,7 @@ amazon.aws.s3_object_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "storage",
-        device_type: "object",
+        device_type: "object_storage",
         tags: (.object_tagging // {})
       }
     }
@@ -326,7 +326,7 @@ amazon.aws.rds_instance_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "database",
-        device_type: "database_instance",
+        device_type: "database_relational",
         db_instance_identifier: (.db_instance_identifier // "unknown"),
         status: (.db_instance_status // "unknown"),
         tags: (.tags // {}),
@@ -346,7 +346,7 @@ amazon.aws.rds_cluster_info:
       facts: {
         infra_type: "public_cloud",
         infra_bucket: "database",
-        device_type: "database_cluster",
+        device_type: "database_relational",
         db_cluster_identifier: (.db_cluster_identifier // "unknown"),
         status: (.status // "unknown"),
         tags: (.tags // .tag_list // {}),

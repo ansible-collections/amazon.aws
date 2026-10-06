@@ -604,6 +604,34 @@ def test_query_file_exists_and_parses():
 
 
 @pytest.mark.parametrize("module", MODULES)
+def test_query_compiles(module):
+    """The expression must compile. Every other test here reads the query as
+    text, so all of them pass on an expression jq cannot parse.
+
+    This is not a lint. The controller calls jq.compile() *outside* the
+    try/except that guards evaluation, so a compile error propagates out of
+    build_indirect_host_data into the caller's `except Exception`, which wraps
+    the whole transaction -- every audit record for that job is rolled back,
+    from every collection in it, along with event_queries_processed. The
+    fallback task then re-picks the job and fails identically until it ages
+    out. The job stays green the entire time.
+
+    The failure this catches in practice is an unbound jq variable: `$data.x`
+    with no `. as $data |` binding reads perfectly and cannot run.
+    """
+    jq = pytest.importorskip("jq", reason="jq is required to validate the query expressions")
+    try:
+        jq.compile(QUERIES[module])
+    except Exception as exc:  # noqa: BLE001 - jq raises bare ValueError
+        raise AssertionError(
+            "%s: the jq expression does not compile, so this collection reports "
+            "no nodes at all and discards the audit records of every other "
+            "collection in the same job.\n    %s"
+            % (module, str(exc).splitlines()[0])
+        )
+
+
+@pytest.mark.parametrize("module", MODULES)
 def test_module_key_is_fully_qualified(module):
     parts = module.split(".")
     assert len(parts) == 3, (
