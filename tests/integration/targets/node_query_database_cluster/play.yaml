@@ -23,10 +23,13 @@
           Created_By: Ansible Indirect NodeQuery Count integration tests
       - name: "{{ resource_prefix }}-cluster-2"
 
+    # Taxonomy values must be lowercase_with_underscores or the indirect-node
+    # rollup cannot bucket them. "Cluster" is also ambiguous across
+    # collections; "database_cluster" says which kind.
     rds_cluster_facts:
-      device_type: "Cluster"
-      infra_bucket: "Database"
-      infra_type: "PublicCloud"
+      device_type: "database_cluster"
+      infra_bucket: "database"
+      infra_type: "public_cloud"
 
   tasks:
     - block:
@@ -63,21 +66,25 @@
             that:
               - node_count == expected_result  
           vars:
-            expected_result: 
-              - canonical_facts:
-                  id: "{{ cluster_1.db_cluster_resource_id }}"
-                  name: "{{ resource_prefix }}-cluster-1"
-                  status: "{{ cluster_1.status }}"
-                  tags:
-                    Name: "{{ resource_prefix }}-cluster-1"
-                    Created_By: Ansible Indirect NodeQuery Count integration tests
-                facts: "{{ rds_cluster_facts }}"
-              - canonical_facts:
-                  id: "{{ cluster_2.db_cluster_resource_id }}"
-                  name: "{{ resource_prefix }}-cluster-2"
-                  status: "{{ cluster_2.status }}"
-                  tags: {}
-                facts: "{{ rds_cluster_facts }}"
+            # db_cluster_identifier is user-supplied and can be changed, so
+            # it is a fact rather than part of the dedup key; the Region-unique
+            # db_cluster_resource_id is the identity.
+            cluster_1_tags:
+              Name: "{{ resource_prefix }}-cluster-1"
+              Created_By: Ansible Indirect NodeQuery Count integration tests
+            expected_result:
+              - name: "{{ resource_prefix }}-cluster-1"
+                canonical_facts:
+                  db_cluster_resource_id: "{{ cluster_1.db_cluster_resource_id }}"
+                facts: >-
+                  {{ rds_cluster_facts | combine({'db_cluster_identifier': resource_prefix ~ '-cluster-1',
+                                                  'status': cluster_1.status, 'tags': cluster_1_tags}) }}
+              - name: "{{ resource_prefix }}-cluster-2"
+                canonical_facts:
+                  db_cluster_resource_id: "{{ cluster_2.db_cluster_resource_id }}"
+                facts: >-
+                  {{ rds_cluster_facts | combine({'db_cluster_identifier': resource_prefix ~ '-cluster-2',
+                                                  'status': cluster_2.status, 'tags': {}}) }}
 
       always:      
         - name: Delete RDS clusters
