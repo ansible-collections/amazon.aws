@@ -1,0 +1,4 @@
+---
+breaking_changes:
+  - ec2_vpc_peer - the redirect has been removed and playbooks should be updated to use ec2_vpc_peering
+    (https://github.com/ansible-collections/amazon.aws/pull/3153).
