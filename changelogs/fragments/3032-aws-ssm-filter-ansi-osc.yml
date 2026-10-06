@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_ssm - filter OSC and ANSI escape sequences unconditionally in ``filter_ansi`` to avoid begin-marker matching failures on Linux instances (https://github.com/ansible-collections/amazon.aws/issues/3032).
