@@ -1,6 +1,10 @@
 ---
 name: integration
 
+# ACA-7242 spike POC: ansible_test_splitter replaced with content-plugin-finder.
+# Keep the same jobs/targets output shape so run-tests matrix stays unchanged.
+# Limitation (intentional for this POC): amazon.aws only — no community.aws impact.
+
 on:
   - workflow_call
 
@@ -9,6 +13,7 @@ jobs:
     name: retrieve base ref
     outputs:
       base_ref: ${{ steps.retrieve-pr-info.outputs.base_ref }}
+      base_sha: ${{ steps.retrieve-pr-info.outputs.base_sha }}
       head_ref: ${{ steps.retrieve-pr-info.outputs.checkout_sha }}
     runs-on: ubuntu-latest
     steps:
@@ -24,19 +29,22 @@ jobs:
             });
 
             const baseBranch = pr.data.base.ref;
+            const baseSha = pr.data.base.sha;
             // The specific commit hash of the PR
             const checkoutSha = pr.data.head.sha;
 
             // This sets the output for other jobs
             core.setOutput('base_ref', baseBranch);
             core.info(`Successfully set output 'base_ref' to: ${baseBranch}`);
+            core.setOutput('base_sha', baseSha);
+            core.info(`Successfully set output 'base_sha' to: ${baseSha}`);
             core.setOutput('checkout_sha', checkoutSha);
             core.info(`Successfully set output 'checkout_sha' to: ${checkoutSha}`);
 
   splitter:
     needs:
       - retrieve-pr-info
-    name: ansible test splitter
+    name: content-plugin-finder (ACA-7242 POC)
     permissions:
       pull-requests: read
     env:
@@ -64,6 +72,8 @@ jobs:
           persist-credentials: false
         if: ${{ github.event_name != 'issue_comment' }}
 
+      # Still checkout community.aws so job ids / later matrix path logic stay compatible.
+      # Finder itself only analyzes amazon.aws in this POC.
       - name: Checkout community.aws collection
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -73,17 +83,85 @@ jobs:
           ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
           persist-credentials: false
 
-      - name: list changes for pull request
-        id: compute
-        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_test_splitter@6659b608aab58bf1d20641b805eb9cb4fd2b771f
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          collections_to_test: "${{ env.amazon_dir}}, ${{ env.community_dir }}"
-          total_jobs: 24
-          base_ref: '${{ needs.retrieve-pr-info.outputs.base_ref }}'
+          python-version: "3.12"
+
+      - name: Install content-plugin-finder
+        run: python3 -m pip install -U 'content-plugin-finder==0.2.0'
+
+      - name: Fetch PR base SHA for impact diff
+        env:
+          BASE_SHA: ${{ needs.retrieve-pr-info.outputs.base_sha }}
+          AMAZON_DIR: ${{ env.amazon_dir }}
+        run: |
+          set -euo pipefail
+          git -C "${AMAZON_DIR}" fetch --no-tags origin "${BASE_SHA}"
+
+      - name: Select targets with content-plugin-finder
+        id: compute
+        env:
+          BASE_SHA: ${{ needs.retrieve-pr-info.outputs.base_sha }}
+          HEAD_SHA: ${{ needs.retrieve-pr-info.outputs.head_ref }}
+          AMAZON_DIR: ${{ env.amazon_dir }}
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json
+          import os
+          import subprocess
+          import pathlib
+
+          amazon_dir = pathlib.Path(os.environ["AMAZON_DIR"]).resolve()
+          base_sha = os.environ["BASE_SHA"]
+          head_sha = os.environ["HEAD_SHA"]
+          github_output = pathlib.Path(os.environ["GITHUB_OUTPUT"])
+
+          cmd = [
+              "content-plugin-finder",
+              "--impact",
+              str(amazon_dir),
+              "--base",
+              base_sha,
+              "--head",
+              head_sha,
+              "--format",
+              "json",
+          ]
+          print(f"[ACA-7242] Running: {' '.join(cmd)}", flush=True)
+          proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
+          if proc.stderr:
+              print(proc.stderr, flush=True)
+          report = json.loads(proc.stdout)
+          print("[ACA-7242] Impact report:")
+          print(json.dumps(report, indent=2), flush=True)
+
+          names = []
+          for path in report.get("integration_targets") or []:
+              name = pathlib.Path(path).name
+              if name and name not in names:
+                  names.append(name)
+          names.sort()
+          print(f"[ACA-7242] Selected {len(names)} amazon.aws target(s): {names}", flush=True)
+
+          # Same output contract as ansible_test_splitter for run-tests.
+          if names:
+              job = "integration-amazon.aws-1"
+              jobs = [job]
+              targets = {job: " ".join(names)}
+          else:
+              jobs = []
+              targets = {}
+
+          with github_output.open("a", encoding="utf-8") as fh:
+              fh.write(f"jobs={json.dumps(jobs)}\n")
+              fh.write(f"targets={json.dumps(targets)}\n")
+          PY
 
   run-tests:
     needs:
-      - retrieve-pr-info 
+      - retrieve-pr-info
       - splitter
     permissions:
       pull-requests: read
