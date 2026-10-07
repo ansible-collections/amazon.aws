@@ -30,6 +30,10 @@ def _boto3_session(profile_name=None):
 
 
 class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginBase):
+    # Cache format version - increment when cache structure changes
+    # Version 1: Original cache format (varies by plugin)
+    CACHE_FORMAT_VERSION = 1
+
     class TemplatedOptions:
         # When someone looks up the TEMPLATABLE_OPTIONS using get() any templates
         # will be templated using the loader passed to parse.
@@ -211,6 +215,25 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
             # if cache expires or cache file doesn"t exist
             return False, None
 
+        # Validate cache format version
+        if isinstance(cached_value, dict):
+            # Check if this is a versioned cache entry
+            if "_cache_format_version" in cached_value:
+                if cached_value["_cache_format_version"] != self.CACHE_FORMAT_VERSION:
+                    # Cache format has changed, invalidate it
+                    return False, None
+                # Return the actual data without the metadata
+                return True, cached_value["_data"]
+            else:
+                # Legacy cache without version metadata (assume version 1)
+                if self.CACHE_FORMAT_VERSION != 1:
+                    # Plugin expects a different version, invalidate legacy cache
+                    return False, None
+                return True, cached_value
+
+        # Non-dict cache (also legacy, assume version 1)
+        if self.CACHE_FORMAT_VERSION != 1:
+            return False, None
         return True, cached_value
 
     def update_cached_result(self, path, cache, result):
@@ -224,7 +247,9 @@ class AWSInventoryBase(BaseInventoryPlugin, Constructable, Cacheable, AWSPluginB
         if cache and cache_key in self._cache:
             return
 
-        self._cache[cache_key] = result
+        # Wrap result with cache format version
+        cache_value = {"_cache_format_version": self.CACHE_FORMAT_VERSION, "_data": result}
+        self._cache[cache_key] = cache_value
 
     def verify_file(self, path):
         """
