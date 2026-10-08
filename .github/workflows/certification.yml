@@ -17,4 +17,4 @@ concurrency:
 
 jobs:
   call:
-    uses: ansible-collections/partner-certification-checker/.github/workflows/certification-reusable.yml@fefb6b967e99964b55665b66ef0d8e4148d84aca # v5.0.0
+    uses: ansible-collections/partner-certification-checker/.github/workflows/certification-reusable.yml@0b3575fff9a50e8057134e01862c52450648c3fc # v6.0.0
