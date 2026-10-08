@@ -1,0 +1,15 @@
+---
+# Collection dependencies for unit tests (installed by tox-ansible / ade).
+# Local amazon.aws is listed first so ansible-galaxy (also used by ansible-lint
+# when it discovers this file) can satisfy community.aws's amazon.aws dependency
+# without needing a published Galaxy build of the -dev collection.
+# While amazon.aws is a -dev version, track community.aws main; release
+# branches should switch to the matching stable-* branch or Galaxy version.
+# Enforced by .github/workflows/check-unit-requirements.yml (main → main,
+# stable-N → stable-N).
+collections:
+  - name: .
+    type: dir
+  - name: https://github.com/ansible-collections/community.aws.git
+    type: git
+    version: main
