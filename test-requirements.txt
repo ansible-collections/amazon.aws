@@ -9,6 +9,9 @@ pytest-forked
 pytest-mock
 pytest-xdist
 pytest-ansible
+# Enforces @pytest.mark.limit_memory in the aws_ssm connection tests. Auto-discovered
+# by tox-ansible unit envs and pulled by the tox.ini unit/coverage envs.
+pytest-memray
 
 # Needed for ansible.utils.ipaddr in tests
 netaddr
