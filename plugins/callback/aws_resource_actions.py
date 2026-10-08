@@ -2,7 +2,6 @@
 
 # (C) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-# ACA-7242 spike POC: no-op change to callback/aws_resource_actions.py (callback plugin) (safe to revert)
 
 DOCUMENTATION = r"""
     name: aws_resource_actions
