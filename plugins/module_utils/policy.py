@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# ACA-7242 spike POC: no-op change to module_utils/policy.py (cross-collection; community.aws imports it) (safe to revert)
 
 # This code is part of Ansible, but is an independent component.
 # This particular file snippet, and this file snippet only, is BSD licensed.
