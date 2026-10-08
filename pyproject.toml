@@ -27,7 +27,7 @@ package = false
 # Persistent unit coverage for Sonar/diff-cover; pass --cov-report=xml via posargs when needed.
 coverage = true
 molecule = "false"
-# Integration tests stay on Zuul / GHA splitter — do not fan out AWS-backed envs locally.
+# Integration tests stay on GHA — do not fan out AWS-backed envs locally.
 skip = ["integration-"]
 
 [tool.flake8]

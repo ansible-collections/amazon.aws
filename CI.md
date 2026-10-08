@@ -18,7 +18,7 @@ The following tests run on every pull request:
 | Linters | Runs `ruff` and `pylint` on plugins and tests | 3.10 | devel |
 | Sanity | Runs ansible sanity checks | See compatibility table below | devel, stable-2.17, stable-2.18, stable-2.19, stable-2.20 |
 | Unit tests | Executes unit test cases | See compatibility table below | devel, stable-2.17, stable-2.18, stable-2.19, stable-2.20 |
-| Integration tests | Executes integration test suites (handled by Zuul / GHA splitter) | >=3.8 | Zuul / GHA build pipeline |
+| Integration tests | Executes integration test suites (GHA) | See integration workflow | GHA |
 
 ### Local unit and sanity (tox-ansible)
 
@@ -51,7 +51,7 @@ Notes:
 
 - Required PR CI still uses `.github/workflows/ansible-test.yml` (`ansible-test-gh-action`), including ansible-core 2.17/2.18 and `milestone`/`devel`. Switching that matrix to `tox --gh-matrix` is a follow-up change.
 - The tox-ansible upstream matrix starts at ansible-core 2.19 / Python 3.11 (plus milestone/devel). Use `unit-constraints` for the collection floor (2.17 / 3.10 + SDK pins).
-- Integration tests are not run via local tox-ansible (`skip = ["integration-"]`); use Zuul / the GHA integration workflow.
+- Integration tests are not run via local tox-ansible (`skip = ["integration-"]`); use the GHA integration workflow.
 - SonarCloud / diff-cover coverage comes from `tox -e coverage`, not a tox-ansible env: tox-ansible's generated unit coverage is scoped to `plugins/` only, whereas `tox -e coverage` uses the `pyproject` coverage config covering `plugins/` and `extensions/` (the EDA event_source plugins).
 
 ### Python Version Compatibility by ansible-core Version (required CI)

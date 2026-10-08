@@ -5,6 +5,8 @@
 # without needing a published Galaxy build of the -dev collection.
 # While amazon.aws is a -dev version, track community.aws main; release
 # branches should switch to the matching stable-* branch or Galaxy version.
+# Enforced by .github/workflows/check-unit-requirements.yml (main → main,
+# stable-N → stable-N).
 collections:
   - name: .
     type: dir
