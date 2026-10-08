@@ -1,4 +1,5 @@
 ---
+# ACA-7242 spike POC: no-op change inside setup_ec2_facts target to test needs/target reverse resolution (safe to revert)
 # Setup a couple of common facts about the AWS Region
 #
 # Information about availablity zones
