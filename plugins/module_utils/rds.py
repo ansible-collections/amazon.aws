@@ -2,6 +2,7 @@
 
 # Copyright: (c) 2018, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# ACA-7242 spike POC: no-op change to module_utils/rds.py to exercise change-detection fan-out (safe to revert)
 
 # It would be nice to be able to use rds.XYZ, but we're bound by Ansible's "empty-init"
 # policy: https://docs.ansible.com/ansible-core/devel/dev_guide/testing/sanity/empty-init.html
