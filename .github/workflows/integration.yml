@@ -1,9 +1,11 @@
 ---
 name: integration
 
-# ACA-7242 spike POC: ansible_test_splitter replaced with content-plugin-finder.
-# Keep the same jobs/targets output shape so run-tests matrix stays unchanged.
-# Limitation (intentional for this POC): amazon.aws only — no community.aws impact.
+# ACA-7242 spike POC (finder branch):
+#   content-plugin-finder (PyPI) → ImpactReport JSON
+#   → tox-ansible from git main with --impact-file (AAP-94164), NOT PyPI tox-ansible
+#   → scoped ansible-test integration for selected targets
+# Intentionally does not use ansible_test_splitter or dual-collection community.aws selection.
 
 on:
   - workflow_call
@@ -25,15 +27,13 @@ jobs:
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.issue.number, // The issue number from the trigger
+              pull_number: context.issue.number,
             });
 
             const baseBranch = pr.data.base.ref;
             const baseSha = pr.data.base.sha;
-            // The specific commit hash of the PR
             const checkoutSha = pr.data.head.sha;
 
-            // This sets the output for other jobs
             core.setOutput('base_ref', baseBranch);
             core.info(`Successfully set output 'base_ref' to: ${baseBranch}`);
             core.setOutput('base_sha', baseSha);
@@ -41,18 +41,16 @@ jobs:
             core.setOutput('checkout_sha', checkoutSha);
             core.info(`Successfully set output 'checkout_sha' to: ${checkoutSha}`);
 
-  splitter:
+  run-impact-tests:
     needs:
       - retrieve-pr-info
-    name: content-plugin-finder (ACA-7242 POC)
+    name: finder + tox-ansible --impact-file (ACA-7242 POC)
     permissions:
       pull-requests: read
     env:
       amazon_dir: "./amazon_aws"
-      community_dir: "./community_aws"
-    outputs:
-      jobs: ${{ steps.compute.outputs.jobs }}
-      targets: ${{ steps.compute.outputs.targets }}
+      # Match current amazon.aws integration CI pair (see previous workflow env).
+      tox_env: integration-py3.13-milestone
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source collection (on issue comment)
@@ -71,176 +69,75 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
         if: ${{ github.event_name != 'issue_comment' }}
-
-      # Still checkout community.aws so job ids / later matrix path logic stay compatible.
-      # Finder itself only analyzes amazon.aws in this POC.
-      - name: Checkout community.aws collection
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ansible-collections/community.aws
-          path: "${{ env.community_dir }}"
-          fetch-depth: 0
-          ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
-          persist-credentials: false
-
-      - name: Setup Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: "3.12"
-
-      - name: Install content-plugin-finder
-        run: python3 -m pip install -U 'content-plugin-finder==0.2.0'
 
       - name: Fetch PR base SHA for impact diff
         env:
           BASE_SHA: ${{ needs.retrieve-pr-info.outputs.base_sha }}
-          AMAZON_DIR: ${{ env.amazon_dir }}
+        run: git -C "${{ env.amazon_dir }}" fetch --no-tags origin "${BASE_SHA}"
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"
+
+      - name: Install content-plugin-finder and tox-ansible (git main)
         run: |
           set -euo pipefail
-          git -C "${AMAZON_DIR}" fetch --no-tags origin "${BASE_SHA}"
+          python3 -m pip install -U pip
+          # Finder: PyPI is fine for generating ImpactReport JSON.
+          # tox-ansible: MUST be git main for --impact-file (AAP-94164), not PyPI.
+          python3 -m pip install -U \
+            'content-plugin-finder==0.2.0' \
+            'tox>=4.52.1' \
+            "tox-ansible @ git+https://github.com/ansible/tox-ansible.git@main"
+          python3 -c "import importlib.metadata as m; print('content-plugin-finder', m.version('content-plugin-finder')); print('tox-ansible', m.version('tox-ansible')); print('tox-ansible location', m.distribution('tox-ansible').locate_file(''))"
 
-      - name: Select targets with content-plugin-finder
-        id: compute
+      - name: Generate ImpactReport with content-plugin-finder
+        id: impact
         env:
           BASE_SHA: ${{ needs.retrieve-pr-info.outputs.base_sha }}
           HEAD_SHA: ${{ needs.retrieve-pr-info.outputs.head_ref }}
-          AMAZON_DIR: ${{ env.amazon_dir }}
+        working-directory: ${{ env.amazon_dir }}
         run: |
           set -euo pipefail
+          # Relative path required by tox-ansible impact loader (absolute paths rejected).
+          content-plugin-finder --impact . \
+            --base "${BASE_SHA}" \
+            --head "${HEAD_SHA}" \
+            --format json | tee .impact.json
           python3 <<'PY'
           import json
           import os
-          import subprocess
-          import pathlib
+          from pathlib import Path
 
-          amazon_dir = pathlib.Path(os.environ["AMAZON_DIR"]).resolve()
-          base_sha = os.environ["BASE_SHA"]
-          head_sha = os.environ["HEAD_SHA"]
-          github_output = pathlib.Path(os.environ["GITHUB_OUTPUT"])
-
-          cmd = [
-              "content-plugin-finder",
-              "--impact",
-              str(amazon_dir),
-              "--base",
-              base_sha,
-              "--head",
-              head_sha,
-              "--format",
-              "json",
-          ]
-          print(f"[ACA-7242] Running: {' '.join(cmd)}", flush=True)
-          proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
-          if proc.stderr:
-              print(proc.stderr, flush=True)
-          report = json.loads(proc.stdout)
-          print("[ACA-7242] Impact report:")
-          print(json.dumps(report, indent=2), flush=True)
-
-          names = []
-          for path in report.get("integration_targets") or []:
-              name = pathlib.Path(path).name
-              if name and name not in names:
-                  names.append(name)
-          names.sort()
-          print(f"[ACA-7242] Selected {len(names)} amazon.aws target(s): {names}", flush=True)
-
-          # Same output contract as ansible_test_splitter for run-tests.
-          if names:
-              job = "integration-amazon.aws-1"
-              jobs = [job]
-              targets = {job: " ".join(names)}
-          else:
-              jobs = []
-              targets = {}
-
-          with github_output.open("a", encoding="utf-8") as fh:
-              fh.write(f"jobs={json.dumps(jobs)}\n")
-              fh.write(f"targets={json.dumps(targets)}\n")
+          report = json.loads(Path(".impact.json").read_text())
+          targets = report.get("integration_targets") or []
+          print(f"[ACA-7242] integration_targets ({len(targets)}): {targets}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"has_integration={'true' if targets else 'false'}\n")
+              fh.write(f"target_count={len(targets)}\n")
           PY
 
-  run-tests:
-    needs:
-      - retrieve-pr-info
-      - splitter
-    permissions:
-      pull-requests: read
-    env:
-      amazon_dir: "./amazon_aws"
-      community_dir: "./community_aws"
-      all_targets: "${{ needs.splitter.outputs.targets }}"
-      tarball_dir: "./tarballs"
-      ansible_version: milestone
-      python_version: 3.13
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 8
-      matrix:
-        job-id: ${{ fromJson(needs.splitter.outputs.jobs) }}
-    name: "${{ matrix.job-id }}"
-    steps:
-      - name: Checkout the source collection (on issue comment)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          path: "${{ env.amazon_dir }}"
-          fetch-depth: 0
-          ref: ${{ needs.retrieve-pr-info.outputs.head_ref }}
-          persist-credentials: false
-        if: ${{ github.event_name == 'issue_comment' }}
-
-      - name: Checkout the source collection (on other triggering method)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          path: "${{ env.amazon_dir }}"
-          fetch-depth: 0
-          persist-credentials: false
-        if: ${{ github.event_name != 'issue_comment' }}
-
-      - name: Checkout community.aws collection
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ansible-collections/community.aws
-          path: "${{ env.community_dir }}"
-          fetch-depth: 0
-          ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
-          persist-credentials: false
-
-      - name: Read job targets
-        id: read-targets
-        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_read_targets@6659b608aab58bf1d20641b805eb9cb4fd2b771f
-        with:
-          job_id: "${{ matrix.job-id }}"
-          all_targets: "${{ env.all_targets }}"
-
-      - name: Determine Collection Path
-        id: set-path
+      - name: Show tox envs under --impact-file
+        if: steps.impact.outputs.has_integration == 'true'
+        working-directory: ${{ env.amazon_dir }}
         run: |
-          if [[ "${{ matrix.job-id }}" == *"amazon.aws"* ]]; then
-            echo "collection_path=${{ env.amazon_dir }}" >> $GITHUB_OUTPUT
-            echo "collection_dep=${{ env.community_dir }}" >> $GITHUB_OUTPUT
-          else
-            echo "collection_path=${{ env.community_dir }}" >> $GITHUB_OUTPUT
-            echo "collection_dep=${{ env.amazon_dir }}" >> $GITHUB_OUTPUT
-          fi
+          set -euo pipefail
+          echo "::notice::tox-ansible env list with --impact-file (.impact.json)"
+          tox --ansible --conf tox-ansible.ini --impact-file .impact.json -l
+          echo "::notice::Will run: tox --ansible --conf tox-ansible.ini --impact-file .impact.json -e ${{ env.tox_env }}"
+
+      - name: Skip notice when finder selected no integration targets
+        if: steps.impact.outputs.has_integration != 'true'
+        run: |
+          echo "::notice::content-plugin-finder selected 0 integration targets; skipping tox integration run."
 
       - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
+        if: steps.impact.outputs.has_integration == 'true'
 
-      - name: Run integration tests
-        uses: ansible-community/ansible-test-gh-action@6ded727edb598e670ac056a8e680ca4050bac0a3
-        with:
-          ansible-core-version: ${{ env.ansible_version }}
-          origin-python-version: ${{ env.python_version }}
-          testing-type: integration
-          collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
-          collection-root: ''
-          target: ${{ steps.read-targets.outputs.job_targets }}
-          test-deps: >-
-            ansible.utils
-            ansible.netcommon
-            community.general
-            community.crypto
-            ansible.windows
-            ${{ steps.set-path.outputs.collection_dep }}
-          pre-test-cmd: |-
-            python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
+      - name: Run scoped integration via tox-ansible --impact-file
+        if: steps.impact.outputs.has_integration == 'true'
+        working-directory: ${{ env.amazon_dir }}
+        run: |
+          set -euo pipefail
+          tox --ansible --conf tox-ansible.ini --impact-file .impact.json -e "${{ env.tox_env }}"
