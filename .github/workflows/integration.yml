@@ -1,10 +1,12 @@
 ---
 name: integration
 
-# ACA-7242 spike POC (finder branch):
-#   content-plugin-finder (PyPI) → ImpactReport JSON
-#   → tox-ansible from git main with --impact-file (AAP-94164), NOT PyPI tox-ansible
-#   → scoped ansible-test integration for selected targets
+# ACA-7242 spike POC (finder branch) - SELECTION-ONLY parity POC.
+#   content-plugin-finder (PyPI) -> ImpactReport JSON
+#   -> tox-ansible from git main with --impact-file (AAP-94164), NOT PyPI tox-ansible
+#   -> report the integration targets selected (does NOT execute the AWS suite).
+# Pair with the splitter branch (#3162), which reports the targets ansible_test_splitter
+# selects for the identical stimulus. Compare the two sorted target lists for parity.
 # Intentionally does not use ansible_test_splitter or dual-collection community.aws selection.
 
 on:
@@ -41,15 +43,15 @@ jobs:
             core.setOutput('checkout_sha', checkoutSha);
             core.info(`Successfully set output 'checkout_sha' to: ${checkoutSha}`);
 
-  run-impact-tests:
+  select-impact-targets:
     needs:
       - retrieve-pr-info
-    name: finder + tox-ansible --impact-file (ACA-7242 POC)
+    name: finder + tox-ansible --impact-file (ACA-7242 selection POC)
     permissions:
       pull-requests: read
     env:
       amazon_dir: "./amazon_aws"
-      # Match current amazon.aws integration CI pair (see previous workflow env).
+      # Matches the current amazon.aws integration CI pair, for the tox -l listing only.
       tox_env: integration-py3.13-milestone
     runs-on: ubuntu-latest
     steps:
@@ -90,7 +92,7 @@ jobs:
             'content-plugin-finder==0.2.0' \
             'tox>=4.52.1' \
             "tox-ansible @ git+https://github.com/ansible/tox-ansible.git@main"
-          python3 -c "import importlib.metadata as m; print('content-plugin-finder', m.version('content-plugin-finder')); print('tox-ansible', m.version('tox-ansible')); print('tox-ansible location', m.distribution('tox-ansible').locate_file(''))"
+          python3 -c "import importlib.metadata as m; print('content-plugin-finder', m.version('content-plugin-finder')); print('tox-ansible', m.version('tox-ansible'))"
 
       - name: Generate ImpactReport with content-plugin-finder
         id: impact
@@ -112,32 +114,33 @@ jobs:
 
           report = json.loads(Path(".impact.json").read_text())
           targets = report.get("integration_targets") or []
-          print(f"[ACA-7242] integration_targets ({len(targets)}): {targets}")
+          # Normalize to sorted leaf target names so this list can be diffed against
+          # the splitter branch (#3162) output directly.
+          leaves = sorted({t.rstrip("/").split("/")[-1] for t in targets})
+          print(f"[ACA-7242] finder integration_targets ({len(leaves)}): {leaves}")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as fh:
+                  fh.write("## ACA-7242 finder selection (content-plugin-finder)\n\n")
+                  fh.write(f"Selected integration targets: **{len(leaves)}**\n\n")
+                  fh.write("```\n" + "\n".join(leaves) + "\n```\n")
+
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"has_integration={'true' if targets else 'false'}\n")
-              fh.write(f"target_count={len(targets)}\n")
+              fh.write(f"has_integration={'true' if leaves else 'false'}\n")
+              fh.write(f"target_count={len(leaves)}\n")
           PY
 
-      - name: Show tox envs under --impact-file
+      - name: Show tox envs scoped by --impact-file (no execution)
         if: steps.impact.outputs.has_integration == 'true'
         working-directory: ${{ env.amazon_dir }}
         run: |
           set -euo pipefail
           echo "::notice::tox-ansible env list with --impact-file (.impact.json)"
           tox --ansible --conf tox-ansible.ini --impact-file .impact.json -l
-          echo "::notice::Will run: tox --ansible --conf tox-ansible.ini --impact-file .impact.json -e ${{ env.tox_env }}"
+          echo "::notice::Selection-only POC: not executing '${{ env.tox_env }}' (compare targets vs splitter #3162)."
 
       - name: Skip notice when finder selected no integration targets
         if: steps.impact.outputs.has_integration != 'true'
         run: |
-          echo "::notice::content-plugin-finder selected 0 integration targets; skipping tox integration run."
-
-      - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
-        if: steps.impact.outputs.has_integration == 'true'
-
-      - name: Run scoped integration via tox-ansible --impact-file
-        if: steps.impact.outputs.has_integration == 'true'
-        working-directory: ${{ env.amazon_dir }}
-        run: |
-          set -euo pipefail
-          tox --ansible --conf tox-ansible.ini --impact-file .impact.json -e "${{ env.tox_env }}"
+          echo "::notice::content-plugin-finder selected 0 integration targets."
