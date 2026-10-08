@@ -2,6 +2,7 @@
 
 # Copyright: (c) 2018, Pat Sharkey <psharkey@cleo.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# ACA-7242 spike POC: no-op change to connection/aws_ssm.py (connection plugin) (safe to revert)
 
 # Based on the ssh connection plugin by Michael DeHaan
 
