@@ -558,11 +558,253 @@
         that:
           - not ec2_instance_metric_alarm_no_dimensions_idempotent.changed
 
+    # CloudWatch returns actions in arbitrary order, multiple actions must not cause false changes
+    - name: Get caller info for building action ARNs
+      amazon.aws.aws_caller_info:
+      register: caller_info
+
+    - name: Set facts for alarm with multiple actions
+      ansible.builtin.set_fact:
+        alarm_actions_name: "{{ alarm_prefix }}-{{ resource_prefix }}-actions"
+        alarm_actions_arns:
+          - "arn:aws:sns:{{ aws_region }}:{{ caller_info.account }}:{{ resource_prefix }}-zulu"
+          - "arn:aws:sns:{{ aws_region }}:{{ caller_info.account }}:{{ resource_prefix }}-alpha"
+          - "arn:aws:sns:{{ aws_region }}:{{ caller_info.account }}:{{ resource_prefix }}-mike"
+
+    - name: Create alarm with multiple actions (check mode)
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns }}"
+        ok_actions: "{{ alarm_actions_arns }}"
+        insufficient_data_actions: "{{ alarm_actions_arns }}"
+      check_mode: true
+      register: alarm_multiple_actions_check
+
+    - name: Get info on alarm with multiple actions
+      amazon.aws.cloudwatch_metric_alarm_info:
+        alarm_names:
+          - "{{ alarm_actions_name }}"
+      register: alarm_info_multiple_actions_check
+
+    - name: Verify that an alarm with multiple actions was not created in check mode
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_actions_check.changed
+          - alarm_info_multiple_actions_check.metric_alarms | length == 0
+
+    - name: Create alarm with multiple actions
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns }}"
+        ok_actions: "{{ alarm_actions_arns }}"
+        insufficient_data_actions: "{{ alarm_actions_arns }}"
+      register: alarm_multiple_actions
+
+    - name: Verify that an alarm with multiple actions was created
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_actions.changed
+          - alarm_multiple_actions.alarm_actions | sort == alarm_actions_arns | sort
+          - alarm_multiple_actions.ok_actions | sort == alarm_actions_arns | sort
+          - alarm_multiple_actions.insufficient_data_actions | sort == alarm_actions_arns | sort
+
+    # Run several times, a single run passes by chance when CloudWatch happens to return the same order
+    - name: Create alarm with multiple actions (idempotent) (check mode)
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns }}"
+        ok_actions: "{{ alarm_actions_arns }}"
+        insufficient_data_actions: "{{ alarm_actions_arns }}"
+      check_mode: true
+      loop: "{{ range(3) | list }}"
+      register: alarm_multiple_actions_idempotent_check
+
+    - name: Verify alarm with multiple actions does not register as changed in check mode
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_actions_idempotent_check.results | selectattr('changed') | list | length == 0
+
+    - name: Create alarm with multiple actions (idempotent)
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns }}"
+        ok_actions: "{{ alarm_actions_arns }}"
+        insufficient_data_actions: "{{ alarm_actions_arns }}"
+      loop: "{{ range(3) | list }}"
+      register: alarm_multiple_actions_idempotent
+
+    - name: Verify alarm with multiple actions does not register as changed
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_actions_idempotent.results | selectattr('changed') | list | length == 0
+
+    - name: Create alarm with multiple actions in reversed order (idempotent) (check mode)
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns | reverse | list }}"
+        ok_actions: "{{ alarm_actions_arns | reverse | list }}"
+        insufficient_data_actions: "{{ alarm_actions_arns | reverse | list }}"
+      check_mode: true
+      register: alarm_multiple_actions_reversed_check
+
+    - name: Create alarm with multiple actions in reversed order (idempotent)
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns | reverse | list }}"
+        ok_actions: "{{ alarm_actions_arns | reverse | list }}"
+        insufficient_data_actions: "{{ alarm_actions_arns | reverse | list }}"
+      register: alarm_multiple_actions_reversed
+
+    - name: Verify alarm with multiple actions in reversed order does not register as changed
+      ansible.builtin.assert:
+        that:
+          - not alarm_multiple_actions_reversed_check.changed
+          - not alarm_multiple_actions_reversed.changed
+
+    - name: Update alarm with multiple actions (check mode)
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns[:2] }}"
+        ok_actions: "{{ alarm_actions_arns }}"
+        insufficient_data_actions: "{{ alarm_actions_arns }}"
+      check_mode: true
+      register: alarm_multiple_actions_update_check
+
+    - name: Get info on alarm with multiple actions
+      amazon.aws.cloudwatch_metric_alarm_info:
+        alarm_names:
+          - "{{ alarm_actions_name }}"
+      register: alarm_info_multiple_actions_update_check
+
+    - name: Verify that alarm actions were not changed in check mode
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_actions_update_check.changed
+          - alarm_info_multiple_actions_update_check.metric_alarms[0].alarm_actions | sort == alarm_actions_arns | sort
+
+    - name: Update alarm with multiple actions
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns[:2] }}"
+        ok_actions: "{{ alarm_actions_arns }}"
+        insufficient_data_actions: "{{ alarm_actions_arns }}"
+      register: alarm_multiple_actions_update
+
+    - name: Verify that alarm actions were changed
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_actions_update.changed
+          - alarm_multiple_actions_update.alarm_actions | sort == alarm_actions_arns[:2] | sort
+          - alarm_multiple_actions_update.ok_actions | sort == alarm_actions_arns | sort
+
+    - name: Update alarm with multiple actions (idempotent)
+      amazon.aws.cloudwatch_metric_alarm:
+        state: present
+        name: "{{ alarm_actions_name }}"
+        metric: CPUUtilization
+        namespace: AWS/EC2
+        statistic: Average
+        comparison: GreaterThanThreshold
+        threshold: 90.0
+        period: 300
+        evaluation_periods: 3
+        alarm_actions: "{{ alarm_actions_arns[:2] | reverse | list }}"
+        ok_actions: "{{ alarm_actions_arns }}"
+        insufficient_data_actions: "{{ alarm_actions_arns }}"
+      register: alarm_multiple_actions_update_idempotent
+
+    - name: Verify that updated alarm with multiple actions does not register as changed
+      ansible.builtin.assert:
+        that:
+          - not alarm_multiple_actions_update_idempotent.changed
+
+    - name: Delete alarm with multiple actions
+      amazon.aws.cloudwatch_metric_alarm:
+        state: absent
+        name: "{{ alarm_actions_name }}"
+      register: alarm_multiple_actions_deletion
+
+    - name: Verify that the alarm with multiple actions reports deleted
+      ansible.builtin.assert:
+        that:
+          - alarm_multiple_actions_deletion.changed
+
   always:
     - name: Try to delete the alarm
       amazon.aws.cloudwatch_metric_alarm:
         state: absent
         name: "{{ alarm_full_name }}"
+      ignore_errors: true
+
+    - name: Try to delete the alarm with multiple actions
+      amazon.aws.cloudwatch_metric_alarm:
+        state: absent
+        name: "{{ alarm_actions_name }}"
+      when: alarm_actions_name is defined
       ignore_errors: true
 
     - name: Try to stop the ec2 instance

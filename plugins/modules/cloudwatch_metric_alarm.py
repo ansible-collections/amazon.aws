@@ -484,6 +484,14 @@ def create_metric_alarm(connection, module, params):
             "Metrics",
         ]:
             alarm.pop(key, None)
+
+        # CloudWatch returns actions in arbitrary order, so compare them sorted
+        for key in ["AlarmActions", "OKActions", "InsufficientDataActions"]:
+            if key in alarm:
+                alarm[key] = sorted(alarm[key])
+            if key in params:
+                params[key] = sorted(params[key])
+
         if alarm != params:
             changed = True
             alarm = params
