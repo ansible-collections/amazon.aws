@@ -1,6 +1,13 @@
 ---
 name: integration
 
+# ACA-7242 spike POC (splitter branch) - SELECTION-ONLY parity baseline.
+#   Runs the existing ansible_test_splitter across amazon.aws + community.aws and
+#   reports which integration targets it selects for the stimulus, WITHOUT running
+#   the AWS integration suite. Pair with the finder branch (#3163), which reports
+#   the content-plugin-finder + tox-ansible selection for the identical stimulus.
+#   Compare the two sorted target lists for parity.
+
 on:
   - workflow_call
 
@@ -36,7 +43,7 @@ jobs:
   splitter:
     needs:
       - retrieve-pr-info
-    name: ansible test splitter
+    name: ansible test splitter (selection only)
     permissions:
       pull-requests: read
     env:
@@ -81,88 +88,39 @@ jobs:
           total_jobs: 24
           base_ref: '${{ needs.retrieve-pr-info.outputs.base_ref }}'
 
-  run-tests:
-    needs:
-      - retrieve-pr-info 
-      - splitter
-    permissions:
-      pull-requests: read
-    env:
-      amazon_dir: "./amazon_aws"
-      community_dir: "./community_aws"
-      all_targets: "${{ needs.splitter.outputs.targets }}"
-      tarball_dir: "./tarballs"
-      ansible_version: milestone
-      python_version: 3.13
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 8
-      matrix:
-        job-id: ${{ fromJson(needs.splitter.outputs.jobs) }}
-    name: "${{ matrix.job-id }}"
-    steps:
-      - name: Checkout the source collection (on issue comment)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          path: "${{ env.amazon_dir }}"
-          fetch-depth: 0
-          ref: ${{ needs.retrieve-pr-info.outputs.head_ref }}
-          persist-credentials: false
-        if: ${{ github.event_name == 'issue_comment' }}
-
-      - name: Checkout the source collection (on other triggering method)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          path: "${{ env.amazon_dir }}"
-          fetch-depth: 0
-          persist-credentials: false
-        if: ${{ github.event_name != 'issue_comment' }}
-
-      - name: Checkout community.aws collection
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ansible-collections/community.aws
-          path: "${{ env.community_dir }}"
-          fetch-depth: 0
-          ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
-          persist-credentials: false
-
-      - name: Read job targets
-        id: read-targets
-        uses: ansible/cloud-content-ci-automation/.github/actions/ansible_read_targets@6659b608aab58bf1d20641b805eb9cb4fd2b771f
-        with:
-          job_id: "${{ matrix.job-id }}"
-          all_targets: "${{ env.all_targets }}"
-
-      - name: Determine Collection Path
-        id: set-path
+      - name: Report selected targets (parity artifact)
+        env:
+          SPLITTER_JOBS: ${{ steps.compute.outputs.jobs }}
+          SPLITTER_TARGETS: ${{ steps.compute.outputs.targets }}
         run: |
-          if [[ "${{ matrix.job-id }}" == *"amazon.aws"* ]]; then
-            echo "collection_path=${{ env.amazon_dir }}" >> $GITHUB_OUTPUT
-            echo "collection_dep=${{ env.community_dir }}" >> $GITHUB_OUTPUT
-          else
-            echo "collection_path=${{ env.community_dir }}" >> $GITHUB_OUTPUT
-            echo "collection_dep=${{ env.amazon_dir }}" >> $GITHUB_OUTPUT
-          fi
+          set -euo pipefail
+          echo "::notice::splitter jobs: ${SPLITTER_JOBS}"
+          python3 <<'PY'
+          import json
+          import os
 
-      - uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
+          raw = (os.environ.get("SPLITTER_TARGETS") or "").strip() or "{}"
+          try:
+              mapping = json.loads(raw)
+          except json.JSONDecodeError:
+              mapping = {}
 
-      - name: Run integration tests
-        uses: ansible-community/ansible-test-gh-action@6ded727edb598e670ac056a8e680ca4050bac0a3
-        with:
-          ansible-core-version: ${{ env.ansible_version }}
-          origin-python-version: ${{ env.python_version }}
-          testing-type: integration
-          collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
-          collection-root: ''
-          target: ${{ steps.read-targets.outputs.job_targets }}
-          test-deps: >-
-            ansible.utils
-            ansible.netcommon
-            community.general
-            community.crypto
-            ansible.windows
-            ${{ steps.set-path.outputs.collection_dep }}
-          pre-test-cmd: |-
-            python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
+          amazon, community = set(), set()
+          for job, target_str in mapping.items():
+              for target in (target_str or "").split():
+                  leaf = target.rstrip("/").split("/")[-1]
+                  (community if "community.aws" in job else amazon).add(leaf)
+
+          a = sorted(amazon)
+          c = sorted(community)
+          print(f"[ACA-7242] splitter amazon.aws targets ({len(a)}): {a}")
+          print(f"[ACA-7242] splitter community.aws targets ({len(c)}): {c}")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as fh:
+                  fh.write("## ACA-7242 splitter selection (ansible_test_splitter)\n\n")
+                  fh.write(f"amazon.aws targets: **{len(a)}**, community.aws targets: **{len(c)}**\n\n")
+                  fh.write("### amazon.aws\n```\n" + "\n".join(a) + "\n```\n")
+                  fh.write("### community.aws\n```\n" + "\n".join(c) + "\n```\n")
+          PY
