@@ -10,3 +10,4 @@ jobs:
     uses: ansible-network/github_actions/.github/workflows/tox.yml@4678c74a7d712d55e663c88f66eec6d9c3642550 # @main as of 2026-09-21
     with:
       envname: "ansible-lint"
+      python-version: "3.11" # set minimum version to match the oldest tox envlist interpreter (ansible-core 2.18)
