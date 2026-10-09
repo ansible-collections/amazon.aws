@@ -11,9 +11,15 @@ from ansible_collections.amazon.aws.plugins.plugin_utils.text import filter_ansi
 @pytest.mark.parametrize(
     "input_line,is_windows,expected_output",
     [
-        # Non-Windows: should return line unchanged
+        # Non-Windows: should strip line endings, OSC, and ANSI codes
         ("Simple text", False, "Simple text"),
         ("Text with\nnewline", False, "Text with\nnewline"),
+        ("Line1\r\r\nLine2", False, "Line1\nLine2"),
+        ("\x1b]0;Window Title\x07Hello", False, "Hello"),
+        ("\x1b]0;user@host:/path\x07WWkloBBCIsPjjBTqZilXccyCFF", False, "WWkloBBCIsPjjBTqZilXccyCFF"),
+        ("\x1b[31mRed text\x1b[0m", False, "Red text"),
+        ("\x9b31mRed text\x9b0m", False, "Red text"),
+        ("\x1b[1;32m\x1b]0;Title\x07Bold Green\x1b[0m", False, "Bold Green"),
         # Windows: should filter ANSI codes
         ("Simple text", True, "Simple text"),
         # OSC sequences (ESC ] ... BEL)
