@@ -775,9 +775,9 @@ class InventoryModule(AWSInventoryBase):
         else:
             hostname = _get_boto_attr_chain(preference, instance)
         if is_template:
-            template_var = f"{{{{'{hostname}'|{jinja2_filter}}}}}"
+            template_var = "{{'%s'|%s}}" % (hostname, jinja2_filter)
             if isinstance(hostname, list):
-                template_var = f"{{{{{hostname}|{jinja2_filter}}}}}"
+                template_var = "{{%s|%s}}" % (hostname, jinja2_filter)
             if trust_as_template:
                 template_var = trust_as_template(template_var)
             hostname = self.templar.template(variable=template_var)

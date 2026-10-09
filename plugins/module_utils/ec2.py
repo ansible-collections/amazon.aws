@@ -45,61 +45,55 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-import ansible.module_utils.common.warnings as ansible_warnings  # noqa: F401  # pylint: disable=unused-import
+import ansible.module_utils.common.warnings as ansible_warnings  # pylint: disable=unused-import
+from ansible.module_utils.ansible_release import __version__
 
-# Deprecated backwards-compatibility re-exports
-# These imports are maintained for backwards compatibility but their use is deprecated.
-# New code should import directly from the appropriate module_utils submodule.
-# These re-exports will be removed in a future major release.
-# pylint: disable=unused-import,useless-import-alias
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
-from ansible.module_utils.common.dict_transformations import _camel_to_snake as _camel_to_snake
-from ansible.module_utils.common.dict_transformations import _snake_to_camel as _snake_to_camel
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict as camel_dict_to_snake_dict
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict as snake_dict_to_camel_dict
+from ansible.module_utils.common.dict_transformations import _camel_to_snake  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import _snake_to_camel  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
-from .arn import is_outpost_arn as is_outposts_arn  # noqa: F401
+from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
 from .arn import validate_aws_arn
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
-from .botocore import HAS_BOTO3 as HAS_BOTO3
-from .botocore import boto3_conn as boto3_conn
-from .botocore import boto3_inventory_conn as boto3_inventory_conn
-from .botocore import boto_exception as boto_exception
-from .botocore import get_aws_connection_info as get_aws_connection_info
-from .botocore import get_aws_region as get_aws_region
+from .botocore import HAS_BOTO3  # pylint: disable=unused-import
+from .botocore import boto3_conn  # pylint: disable=unused-import
+from .botocore import boto3_inventory_conn  # pylint: disable=unused-import
+from .botocore import boto_exception  # pylint: disable=unused-import
+from .botocore import get_aws_connection_info  # pylint: disable=unused-import
+from .botocore import get_aws_region  # pylint: disable=unused-import
 from .botocore import is_boto3_error_code
 from .botocore import paginated_query_with_retries
 from .errors import AWSErrorHandler
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
-from .exceptions import AnsibleAWSError as AnsibleAWSError
+from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
 from .iam import list_iam_instance_profiles
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
 # The names have been changed in .modules to better reflect their applicability.
-from .modules import _aws_common_argument_spec as aws_common_argument_spec  # noqa: F401
-from .modules import aws_argument_spec as ec2_argument_spec  # noqa: F401
+from .modules import _aws_common_argument_spec as aws_common_argument_spec  # pylint: disable=unused-import
+from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.policy
-from .policy import _py3cmp as py3cmp  # noqa: F401
-from .policy import compare_policies as compare_policies
+from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
+from .policy import compare_policies  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.retries
-from .retries import AWSRetry as AWSRetry
+from .retries import AWSRetry  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
-from .tagging import ansible_dict_to_boto3_tag_list as ansible_dict_to_boto3_tag_list
-from .tagging import boto3_tag_list_to_ansible_dict as boto3_tag_list_to_ansible_dict
+from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
+from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-import
 from .tagging import boto3_tag_specifications
-from .tagging import compare_aws_tags as compare_aws_tags
+from .tagging import compare_aws_tags  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
-from .transformation import ansible_dict_to_boto3_filter_list as ansible_dict_to_boto3_filter_list
-from .transformation import map_complex_type as map_complex_type
-
-# pylint: enable=unused-import,useless-import-alias
+from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
+from .transformation import map_complex_type  # pylint: disable=unused-import
 
 try:
     import botocore

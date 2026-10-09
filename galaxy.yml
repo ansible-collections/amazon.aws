@@ -16,9 +16,3 @@ build_ignore:
   - "*cloud-config-aws.ini"
   - "*cloud-config-aws.yml"
   - changelogs/.plugin-cache.yaml
-  # Local dev environment; .venv/.tox/collections are also what "ade install --editable" expects here.
-  - .venv
-  - .ansible.cfg
-  - collections
-  - .tox
-  - uv.lock

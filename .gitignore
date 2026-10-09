@@ -226,15 +226,12 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .nox/
-.venv
-.venv-*
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
-diff-coverage.html
 .hypothesis/
 .pytest_cache/
 
@@ -408,7 +405,3 @@ tests/integration/cloud-config-aws.ini
 .ansible
 .vscode
 .scannerwork/
-
-# uv virtualenv and ADE-generated config; uv.lock itself IS committed.
-.venv/
-.ansible.cfg

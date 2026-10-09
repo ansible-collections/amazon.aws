@@ -19,6 +19,7 @@ if typing.TYPE_CHECKING:
     from typing import Callable
     from typing import Dict
     from typing import Iterator
+    from typing import NoReturn
     from typing import Optional
 
     verbosity_display_type = Callable[[int, str], None]

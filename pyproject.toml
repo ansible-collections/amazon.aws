@@ -1,37 +1,52 @@
-[project]
-# Developer-environment metadata for uv; never built/published (tool.uv package = false).
-# Runtime/test deps stay out: requirements.txt, tests/{unit,integration}/requirements.txt.
-name = "amazon-aws"
-# uv requires a version even though this project is never packaged. Not mirrored
-# from galaxy.yml on purpose, so it doesn't need bumping every release.
-version = "0.0.0"
-description = "Developer toolchain for the amazon.aws Ansible collection"
-readme = "README.md"
-license = "GPL-3.0-or-later"
-requires-python = ">=3.10"  # matches the oldest tox envlist interpreter (ansible-core 2.17)
+[tool.black]
+skip-string-normalization = false
+line-length = 120
+target-version = ['py38', 'py39']
+extend-exclude = '''
+/(
+  | plugins/module_utils/_version.py
+  | \.tox
+  | tests/output
+)/
+'''
 
-[dependency-groups]
-dev = [
-    "tox>=4.52.1",
-    "tox-uv-bare>=1.35.0",  # lets tox provision envs via uv instead of pip
-    "prek",
+[tool.darker]
+revision = "origin/main.."
+
+src = [
+    "plugins",
+    "tests/unit",
+    "tests/integration",
 ]
 
-[tool.uv]
-package = false
+[tool.isort]
+profile = "black"
+force_single_line = true
+line_length = 120
+skip = [".tox", "tests/output"]
 
-# tox config (incl. the tox-ansible `requires` pin) lives in tox.ini, which is the
-# active config source and takes precedence over pyproject's [tool.tox]. tox-ansible
-# still reads [tool.tox-ansible] below directly, regardless of the config source.
-[tool.tox-ansible]
-# Persistent unit coverage for Sonar/diff-cover; pass --cov-report=xml via posargs when needed.
-coverage = true
-molecule = "false"
-# Integration tests stay on GHA — do not fan out AWS-backed envs locally.
-skip = ["integration-"]
+src_paths = [
+    "plugins",
+    "tests/unit",
+    "tests/integration",
+]
+
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "ANSIBLE_CORE", "ANSIBLE_AMAZON_AWS", "ANSIBLE_COMMUNITY_AWS", "LOCALFOLDER"]
+known_third_party = ["botocore", "boto3"]
+known_ansible_core = ["ansible"]
+known_ansible_amazon_aws = ["ansible_collections.amazon.aws"]
+known_ansible_community_aws = ["ansible_collections.community.aws"]
+
+[tool.flynt]
+transform-joins = true
+exclude = [
+    "ec2_metadata_facts",
+    ".tox",
+    "tests/output",
+]
 
 [tool.flake8]
-# Kept for flake8-cognitive-complexity (CCR001). Style linting is owned by ruff.
+# E123, E125 skipped as they are invalid PEP-8.
 show-source = true
 ignore = ["E123", "E125", "E203", "E402", "E501", "E741", "F401", "F811", "F841", "W503"]
 max-line-length = 160
@@ -42,57 +57,14 @@ exclude = [".tox", "tests/output"]
 disable_error_code = ["import-untyped"]
 
 [tool.ruff]
-# Pin exactly so a floating ruff release cannot widen the default ruleset under us.
-# Keep this in sync with tox [testenv:ruff*] deps and .pre-commit-config.yaml rev.
-required-version = "==0.16.9"
 line-length = 120
 exclude = [".tox", "tests/output"]
 
 [tool.ruff.lint]
-# Curated select = black/isort/flynt/flake8/pyflakes parity
-# Do not use ruff's version-dependent default ruleset.
-select = [
-    "E",     # pycodestyle errors (flake8)
-    "W",     # pycodestyle warnings (flake8)
-    "F",     # pyflakes (flake8)
-    "I",     # isort
-    "FLY",   # flynt
-    "UP031", # printf -> format/f-string (flynt-adjacent)
-    "UP032", # str.format -> f-string (flynt-adjacent)
-]
-# F401 re-exports use `import X as X` (or noqa for renamed aliases). unfixable is a
-# safety net so `ruff check --fix` cannot delete intentional re-exports.
-# Same-name aliases need pylint useless-import-alias silenced for ansible-test sanity.
-# E402: Ansible DOCUMENTATION/EXAMPLES/RETURN blocks above imports (validate-modules).
-# E501: line length owned by ruff format (line-length = 120).
-# E203/E741: carried from the previous flake8 ignore set (F811/F841 re-enabled).
+# "F401" - unused-imports - We use these imports to maintain historic Interfaces
+# "E402" - import not at top of file - General Ansible style puts the documentation at the top.
 unfixable = ["F401"]
-ignore = [
-    "E203",
-    "E402",
-    "E501",
-    "E741",
-]
-
-[tool.ruff.lint.isort]
-# Ported from [tool.isort] so import grouping stays identical.
-force-single-line = true
-known-third-party = ["botocore", "boto3"]
-section-order = [
-    "future",
-    "standard-library",
-    "third-party",
-    "first-party",
-    "ansible-core",
-    "ansible-amazon-aws",
-    "ansible-community-aws",
-    "local-folder",
-]
-
-[tool.ruff.lint.isort.sections]
-ansible-core = ["ansible"]
-ansible-amazon-aws = ["ansible_collections.amazon.aws"]
-ansible-community-aws = ["ansible_collections.community.aws"]
+ignore = ["F401", "E402"]
 
 [tool.pylint.main]
 ignore = [".tox", "tests/output"]
