@@ -254,7 +254,7 @@ availability_mode:
   returned: always
   type: str
   sample: "zonal"
-  version_added: 12.0.0
+  version_added: 12.1.0
 connectivity_type:
     description:
       - Indicates whether the NAT gateway supports public or private connectivity.
