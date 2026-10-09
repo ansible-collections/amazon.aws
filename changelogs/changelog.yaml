@@ -4363,3 +4363,59 @@ releases:
     - ssm-suppress-progress-output.yml
     - v11.4.0_release_summary.yml
     release_date: '2026-06-26'
+  11.5.0:
+    changes:
+      bugfixes:
+      - aws_sqs_queue - Fix UUID generation in EDA event source plugin to set ``meta.uuid``
+        as a flat key readable by ansible-rulebook, validate the SQS ``MessageId``
+        as a proper RFC 4122 UUID, and fall back to a deterministic UUID5 when invalid
+        (https://github.com/ansible-collections/amazon.aws/pull/3034).
+      - aws_ssm - apply the transfer bucket's server-side-encryption settings when
+        uploading files from the controller to the managed node (``put_file``), matching
+        the existing ``fetch_file`` behaviour. Previously the upload was made without
+        encryption settings, so buckets whose policy denies unencrypted ``PutObject``
+        requests rejected every file transfer with ``AccessDenied`` (https://github.com/ansible-collections/amazon.aws/issues/3018).
+      - aws_ssm connection plugin - fix hang on reboot by handling ValidationException
+        when terminating already-disconnected sessions (https://github.com/ansible-collections/amazon.aws/issues/3044).
+      - ec2_spot_instance - fix the ``network_interfaces.ipv6_addresses`` suboption,
+        which was defined as ``ipv6address`` and serialized to the invalid boto3 key
+        ``Ipv6address`` instead of ``Ipv6Address``, causing a ``ParamValidationError``
+        when requesting a spot instance with an IPv6 address (https://github.com/ansible-collections/amazon.aws/issues/2557,
+        https://github.com/ansible-collections/amazon.aws/pull/3110).
+      - module_utils - fix fail_json_aws() to work with Python 3.14 and ansible-core
+        2.19+ by using try/except to detect fail_json exception parameter support
+        instead of traceback.format_exc() which fails outside exception context in
+        Python 3.14 (https://github.com/ansible-collections/amazon.aws/pull/3103).
+      - rds_cluster - fix ``final_snapshot_identifier`` being silently dropped when
+        deleting a DB cluster with ``skip_final_snapshot=false``, which made the deletion
+        fail. The option is now ``final_db_snapshot_identifier``, matching ``rds_instance``
+        and the ``FinalDBSnapshotIdentifier`` API parameter, with ``final_snapshot_identifier``
+        kept as an alias (https://github.com/ansible-collections/amazon.aws/issues/3084).
+      - ubuntu clients over ssm connection plugin failed with timeouts. dash on ubuntu
+        needs oneline-commands without '\n' (https://github.com/ansible-collections/amazon.aws/pull/3036)
+      minor_changes:
+      - Replace the deprecated ``ansible.module_utils.six`` compatibility shims with
+        their Python standard library equivalents. ``ansible.module_utils.six`` is
+        deprecated in ansible-core 2.21 and is scheduled for removal in 2.24 (https://github.com/ansible-collections/amazon.aws/pull/3039).
+      - aws_ec2 inventory plugin - Added a ``use_deprecated_tags`` option to allow
+        disabling the deprecated ``tags`` host variable (and its associated deprecation
+        and reserved-name warnings) independently of global deprecation warning settings
+        (https://github.com/ansible-collections/amazon.aws/issues/3028).
+      release_summary: This minor release adds a ``use_deprecated_tags`` option to
+        the ``aws_ec2`` inventory plugin and replaces the deprecated ``ansible.module_utils.six``
+        shims with their Python standard library equivalents. It also includes bugfixes
+        for the ``ec2_spot_instance``, ``aws_sqs_queue`` and ``rds_cluster`` modules,
+        and the ``aws_ssm`` connection plugin.
+    fragments:
+    - 11.5.0.yml
+    - 2557-ec2_spot_instance-ipv6_address-option.yml
+    - 3018-aws_ssm-put-file-sse.yml
+    - 3028-aws_ec2-tags-deprecation-warning.yml
+    - 3034-aws_sqs_queue-uuid-validation.yml
+    - 3044-aws-ssm-reboot-validation-exception.yml
+    - 3060-rds_cluster-final_db_snapshot_identifier.yml
+    - python314-fail-json-fix.yml
+    - remove-module-utils-six.yml
+    - ruff-unused-test-cleanup.yml
+    - ubuntu-dash-ssm.yml
+    release_date: '2026-10-06'
