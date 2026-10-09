@@ -183,7 +183,9 @@ class LookupErrorHandler:
                     return LookupErrorHandler._handle_response(
                         self, on_deleted, term, resource_type, error_msg, warn_msg, default_value
                     )
-                except is_boto3_error_code(["ResourceNotFoundException", "ParameterNotFound"]):  # pylint: disable=duplicate-except
+                except is_boto3_error_code(
+                    ["ResourceNotFoundException", "ParameterNotFound"]
+                ):  # pylint: disable=duplicate-except
                     error_msg, warn_msg = LookupErrorHandler._build_error_messages(resource_type, "missing")
                     return LookupErrorHandler._handle_response(
                         self, on_missing, term, resource_type, error_msg, warn_msg, default_value

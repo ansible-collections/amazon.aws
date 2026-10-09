@@ -373,6 +373,11 @@ import typing
 
 if typing.TYPE_CHECKING:
     from typing import Any
+    from typing import Dict
+    from typing import Iterator
+    from typing import List
+    from typing import Optional
+    from typing import Tuple
 
 from ansible.errors import AnsibleError
 from ansible.errors import AnsibleFileNotFound

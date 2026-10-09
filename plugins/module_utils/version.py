@@ -5,7 +5,6 @@
 
 """Provide version object to compare version numbers."""
 
-# Deprecated backwards-compatibility re-export; import LooseVersion from
-# ansible.module_utils.compat.version directly in new code.
-# pylint: disable-next=unused-import,useless-import-alias
-from ansible.module_utils.compat.version import LooseVersion as LooseVersion
+# This should be directly imported by modules, rather than importing from here.
+# The import is being kept for backwards compatibility.
+from ansible.module_utils.compat.version import LooseVersion  # pylint: disable=unused-import

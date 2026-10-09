@@ -66,17 +66,8 @@ prek run --all-files
 ```
 
 The current hook set applies basic hygiene checks (trailing whitespace, end-of-file
-newlines, large-file guard, line endings, and blocking direct commits to `main`),
-runs `ruff-check` and `ruff-format` (pinned to the same Ruff version as
-`pyproject.toml` / tox), and runs `ansible-lint` (which invokes yamllint
-internally; there is no separate `.yamllint` file).
-
-To run the same Python lint/format checks outside prek:
-
-```
-tox -e ruff-lint   # check only (no rewrite)
-tox -e ruff        # apply ruff check --fix and ruff format
-```
+newlines, large-file guard, line endings, and blocking direct commits to `main`) and
+runs `ansible-lint`.
 
 ## Writing New Code
 

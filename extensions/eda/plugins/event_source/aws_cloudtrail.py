@@ -1,9 +1,7 @@
 import asyncio
 import datetime
 import json
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import cast
+from typing import TYPE_CHECKING, Any, cast
 
 from aiobotocore.session import get_session
 from botocore.client import BaseClient
@@ -175,7 +173,7 @@ def connection_args(args: dict[str, Any]) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    # MockQueue if running directly.
+    """MockQueue if running directly."""
 
     class MockQueue(asyncio.Queue[Any]):
         """A fake queue."""

@@ -9,6 +9,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from typing import Dict
+    from typing import List
 
     from ..transformation import AnsibleAWSResource
     from ..transformation import AnsibleAWSResourceList
