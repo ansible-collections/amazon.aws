@@ -250,7 +250,19 @@ def test_inventory_build_include_filters(inventory, _options, expected):
     assert inventory.build_include_filters() == expected
 
 
-@pytest.mark.parametrize("hostname,expected", [(1, "1"), ("a:b", "a_b"), ("a:/b", "a__b"), ("example", "example")])
+@pytest.mark.parametrize(
+    "hostname,expected",
+    [
+        (1, "1"),
+        ("a:b", "a_b"),
+        ("a:/b", "a__b"),
+        ("example", "example"),
+        ("Space In Name", "Space_In_Name"),
+        ("a   b", "a_b"),
+        (" leading-and-trailing ", "_leading-and-trailing_"),
+        ("tab\tseparated", "tab_separated"),
+    ],
+)
 def test_sanitize_hostname(inventory, hostname, expected):
     assert inventory._sanitize_hostname(hostname) == expected
 
