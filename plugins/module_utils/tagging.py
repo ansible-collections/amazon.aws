@@ -177,7 +177,7 @@ def boto3_tag_specifications(tags_dict, types=None):
 
     return specifications
 
-
+# test change
 def compare_aws_tags(current_tags_dict, new_tags_dict, purge_tags=True):
     """
     Compare two dicts of AWS tags. Dicts are expected to of been created using 'boto3_tag_list_to_ansible_dict' helper function.
