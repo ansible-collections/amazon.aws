@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_ec2 - query ``exclude_filters`` after ``include_filters`` so that an instance which starts matching an exclude filter while the inventory is being built is no longer added to the inventory (https://github.com/ansible-collections/amazon.aws/issues/2708).
