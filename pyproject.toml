@@ -8,7 +8,7 @@ version = "0.0.0"
 description = "Developer toolchain for the amazon.aws Ansible collection"
 readme = "README.md"
 license = "GPL-3.0-or-later"
-requires-python = ">=3.10"  # matches the oldest tox envlist interpreter (ansible-core 2.17)
+requires-python = ">=3.11"  # matches the oldest tox envlist interpreter (ansible-core 2.18)
 
 [dependency-groups]
 dev = [
@@ -19,6 +19,16 @@ dev = [
 
 [tool.uv]
 package = false
+
+# tox config (incl. the tox-ansible `requires` pin) lives in tox.ini, which is the
+# active config source and takes precedence over pyproject's [tool.tox]. tox-ansible
+# still reads [tool.tox-ansible] below directly, regardless of the config source.
+[tool.tox-ansible]
+# Persistent unit coverage for Sonar/diff-cover; pass --cov-report=xml via posargs when needed.
+coverage = true
+molecule = "false"
+# Integration tests stay on GHA — do not fan out AWS-backed envs locally.
+skip = ["integration-"]
 
 [tool.flake8]
 # Kept for flake8-cognitive-complexity (CCR001). Style linting is owned by ruff.
@@ -34,7 +44,7 @@ disable_error_code = ["import-untyped"]
 [tool.ruff]
 # Pin exactly so a floating ruff release cannot widen the default ruleset under us.
 # Keep this in sync with tox [testenv:ruff*] deps and .pre-commit-config.yaml rev.
-required-version = "==0.16.9"
+required-version = "==0.16.10"
 line-length = 120
 exclude = [".tox", "tests/output"]
 

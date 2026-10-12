@@ -1,0 +1,91 @@
+---
+# Keep tests/unit/requirements.yml's community.aws git pin aligned with the
+# amazon.aws branch: main → main, stable-N → stable-N. Catches forgotten updates
+# on backports and new stable-* branch creation.
+name: check-unit-requirements
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    branches:
+      - main
+      - stable-*
+  push:
+    branches:
+      - main
+      - stable-*
+
+jobs:
+  community-aws-pin:
+    name: community.aws pin matches branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Assert community.aws version pin
+        env:
+          # PRs: base branch (where the change lands). Pushes: branch that received the commit.
+          BRANCH: ${{ github.base_ref || github.ref_name }}
+        run: |
+          set -euo pipefail
+          req="tests/unit/requirements.yml"
+          if [[ ! -f "$req" ]]; then
+            echo "::error::Missing $req"
+            exit 1
+          fi
+
+          case "$BRANCH" in
+            main)
+              expected="main"
+              ;;
+            stable-*)
+              expected="$BRANCH"
+              ;;
+            *)
+              echo "::notice::Skipping community.aws pin check for branch '$BRANCH'"
+              exit 0
+              ;;
+          esac
+
+          # Last non-empty "version:" under the community.aws.git entry.
+          actual=$(
+            python3 - "$req" <<'PY'
+          import sys
+          from pathlib import Path
+
+          text = Path(sys.argv[1]).read_text(encoding="utf-8")
+          in_community = False
+          version = None
+          for raw in text.splitlines():
+              line = raw.split("#", 1)[0].rstrip()
+              if "community.aws.git" in line:
+                  in_community = True
+                  continue
+              if in_community:
+                  stripped = line.strip()
+                  if stripped.startswith("- name:"):
+                      break
+                  if stripped.startswith("version:"):
+                      version = stripped.split(":", 1)[1].strip().strip("'\"")
+          if not version:
+              raise SystemExit("could not find community.aws version: in tests/unit/requirements.yml")
+          print(version)
+          PY
+          )
+
+          echo "branch=$BRANCH expected=$expected actual=$actual"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::tests/unit/requirements.yml community.aws version is '$actual'; expected '$expected' for branch '$BRANCH'"
+            exit 1
+          fi
+          echo "OK: community.aws pin is $actual"
