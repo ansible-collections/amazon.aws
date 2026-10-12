@@ -312,6 +312,845 @@ releases:
     - 460-pylint.yml
     - 486-ec2_vol_fixed_returned_changed_var.yml
     release_date: '2021-09-09'
+  10.0.0:
+    changes:
+      breaking_changes:
+      - amazon.aws collection - Support for ansible-core < 2.17 has been dropped (https://github.com/ansible-collections/amazon.aws/pull/2601).
+      - amazon.aws collection - Support for the ``EC2_ACCESS_KEY`` environment variable
+        was deprecated in release ``6.0.0`` and has now been removed.  Please use
+        the ``access_key`` parameter or ``AWS_ACCESS_KEY_ID`` environment variable
+        instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - Support for the ``EC2_REGION`` environment variable
+        was deprecated in release ``6.0.0`` and has now been removed.  Please use
+        the ``region`` parameter or ``AWS_REGION`` environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - Support for the ``EC2_SECRET_KEY`` environment variable
+        was deprecated in release ``6.0.0`` and has now been removed.  Please use
+        the ``secret_key`` parameter or ``AWS_SECRET_ACCESS_KEY`` environment variable
+        instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - Support for the ``EC2_SECURITY_TOKEN`` and ``AWS_SECURITY_TOKEN``
+        environment variables were deprecated in release ``6.0.0`` and have now been
+        removed.  Please use the ``session_token`` parameter or ``AWS_SESSION_TOKEN``
+        environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - Support for the ``EC2_URL`` and ``S3_URL`` environment
+        variables were deprecated in release ``6.0.0`` and have now been removed.  Please
+        use the ``endpoint_url`` parameter or ``AWS_URL`` environment variable instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - The ``access_token``, ``aws_security_token`` and ``security_token``
+        aliases for the ``session_token`` parameter were deprecated in release ``6.0.0``
+        and have now been removed.  Please use the ``session_token`` name instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - The ``boto_profile`` alias for the ``profile`` parameter
+        was deprecated in release ``6.0.0`` and has now been removed.  Please use
+        the ``profile`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - The ``ec2_access_key`` alias for the ``access_key``
+        parameter was deprecated in release ``6.0.0`` and has now been removed.  Please
+        use the ``access_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - The ``ec2_region`` alias for the ``region`` parameter
+        was deprecated in release ``6.0.0`` and has now been removed.  Please use
+        the ``region`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - The ``ec2_secret_key`` alias for the ``secret_key``
+        parameter was deprecated in release ``6.0.0`` and has now been removed.  Please
+        use the ``secret_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - amazon.aws collection - The ``endpoint``, ``ec2_url`` and ``s3_url`` aliases
+        for the ``endpoint_url`` parameter were deprecated in release ``6.0.0`` and
+        have now been removed.  Please use the ``region`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - docs_fragments - The previously deprecated ``amazon.aws.aws_credentials``
+        docs fragment has been removed please use ``amazon.aws.common.plugins`` instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - docs_fragments - The previously deprecated ``amazon.aws.aws_region`` docs
+        fragment has been removed please use ``amazon.aws.region.plugins`` instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - docs_fragments - The previously deprecated ``amazon.aws.aws`` docs fragment
+        has been removed please use ``amazon.aws.common.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - docs_fragments - The previously deprecated ``amazon.aws.ec2`` docs fragment
+        has been removed please use ``amazon.aws.region.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
+      - ec2_vpc_peering_info - the ``result`` key has been removed from the return
+        value. ``vpc_peering_connections`` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2618).
+      - module_utils.botocore - drop deprecated ``boto3`` parameter for ``get_aws_region()``
+        and ``get_aws_connection_info()``, this parameter has had no effect since
+        release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2443).
+      - module_utils.ec2 - drop deprecated ``boto3`` parameter for ``get_ec2_security_group_ids_from_names()``
+        and ``get_aws_connection_info()``, this parameter has had no effect since
+        release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2603).
+      - rds_param_group - the redirect has been removed and playbooks should be updated
+        to use rds_instance_param_group (https://github.com/ansible-collections/amazon.aws/pull/2618).
+      bugfixes:
+      - s3_bucket - bucket ACLs now consistently returned (https://github.com/ansible-collections/amazon.aws/pull/2478).
+      - s3_bucket - fixed idempotency when setting bucket ACLs (https://github.com/ansible-collections/amazon.aws/pull/2478).
+      major_changes:
+      - amazon.aws collection - The amazon.aws collection has dropped support for
+        ``botocore<1.34.0`` and ``boto3<1.34.0``. Most modules will continue to work
+        with older versions of the AWS SDK, however compatibility with older versions
+        of the SDK is not guaranteed and will not be tested. When using older versions
+        of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/2426).
+      - amazon.aws collection - due to the AWS SDKs announcing the end of support
+        for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/),
+        support for Python less than 3.8 by this collection was deprecated in release
+        6.0.0 and removed in release 10.0.0. (https://github.com/ansible-collections/amazon.aws/pull/2426).
+      - connection/aws_ssm - The module has been migrated from the ``community.aws``
+        collection. Playbooks using the Fully Qualified Collection Name for this module
+        should be updated to use ``amazon.aws.aws_ssm``.
+      minor_changes:
+      - module_utils.s3 - added "501" to the list of error codes thrown by S3 replacements
+        (https://github.com/ansible-collections/amazon.aws/issues/2447).
+      - module_utils/s3 - add initial ErrorHandler for S3 modules (https://github.com/ansible-collections/amazon.aws/pull/2060).
+      - s3_bucket - migrated to use updated error handlers for better handling of
+        non-AWS errors (https://github.com/ansible-collections/amazon.aws/pull/2478).
+      release_summary: 'This major release introduces new support with the ``aws_ssm``
+        connection plugin, which has been promoted from ``community.aws``, several
+        bugfixes, minor changes and deprecated features.
+
+        Additionally, this release increases the minimum required versions of ``boto3``
+        and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support
+        for ansible-core < 2.17 has been dropped.
+
+        Due to the AWS SDKs announcing the end of support for Python less than 3.8
+        (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/),
+        support for Python less than 3.8 by this collection was deprecated in 9.0.0
+        release and is removed in this 10.0.0 release.
+
+        '
+    fragments:
+    - 10.0.0-increase-ansible-core-version.yml
+    - 10.0.0.yml
+    - 20241029-main-10.0.0.yml
+    - 20250117-s3_bucket-error_handler.yml
+    - 20250508-update-docs.yml
+    - 2060-s3_error_handler.yml
+    - 2443-boto-final-clean.yml
+    - 2527-module_aliases.yml
+    - 2618-remove-rds-param-group.yml
+    - boto3-cleanup.yml
+    - botocore.yml
+    - migrate_aws_ssm.yml
+    - s3_bucket-501.yml
+    - skip_ansible-core_2.16.yml
+    release_date: '2025-05-13'
+  10.1.0:
+    changes:
+      minor_changes:
+      - inventory/aws_ec2 - Adding support for ``Route53`` as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
+      release_summary: This minor release adds support for ``Route53`` as a hostname.
+    fragments:
+    - 20250321-inventory_aws_ec2-add-support-for-route53.yml
+    release_date: '2025-06-03'
+  10.1.1:
+    changes:
+      bugfixes:
+      - ec2_instance - corrected typo for InsufficientInstanceCapacity. Fix now will
+        retry Ec2 creation when InsufficientInstanceCapacity error occurs (https://github.com/ansible-collections/amazon.aws/issues/1038).
+      release_summary: This release includes a bugfix and a documentation update.
+    fragments:
+    - 10.1.1.yml
+    - 2674-fix-errorcode-typo.yml
+    release_date: '2025-08-06'
+  10.1.2:
+    changes:
+      bugfixes:
+      - Remove ``ansible.module_utils.six`` imports to avoid warnings (https://github.com/ansible-collections/amazon.aws/pull/2727).
+      - amazon.aws.autoscaling_instance - setting the state to ``terminated`` had
+        no effect. The fix implements missing instance termination state (https://github.com/ansible-collections/amazon.aws/issues/2719).
+      - ec2_vpc_nacl - Fix issue when trying to update existing Network ACL rule (https://github.com/ansible-collections/amazon.aws/issues/2592).
+      - s3_object - Honor headers for content and content_base64 uploads by promoting
+        supported keys (e.g. ContentType, ContentDisposition, CacheControl) to top-level
+        S3 arguments and placing remaining keys under Metadata. This makes content
+        uploads consistent with src uploads. (https://github.com/ansible-collections/amazon.aws)
+      release_summary: This release includes multiple bug fixes.
+    fragments:
+    - 10.1.2_summary.yaml
+    - 20250513-ec2_vpc_nacl-fix-issue-when-updating-rules.yml
+    - 20250924-sanity-fixes.yml
+    - 2720-autoscaling_instance-implements-missing-instance-termination-state.yaml
+    - s3_object-content-headers.yml
+    release_date: '2025-10-07'
+  10.2.0:
+    changes:
+      bugfixes:
+      - connection/aws_ssm - fixed ReferenceError in aws_ssm connection plugin destructor
+        during interpreter shutdown (https://github.com/ansible-collections/amazon.aws/issues/2728).
+      - lambda_info - fixed invalid return value documentation that used dot notation
+        (``function.TheName``) which cannot be used in Jinja2 templates (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - s3_bucket - fix error when configuring AES256 bucket encryption with ``bucket_key_enabled``
+        explicitly set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2734).
+      deprecated_features:
+      - ec2_vpc_dhcp_option - the ``dhcp_config`` return value has been deprecated
+        and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - ec2_vpc_dhcp_option_info - the ``dhcp_config`` return value has been deprecated
+        and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead
+        (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - route53 - the ``values`` key in the ``resource_record_sets`` return value
+        has been deprecated in favor of ``record_values`` for Jinja2 compatibility.
+        The ``values`` key will be removed in a release after 2026-12-01 (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      minor_changes:
+      - Add support for the io2 storage type for RDS (https://github.com/ansible-collections/amazon.aws/pull/2748).
+      - ec2_launch_template - increase GP3 volume ``throughput`` limits in line with
+        updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
+      - ec2_vol - increase ``throughput`` and ``iops`` limits for GP3 volumes in line
+        with updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
+      - module_utils.s3 - added "501" to the list of error codes thrown by S3 replacements
+        (https://github.com/ansible-collections/amazon.aws/issues/2447).
+      - module_utils/_s3/common - use ``is_boto3_error_httpstatus`` to handle HTTP
+        403 and 501 status codes from S3-compatible services (https://github.com/ansible-collections/amazon.aws/pull/2776).
+      - module_utils/botocore - add ``is_boto3_error_httpstatus`` helper function
+        to catch boto3 exceptions based on HTTP status codes (https://github.com/ansible-collections/amazon.aws/pull/2776).
+      - route53 - added ``record_values`` key to ``resource_record_sets`` return value
+        that can be accessed using Jinja2 dot notation (https://github.com/ansible-collections/amazon.aws/pull/2772).
+      - sts_assume_role - improve error handling for ``MalformedPolicyDocument`` errors
+        by providing a clearer error message when an invalid policy document is provided
+        (https://github.com/ansible-collections/amazon.aws/pull/2778).
+      release_summary: This release adds support for the io2 storage type for RDS
+        as well as other minor changes, several bugfixes and deprecated features.
+    fragments:
+    - 2728-reference_error_ssm_destructor.yml
+    - 2734-AES_explicit_bucket_key.yml
+    - 2748-io2_storage_support.yml
+    - 2749-gp3-limits.yml
+    - fix-bad-return-value-keys.yml
+    - is_boto3_error_httpstatus.yml
+    - s3_bucket-501.yml
+    - sts_assume_role-malformed_policy.yml
+    release_date: '2026-01-13'
+  10.3.0:
+    changes:
+      bugfixes:
+      - aws_ssm - Fixed connection being re-established on every loop iteration. The
+        plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
+      - elb_application_lb - fixed comparison of multi-rule default actions to properly
+        handle the ``Order`` field when determining if listener modifications are
+        needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+      - 'elb_application_lb - fixed error where creating a new application load balancer
+        with listener rules would fail with ``Parameter validation failed: Invalid
+        type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).'
+      - s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
+      minor_changes:
+      - meta/runtime.yml - Lowered the ``ansible-core`` minimum version to ``2.16``.
+        This expands compatibility and does not change or remove existing functionality.
+      release_summary: This minor release includes several bug fixes across ALB, S3,
+        and the SSM connection plugin, security hardening for ARN parsing, and expanded
+        compatibility with ansible-core >= 2.16.
+      security_fixes:
+      - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
+        character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+      - ec2_security_group - fix potential ReDoS vulnerability in security group ID
+        parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
+    fragments:
+    - 2773-elb-application-lb-listener-rules.yml
+    - 2810-fix-put-empty-content.yml
+    - 2869_aws_ssm_connection_fix.yml
+    - relax_ansible_core_version.yml
+    - release_summary.yml
+    - sonarcloud_regex.yml
+    - unittests-boto3-credentials.yml
+    release_date: '2026-03-16'
+  10.3.1:
+    changes:
+      bugfixes:
+      - autoscaling_group - Fixed duplicate default_cooldown assignment in properties
+        dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - kms_key - Fixed parameter reassignment by using passed alias parameter instead
+        of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property
+        (https://github.com/ansible-collections/community.aws/issues/1915).
+      - s3_object_info - Fixed duplicate dictionary key assignments when retrieving
+        object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      release_summary: This patch release includes bugfixes for the ``s3_object_info``,
+        ``autoscaling_group``, and ``kms_key`` modules, addressing duplicate dictionary
+        key assignments and improving reliability. It also fixes a TypeError in CloudFront
+        module utilities.
+    fragments:
+    - 10.3.1.yml
+    - 1915-cloudfront_distribution_info-TypeError.yml
+    - ansible-test-gh-action-migration.yml
+    - reliability-duplicate-assignments.yml
+    release_date: '2026-05-06'
+  10.3.2:
+    changes:
+      bugfixes:
+      - Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if
+        bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914)
+        (https://github.com/ansible-collections/amazon.aws/pull/2987)
+    fragments:
+    - 2987-s3bucket-waiter-retry-404.yml
+    release_date: '2026-06-16'
+  11.0.0:
+    changes:
+      major_changes:
+      - amazon.aws collection - ``awscli`` version has been bumped to 1.34.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+      - amazon.aws collection - ``botocore`` and ``boto3`` versions have been bumped
+        to 1.35.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
+      - ec2_security_group - Support for passing nested lists of strings to ``rules.cidr_ip``
+        and ``rules.cidr_ipv6`` have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - iam_user - Support for ``iam_user`` return key has been removed; only ``user``
+        is now returned (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - lambda_info - Support for ``function`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - route53_info - Support for CamelCased lists (``ResourceRecordSets``, ``HostedZones``,
+        ``HealthChecks``, ``CheckerIpRanges``, ``DelegationSets``, ``HealthCheck``)
+        have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - s3_object - Support for ``list`` mode has been removed; use ``s3_object_info``
+        instead (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - s3_object - Support for passing the leading ``/`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      - s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at
+        the same time has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
+      minor_changes:
+      - module_utils/s3 - refactored S3 module utilities to consolidate duplicate
+        code, add comprehensive type hints and docstrings, and improve maintainability
+        (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - s3_bucket - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - s3_object - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils
+        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+      release_summary: This major release includes changes such as refactored S3 module
+        utilities to consolidate duplicate code, add comprehensive type hints and
+        docstrings, and improve maintainability. Additionally, ``botocore`` and ``boto3``
+        versions have been bumped to 1.35.0 and ``awscli`` version has been bumped
+        to 1.34.0.
+    fragments:
+    - 11-0-0.yaml
+    - 2728-reference_error_ssm_destructor.yml
+    - 2734-AES_explicit_bucket_key.yml
+    - 2748-io2_storage_support.yml
+    - 2749-gp3-limits.yml
+    - 2774-bump-botocore-1.35.0.yml
+    - 2777-deprecation_removals.yml
+    - fix-bad-return-value-keys.yml
+    - is_boto3_error_httpstatus.yml
+    - s3-module-utils-refactoring.yml
+    - sts_assume_role-malformed_policy.yml
+    release_date: '2026-01-14'
+  11.1.0:
+    changes:
+      bugfixes:
+      - elb_application_lb - fixed comparison of multi-rule default actions to properly
+        handle the ``Order`` field when determining if listener modifications are
+        needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
+      - 'elb_application_lb - fixed error where creating a new application load balancer
+        with listener rules would fail with ``Parameter validation failed: Invalid
+        type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).'
+      - s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
+      minor_changes:
+      - aws_cloudtrail - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws``
+        (https://github.com/ansible-collections/amazon.aws/pull/2816).
+      - aws_sqs_queue - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws``
+        (https://github.com/ansible-collections/amazon.aws/pull/2816).
+      - indirect node count - Add support for querying RDS database resources (https://github.com/ansible-collections/amazon.aws/pull/2825).
+      - indirect node count - Create query for networking load balancer resources
+        (https://github.com/ansible-collections/amazon.aws/pull/2818).
+      - indirect node count - create query for ec2 (https://github.com/ansible-collections/amazon.aws/pull/2807).
+      - indirect node count - create query for networking resources vpc, subnet, nat
+        gateway, internet gateway, virtual gateway, route table, vpn, vpc peering
+        (https://github.com/ansible-collections/amazon.aws/pull/2811).
+      - indirect node count - create query for storage resources S3 bucket and Object
+        (https://github.com/ansible-collections/amazon.aws/pull/2811).
+      - requirements.txt - Added ``aiobotocore`` as a dependency for the event source
+        plugins only (https://github.com/ansible-collections/amazon.aws/pull/2816).
+      release_summary: This release adds support for indirect node counts across various
+        EC2, RDS, and S3 resources. It also introduces the new ``amazon.aws.ec2_instance_type_info``
+        module to support EC2 instance types. Furthermore, the ``aws_cloudtrail``
+        and ``aws_sqs_queue`` Event Source plugins have been ported from the  ``ansible.eda``
+        collection; please note that this introduces ``aiobotocore >= 2.14.0`` as
+        a new dependency for this collection. Several bugfixes are included for the
+        ``elb_application_lb`` and ``s3_object`` modules.
+    fragments:
+    - 20260119-indirect-node-count-for-storage-s3.yml
+    - 20260120-networking-load-balancer-node-query.yml
+    - 20260121-indirect-node-count-networking.yml
+    - 20260123-indirect-node-count-ec2.yml
+    - 20260125-aws-event-source.yml
+    - 20260127-nodequery-database.yml
+    - 2773-elb-application-lb-listener-rules.yml
+    - 2810-fix-put-empty-content.yml
+    - release_summary.yml
+    modules:
+    - description: Retrieve information about EC2 instance types
+      name: ec2_instance_type_info
+      namespace: ''
+    release_date: '2026-02-03'
+  11.2.0:
+    changes:
+      bugfixes:
+      - aws_ssm - Fixed connection being re-established on every loop iteration. The
+        plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
+      deprecated_features:
+      - aws_ec2 - the ``tags`` host variable has been deprecated to avoid conflicts
+        with Ansible reserved variable names and will be removed in a release after
+        2026-12-01. Use ``ec2_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - aws_ec2 - the ``use_contrib_script_compatible_ec2_tag_keys`` option has been
+        deprecated and will be removed in a release after 2026-12-01. Use the ``ec2_tags``
+        structure instead. (https://github.com/ansible-collections/amazon.aws/pull/2854)
+      - aws_ec2 - the ``use_contrib_script_compatible_sanitization`` option has been
+        deprecated and will be removed in a release after 2026-12-01. Use Ansible's
+        default group name sanitization instead. (https://github.com/ansible-collections/amazon.aws/pull/2854)
+      - aws_rds - the ``tags`` host variable has been deprecated to avoid conflicts
+        with Ansible reserved variable names and will be removed in a release after
+        2026-12-01. Use ``rds_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - route53 - the ``region`` parameter for latency-based routing has been deprecated
+        and will be removed in a release after 2027-06-01. The ``routing_region``
+        parameter behaves exactly as ``region`` behaves today and should be used instead
+        (https://github.com/ansible-collections/amazon.aws/issues/2893).
+      minor_changes:
+      - autoscaling_group - Added a boolean parameter ``protected_from_scale_in``
+        to toggle protection from scale-in. This allows users to enable or disable
+        scale-in protection for instances in an autoscaling group. (https://github.com/ansible-collections/amazon.aws/pull/2207)
+      - aws_cloudtrail - replace deprecated ``datetime.utcnow()`` with timezone-aware
+        ``datetime.now(tz=timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2858).
+      - aws_ec2 - added "ec2_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - aws_ec2 - remove explicit ``disable_lookups=False`` parameter from template
+        calls as it is deprecated and False is the default value (https://github.com/ansible-collections/amazon.aws/pull/2864).
+      - aws_inventory_base - remove explicit ``disable_lookups=False`` parameter from
+        template calls as it is deprecated and False is the default value (https://github.com/ansible-collections/amazon.aws/pull/2864).
+      - aws_rds - added "rds_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).
+      - aws_resource_actions - remove redundant ``list()`` call when using ``sorted()``,
+        improving efficiency by allowing sorted() to consume the generator expression
+        directly (https://github.com/ansible-collections/amazon.aws/pull/2882).
+      - ec2_vol - added ``volume_initialization_rate`` optional parameter to support
+        Provisioned Initialization Rate when creating a volume from snapshots. (https://github.com/ansible-collections/amazon.aws/issues/2665)
+      - ec2_vpc_endpoint - replace deprecated ``datetime.utcnow()`` with timezone-aware
+        ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
+      - ec2_vpc_nat_gateway - replace deprecated ``datetime.utcnow()`` with timezone-aware
+        ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
+      - plugin_utils/inventory - add error handling for ClientError and BotoCoreError
+        in _freeze_iam_role method (https://github.com/ansible-collections/amazon.aws/pull/2902).
+      - plugin_utils/inventory - extract role session name generation into separate
+        method to improve code organisation (https://github.com/ansible-collections/amazon.aws/pull/2902).
+      - route53 - added ``routing_region`` parameter to explicitly specify the region
+        for latency-based resource record sets (https://github.com/ansible-collections/amazon.aws/issues/2893).
+      - route53 - added temporary ``aws_region`` parameter to allow specifying the
+        AWS region for API requests while the ``region`` parameter is being transitioned
+        (https://github.com/ansible-collections/amazon.aws/issues/2893).
+      - route53 - refactored module utility to use decorator-based error handling.
+        (https://github.com/ansible-collections/amazon.aws/pull/2892)
+      - route53_health_check - refactored module to improve testability and type safety.
+        (https://github.com/ansible-collections/amazon.aws/pull/2892)
+      release_summary: 'This release introduces several new features and improvements
+        across the collection. Notable additions include support for the ``volume_initialization_rate``
+        parameter in ``ec2_vol`` to enable Provisioned Initialization Rate when creating
+        volumes from snapshots, and a new ``protected_from_scale_in`` option in ``autoscaling_group``
+        to control scale-in protection for instances. Route53 modules have been enhanced
+        with new parameters for latency-based routing, including ``routing_region``
+        and a temporary ``aws_region`` option to support the transition away from
+        the deprecated ``region`` parameter.
+
+        The release also includes security fixes addressing potential ReDoS vulnerabilities
+        in ARN and EC2 security group ID parsing, as well as several internal improvements
+        and refactorings to improve code maintainability, error handling, and testability
+        across modules and plugin utilities.
+
+        Several deprecations were introduced in inventory plugins to avoid conflicts
+        with Ansible reserved variable names and modernize configuration options.
+        In addition, the release includes code modernization updates such as replacing
+        deprecated ``datetime.utcnow()`` usage with timezone-aware alternatives, improvements
+        to inventory plugin utilities, and various testing and internal maintenance
+        updates.'
+      security_fixes:
+      - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
+        character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
+      - ec2_security_group - fix potential ReDoS vulnerability in security group ID
+        parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
+    fragments:
+    - 2207_scale_in_protection_auto_scaling_group.yml
+    - 2665-ec2_vol-provisioned-initialization-rate.yaml
+    - 2847_tags_deprecation.yml
+    - 2854-deprecate-legacy-script-options.yml
+    - 2869_aws_ssm_connection_fix.yml
+    - aws_resource_actions_callback.yml
+    - plugin_utils-inventory-unittests.yml
+    - pytest-ansible-compatibility.yml
+    - release_summary.yml
+    - route53-region-parameter-refactor.yml
+    - route53_error_handling_refactor.yml
+    - sonarcloud_regex.yml
+    - template_disable_lookups_cleanup.yml
+    - unittests-boto3-credentials.yml
+    - unittests-common.yml
+    - utcnow-deprecation.yml
+    release_date: '2026-03-17'
+  11.3.0:
+    changes:
+      bugfixes:
+      - autoscaling_group - Fixed duplicate default_cooldown assignment in properties
+        dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - elb_application_lb - Listener rules are now returned sorted by priority with
+        the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
+      - elb_application_lb_info - Listener rules are now returned sorted by priority
+        with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
+      - kms_key - Fixed parameter reassignment by using passed alias parameter instead
+        of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property
+        (https://github.com/ansible-collections/community.aws/issues/1915).
+      - s3_object_info - Fixed duplicate dictionary key assignments when retrieving
+        object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
+      minor_changes:
+      - Various modules and utilities - migrated from deprecated ``ansible.module_utils._text``
+        to ``ansible.module_utils.common.text.converters`` (https://github.com/ansible-collections/amazon.aws/pull/2860).
+      - amazon.aws.cloudformation - Fixed an issue where creating a changeset in check
+        mode would fail if the stack is not in a ready state (e.g., UPDATE_IN_PROGRESS).
+        The module now waits for the stack to be in a ready state (UPDATE_COMPLETE)
+        before creating the changeset (https://github.com/ansible-collections/amazon.aws/pull/1910)
+      - elb_application_lb_info - Fixed return value documentation to correctly reflect
+        actual types and added missing fields (https://github.com/ansible-collections/amazon.aws/issues/2939).
+      - extensions/eda/plugins/event_source/aws_sqs_queue.py - Added optional support
+        for feedback so that the event can be removed from the SQS Queue on receipt
+        of acknowledgement from ansible-rulebook.
+      - module_utils/errors - Add support for f-string style parameter interpolation
+        in error handler descriptions to provide more detailed error messages (https://github.com/ansible-collections/amazon.aws/pull/2944).
+      - s3_bucket - Added O(account_regional) parameter to support creating buckets
+        in the account-regional namespace. Requires at least botocore version 1.42.67
+        (https://github.com/ansible-collections/amazon.aws/pull/2960).
+      - s3_bucket - Added support for managing bucket logging configuration (https://github.com/ansible-collections/amazon.aws/pull/2855).
+      release_summary: This minor release adds new features and improvements to the
+        ``autoscaling_group``, ``elb_application_lb``, ``elb_application_lb_info``,
+        ``elb_classic_lb``, ``event_source_aws_cloudtrail``, ``kms_key``, ``s3_bucket``,
+        ``s3_object_info`` module(s).
+    fragments:
+    - 11.3.0.yml
+    - 1910-check_stack_change_set.yml
+    - 1915-cloudfront_distribution_info-TypeError.yml
+    - 20260225-migrate-text-converters.yml
+    - 2868_event_source_aws_cloudtrail_integration_tests.yaml
+    - 2939-elb-rules-sorting.yml
+    - ansible-test-gh-action-migration.yml
+    - elb_logging_service_principal.yml
+    - error-handler-format-strings.yml
+    - feedback_eda_sqs_source_plugin.yml
+    - reliability-duplicate-assignments.yml
+    - s3_bucket-account_regional.yml
+    - s3_bucket_logging.yml
+    release_date: '2026-05-08'
+  11.4.0:
+    changes:
+      bugfixes:
+      - aws_ssm - Fixed PowerShell command execution timeouts on Windows caused by
+        PTY echo issues. Commands are now uploaded to S3 and executed via a small
+        wrapper to avoid echoing large payloads to stdout (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - aws_ssm - Fixed PowerShell stdin handling for modules that require stdin input
+        on Windows hosts (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - aws_ssm - Fixed Windows SSM connection failures when transferring files with
+        Unicode characters in filenames or content. The connection plugin now properly
+        handles UTF-8 encoding throughout the S3 upload/download process (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - aws_ssm - Fixed stderr message accumulation across multiple command executions.
+        Stderr is now flushed at the start of each command to prevent error messages
+        from previous commands appearing in subsequent command output (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - aws_ssm - suppress PowerShell progress output in Windows file transfers to
+        prevent stdout pollution that causes transfer failures (https://github.com/ansible-collections/amazon.aws/pull/3013).
+      minor_changes:
+      - aws_ssm - Added O(endpoint_url) option for connecting to alternate AWS endpoints.
+        The alias O(aws_endpoint_url) is also supported (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - aws_ssm - Improved code organisation by extracting Windows command execution
+        logic into a dedicated WindowsCommandExecutor class (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - aws_ssm - Refactored connection plugin to inherit from AWSConnectionBase for
+        consistent AWS credential handling across plugins (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - aws_ssm - Renamed connection plugin options for consistency with other AWS
+        plugins. O(aws_access_key_id) renamed to O(access_key); O(aws_secret_access_key)
+        renamed to O(secret_key); O(aws_session_token) renamed to O(session_token);
+        O(aws_profile) renamed to O(profile). Old names are retained as aliases. Additional
+        aliases O(access_key_id) and O(secret_access_key) were also added (https://github.com/ansible-collections/amazon.aws/pull/2909).
+      - backup_plan - replace realistic version IDs with example UUID format in documentation
+        (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - backup_plan_info - replace realistic version IDs with example UUID format
+        in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_eip - replace AWS public IPs with RFC 5737 TEST-NET addresses in documentation
+        examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_eni_info - use RFC 1918 private addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_instance - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_instance_info - use RFC 5737 TEST-NET addresses in documentation examples
+        (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_key_info - replace realistic SSH fingerprint with example value in documentation
+        (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_metadata_facts - use RFC 5737 TEST-NET addresses in documentation examples
+        (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_vpc_dhcp_option - use public DNS servers (8.8.4.4, 8.8.8.8) instead of
+        RFC 5737 addresses for DNS examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_vpc_nat_gateway - use RFC 5737 TEST-NET addresses in documentation examples
+        (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_vpc_nat_gateway_info - use RFC 5737 TEST-NET addresses in documentation
+        examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_vpc_vpn - replace realistic pre-shared key with obvious example value
+        in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_vpc_vpn - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - ec2_vpc_vpn_info - use RFC 5737 TEST-NET addresses in documentation examples
+        (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - rds_instance - Added support for self-managed Active Directory parameters
+        ``domain_fqdn``, ``domain_ou``, ``domain_auth_secret_arn``, and ``domain_dns_ips``
+        to allow joining RDS instances to a self-managed Active Directory domain (https://github.com/ansible-collections/amazon.aws/pull/2977).
+      - route53 - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - route53_health_check - use RFC 5737 TEST-NET addresses in documentation examples
+        (https://github.com/ansible-collections/amazon.aws/pull/3008).
+      - route53_zone - add support for ``wait`` and ``wait_timeout`` parameters to
+        wait for DNSSEC state changes to propagate (https://github.com/ansible-collections/amazon.aws/issues/2981).
+      release_summary: This release includes significant improvements to the ``aws_ssm``
+        connection plugin, particularly for Windows hosts, along with new features
+        for ``route53_zone`` and ``rds_instance``. Documentation examples have been
+        updated to use RFC-compliant addresses throughout the collection.
+    fragments:
+    - 2981-route53_zone-wait-dnssec.yml
+    - 3008-rfc-reserved-addresses.yml
+    - 3014-tox-community-aws-branch.yml
+    - aws_ssm_windows_unicode_fixes.yml
+    - rds_instance-self-managed-ad-params.yml
+    - ssm-suppress-progress-output.yml
+    - v11.4.0_release_summary.yml
+    release_date: '2026-06-26'
+  11.5.0:
+    changes:
+      bugfixes:
+      - aws_sqs_queue - Fix UUID generation in EDA event source plugin to set ``meta.uuid``
+        as a flat key readable by ansible-rulebook, validate the SQS ``MessageId``
+        as a proper RFC 4122 UUID, and fall back to a deterministic UUID5 when invalid
+        (https://github.com/ansible-collections/amazon.aws/pull/3034).
+      - aws_ssm - apply the transfer bucket's server-side-encryption settings when
+        uploading files from the controller to the managed node (``put_file``), matching
+        the existing ``fetch_file`` behaviour. Previously the upload was made without
+        encryption settings, so buckets whose policy denies unencrypted ``PutObject``
+        requests rejected every file transfer with ``AccessDenied`` (https://github.com/ansible-collections/amazon.aws/issues/3018).
+      - aws_ssm connection plugin - fix hang on reboot by handling ValidationException
+        when terminating already-disconnected sessions (https://github.com/ansible-collections/amazon.aws/issues/3044).
+      - ec2_spot_instance - fix the ``network_interfaces.ipv6_addresses`` suboption,
+        which was defined as ``ipv6address`` and serialized to the invalid boto3 key
+        ``Ipv6address`` instead of ``Ipv6Address``, causing a ``ParamValidationError``
+        when requesting a spot instance with an IPv6 address (https://github.com/ansible-collections/amazon.aws/issues/2557,
+        https://github.com/ansible-collections/amazon.aws/pull/3110).
+      - module_utils - fix fail_json_aws() to work with Python 3.14 and ansible-core
+        2.19+ by using try/except to detect fail_json exception parameter support
+        instead of traceback.format_exc() which fails outside exception context in
+        Python 3.14 (https://github.com/ansible-collections/amazon.aws/pull/3103).
+      - rds_cluster - fix ``final_snapshot_identifier`` being silently dropped when
+        deleting a DB cluster with ``skip_final_snapshot=false``, which made the deletion
+        fail. The option is now ``final_db_snapshot_identifier``, matching ``rds_instance``
+        and the ``FinalDBSnapshotIdentifier`` API parameter, with ``final_snapshot_identifier``
+        kept as an alias (https://github.com/ansible-collections/amazon.aws/issues/3084).
+      - ubuntu clients over ssm connection plugin failed with timeouts. dash on ubuntu
+        needs oneline-commands without '\n' (https://github.com/ansible-collections/amazon.aws/pull/3036)
+      minor_changes:
+      - Replace the deprecated ``ansible.module_utils.six`` compatibility shims with
+        their Python standard library equivalents. ``ansible.module_utils.six`` is
+        deprecated in ansible-core 2.21 and is scheduled for removal in 2.24 (https://github.com/ansible-collections/amazon.aws/pull/3039).
+      - aws_ec2 inventory plugin - Added a ``use_deprecated_tags`` option to allow
+        disabling the deprecated ``tags`` host variable (and its associated deprecation
+        and reserved-name warnings) independently of global deprecation warning settings
+        (https://github.com/ansible-collections/amazon.aws/issues/3028).
+      release_summary: This minor release adds a ``use_deprecated_tags`` option to
+        the ``aws_ec2`` inventory plugin and replaces the deprecated ``ansible.module_utils.six``
+        shims with their Python standard library equivalents. It also includes bugfixes
+        for the ``ec2_spot_instance``, ``aws_sqs_queue`` and ``rds_cluster`` modules,
+        and the ``aws_ssm`` connection plugin.
+    fragments:
+    - 11.5.0.yml
+    - 2557-ec2_spot_instance-ipv6_address-option.yml
+    - 3018-aws_ssm-put-file-sse.yml
+    - 3028-aws_ec2-tags-deprecation-warning.yml
+    - 3034-aws_sqs_queue-uuid-validation.yml
+    - 3044-aws-ssm-reboot-validation-exception.yml
+    - 3060-rds_cluster-final_db_snapshot_identifier.yml
+    - python314-fail-json-fix.yml
+    - remove-module-utils-six.yml
+    - ruff-unused-test-cleanup.yml
+    - ubuntu-dash-ssm.yml
+    release_date: '2026-10-06'
+  12.0.0:
+    changes:
+      breaking_changes:
+      - Collection - Minimum supported Python version is now 3.9 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+      - Collection - Minimum supported boto3 version is now 1.38.0 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+      - Collection - Minimum supported boto3 version is now 1.38.23 (https://github.com/ansible-collections/amazon.aws/pull/2952).
+      - Collection - Minimum supported botocore version is now 1.38.0 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+      - Collection - Minimum supported botocore version is now 1.38.23 (https://github.com/ansible-collections/amazon.aws/pull/2952).
+      - Support for ansible-core < 2.18 has been dropped. The collection now requires
+        ansible-core >= 2.18.0 which supports Python >= 3.11 (https://github.com/ansible-collections/amazon.aws/pull/3142).
+      - cloudformation - removed the deprecated ``template`` parameter. The parameter
+        was deprecated in release 7.6.0 and the removal date of 2026-05-01 has passed.
+        Use ``template_body`` with the ``ansible.builtin.file`` or ``ansible.builtin.template``
+        lookup plugin instead (https://github.com/ansible-collections/amazon.aws/pull/3097).
+      - ec2_instance - removed the ``placement_group`` parameter. The parameter was
+        deprecated in release 7.0.0. Use ``placement.group_name`` instead (https://github.com/ansible-collections/amazon.aws/pull/2937).
+      - ec2_instance - removed the ``tenancy`` parameter. The parameter was deprecated
+        in release 7.0.0. Use ``placement.tenancy`` instead (https://github.com/ansible-collections/amazon.aws/pull/2937).
+      - s3_object - removed support for boolean values in the ``overwrite`` parameter.
+        Only the string values ``always``, ``never``, ``different``, or ``latest``
+        are now accepted (https://github.com/ansible-collections/amazon.aws/pull/2924).
+      - s3_object - removed support for passing both ``dualstack`` and ``endpoint_url``
+        parameters at the same time. The parameters are now mutually exclusive. To
+        use dualstack endpoints with a custom endpoint, specify the dualstack endpoint
+        URL directly in ``endpoint_url`` (https://github.com/ansible-collections/amazon.aws/pull/2924).
+      bugfixes:
+      - cloudformation - Fix SHA1 hashing for FIPS mode compatibility by adding usedforsecurity=False
+        parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/2921).
+      - module_utils/s3 - Fix MD5 hashing for FIPS mode compatibility by adding usedforsecurity=False
+        parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/2921).
+      - rds_cluster - Fixed ``KeyError`` when stopping or starting clusters because
+        ``changing_cluster_options`` assumed ``ApplyImmediately`` was always present
+        in the parameters (https://github.com/ansible-collections/amazon.aws/pull/3041).
+      - rds_option_group - Fixed ``check_mode`` not being respected during option
+        group creation when tags are provided (https://github.com/ansible-collections/amazon.aws/pull/3064).
+      - rds_option_group - ``state=absent`` no longer fails when the option group
+        is deleted by another process between the existence check and the delete call;
+        ``changed`` is now derived from the delete call's actual result instead of
+        being pre-set to ``True`` (https://github.com/ansible-collections/amazon.aws/pull/3078).
+      - route53_zone - Remove the default value for ``dnssec`` parameter to avoid
+        idempotency issues (https://github.com/ansible-collections/amazon.aws/pull/2553).
+      - secretsmanager_secret - fixed bug where falsy values (0, empty string, False)
+        were incorrectly filtered when on_missing/on_denied was set to skip or warn.
+        Now only None values are filtered. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+      deprecated_features:
+      - Collection - Support for Python 3.9 is deprecated and will be removed in a
+        release after 2027-04-01, following AWS SDK for Python's end of support for
+        Python 3.9 in April 2026 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+      minor_changes:
+      - CI test matrices updated against ansible-core 2.21 in addition to 2.18, 2.19,
+        and 2.20 (https://github.com/ansible-collections/amazon.aws/pull/3142).
+      - Collection - Add aiobotocore version 2.23.0 as a dependency for the event
+        source plugins (https://github.com/ansible-collections/amazon.aws/pull/2952).
+      - autoscaling_group - Refactored module to reduce code complexity, improve error
+        handling, and replace manual wait loops with waiter-based implementations
+        (https://github.com/ansible-collections/amazon.aws/pull/2938).
+      - autoscaling_group - Standardised return values with autoscaling_group_info
+        by extracting shared transformation logic to module_utils (https://github.com/ansible-collections/amazon.aws/pull/2938).
+      - autoscaling_group_info - Refactored module to reduce code complexity, improve
+        error handling, and replace manual wait loops with waiter-based implementations
+        (https://github.com/ansible-collections/amazon.aws/pull/2938).
+      - autoscaling_group_info - Standardised return values with autoscaling_group
+        by extracting shared transformation logic to module_utils (https://github.com/ansible-collections/amazon.aws/pull/2938).
+      - aws_account_attribute - added ``on_denied`` parameter to control behaviour
+        when access to account attributes is denied, supporting error (default), skip,
+        and warn modes. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+      - aws_ec2 inventory plugin - Added availability_zone_id to the placement block
+        in host variables (https://github.com/ansible-collections/amazon.aws/issues/1550).
+      - aws_ec2 inventory plugin - Addressed SonarCloud code-smells by reducing cognitive
+        complexity in hostname processing methods (https://github.com/ansible-collections/amazon.aws/pull/2936).
+      - ec2_tag - added ``resource_tags`` as an alias for the ``tags`` parameter,
+        matching the convention already used by the ``ec2_instance`` module (https://github.com/ansible-collections/amazon.aws/pull/3085).
+      - elb_application_lb - Refactor module to reduce cognitive complexity and improve
+        code maintainability (https://github.com/ansible-collections/amazon.aws/pull/2946).
+      - elb_application_lb - add ``http_xff_header_processing_mode`` to set whether
+        the load balancer appends, preserves, or removes the X-Forwarded-For header
+        (https://github.com/ansible-collections/amazon.aws/issues/3098).
+      - lookup plugins - created centralised LookupErrorHandler decorator pattern
+        to reduce code duplication and cognitive complexity in lookup plugins. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+      - lookup plugins - updated deprecated text converter imports from ``ansible.module_utils._text``
+        to ``ansible.module_utils.common.text.converters`` to avoid deprecation warnings.
+        (https://github.com/ansible-collections/amazon.aws/pull/2914)
+      - module_utils/_rds/api - Added shared utility functions for DB parameter group
+        operations with ``@RDSErrorHandler`` decorators for standardized error handling.
+        (https://github.com/ansible-collections/amazon.aws/pull/3065)
+      - module_utils/_rds/common - Added ``DBParameterGroupNotFoundFault`` to the
+        list of not-found error codes handled by ``RDSErrorHandler``. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+      - module_utils/rds - Added ``describe_db_clusters`` centralized wrapper with
+        ``@RDSErrorHandler`` and ``@AWSRetry`` decorators, and added ``DBClusterNotFoundFault``
+        to the error handler (https://github.com/ansible-collections/amazon.aws/pull/3041).
+      - module_utils/rds - Added ``describe_global_clusters`` centralized wrapper
+        with ``@RDSErrorHandler`` and ``@AWSRetry`` decorators, and added ``GlobalClusterNotFoundFault``
+        to the error handler (https://github.com/ansible-collections/amazon.aws/pull/3068).
+      - module_utils/rds - Added ``describe_option_groups`` centralized wrapper with
+        ``@RDSErrorHandler`` and ``@AWSRetry`` decorators, and added ``OptionGroupNotFoundFault``
+        to the error handler (https://github.com/ansible-collections/amazon.aws/pull/3065).
+      - module_utils/rds - ``describe_db_cluster_parameter_groups()`` and ``describe_db_cluster_parameters()``
+        now take a boto3 client and ``**params`` like the other ``describe_*`` helpers,
+        dropping the unused ``module`` argument (https://github.com/ansible-collections/amazon.aws/pull/3089).
+      - plugin_utils/inventory - Refactored error handling to use centralised InventoryErrorHandler
+        following S3ErrorHandler pattern (https://github.com/ansible-collections/amazon.aws/pull/2936).
+      - rds_cluster - Removed module-level globals, replaced ``eval()`` dispatch with
+        ``format_rds_client_method_parameters()``, and use shared ``describe_db_clusters``
+        from ``module_utils/rds`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/3041).
+      - rds_cluster_info - Refactored module to use shared ``describe_db_clusters``
+        from ``module_utils/rds`` and ``AnsibleRDSError`` for consistent error handling
+        (https://github.com/ansible-collections/amazon.aws/pull/3041).
+      - rds_cluster_param_group - Refactored shared ``describe_db_cluster_parameter_groups``
+        and ``describe_db_cluster_parameters`` in ``module_utils/rds`` to use ``RDSErrorHandler``
+        decorator for consistent error handling following previous PRs. (https://github.com/ansible-collections/amazon.aws/pull/3069)
+      - rds_cluster_param_group - refactored the module onto the shared ``module_utils/rds``
+        helpers, removing the redundant ``botocore`` import and connection ``try/except``
+        block (https://github.com/ansible-collections/amazon.aws/pull/3089).
+      - rds_cluster_param_group - the current parameters are now indexed by name when
+        comparing them against the requested ones, instead of the full list being
+        scanned once per requested parameter (https://github.com/ansible-collections/amazon.aws/pull/3089).
+      - rds_cluster_param_group - the parameter group returned by the create call
+        is now reused, removing a redundant ``describe_db_cluster_parameter_groups()``
+        call (https://github.com/ansible-collections/amazon.aws/pull/3089).
+      - rds_cluster_param_group_info - refactored the module onto the shared ``module_utils/rds``
+        helpers and removed the redundant ``botocore`` import and connection ``try/except``
+        block (https://github.com/ansible-collections/amazon.aws/pull/3089).
+      - rds_cluster_snapshot - Added docstrings to the module's helper functions,
+        aligning the module with the style used by the shared ``module_utils/rds``
+        utilities (https://github.com/ansible-collections/amazon.aws/pull/3090).
+      - rds_engine_versions_info - Refactored module to use shared utility functions
+        from ``module_utils/rds`` for API calls, error handling, and retry logic (https://github.com/ansible-collections/amazon.aws/pull/3062).
+      - rds_global_cluster_info - Refactored module to use shared ``describe_global_clusters``
+        from ``module_utils/rds`` and ``AnsibleRDSError`` for consistent error handling
+        (https://github.com/ansible-collections/amazon.aws/pull/3068).
+      - rds_instance_param_group - Refactored to use shared utilities from ``module_utils/_rds/api.py``
+        including ``describe_db_instance_parameter_groups``, ``describe_db_parameters``,
+        ``create_db_parameter_group``, ``modify_db_parameter_group``, and ``delete_db_parameter_group``
+        for consistent error handling and reduced code duplication. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+      - rds_instance_param_group_info - Updated module to use refactored ``describe_db_instance_parameter_groups``
+        function with new signature that retrieves tags separately. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+      - rds_instance_snapshot - Simplified the ``absent`` state logic to remove a
+        redundant branch and added docstrings to the module's helper functions, aligning
+        the module with the style used by the shared ``module_utils/rds`` utilities
+        (https://github.com/ansible-collections/amazon.aws/pull/3080).
+      - rds_option_group - Refactored module to use shared ``describe_option_groups``
+        and ``get_tags`` from ``module_utils/rds``, and standardized error handling
+        (https://github.com/ansible-collections/amazon.aws/pull/3064).
+      - rds_option_group - Removed direct ``botocore.exceptions`` imports and inline
+        ``try``/``except`` blocks; option group create, modify, delete, and tagging
+        calls are now made through small helper functions decorated with ``RDSErrorHandler``,
+        standardizing error handling on ``AnsibleRDSError`` (https://github.com/ansible-collections/amazon.aws/pull/3078).
+      - rds_option_group_info - Refactored module to use shared ``describe_option_groups``
+        from ``module_utils/rds`` and ``AnsibleRDSError`` for consistent error handling
+        (https://github.com/ansible-collections/amazon.aws/pull/3065).
+      - rds_subnet_group - Refactored module to use the shared ``describe_db_subnet_groups``
+        and ``call_method`` helpers from ``module_utils/rds`` and standardized error
+        handling on ``AnsibleRDSError``, removing the module-local backoff and duplicated
+        ``try``/``except`` blocks (https://github.com/ansible-collections/amazon.aws/pull/3072).
+      - secretsmanager_secret - refactored to use LookupErrorHandler decorator, reducing
+        cognitive complexity from 36 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+      - ssm_parameter - refactored to use LookupErrorHandler decorator, reducing cognitive
+        complexity from 28 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+      release_summary: This major release includes breaking changes to support requirements
+        and the removal of overdue deprecations from the ``ec2_instance`` and ``cloudformation``
+        modules. The collection now requires ansible-core >= 2.18.0 which supports
+        Python >= 3.11. Additionally, minimum boto3 and botocore versions have been
+        increased to 1.38.0. Deprecated parameters ``placement_group`` and ``tenancy``
+        from ``ec2_instance``, and ``template`` from ``cloudformation`` have been
+        removed. This release also includes bugfixes for the ``route53_zone`` module
+        and refactoring improvements to autoscaling, RDS, and ELB modules.
+    fragments:
+    - 12.0.0.yml
+    - 20260114-bump-version-to-12dev.yml
+    - 2553-route53_zone-remove-dnssec-default.yml
+    - 2952_boto3-botocore-13823_aiobotocore_requirements.yml
+    - 3063-ec2_tag-resource_tags-alias.yml
+    - 3064_rds_option_group-refactor.yml
+    - 3065_rds_option_group_info-refactor.yml
+    - 3143-drop-ansible-core-2_17.yml
+    - autoscaling-group-refactoring.yml
+    - aws_ec2-availability-zone-id.yml
+    - cloudformation-remove-template.yml
+    - ec2-instance-remove-overdue-deprecations.yml
+    - elb-application-lb-refactor.yml
+    - elb_application_lb-xff-header-processing-mode.yml
+    - fips-hashing-compatibility.yml
+    - lookup-error-handler-refactor.yml
+    - python39-boto138-requirements.yml
+    - rds_cluster-refactor.yml
+    - rds_cluster_info-refactor.yml
+    - rds_cluster_param_group-refactor.yml
+    - rds_cluster_param_group-shared-utils-refactor.yml
+    - rds_cluster_snapshot-refactor.yml
+    - rds_engine_versions_info-refactor.yml
+    - rds_global_cluster_info-refactor.yml
+    - rds_instance_param_group-refactor.yml
+    - rds_instance_snapshot-refactor.yml
+    - rds_option_group-drop-botocore-imports.yml
+    - rds_snapshot_info-refactor.yml
+    - rds_subnet_group-refactor.yml
+    - s3-object-remove-overdue-deprecations.yml
+    - sonarcloud-inventory-fixes.yml
+    - unittests-boto3-credentials.yml
+    release_date: '2026-10-12'
   2.0.0:
     changes:
       breaking_changes:
@@ -3780,642 +4619,3 @@ releases:
     - 9.5.2.yml
     - s3_object-content-headers.yml
     release_date: '2025-10-07'
-  10.0.0:
-    changes:
-      breaking_changes:
-      - amazon.aws collection - Support for ansible-core < 2.17 has been dropped (https://github.com/ansible-collections/amazon.aws/pull/2601).
-      - amazon.aws collection - Support for the ``EC2_ACCESS_KEY`` environment variable
-        was deprecated in release ``6.0.0`` and has now been removed.  Please use
-        the ``access_key`` parameter or ``AWS_ACCESS_KEY_ID`` environment variable
-        instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - Support for the ``EC2_REGION`` environment variable
-        was deprecated in release ``6.0.0`` and has now been removed.  Please use
-        the ``region`` parameter or ``AWS_REGION`` environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - Support for the ``EC2_SECRET_KEY`` environment variable
-        was deprecated in release ``6.0.0`` and has now been removed.  Please use
-        the ``secret_key`` parameter or ``AWS_SECRET_ACCESS_KEY`` environment variable
-        instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - Support for the ``EC2_SECURITY_TOKEN`` and ``AWS_SECURITY_TOKEN``
-        environment variables were deprecated in release ``6.0.0`` and have now been
-        removed.  Please use the ``session_token`` parameter or ``AWS_SESSION_TOKEN``
-        environment variable instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - Support for the ``EC2_URL`` and ``S3_URL`` environment
-        variables were deprecated in release ``6.0.0`` and have now been removed.  Please
-        use the ``endpoint_url`` parameter or ``AWS_URL`` environment variable instead
-        (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - The ``access_token``, ``aws_security_token`` and ``security_token``
-        aliases for the ``session_token`` parameter were deprecated in release ``6.0.0``
-        and have now been removed.  Please use the ``session_token`` name instead
-        (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - The ``boto_profile`` alias for the ``profile`` parameter
-        was deprecated in release ``6.0.0`` and has now been removed.  Please use
-        the ``profile`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - The ``ec2_access_key`` alias for the ``access_key``
-        parameter was deprecated in release ``6.0.0`` and has now been removed.  Please
-        use the ``access_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - The ``ec2_region`` alias for the ``region`` parameter
-        was deprecated in release ``6.0.0`` and has now been removed.  Please use
-        the ``region`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - The ``ec2_secret_key`` alias for the ``secret_key``
-        parameter was deprecated in release ``6.0.0`` and has now been removed.  Please
-        use the ``secret_key`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - amazon.aws collection - The ``endpoint``, ``ec2_url`` and ``s3_url`` aliases
-        for the ``endpoint_url`` parameter were deprecated in release ``6.0.0`` and
-        have now been removed.  Please use the ``region`` name instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - docs_fragments - The previously deprecated ``amazon.aws.aws_credentials``
-        docs fragment has been removed please use ``amazon.aws.common.plugins`` instead
-        (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - docs_fragments - The previously deprecated ``amazon.aws.aws_region`` docs
-        fragment has been removed please use ``amazon.aws.region.plugins`` instead
-        (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - docs_fragments - The previously deprecated ``amazon.aws.aws`` docs fragment
-        has been removed please use ``amazon.aws.common.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - docs_fragments - The previously deprecated ``amazon.aws.ec2`` docs fragment
-        has been removed please use ``amazon.aws.region.modules`` instead (https://github.com/ansible-collections/amazon.aws/pull/2527).
-      - ec2_vpc_peering_info - the ``result`` key has been removed from the return
-        value. ``vpc_peering_connections`` should be used instead (https://github.com/ansible-collections/amazon.aws/pull/2618).
-      - module_utils.botocore - drop deprecated ``boto3`` parameter for ``get_aws_region()``
-        and ``get_aws_connection_info()``, this parameter has had no effect since
-        release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2443).
-      - module_utils.ec2 - drop deprecated ``boto3`` parameter for ``get_ec2_security_group_ids_from_names()``
-        and ``get_aws_connection_info()``, this parameter has had no effect since
-        release 4.0.0 (https://github.com/ansible-collections/amazon.aws/pull/2603).
-      - rds_param_group - the redirect has been removed and playbooks should be updated
-        to use rds_instance_param_group (https://github.com/ansible-collections/amazon.aws/pull/2618).
-      bugfixes:
-      - s3_bucket - bucket ACLs now consistently returned (https://github.com/ansible-collections/amazon.aws/pull/2478).
-      - s3_bucket - fixed idempotency when setting bucket ACLs (https://github.com/ansible-collections/amazon.aws/pull/2478).
-      major_changes:
-      - amazon.aws collection - The amazon.aws collection has dropped support for
-        ``botocore<1.34.0`` and ``boto3<1.34.0``. Most modules will continue to work
-        with older versions of the AWS SDK, however compatibility with older versions
-        of the SDK is not guaranteed and will not be tested. When using older versions
-        of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/2426).
-      - amazon.aws collection - due to the AWS SDKs announcing the end of support
-        for Python less than 3.8 (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/),
-        support for Python less than 3.8 by this collection was deprecated in release
-        6.0.0 and removed in release 10.0.0. (https://github.com/ansible-collections/amazon.aws/pull/2426).
-      - connection/aws_ssm - The module has been migrated from the ``community.aws``
-        collection. Playbooks using the Fully Qualified Collection Name for this module
-        should be updated to use ``amazon.aws.aws_ssm``.
-      minor_changes:
-      - module_utils.s3 - added "501" to the list of error codes thrown by S3 replacements
-        (https://github.com/ansible-collections/amazon.aws/issues/2447).
-      - module_utils/s3 - add initial ErrorHandler for S3 modules (https://github.com/ansible-collections/amazon.aws/pull/2060).
-      - s3_bucket - migrated to use updated error handlers for better handling of
-        non-AWS errors (https://github.com/ansible-collections/amazon.aws/pull/2478).
-      release_summary: 'This major release introduces new support with the ``aws_ssm``
-        connection plugin, which has been promoted from ``community.aws``, several
-        bugfixes, minor changes and deprecated features.
-
-        Additionally, this release increases the minimum required versions of ``boto3``
-        and ``botocore`` to 1.34.0 to align with updated AWS SDK support and support
-        for ansible-core < 2.17 has been dropped.
-
-        Due to the AWS SDKs announcing the end of support for Python less than 3.8
-        (https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/),
-        support for Python less than 3.8 by this collection was deprecated in 9.0.0
-        release and is removed in this 10.0.0 release.
-
-        '
-    fragments:
-    - 10.0.0-increase-ansible-core-version.yml
-    - 10.0.0.yml
-    - 20241029-main-10.0.0.yml
-    - 20250117-s3_bucket-error_handler.yml
-    - 20250508-update-docs.yml
-    - 2060-s3_error_handler.yml
-    - 2443-boto-final-clean.yml
-    - 2527-module_aliases.yml
-    - 2618-remove-rds-param-group.yml
-    - boto3-cleanup.yml
-    - botocore.yml
-    - migrate_aws_ssm.yml
-    - s3_bucket-501.yml
-    - skip_ansible-core_2.16.yml
-    release_date: '2025-05-13'
-  10.1.0:
-    changes:
-      minor_changes:
-      - inventory/aws_ec2 - Adding support for ``Route53`` as hostname (https://github.com/ansible-collections/amazon.aws/pull/2580).
-      release_summary: This minor release adds support for ``Route53`` as a hostname.
-    fragments:
-    - 20250321-inventory_aws_ec2-add-support-for-route53.yml
-    release_date: '2025-06-03'
-  10.1.1:
-    changes:
-      bugfixes:
-      - ec2_instance - corrected typo for InsufficientInstanceCapacity. Fix now will
-        retry Ec2 creation when InsufficientInstanceCapacity error occurs (https://github.com/ansible-collections/amazon.aws/issues/1038).
-      release_summary: This release includes a bugfix and a documentation update.
-    fragments:
-    - 10.1.1.yml
-    - 2674-fix-errorcode-typo.yml
-    release_date: '2025-08-06'
-  10.1.2:
-    changes:
-      bugfixes:
-      - Remove ``ansible.module_utils.six`` imports to avoid warnings (https://github.com/ansible-collections/amazon.aws/pull/2727).
-      - amazon.aws.autoscaling_instance - setting the state to ``terminated`` had
-        no effect. The fix implements missing instance termination state (https://github.com/ansible-collections/amazon.aws/issues/2719).
-      - ec2_vpc_nacl - Fix issue when trying to update existing Network ACL rule (https://github.com/ansible-collections/amazon.aws/issues/2592).
-      - s3_object - Honor headers for content and content_base64 uploads by promoting
-        supported keys (e.g. ContentType, ContentDisposition, CacheControl) to top-level
-        S3 arguments and placing remaining keys under Metadata. This makes content
-        uploads consistent with src uploads. (https://github.com/ansible-collections/amazon.aws)
-      release_summary: This release includes multiple bug fixes.
-    fragments:
-    - 10.1.2_summary.yaml
-    - 20250513-ec2_vpc_nacl-fix-issue-when-updating-rules.yml
-    - 20250924-sanity-fixes.yml
-    - 2720-autoscaling_instance-implements-missing-instance-termination-state.yaml
-    - s3_object-content-headers.yml
-    release_date: '2025-10-07'
-  10.2.0:
-    changes:
-      bugfixes:
-      - connection/aws_ssm - fixed ReferenceError in aws_ssm connection plugin destructor
-        during interpreter shutdown (https://github.com/ansible-collections/amazon.aws/issues/2728).
-      - lambda_info - fixed invalid return value documentation that used dot notation
-        (``function.TheName``) which cannot be used in Jinja2 templates (https://github.com/ansible-collections/amazon.aws/pull/2772).
-      - s3_bucket - fix error when configuring AES256 bucket encryption with ``bucket_key_enabled``
-        explicitly set to ``false`` (https://github.com/ansible-collections/amazon.aws/issues/2734).
-      deprecated_features:
-      - ec2_vpc_dhcp_option - the ``dhcp_config`` return value has been deprecated
-        and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead
-        (https://github.com/ansible-collections/amazon.aws/pull/2772).
-      - ec2_vpc_dhcp_option_info - the ``dhcp_config`` return value has been deprecated
-        and will be removed in a release after 2026-12-01. Use ``dhcp_options`` instead
-        (https://github.com/ansible-collections/amazon.aws/pull/2772).
-      - route53 - the ``values`` key in the ``resource_record_sets`` return value
-        has been deprecated in favor of ``record_values`` for Jinja2 compatibility.
-        The ``values`` key will be removed in a release after 2026-12-01 (https://github.com/ansible-collections/amazon.aws/pull/2772).
-      minor_changes:
-      - Add support for the io2 storage type for RDS (https://github.com/ansible-collections/amazon.aws/pull/2748).
-      - ec2_launch_template - increase GP3 volume ``throughput`` limits in line with
-        updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
-      - ec2_vol - increase ``throughput`` and ``iops`` limits for GP3 volumes in line
-        with updated AWS limits (https://github.com/ansible-collections/amazon.aws/pull/2749).
-      - module_utils.s3 - added "501" to the list of error codes thrown by S3 replacements
-        (https://github.com/ansible-collections/amazon.aws/issues/2447).
-      - module_utils/_s3/common - use ``is_boto3_error_httpstatus`` to handle HTTP
-        403 and 501 status codes from S3-compatible services (https://github.com/ansible-collections/amazon.aws/pull/2776).
-      - module_utils/botocore - add ``is_boto3_error_httpstatus`` helper function
-        to catch boto3 exceptions based on HTTP status codes (https://github.com/ansible-collections/amazon.aws/pull/2776).
-      - route53 - added ``record_values`` key to ``resource_record_sets`` return value
-        that can be accessed using Jinja2 dot notation (https://github.com/ansible-collections/amazon.aws/pull/2772).
-      - sts_assume_role - improve error handling for ``MalformedPolicyDocument`` errors
-        by providing a clearer error message when an invalid policy document is provided
-        (https://github.com/ansible-collections/amazon.aws/pull/2778).
-      release_summary: This release adds support for the io2 storage type for RDS
-        as well as other minor changes, several bugfixes and deprecated features.
-    fragments:
-    - 2728-reference_error_ssm_destructor.yml
-    - 2734-AES_explicit_bucket_key.yml
-    - 2748-io2_storage_support.yml
-    - 2749-gp3-limits.yml
-    - fix-bad-return-value-keys.yml
-    - is_boto3_error_httpstatus.yml
-    - s3_bucket-501.yml
-    - sts_assume_role-malformed_policy.yml
-    release_date: '2026-01-13'
-  10.3.0:
-    changes:
-      bugfixes:
-      - aws_ssm - Fixed connection being re-established on every loop iteration. The
-        plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
-      - elb_application_lb - fixed comparison of multi-rule default actions to properly
-        handle the ``Order`` field when determining if listener modifications are
-        needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
-      - 'elb_application_lb - fixed error where creating a new application load balancer
-        with listener rules would fail with ``Parameter validation failed: Invalid
-        type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).'
-      - s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
-      minor_changes:
-      - meta/runtime.yml - Lowered the ``ansible-core`` minimum version to ``2.16``.
-        This expands compatibility and does not change or remove existing functionality.
-      release_summary: This minor release includes several bug fixes across ALB, S3,
-        and the SSM connection plugin, security hardening for ARN parsing, and expanded
-        compatibility with ansible-core >= 2.16.
-      security_fixes:
-      - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
-        character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
-      - ec2_security_group - fix potential ReDoS vulnerability in security group ID
-        parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
-    fragments:
-    - 2773-elb-application-lb-listener-rules.yml
-    - 2810-fix-put-empty-content.yml
-    - 2869_aws_ssm_connection_fix.yml
-    - relax_ansible_core_version.yml
-    - release_summary.yml
-    - sonarcloud_regex.yml
-    - unittests-boto3-credentials.yml
-    release_date: '2026-03-16'
-  10.3.1:
-    changes:
-      bugfixes:
-      - autoscaling_group - Fixed duplicate default_cooldown assignment in properties
-        dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
-      - kms_key - Fixed parameter reassignment by using passed alias parameter instead
-        of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
-      - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property
-        (https://github.com/ansible-collections/community.aws/issues/1915).
-      - s3_object_info - Fixed duplicate dictionary key assignments when retrieving
-        object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
-      release_summary: This patch release includes bugfixes for the ``s3_object_info``,
-        ``autoscaling_group``, and ``kms_key`` modules, addressing duplicate dictionary
-        key assignments and improving reliability. It also fixes a TypeError in CloudFront
-        module utilities.
-    fragments:
-    - 10.3.1.yml
-    - 1915-cloudfront_distribution_info-TypeError.yml
-    - ansible-test-gh-action-migration.yml
-    - reliability-duplicate-assignments.yml
-    release_date: '2026-05-06'
-  10.3.2:
-    changes:
-      bugfixes:
-      - Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if
-        bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914)
-        (https://github.com/ansible-collections/amazon.aws/pull/2987)
-    fragments:
-    - 2987-s3bucket-waiter-retry-404.yml
-    release_date: '2026-06-16'
-  11.0.0:
-    changes:
-      major_changes:
-      - amazon.aws collection - ``awscli`` version has been bumped to 1.34.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
-      - amazon.aws collection - ``botocore`` and ``boto3`` versions have been bumped
-        to 1.35.0 (https://github.com/ansible-collections/amazon.aws/pull/2774).
-      - ec2_security_group - Support for passing nested lists of strings to ``rules.cidr_ip``
-        and ``rules.cidr_ipv6`` have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
-      - iam_user - Support for ``iam_user`` return key has been removed; only ``user``
-        is now returned (https://github.com/ansible-collections/amazon.aws/issues/2777).
-      - lambda_info - Support for ``function`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
-      - route53_info - Support for CamelCased lists (``ResourceRecordSets``, ``HostedZones``,
-        ``HealthChecks``, ``CheckerIpRanges``, ``DelegationSets``, ``HealthCheck``)
-        have been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
-      - s3_object - Support for ``list`` mode has been removed; use ``s3_object_info``
-        instead (https://github.com/ansible-collections/amazon.aws/issues/2777).
-      - s3_object - Support for passing the leading ``/`` has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
-      - s3_object_info - Support for passing ``dualstack`` and ``endpoint_url`` at
-        the same time has been removed (https://github.com/ansible-collections/amazon.aws/issues/2777).
-      minor_changes:
-      - module_utils/s3 - refactored S3 module utilities to consolidate duplicate
-        code, add comprehensive type hints and docstrings, and improve maintainability
-        (https://github.com/ansible-collections/amazon.aws/pull/2782).
-      - s3_bucket - refactored to use centralized S3 wrapper functions from module_utils
-        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
-      - s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils
-        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
-      - s3_object - refactored to use centralized S3 wrapper functions from module_utils
-        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
-      - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils
-        and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
-      release_summary: This major release includes changes such as refactored S3 module
-        utilities to consolidate duplicate code, add comprehensive type hints and
-        docstrings, and improve maintainability. Additionally, ``botocore`` and ``boto3``
-        versions have been bumped to 1.35.0 and ``awscli`` version has been bumped
-        to 1.34.0.
-    fragments:
-    - 11-0-0.yaml
-    - 2728-reference_error_ssm_destructor.yml
-    - 2734-AES_explicit_bucket_key.yml
-    - 2748-io2_storage_support.yml
-    - 2749-gp3-limits.yml
-    - 2774-bump-botocore-1.35.0.yml
-    - 2777-deprecation_removals.yml
-    - fix-bad-return-value-keys.yml
-    - is_boto3_error_httpstatus.yml
-    - s3-module-utils-refactoring.yml
-    - sts_assume_role-malformed_policy.yml
-    release_date: '2026-01-14'
-  11.1.0:
-    changes:
-      bugfixes:
-      - elb_application_lb - fixed comparison of multi-rule default actions to properly
-        handle the ``Order`` field when determining if listener modifications are
-        needed (https://github.com/ansible-collections/amazon.aws/issues/2537).
-      - 'elb_application_lb - fixed error where creating a new application load balancer
-        with listener rules would fail with ``Parameter validation failed: Invalid
-        type for parameter ListenerArn, value: None`` (https://github.com/ansible-collections/amazon.aws/issues/2400).'
-      - s3_object - fixed error when using PUT with an empty ``content`` string (https://github.com/ansible-collections/amazon.aws/pull/2810)
-      minor_changes:
-      - aws_cloudtrail - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws``
-        (https://github.com/ansible-collections/amazon.aws/pull/2816).
-      - aws_sqs_queue - Ported the event source plugin from ``ansible.eda`` to ``amazon.aws``
-        (https://github.com/ansible-collections/amazon.aws/pull/2816).
-      - indirect node count - Add support for querying RDS database resources (https://github.com/ansible-collections/amazon.aws/pull/2825).
-      - indirect node count - Create query for networking load balancer resources
-        (https://github.com/ansible-collections/amazon.aws/pull/2818).
-      - indirect node count - create query for ec2 (https://github.com/ansible-collections/amazon.aws/pull/2807).
-      - indirect node count - create query for networking resources vpc, subnet, nat
-        gateway, internet gateway, virtual gateway, route table, vpn, vpc peering
-        (https://github.com/ansible-collections/amazon.aws/pull/2811).
-      - indirect node count - create query for storage resources S3 bucket and Object
-        (https://github.com/ansible-collections/amazon.aws/pull/2811).
-      - requirements.txt - Added ``aiobotocore`` as a dependency for the event source
-        plugins only (https://github.com/ansible-collections/amazon.aws/pull/2816).
-      release_summary: This release adds support for indirect node counts across various
-        EC2, RDS, and S3 resources. It also introduces the new ``amazon.aws.ec2_instance_type_info``
-        module to support EC2 instance types. Furthermore, the ``aws_cloudtrail``
-        and ``aws_sqs_queue`` Event Source plugins have been ported from the  ``ansible.eda``
-        collection; please note that this introduces ``aiobotocore >= 2.14.0`` as
-        a new dependency for this collection. Several bugfixes are included for the
-        ``elb_application_lb`` and ``s3_object`` modules.
-    fragments:
-    - 20260119-indirect-node-count-for-storage-s3.yml
-    - 20260120-networking-load-balancer-node-query.yml
-    - 20260121-indirect-node-count-networking.yml
-    - 20260123-indirect-node-count-ec2.yml
-    - 20260125-aws-event-source.yml
-    - 20260127-nodequery-database.yml
-    - 2773-elb-application-lb-listener-rules.yml
-    - 2810-fix-put-empty-content.yml
-    - release_summary.yml
-    modules:
-    - description: Retrieve information about EC2 instance types
-      name: ec2_instance_type_info
-      namespace: ''
-    release_date: '2026-02-03'
-  11.2.0:
-    changes:
-      bugfixes:
-      - aws_ssm - Fixed connection being re-established on every loop iteration. The
-        plugin now properly establishes a single connection for a loop (https://github.com/ansible-collections/amazon.aws/pull/2869).
-      deprecated_features:
-      - aws_ec2 - the ``tags`` host variable has been deprecated to avoid conflicts
-        with Ansible reserved variable names and will be removed in a release after
-        2026-12-01. Use ``ec2_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
-      - aws_ec2 - the ``use_contrib_script_compatible_ec2_tag_keys`` option has been
-        deprecated and will be removed in a release after 2026-12-01. Use the ``ec2_tags``
-        structure instead. (https://github.com/ansible-collections/amazon.aws/pull/2854)
-      - aws_ec2 - the ``use_contrib_script_compatible_sanitization`` option has been
-        deprecated and will be removed in a release after 2026-12-01. Use Ansible's
-        default group name sanitization instead. (https://github.com/ansible-collections/amazon.aws/pull/2854)
-      - aws_rds - the ``tags`` host variable has been deprecated to avoid conflicts
-        with Ansible reserved variable names and will be removed in a release after
-        2026-12-01. Use ``rds_tags`` instead (https://github.com/ansible-collections/amazon.aws/pull/2847).
-      - route53 - the ``region`` parameter for latency-based routing has been deprecated
-        and will be removed in a release after 2027-06-01. The ``routing_region``
-        parameter behaves exactly as ``region`` behaves today and should be used instead
-        (https://github.com/ansible-collections/amazon.aws/issues/2893).
-      minor_changes:
-      - autoscaling_group - Added a boolean parameter ``protected_from_scale_in``
-        to toggle protection from scale-in. This allows users to enable or disable
-        scale-in protection for instances in an autoscaling group. (https://github.com/ansible-collections/amazon.aws/pull/2207)
-      - aws_cloudtrail - replace deprecated ``datetime.utcnow()`` with timezone-aware
-        ``datetime.now(tz=timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2858).
-      - aws_ec2 - added "ec2_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).
-      - aws_ec2 - remove explicit ``disable_lookups=False`` parameter from template
-        calls as it is deprecated and False is the default value (https://github.com/ansible-collections/amazon.aws/pull/2864).
-      - aws_inventory_base - remove explicit ``disable_lookups=False`` parameter from
-        template calls as it is deprecated and False is the default value (https://github.com/ansible-collections/amazon.aws/pull/2864).
-      - aws_rds - added "rds_tags" host variable (https://github.com/ansible-collections/amazon.aws/pull/2847).
-      - aws_resource_actions - remove redundant ``list()`` call when using ``sorted()``,
-        improving efficiency by allowing sorted() to consume the generator expression
-        directly (https://github.com/ansible-collections/amazon.aws/pull/2882).
-      - ec2_vol - added ``volume_initialization_rate`` optional parameter to support
-        Provisioned Initialization Rate when creating a volume from snapshots. (https://github.com/ansible-collections/amazon.aws/issues/2665)
-      - ec2_vpc_endpoint - replace deprecated ``datetime.utcnow()`` with timezone-aware
-        ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
-      - ec2_vpc_nat_gateway - replace deprecated ``datetime.utcnow()`` with timezone-aware
-        ``datetime.now(datetime.timezone.utc)`` (https://github.com/ansible-collections/amazon.aws/pull/2866).
-      - plugin_utils/inventory - add error handling for ClientError and BotoCoreError
-        in _freeze_iam_role method (https://github.com/ansible-collections/amazon.aws/pull/2902).
-      - plugin_utils/inventory - extract role session name generation into separate
-        method to improve code organisation (https://github.com/ansible-collections/amazon.aws/pull/2902).
-      - route53 - added ``routing_region`` parameter to explicitly specify the region
-        for latency-based resource record sets (https://github.com/ansible-collections/amazon.aws/issues/2893).
-      - route53 - added temporary ``aws_region`` parameter to allow specifying the
-        AWS region for API requests while the ``region`` parameter is being transitioned
-        (https://github.com/ansible-collections/amazon.aws/issues/2893).
-      - route53 - refactored module utility to use decorator-based error handling.
-        (https://github.com/ansible-collections/amazon.aws/pull/2892)
-      - route53_health_check - refactored module to improve testability and type safety.
-        (https://github.com/ansible-collections/amazon.aws/pull/2892)
-      release_summary: 'This release introduces several new features and improvements
-        across the collection. Notable additions include support for the ``volume_initialization_rate``
-        parameter in ``ec2_vol`` to enable Provisioned Initialization Rate when creating
-        volumes from snapshots, and a new ``protected_from_scale_in`` option in ``autoscaling_group``
-        to control scale-in protection for instances. Route53 modules have been enhanced
-        with new parameters for latency-based routing, including ``routing_region``
-        and a temporary ``aws_region`` option to support the transition away from
-        the deprecated ``region`` parameter.
-
-        The release also includes security fixes addressing potential ReDoS vulnerabilities
-        in ARN and EC2 security group ID parsing, as well as several internal improvements
-        and refactorings to improve code maintainability, error handling, and testability
-        across modules and plugin utilities.
-
-        Several deprecations were introduced in inventory plugins to avoid conflicts
-        with Ansible reserved variable names and modernize configuration options.
-        In addition, the release includes code modernization updates such as replacing
-        deprecated ``datetime.utcnow()`` usage with timezone-aware alternatives, improvements
-        to inventory plugin utilities, and various testing and internal maintenance
-        updates.'
-      security_fixes:
-      - arn - fix potential ReDoS vulnerability in ARN parsing regex by using negated
-        character class instead of non-greedy quantifier (https://github.com/ansible-collections/amazon.aws/pull/2884).
-      - ec2_security_group - fix potential ReDoS vulnerability in security group ID
-        parsing regex by using negated character classes and adding end anchor (https://github.com/ansible-collections/amazon.aws/pull/2884).
-    fragments:
-    - 2207_scale_in_protection_auto_scaling_group.yml
-    - 2665-ec2_vol-provisioned-initialization-rate.yaml
-    - 2847_tags_deprecation.yml
-    - 2854-deprecate-legacy-script-options.yml
-    - 2869_aws_ssm_connection_fix.yml
-    - aws_resource_actions_callback.yml
-    - plugin_utils-inventory-unittests.yml
-    - pytest-ansible-compatibility.yml
-    - release_summary.yml
-    - route53-region-parameter-refactor.yml
-    - route53_error_handling_refactor.yml
-    - sonarcloud_regex.yml
-    - template_disable_lookups_cleanup.yml
-    - unittests-boto3-credentials.yml
-    - unittests-common.yml
-    - utcnow-deprecation.yml
-    release_date: '2026-03-17'
-  11.3.0:
-    changes:
-      bugfixes:
-      - autoscaling_group - Fixed duplicate default_cooldown assignment in properties
-        dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
-      - elb_application_lb - Listener rules are now returned sorted by priority with
-        the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
-      - elb_application_lb_info - Listener rules are now returned sorted by priority
-        with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
-      - kms_key - Fixed parameter reassignment by using passed alias parameter instead
-        of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
-      - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property
-        (https://github.com/ansible-collections/community.aws/issues/1915).
-      - s3_object_info - Fixed duplicate dictionary key assignments when retrieving
-        object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
-      minor_changes:
-      - Various modules and utilities - migrated from deprecated ``ansible.module_utils._text``
-        to ``ansible.module_utils.common.text.converters`` (https://github.com/ansible-collections/amazon.aws/pull/2860).
-      - amazon.aws.cloudformation - Fixed an issue where creating a changeset in check
-        mode would fail if the stack is not in a ready state (e.g., UPDATE_IN_PROGRESS).
-        The module now waits for the stack to be in a ready state (UPDATE_COMPLETE)
-        before creating the changeset (https://github.com/ansible-collections/amazon.aws/pull/1910)
-      - elb_application_lb_info - Fixed return value documentation to correctly reflect
-        actual types and added missing fields (https://github.com/ansible-collections/amazon.aws/issues/2939).
-      - extensions/eda/plugins/event_source/aws_sqs_queue.py - Added optional support
-        for feedback so that the event can be removed from the SQS Queue on receipt
-        of acknowledgement from ansible-rulebook.
-      - module_utils/errors - Add support for f-string style parameter interpolation
-        in error handler descriptions to provide more detailed error messages (https://github.com/ansible-collections/amazon.aws/pull/2944).
-      - s3_bucket - Added O(account_regional) parameter to support creating buckets
-        in the account-regional namespace. Requires at least botocore version 1.42.67
-        (https://github.com/ansible-collections/amazon.aws/pull/2960).
-      - s3_bucket - Added support for managing bucket logging configuration (https://github.com/ansible-collections/amazon.aws/pull/2855).
-      release_summary: This minor release adds new features and improvements to the
-        ``autoscaling_group``, ``elb_application_lb``, ``elb_application_lb_info``,
-        ``elb_classic_lb``, ``event_source_aws_cloudtrail``, ``kms_key``, ``s3_bucket``,
-        ``s3_object_info`` module(s).
-    fragments:
-    - 11.3.0.yml
-    - 1910-check_stack_change_set.yml
-    - 1915-cloudfront_distribution_info-TypeError.yml
-    - 20260225-migrate-text-converters.yml
-    - 2868_event_source_aws_cloudtrail_integration_tests.yaml
-    - 2939-elb-rules-sorting.yml
-    - ansible-test-gh-action-migration.yml
-    - elb_logging_service_principal.yml
-    - error-handler-format-strings.yml
-    - feedback_eda_sqs_source_plugin.yml
-    - reliability-duplicate-assignments.yml
-    - s3_bucket-account_regional.yml
-    - s3_bucket_logging.yml
-    release_date: '2026-05-08'
-  11.4.0:
-    changes:
-      bugfixes:
-      - aws_ssm - Fixed PowerShell command execution timeouts on Windows caused by
-        PTY echo issues. Commands are now uploaded to S3 and executed via a small
-        wrapper to avoid echoing large payloads to stdout (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - aws_ssm - Fixed PowerShell stdin handling for modules that require stdin input
-        on Windows hosts (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - aws_ssm - Fixed Windows SSM connection failures when transferring files with
-        Unicode characters in filenames or content. The connection plugin now properly
-        handles UTF-8 encoding throughout the S3 upload/download process (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - aws_ssm - Fixed stderr message accumulation across multiple command executions.
-        Stderr is now flushed at the start of each command to prevent error messages
-        from previous commands appearing in subsequent command output (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - aws_ssm - suppress PowerShell progress output in Windows file transfers to
-        prevent stdout pollution that causes transfer failures (https://github.com/ansible-collections/amazon.aws/pull/3013).
-      minor_changes:
-      - aws_ssm - Added O(endpoint_url) option for connecting to alternate AWS endpoints.
-        The alias O(aws_endpoint_url) is also supported (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - aws_ssm - Improved code organisation by extracting Windows command execution
-        logic into a dedicated WindowsCommandExecutor class (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - aws_ssm - Refactored connection plugin to inherit from AWSConnectionBase for
-        consistent AWS credential handling across plugins (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - aws_ssm - Renamed connection plugin options for consistency with other AWS
-        plugins. O(aws_access_key_id) renamed to O(access_key); O(aws_secret_access_key)
-        renamed to O(secret_key); O(aws_session_token) renamed to O(session_token);
-        O(aws_profile) renamed to O(profile). Old names are retained as aliases. Additional
-        aliases O(access_key_id) and O(secret_access_key) were also added (https://github.com/ansible-collections/amazon.aws/pull/2909).
-      - backup_plan - replace realistic version IDs with example UUID format in documentation
-        (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - backup_plan_info - replace realistic version IDs with example UUID format
-        in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_eip - replace AWS public IPs with RFC 5737 TEST-NET addresses in documentation
-        examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_eni_info - use RFC 1918 private addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_instance - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_instance_info - use RFC 5737 TEST-NET addresses in documentation examples
-        (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_key_info - replace realistic SSH fingerprint with example value in documentation
-        (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_metadata_facts - use RFC 5737 TEST-NET addresses in documentation examples
-        (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_vpc_dhcp_option - use public DNS servers (8.8.4.4, 8.8.8.8) instead of
-        RFC 5737 addresses for DNS examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_vpc_nat_gateway - use RFC 5737 TEST-NET addresses in documentation examples
-        (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_vpc_nat_gateway_info - use RFC 5737 TEST-NET addresses in documentation
-        examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_vpc_vpn - replace realistic pre-shared key with obvious example value
-        in documentation (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_vpc_vpn - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - ec2_vpc_vpn_info - use RFC 5737 TEST-NET addresses in documentation examples
-        (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - rds_instance - Added support for self-managed Active Directory parameters
-        ``domain_fqdn``, ``domain_ou``, ``domain_auth_secret_arn``, and ``domain_dns_ips``
-        to allow joining RDS instances to a self-managed Active Directory domain (https://github.com/ansible-collections/amazon.aws/pull/2977).
-      - route53 - use RFC 5737 TEST-NET addresses in documentation examples (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - route53_health_check - use RFC 5737 TEST-NET addresses in documentation examples
-        (https://github.com/ansible-collections/amazon.aws/pull/3008).
-      - route53_zone - add support for ``wait`` and ``wait_timeout`` parameters to
-        wait for DNSSEC state changes to propagate (https://github.com/ansible-collections/amazon.aws/issues/2981).
-      release_summary: This release includes significant improvements to the ``aws_ssm``
-        connection plugin, particularly for Windows hosts, along with new features
-        for ``route53_zone`` and ``rds_instance``. Documentation examples have been
-        updated to use RFC-compliant addresses throughout the collection.
-    fragments:
-    - 2981-route53_zone-wait-dnssec.yml
-    - 3008-rfc-reserved-addresses.yml
-    - 3014-tox-community-aws-branch.yml
-    - aws_ssm_windows_unicode_fixes.yml
-    - rds_instance-self-managed-ad-params.yml
-    - ssm-suppress-progress-output.yml
-    - v11.4.0_release_summary.yml
-    release_date: '2026-06-26'
-  11.5.0:
-    changes:
-      bugfixes:
-      - aws_sqs_queue - Fix UUID generation in EDA event source plugin to set ``meta.uuid``
-        as a flat key readable by ansible-rulebook, validate the SQS ``MessageId``
-        as a proper RFC 4122 UUID, and fall back to a deterministic UUID5 when invalid
-        (https://github.com/ansible-collections/amazon.aws/pull/3034).
-      - aws_ssm - apply the transfer bucket's server-side-encryption settings when
-        uploading files from the controller to the managed node (``put_file``), matching
-        the existing ``fetch_file`` behaviour. Previously the upload was made without
-        encryption settings, so buckets whose policy denies unencrypted ``PutObject``
-        requests rejected every file transfer with ``AccessDenied`` (https://github.com/ansible-collections/amazon.aws/issues/3018).
-      - aws_ssm connection plugin - fix hang on reboot by handling ValidationException
-        when terminating already-disconnected sessions (https://github.com/ansible-collections/amazon.aws/issues/3044).
-      - ec2_spot_instance - fix the ``network_interfaces.ipv6_addresses`` suboption,
-        which was defined as ``ipv6address`` and serialized to the invalid boto3 key
-        ``Ipv6address`` instead of ``Ipv6Address``, causing a ``ParamValidationError``
-        when requesting a spot instance with an IPv6 address (https://github.com/ansible-collections/amazon.aws/issues/2557,
-        https://github.com/ansible-collections/amazon.aws/pull/3110).
-      - module_utils - fix fail_json_aws() to work with Python 3.14 and ansible-core
-        2.19+ by using try/except to detect fail_json exception parameter support
-        instead of traceback.format_exc() which fails outside exception context in
-        Python 3.14 (https://github.com/ansible-collections/amazon.aws/pull/3103).
-      - rds_cluster - fix ``final_snapshot_identifier`` being silently dropped when
-        deleting a DB cluster with ``skip_final_snapshot=false``, which made the deletion
-        fail. The option is now ``final_db_snapshot_identifier``, matching ``rds_instance``
-        and the ``FinalDBSnapshotIdentifier`` API parameter, with ``final_snapshot_identifier``
-        kept as an alias (https://github.com/ansible-collections/amazon.aws/issues/3084).
-      - ubuntu clients over ssm connection plugin failed with timeouts. dash on ubuntu
-        needs oneline-commands without '\n' (https://github.com/ansible-collections/amazon.aws/pull/3036)
-      minor_changes:
-      - Replace the deprecated ``ansible.module_utils.six`` compatibility shims with
-        their Python standard library equivalents. ``ansible.module_utils.six`` is
-        deprecated in ansible-core 2.21 and is scheduled for removal in 2.24 (https://github.com/ansible-collections/amazon.aws/pull/3039).
-      - aws_ec2 inventory plugin - Added a ``use_deprecated_tags`` option to allow
-        disabling the deprecated ``tags`` host variable (and its associated deprecation
-        and reserved-name warnings) independently of global deprecation warning settings
-        (https://github.com/ansible-collections/amazon.aws/issues/3028).
-      release_summary: This minor release adds a ``use_deprecated_tags`` option to
-        the ``aws_ec2`` inventory plugin and replaces the deprecated ``ansible.module_utils.six``
-        shims with their Python standard library equivalents. It also includes bugfixes
-        for the ``ec2_spot_instance``, ``aws_sqs_queue`` and ``rds_cluster`` modules,
-        and the ``aws_ssm`` connection plugin.
-    fragments:
-    - 11.5.0.yml
-    - 2557-ec2_spot_instance-ipv6_address-option.yml
-    - 3018-aws_ssm-put-file-sse.yml
-    - 3028-aws_ec2-tags-deprecation-warning.yml
-    - 3034-aws_sqs_queue-uuid-validation.yml
-    - 3044-aws-ssm-reboot-validation-exception.yml
-    - 3060-rds_cluster-final_db_snapshot_identifier.yml
-    - python314-fail-json-fix.yml
-    - remove-module-utils-six.yml
-    - ruff-unused-test-cleanup.yml
-    - ubuntu-dash-ssm.yml
-    release_date: '2026-10-06'
