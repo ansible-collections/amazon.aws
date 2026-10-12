@@ -97,6 +97,39 @@ jobs:
             'tox-ansible==26.10.0'
           python3 -c "import importlib.metadata as m; print('content-plugin-finder', m.version('content-plugin-finder')); print('tox-ansible', m.version('tox-ansible'))"
 
+      # Evidence for the DevTools thread: show that the source tree and the built
+      # Galaxy artifact both contain tests/integration/targets/, so neither the
+      # collection layout nor galaxy.yml build_ignore explains the later failure.
+      - name: Evidence - source tree and built artifact both contain the targets
+        working-directory: ${{ env.amazon_dir }}
+        run: |
+          set -euo pipefail
+          echo "---- galaxy.yml build_ignore ----"
+          python3 -c "import re,sys; s=open('galaxy.yml').read(); m=re.search(r'build_ignore:.*?(?=\n[a-z_]+:|\Z)',s,re.S); print(m.group(0).strip() if m else 'NO build_ignore key')"
+          src_targets=$(ls -1 tests/integration/targets | wc -l | tr -d ' ')
+          echo "---- source tree: ${src_targets} target dirs ----"
+
+          python3 -m pip install -q 'ansible-core' >/dev/null 2>&1 || true
+          ansible-galaxy collection build . --output-path /tmp/colbuild --force
+          TAR=$(ls /tmp/colbuild/*.tar.gz | head -1)
+          entries=$(tar tzf "$TAR" | grep -c '^tests/integration/targets/' || true)
+          dirs=$(tar tzf "$TAR" | sed -n 's|^tests/integration/targets/\([^/]*\)/.*|\1|p' | sort -u | wc -l | tr -d ' ')
+          cfn=$(tar tzf "$TAR" | grep -c '^tests/integration/targets/cloudformation/' || true)
+          echo "---- built artifact: $(basename "$TAR") ----"
+          echo "  paths under tests/integration/targets/ : ${entries}"
+          echo "  distinct target dirs                   : ${dirs}"
+          echo "  cloudformation target paths            : ${cfn}"
+          {
+            echo "## Evidence: source and built artifact"
+            echo ""
+            echo "| | target dirs |"
+            echo "| :---- | :---- |"
+            echo "| source tree | ${src_targets} |"
+            echo "| built Galaxy artifact | ${dirs} (${entries} paths, cloudformation present: ${cfn} paths) |"
+            echo ""
+            echo "ansible-galaxy: \`$(ansible-galaxy --version 2>/dev/null | head -1)\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Generate ImpactReport with content-plugin-finder
         id: impact
         env:
@@ -192,6 +225,49 @@ jobs:
             echo '```'
             grep -iE "FATAL|Cannot run integration|list-targets|ERROR" probe.log | head -15 || echo "(no matching lines)"
             echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # The decisive diagnostic: what did ADE actually lay down at the path
+      # tox-ansible cd's into? Runs even though the probe failed, because the
+      # probe captures its own exit code rather than aborting the job.
+      - name: Evidence - contents of the installed collection ADE produced
+        if: always() && steps.impact.outputs.has_integration == 'true'
+        working-directory: ${{ env.amazon_dir }}
+        run: |
+          set -euo pipefail
+          COL=".tox/${{ env.tox_env }}/lib/python3.13/site-packages/ansible_collections/amazon/aws"
+          echo "---- installed collection: ${COL} ----"
+          if [ ! -d "$COL" ]; then
+            echo "installed collection directory does not exist"; exit 0
+          fi
+          echo "---- top level ----"
+          ls -la "$COL" | head -30
+          echo "---- is it a symlink? ----"
+          ls -ld "$COL"
+          for d in tests tests/integration tests/integration/targets; do
+            if [ -e "$COL/$d" ]; then
+              echo "PRESENT: $d ($(ls -1 "$COL/$d" 2>/dev/null | wc -l | tr -d ' ') entries)"
+            else
+              echo "MISSING: $d"
+            fi
+          done
+          {
+            echo "## Evidence: installed collection produced by ade install -e"
+            echo ""
+            echo "Path tox-ansible runs ansible-test from:"
+            echo '```'
+            echo "$COL"
+            echo '```'
+            echo '```'
+            ls -1 "$COL" 2>/dev/null | head -25
+            echo '```'
+            for d in tests tests/integration tests/integration/targets; do
+              if [ -e "$COL/$d" ]; then
+                echo "- \`$d\` present ($(ls -1 "$COL/$d" 2>/dev/null | wc -l | tr -d ' ') entries)"
+              else
+                echo "- \`$d\` **MISSING**"
+              fi
+            done
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Skip notice when finder selected no integration targets
