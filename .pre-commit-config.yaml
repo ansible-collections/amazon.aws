@@ -3,7 +3,7 @@
 # pre-commit. See CONTRIBUTING.md for setup and usage.
 #
 # Hook set: basic hygiene + ruff (check/format) + ansible-lint.
-# ruff rev must match [tool.ruff] required-version and tox ruff deps (0.16.9).
+# ruff rev must match [tool.ruff] required-version and tox ruff deps (0.16.10).
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
