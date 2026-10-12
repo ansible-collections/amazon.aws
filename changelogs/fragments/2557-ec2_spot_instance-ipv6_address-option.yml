@@ -1,2 +1,0 @@
-bugfixes:
-  - ec2_spot_instance - fix the ``network_interfaces.ipv6_addresses`` suboption, which was defined as ``ipv6address`` and serialized to the invalid boto3 key ``Ipv6address`` instead of ``Ipv6Address``, causing a ``ParamValidationError`` when requesting a spot instance with an IPv6 address (https://github.com/ansible-collections/amazon.aws/issues/2557, https://github.com/ansible-collections/amazon.aws/pull/3110).
