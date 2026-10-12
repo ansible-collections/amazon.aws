@@ -150,6 +150,23 @@ jobs:
         if: steps.impact.outputs.has_integration == 'true'
         working-directory: ${{ env.amazon_dir }}
         run: |
+          set -euo pipefail
+          # tox-ansible reads [tool.tox-ansible] from pyproject.toml and, when that
+          # table exists, ignores the [ansible] section of --conf entirely. main sets
+          # skip = ["integration-"], which strips every integration env and makes
+          # `-e integration-*` unresolvable (tox exits 254). Neutralise it in this
+          # ephemeral CI checkout only; the committed file is untouched.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("pyproject.toml")
+          s = p.read_text()
+          old = 'skip = ["integration-"]'
+          assert old in s, "expected skip entry not found in pyproject.toml"
+          p.write_text(s.replace(old, "skip = []", 1))
+          print("neutralised skip = [\"integration-\"] for this run")
+          PY
+          echo "---- integration envs now generated ----"
+          tox --ansible --conf tox-ansible.ini --impact-file .impact.json -l | grep '^integration-' | head -5 || echo "(none)"
           set +e
           tox --ansible --conf tox-ansible.ini --impact-file .impact.json \
             -e "${{ env.tox_env }}" -- --list-targets > probe.log 2>&1
