@@ -1,3 +1,0 @@
-minor_changes:
-  - rds_global_cluster_info - Refactored module to use shared ``describe_global_clusters`` from ``module_utils/rds`` and ``AnsibleRDSError`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/3068).
-  - module_utils/rds - Added ``describe_global_clusters`` centralized wrapper with ``@RDSErrorHandler`` and ``@AWSRetry`` decorators, and added ``GlobalClusterNotFoundFault`` to the error handler (https://github.com/ansible-collections/amazon.aws/pull/3068).

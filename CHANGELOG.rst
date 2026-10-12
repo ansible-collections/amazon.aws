@@ -4,6 +4,89 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v12.0.0
+=======
+
+Release Summary
+---------------
+
+This major release includes breaking changes to support requirements and the removal of overdue deprecations from the ``ec2_instance`` and ``cloudformation`` modules. The collection now requires ansible-core >= 2.18.0 which supports Python >= 3.11. Additionally, minimum boto3 and botocore versions have been increased to 1.38.0. Deprecated parameters ``placement_group`` and ``tenancy`` from ``ec2_instance``, and ``template`` from ``cloudformation`` have been removed. This release also includes bugfixes for the ``route53_zone`` module and refactoring improvements to autoscaling, RDS, and ELB modules.
+
+Minor Changes
+-------------
+
+- CI test matrices updated against ansible-core 2.21 in addition to 2.18, 2.19, and 2.20 (https://github.com/ansible-collections/amazon.aws/pull/3142).
+- Collection - Add aiobotocore version 2.23.0 as a dependency for the event source plugins (https://github.com/ansible-collections/amazon.aws/pull/2952).
+- autoscaling_group - Refactored module to reduce code complexity, improve error handling, and replace manual wait loops with waiter-based implementations (https://github.com/ansible-collections/amazon.aws/pull/2938).
+- autoscaling_group - Standardised return values with autoscaling_group_info by extracting shared transformation logic to module_utils (https://github.com/ansible-collections/amazon.aws/pull/2938).
+- autoscaling_group_info - Refactored module to reduce code complexity, improve error handling, and replace manual wait loops with waiter-based implementations (https://github.com/ansible-collections/amazon.aws/pull/2938).
+- autoscaling_group_info - Standardised return values with autoscaling_group by extracting shared transformation logic to module_utils (https://github.com/ansible-collections/amazon.aws/pull/2938).
+- aws_account_attribute - added ``on_denied`` parameter to control behaviour when access to account attributes is denied, supporting error (default), skip, and warn modes. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+- aws_ec2 inventory plugin - Added availability_zone_id to the placement block in host variables (https://github.com/ansible-collections/amazon.aws/issues/1550).
+- aws_ec2 inventory plugin - Addressed SonarCloud code-smells by reducing cognitive complexity in hostname processing methods (https://github.com/ansible-collections/amazon.aws/pull/2936).
+- ec2_tag - added ``resource_tags`` as an alias for the ``tags`` parameter, matching the convention already used by the ``ec2_instance`` module (https://github.com/ansible-collections/amazon.aws/pull/3085).
+- elb_application_lb - Refactor module to reduce cognitive complexity and improve code maintainability (https://github.com/ansible-collections/amazon.aws/pull/2946).
+- elb_application_lb - add ``http_xff_header_processing_mode`` to set whether the load balancer appends, preserves, or removes the X-Forwarded-For header (https://github.com/ansible-collections/amazon.aws/issues/3098).
+- lookup plugins - created centralised LookupErrorHandler decorator pattern to reduce code duplication and cognitive complexity in lookup plugins. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+- lookup plugins - updated deprecated text converter imports from ``ansible.module_utils._text`` to ``ansible.module_utils.common.text.converters`` to avoid deprecation warnings. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+- module_utils/_rds/api - Added shared utility functions for DB parameter group operations with ``@RDSErrorHandler`` decorators for standardized error handling. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+- module_utils/_rds/common - Added ``DBParameterGroupNotFoundFault`` to the list of not-found error codes handled by ``RDSErrorHandler``. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+- module_utils/rds - Added ``describe_db_clusters`` centralized wrapper with ``@RDSErrorHandler`` and ``@AWSRetry`` decorators, and added ``DBClusterNotFoundFault`` to the error handler (https://github.com/ansible-collections/amazon.aws/pull/3041).
+- module_utils/rds - Added ``describe_global_clusters`` centralized wrapper with ``@RDSErrorHandler`` and ``@AWSRetry`` decorators, and added ``GlobalClusterNotFoundFault`` to the error handler (https://github.com/ansible-collections/amazon.aws/pull/3068).
+- module_utils/rds - Added ``describe_option_groups`` centralized wrapper with ``@RDSErrorHandler`` and ``@AWSRetry`` decorators, and added ``OptionGroupNotFoundFault`` to the error handler (https://github.com/ansible-collections/amazon.aws/pull/3065).
+- module_utils/rds - ``describe_db_cluster_parameter_groups()`` and ``describe_db_cluster_parameters()`` now take a boto3 client and ``**params`` like the other ``describe_*`` helpers, dropping the unused ``module`` argument (https://github.com/ansible-collections/amazon.aws/pull/3089).
+- plugin_utils/inventory - Refactored error handling to use centralised InventoryErrorHandler following S3ErrorHandler pattern (https://github.com/ansible-collections/amazon.aws/pull/2936).
+- rds_cluster - Removed module-level globals, replaced ``eval()`` dispatch with ``format_rds_client_method_parameters()``, and use shared ``describe_db_clusters`` from ``module_utils/rds`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/3041).
+- rds_cluster_info - Refactored module to use shared ``describe_db_clusters`` from ``module_utils/rds`` and ``AnsibleRDSError`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/3041).
+- rds_cluster_param_group - Refactored shared ``describe_db_cluster_parameter_groups`` and ``describe_db_cluster_parameters`` in ``module_utils/rds`` to use ``RDSErrorHandler`` decorator for consistent error handling following previous PRs. (https://github.com/ansible-collections/amazon.aws/pull/3069)
+- rds_cluster_param_group - refactored the module onto the shared ``module_utils/rds`` helpers, removing the redundant ``botocore`` import and connection ``try/except`` block (https://github.com/ansible-collections/amazon.aws/pull/3089).
+- rds_cluster_param_group - the current parameters are now indexed by name when comparing them against the requested ones, instead of the full list being scanned once per requested parameter (https://github.com/ansible-collections/amazon.aws/pull/3089).
+- rds_cluster_param_group - the parameter group returned by the create call is now reused, removing a redundant ``describe_db_cluster_parameter_groups()`` call (https://github.com/ansible-collections/amazon.aws/pull/3089).
+- rds_cluster_param_group_info - refactored the module onto the shared ``module_utils/rds`` helpers and removed the redundant ``botocore`` import and connection ``try/except`` block (https://github.com/ansible-collections/amazon.aws/pull/3089).
+- rds_cluster_snapshot - Added docstrings to the module's helper functions, aligning the module with the style used by the shared ``module_utils/rds`` utilities (https://github.com/ansible-collections/amazon.aws/pull/3090).
+- rds_engine_versions_info - Refactored module to use shared utility functions from ``module_utils/rds`` for API calls, error handling, and retry logic (https://github.com/ansible-collections/amazon.aws/pull/3062).
+- rds_global_cluster_info - Refactored module to use shared ``describe_global_clusters`` from ``module_utils/rds`` and ``AnsibleRDSError`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/3068).
+- rds_instance_param_group - Refactored to use shared utilities from ``module_utils/_rds/api.py`` including ``describe_db_instance_parameter_groups``, ``describe_db_parameters``, ``create_db_parameter_group``, ``modify_db_parameter_group``, and ``delete_db_parameter_group`` for consistent error handling and reduced code duplication. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+- rds_instance_param_group_info - Updated module to use refactored ``describe_db_instance_parameter_groups`` function with new signature that retrieves tags separately. (https://github.com/ansible-collections/amazon.aws/pull/3065)
+- rds_instance_snapshot - Simplified the ``absent`` state logic to remove a redundant branch and added docstrings to the module's helper functions, aligning the module with the style used by the shared ``module_utils/rds`` utilities (https://github.com/ansible-collections/amazon.aws/pull/3080).
+- rds_option_group - Refactored module to use shared ``describe_option_groups`` and ``get_tags`` from ``module_utils/rds``, and standardized error handling (https://github.com/ansible-collections/amazon.aws/pull/3064).
+- rds_option_group - Removed direct ``botocore.exceptions`` imports and inline ``try``/``except`` blocks; option group create, modify, delete, and tagging calls are now made through small helper functions decorated with ``RDSErrorHandler``, standardizing error handling on ``AnsibleRDSError`` (https://github.com/ansible-collections/amazon.aws/pull/3078).
+- rds_option_group_info - Refactored module to use shared ``describe_option_groups`` from ``module_utils/rds`` and ``AnsibleRDSError`` for consistent error handling (https://github.com/ansible-collections/amazon.aws/pull/3065).
+- rds_subnet_group - Refactored module to use the shared ``describe_db_subnet_groups`` and ``call_method`` helpers from ``module_utils/rds`` and standardized error handling on ``AnsibleRDSError``, removing the module-local backoff and duplicated ``try``/``except`` blocks (https://github.com/ansible-collections/amazon.aws/pull/3072).
+- secretsmanager_secret - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 36 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+- ssm_parameter - refactored to use LookupErrorHandler decorator, reducing cognitive complexity from 28 to <15. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- Collection - Minimum supported Python version is now 3.9 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+- Collection - Minimum supported boto3 version is now 1.38.0 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+- Collection - Minimum supported boto3 version is now 1.38.23 (https://github.com/ansible-collections/amazon.aws/pull/2952).
+- Collection - Minimum supported botocore version is now 1.38.0 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+- Collection - Minimum supported botocore version is now 1.38.23 (https://github.com/ansible-collections/amazon.aws/pull/2952).
+- Support for ansible-core < 2.18 has been dropped. The collection now requires ansible-core >= 2.18.0 which supports Python >= 3.11 (https://github.com/ansible-collections/amazon.aws/pull/3142).
+- cloudformation - removed the deprecated ``template`` parameter. The parameter was deprecated in release 7.6.0 and the removal date of 2026-05-01 has passed. Use ``template_body`` with the ``ansible.builtin.file`` or ``ansible.builtin.template`` lookup plugin instead (https://github.com/ansible-collections/amazon.aws/pull/3097).
+- ec2_instance - removed the ``placement_group`` parameter. The parameter was deprecated in release 7.0.0. Use ``placement.group_name`` instead (https://github.com/ansible-collections/amazon.aws/pull/2937).
+- ec2_instance - removed the ``tenancy`` parameter. The parameter was deprecated in release 7.0.0. Use ``placement.tenancy`` instead (https://github.com/ansible-collections/amazon.aws/pull/2937).
+- s3_object - removed support for boolean values in the ``overwrite`` parameter. Only the string values ``always``, ``never``, ``different``, or ``latest`` are now accepted (https://github.com/ansible-collections/amazon.aws/pull/2924).
+- s3_object - removed support for passing both ``dualstack`` and ``endpoint_url`` parameters at the same time. The parameters are now mutually exclusive. To use dualstack endpoints with a custom endpoint, specify the dualstack endpoint URL directly in ``endpoint_url`` (https://github.com/ansible-collections/amazon.aws/pull/2924).
+
+Deprecated Features
+-------------------
+
+- Collection - Support for Python 3.9 is deprecated and will be removed in a release after 2027-04-01, following AWS SDK for Python's end of support for Python 3.9 in April 2026 (https://github.com/ansible-collections/amazon.aws/pull/2922).
+
+Bugfixes
+--------
+
+- cloudformation - Fix SHA1 hashing for FIPS mode compatibility by adding usedforsecurity=False parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/2921).
+- module_utils/s3 - Fix MD5 hashing for FIPS mode compatibility by adding usedforsecurity=False parameter to support Python running in FIPS-enabled environments (https://github.com/ansible-collections/amazon.aws/pull/2921).
+- rds_cluster - Fixed ``KeyError`` when stopping or starting clusters because ``changing_cluster_options`` assumed ``ApplyImmediately`` was always present in the parameters (https://github.com/ansible-collections/amazon.aws/pull/3041).
+- rds_option_group - Fixed ``check_mode`` not being respected during option group creation when tags are provided (https://github.com/ansible-collections/amazon.aws/pull/3064).
+- rds_option_group - ``state=absent`` no longer fails when the option group is deleted by another process between the existence check and the delete call; ``changed`` is now derived from the delete call's actual result instead of being pre-set to ``True`` (https://github.com/ansible-collections/amazon.aws/pull/3078).
+- route53_zone - Remove the default value for ``dnssec`` parameter to avoid idempotency issues (https://github.com/ansible-collections/amazon.aws/pull/2553).
+- secretsmanager_secret - fixed bug where falsy values (0, empty string, False) were incorrectly filtered when on_missing/on_denied was set to skip or warn. Now only None values are filtered. (https://github.com/ansible-collections/amazon.aws/pull/2914)
+
 v11.5.0
 =======
 
@@ -35,10 +118,7 @@ v11.4.0
 Release Summary
 ---------------
 
-This release includes significant improvements to the ``aws_ssm`` connection plugin,
-particularly for Windows hosts, along with new features for ``route53_zone`` and
-``rds_instance``. Documentation examples have been updated to use RFC-compliant
-addresses throughout the collection.
+This release includes significant improvements to the ``aws_ssm`` connection plugin, particularly for Windows hosts, along with new features for ``route53_zone`` and ``rds_instance``. Documentation examples have been updated to use RFC-compliant addresses throughout the collection.
 
 Minor Changes
 -------------
@@ -78,6 +158,9 @@ Bugfixes
 v11.3.0
 =======
 
+Release Summary
+---------------
+
 This minor release adds new features and improvements to the ``autoscaling_group``, ``elb_application_lb``, ``elb_application_lb_info``, ``elb_classic_lb``, ``event_source_aws_cloudtrail``, ``kms_key``, ``s3_bucket``, ``s3_object_info`` module(s).
 
 Minor Changes
@@ -94,29 +177,9 @@ Minor Changes
 Bugfixes
 --------
 
+- autoscaling_group - Fixed duplicate default_cooldown assignment in properties dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
 - elb_application_lb - Listener rules are now returned sorted by priority with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
 - elb_application_lb_info - Listener rules are now returned sorted by priority with the default rule appearing last (https://github.com/ansible-collections/amazon.aws/issues/2939).
-
-v10.3.2
-=======
-
-Bugfixes
---------
-
-- Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914) (https://github.com/ansible-collections/amazon.aws/pull/2987)
-
-v10.3.1
-=======
-
-Release Summary
----------------
-
-This patch release includes bugfixes for the ``s3_object_info``, ``autoscaling_group``, and ``kms_key`` modules, addressing duplicate dictionary key assignments and improving reliability. It also fixes a TypeError in CloudFront module utilities.
-
-Bugfixes
---------
-
-- autoscaling_group - Fixed duplicate default_cooldown assignment in properties dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
 - kms_key - Fixed parameter reassignment by using passed alias parameter instead of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
 - module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property (https://github.com/ansible-collections/community.aws/issues/1915).
 - s3_object_info - Fixed duplicate dictionary key assignments when retrieving object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
@@ -232,6 +295,30 @@ Minor Changes
 - s3_bucket_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
 - s3_object - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
 - s3_object_info - refactored to use centralized S3 wrapper functions from module_utils and consistently use S3ErrorHandler (https://github.com/ansible-collections/amazon.aws/pull/2782).
+
+v10.3.2
+=======
+
+Bugfixes
+--------
+
+- Add retry state for 404 in S3 waiters to avoid failure on s3 bucket 404 if bucket is not immediately visible (https://github.com/ansible-collections/amazon.aws/issues/2984#issuecomment-4603538914) (https://github.com/ansible-collections/amazon.aws/pull/2987)
+
+v10.3.1
+=======
+
+Release Summary
+---------------
+
+This patch release includes bugfixes for the ``s3_object_info``, ``autoscaling_group``, and ``kms_key`` modules, addressing duplicate dictionary key assignments and improving reliability. It also fixes a TypeError in CloudFront module utilities.
+
+Bugfixes
+--------
+
+- autoscaling_group - Fixed duplicate default_cooldown assignment in properties dict (https://github.com/ansible-collections/amazon.aws/pull/2923).
+- kms_key - Fixed parameter reassignment by using passed alias parameter instead of re-fetching from module params (https://github.com/ansible-collections/amazon.aws/pull/2923).
+- module_utils/cloudfront_facts - fix TypeError in CloudFrontFactsServiceManager.describe_cloudfront_property (https://github.com/ansible-collections/community.aws/issues/1915).
+- s3_object_info - Fixed duplicate dictionary key assignments when retrieving object facts (https://github.com/ansible-collections/amazon.aws/pull/2923).
 
 v10.3.0
 =======
