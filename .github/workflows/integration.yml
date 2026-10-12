@@ -3,17 +3,14 @@ name: integration
 
 # ACA-7242 spike POC (finder branch) - SELECTION-ONLY parity POC.
 #   content-plugin-finder (PyPI) -> ImpactReport JSON
-#   -> tox-ansible from git main with --impact-file (AAP-94164), NOT PyPI tox-ansible
+#   -> tox-ansible 26.10.0 (first PyPI release carrying --impact-file, PR #607 / AAP-94164)
 #   -> report the integration targets selected (does NOT execute the AWS suite).
+#   -> then probe whether the scoped integration env can even start, using
+#      ansible-test --list-targets: it runs the layout check and stops, so no AWS
+#      calls and no credentials are needed.
 # Pair with the splitter branch (#3162), which reports the targets ansible_test_splitter
 # selects for the identical stimulus. Compare the two sorted target lists for parity.
-#
-# Round G (cross-collection re-test): earlier rounds ran `content-plugin-finder --impact .`
-# from inside the amazon.aws checkout with no --parent, which defaults the discovery scope
-# to that one collection. community.aws targets were therefore never discoverable, and the
-# resulting "0 community targets" was a property of this harness, not of the finder.
-# This round checks out community.aws as well, lays both out under ansible_collections/,
-# and passes --parent so cross-collection impact can actually be observed.
+# Intentionally does not use ansible_test_splitter or dual-collection community.aws selection.
 
 on:
   - workflow_call
@@ -56,11 +53,7 @@ jobs:
     permissions:
       pull-requests: read
     env:
-      # Round G: both collections are laid out as ansible_collections/<ns>/<name> so
-      # content-plugin-finder can discover community.aws targets via --parent.
-      collections_root: "./ansible_collections"
-      amazon_dir: "./ansible_collections/amazon/aws"
-      community_dir: "./ansible_collections/community/aws"
+      amazon_dir: "./amazon_aws"
       # Matches the current amazon.aws integration CI pair, for the tox -l listing only.
       tox_env: integration-py3.13-milestone
     runs-on: ubuntu-latest
@@ -82,17 +75,6 @@ jobs:
           persist-credentials: false
         if: ${{ github.event_name != 'issue_comment' }}
 
-      # Round G: same community.aws checkout the splitter branch (#3162) uses, so both
-      # stacks see the same two collections for the identical stimulus.
-      - name: Checkout community.aws collection
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ansible-collections/community.aws
-          path: "${{ env.community_dir }}"
-          fetch-depth: 0
-          ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
-          persist-credentials: false
-
       - name: Fetch PR base SHA for impact diff
         env:
           BASE_SHA: ${{ needs.retrieve-pr-info.outputs.base_sha }}
@@ -103,16 +85,16 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install content-plugin-finder and tox-ansible (git main)
+      - name: Install content-plugin-finder and tox-ansible
         run: |
           set -euo pipefail
           python3 -m pip install -U pip
-          # Finder: PyPI is fine for generating ImpactReport JSON.
-          # tox-ansible: MUST be git main for --impact-file (AAP-94164), not PyPI.
+          # tox-ansible 26.10.0 is the first PyPI release carrying --impact-file
+          # (PR #607 / AAP-94164), so the git-main pin is no longer needed.
           python3 -m pip install -U \
             'content-plugin-finder==0.2.0' \
             'tox>=4.52.1' \
-            "tox-ansible @ git+https://github.com/ansible/tox-ansible.git@main"
+            'tox-ansible==26.10.0'
           python3 -c "import importlib.metadata as m; print('content-plugin-finder', m.version('content-plugin-finder')); print('tox-ansible', m.version('tox-ansible'))"
 
       - name: Generate ImpactReport with content-plugin-finder
@@ -120,49 +102,32 @@ jobs:
         env:
           BASE_SHA: ${{ needs.retrieve-pr-info.outputs.base_sha }}
           HEAD_SHA: ${{ needs.retrieve-pr-info.outputs.head_ref }}
-          AMAZON_DIR: ${{ env.amazon_dir }}
+        working-directory: ${{ env.amazon_dir }}
         run: |
           set -euo pipefail
-          # Round G: --parent spans BOTH collections so cross-collection targets are
-          # discoverable. Previously this ran `--impact .` from inside amazon.aws, which
-          # defaults --parent to that collection and made community.aws undiscoverable.
-          content-plugin-finder --impact "${{ env.amazon_dir }}" \
-            --parent "${{ env.collections_root }}" \
-            --depth 6 \
+          # Relative path required by tox-ansible impact loader (absolute paths rejected).
+          content-plugin-finder --impact . \
             --base "${BASE_SHA}" \
             --head "${HEAD_SHA}" \
-            --format json | tee "${{ env.amazon_dir }}/.impact.json"
+            --format json | tee .impact.json
           python3 <<'PY'
           import json
           import os
           from pathlib import Path
 
-          report = json.loads(Path(os.environ["AMAZON_DIR"], ".impact.json").read_text())
+          report = json.loads(Path(".impact.json").read_text())
           targets = report.get("integration_targets") or []
-
-          # Keep collection provenance: the old version collapsed everything to leaf
-          # names, which would have hidden community.aws selections even if present.
-          amazon = sorted({t.rstrip("/").split("/")[-1] for t in targets if "amazon/aws/" in t})
-          community = sorted({t.rstrip("/").split("/")[-1] for t in targets if "community/aws/" in t})
-          other = sorted({t for t in targets if "amazon/aws/" not in t and "community/aws/" not in t})
-
-          print(f"[ACA-7242] raw sample: {targets[:3]}")
-          print(f"[ACA-7242] finder amazon.aws targets ({len(amazon)}): {amazon}")
-          print(f"[ACA-7242] finder community.aws targets ({len(community)}): {community}")
-          if other:
-              print(f"[ACA-7242] unclassified ({len(other)}): {other[:10]}")
-
-          leaves = sorted(set(amazon) | set(community) | {o.rstrip('/').split('/')[-1] for o in other})
+          # Normalize to sorted leaf target names so this list can be diffed against
+          # the splitter branch (#3162) output directly.
+          leaves = sorted({t.rstrip("/").split("/")[-1] for t in targets})
+          print(f"[ACA-7242] finder integration_targets ({len(leaves)}): {leaves}")
 
           summary = os.environ.get("GITHUB_STEP_SUMMARY")
           if summary:
               with open(summary, "a", encoding="utf-8") as fh:
-                  fh.write("## ACA-7242 round G: finder selection with --parent across both collections\n\n")
-                  fh.write(f"amazon.aws targets: **{len(amazon)}**, community.aws targets: **{len(community)}**\n\n")
-                  fh.write("### amazon.aws\n```\n" + "\n".join(amazon) + "\n```\n")
-                  fh.write("### community.aws\n```\n" + "\n".join(community) + "\n```\n")
-                  if other:
-                      fh.write("### unclassified\n```\n" + "\n".join(other) + "\n```\n")
+                  fh.write("## ACA-7242 finder selection (content-plugin-finder)\n\n")
+                  fh.write(f"Selected integration targets: **{len(leaves)}**\n\n")
+                  fh.write("```\n" + "\n".join(leaves) + "\n```\n")
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
               fh.write(f"has_integration={'true' if leaves else 'false'}\n")
@@ -175,25 +140,42 @@ jobs:
         run: |
           set -euo pipefail
           echo "::notice::tox-ansible env list with --impact-file (.impact.json)"
-          # Round G: capture stderr too. tox-ansible's ImpactReport loader requires every
-          # integration_target to start with 'tests/integration/targets/', so cross-collection
-          # paths may be warned about and dropped. That is the consumption half of the test.
+          tox --ansible --conf tox-ansible.ini --impact-file .impact.json -l
+
+      # Does the scoped integration env actually start, or does ansible-test abort
+      # because the installed collection copy has no tests/integration/targets/?
+      # --list-targets performs ansible-test's layout check and then stops, so this
+      # exercises the full ADE install path with no AWS calls and no credentials.
+      - name: Probe scoped integration execution (--list-targets, no AWS)
+        if: steps.impact.outputs.has_integration == 'true'
+        working-directory: ${{ env.amazon_dir }}
+        run: |
           set +e
-          tox --ansible --conf tox-ansible.ini --impact-file .impact.json -l > tox-impact.log 2>&1
+          tox --ansible --conf tox-ansible.ini --impact-file .impact.json \
+            -e "${{ env.tox_env }}" -- --list-targets > probe.log 2>&1
           rc=$?
           set -e
-          cat tox-impact.log
-          echo "---- tox-ansible exit code: ${rc} ----"
+          tail -40 probe.log
+          echo "---- tox exit code: ${rc} ----"
+          if grep -q "Cannot run integration tests without" probe.log; then
+            verdict="REPRODUCED: ansible-test aborted, installed collection has no tests/integration/targets/"
+          elif [ "$rc" -eq 0 ]; then
+            verdict="NOT REPRODUCED: ansible-test found the targets dir and listed targets"
+          else
+            verdict="INCONCLUSIVE: exit ${rc} for some other reason, see log"
+          fi
+          echo "::notice::${verdict}"
           {
-            echo "## ACA-7242 round G: tox-ansible consumption of the ImpactReport"
+            echo "## Install-layout probe (tox-ansible 26.10.0, ansible-test --list-targets)"
             echo ""
-            echo "\`tox --ansible --impact-file\` exit code: **${rc}**"
+            echo "tox exit code: **${rc}**"
+            echo ""
+            echo "**${verdict}**"
             echo ""
             echo '```'
-            grep -i "must start with\|integration target\|impact" tox-impact.log | head -20 || echo "(no impact-related messages)"
+            grep -iE "FATAL|Cannot run integration|list-targets|ERROR" probe.log | head -15 || echo "(no matching lines)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::notice::Selection-only POC: not executing '${{ env.tox_env }}' (compare targets vs splitter #3162)."
 
       - name: Skip notice when finder selected no integration targets
         if: steps.impact.outputs.has_integration != 'true'

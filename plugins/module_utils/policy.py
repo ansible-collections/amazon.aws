@@ -33,7 +33,6 @@ from functools import cmp_to_key
 from ansible.module_utils.common.text.converters import to_text
 
 
-# test change
 def _canonify_root_arn(arn):
     # There are multiple ways to specifiy delegation of access to an account
     # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-accounts

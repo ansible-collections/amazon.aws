@@ -333,6 +333,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_
 
 
 @AWSRetry.jittered_backoff()
+# test change
 def _search_events(cfn, stack_name, events_limit, token_filter):
     pg = cfn.get_paginator("describe_stack_events").paginate(
         StackName=stack_name,
