@@ -141,7 +141,7 @@ EXAMPLES = r"""
   register: vpc_peer
 
 - name: Accept EC2 VPC Peering Connection from peer region
-  amazon.aws.ec2_vpc_peer:
+  amazon.aws.ec2_vpc_peering:
     region: "us-west-2"
     peering_id: "{{ vpc_peer.peering_id }}"
     state: "accept"
