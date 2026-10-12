@@ -8,7 +8,7 @@ version = "0.0.0"
 description = "Developer toolchain for the amazon.aws Ansible collection"
 readme = "README.md"
 license = "GPL-3.0-or-later"
-requires-python = ">=3.10"  # matches the oldest tox envlist interpreter (ansible-core 2.17)
+requires-python = ">=3.11"  # matches the oldest tox envlist interpreter (ansible-core 2.18)
 
 [dependency-groups]
 dev = [
@@ -44,7 +44,7 @@ disable_error_code = ["import-untyped"]
 [tool.ruff]
 # Pin exactly so a floating ruff release cannot widen the default ruleset under us.
 # Keep this in sync with tox [testenv:ruff*] deps and .pre-commit-config.yaml rev.
-required-version = "==0.16.9"
+required-version = "==0.16.10"
 line-length = 120
 exclude = [".tox", "tests/output"]
 
