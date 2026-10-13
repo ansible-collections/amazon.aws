@@ -140,7 +140,7 @@
 <h1>amazon.aws.ec2_vpc_peering module – create, delete, accept, and reject VPC peering connections between two VPCs.<a class="headerlink" href="#amazon-aws-ec2-vpc-peering-module-create-delete-accept-and-reject-vpc-peering-connections-between-two-vpcs" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 12.0.0-dev0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/amazon/aws/">amazon.aws collection</a> (version 13.0.0-dev0).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">amazon.aws</span></code>.
@@ -164,7 +164,6 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <ul class="simple">
 <li><p>Read the AWS documentation for VPC Peering Connections <a class="reference external" href="https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-peering.html">https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-peering.html</a>.</p></li>
 </ul>
-<p>Aliases: ec2_vpc_peer</p>
 </section>
 <section id="requirements">
 <span id="ansible-collections-amazon-aws-ec2-vpc-peering-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
@@ -478,7 +477,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vpc_peer</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Accept EC2 VPC Peering Connection from peer region</span>
-<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peer</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">amazon.aws.ec2_vpc_peering</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="s">"us-west-2"</span>
 <span class="w">    </span><span class="nt">peering_id</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">vpc_peer.peering_id</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="s">"accept"</span>
