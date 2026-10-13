@@ -1150,7 +1150,7 @@ releases:
     - s3-object-remove-overdue-deprecations.yml
     - sonarcloud-inventory-fixes.yml
     - unittests-boto3-credentials.yml
-    release_date: '2026-10-12'
+    release_date: '2026-10-13'
   2.0.0:
     changes:
       breaking_changes:
