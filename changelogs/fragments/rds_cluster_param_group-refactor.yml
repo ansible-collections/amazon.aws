@@ -1,2 +1,0 @@
-minor_changes:
-  - rds_cluster_param_group - Refactored shared ``describe_db_cluster_parameter_groups`` and ``describe_db_cluster_parameters`` in ``module_utils/rds`` to use ``RDSErrorHandler`` decorator for consistent error handling following previous PRs. (https://github.com/ansible-collections/amazon.aws/pull/3069)

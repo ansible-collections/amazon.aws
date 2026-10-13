@@ -56,7 +56,7 @@ For more information about communication, see the [Ansible communication guide](
 
 ### Ansible version compatibility
 
-The collection supports ansible-core versions based on `requires_ansible` in [meta/runtime.yml](https://github.com/ansible-collections/amazon.aws/blob/main/meta/runtime.yml):
+The collection supports ansible-core versions based on `requires_ansible` in [meta/runtime.yml](https://github.com/ansible-collections/amazon.aws/blob/stable-12/meta/runtime.yml):
 - Tested with Ansible Core 2.18.0 and later, and the current development version of Ansible. Ansible Core versions prior to 2.18.0 are not supported.
 
 ### Python version compatibility
@@ -98,7 +98,7 @@ All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
 ## Included content
 <!--start collection content-->
-See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/index.html#plugin-index).
+See the complete list of collection content in the [Plugin Index](https://ansible-collections.github.io/amazon.aws/branch/stable-12/collections/amazon/aws/index.html#plugin-index).
 
 In addition, this collection includes two event source plugins located under the `extensions/eda/` folder:
 
@@ -213,12 +213,12 @@ You can call modules by their Fully Qualified Collection Name (FQCN), such as `a
 
 ## Testing
 
-This collection is tested using GitHub Actions. To learn more about testing, refer to [CI.md](https://github.com/ansible-collections/amazon.aws/blob/main/CI.md).
+This collection is tested using GitHub Actions. To learn more about testing, refer to [CI.md](https://github.com/ansible-collections/amazon.aws/blob/stable-12/CI.md).
 
 ## Contributing to this collection
 
 We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws).
-See [CONTRIBUTING.md](https://github.com/ansible-collections/amazon.aws/blob/main/CONTRIBUTING.md) for more details.
+See [CONTRIBUTING.md](https://github.com/ansible-collections/amazon.aws/blob/stable-12/CONTRIBUTING.md) for more details.
 
 ### More information about contributing
 
@@ -238,7 +238,7 @@ You can also join us on:
 
 ## Release notes
 
-See the [rendered changelog](https://ansible-collections.github.io/amazon.aws/branch/main/collections/amazon/aws/docsite/CHANGELOG.html) or the [raw generated changelog](https://github.com/ansible-collections/amazon.aws/tree/main/CHANGELOG.rst).
+See the [rendered changelog](https://ansible-collections.github.io/amazon.aws/branch/stable-12/collections/amazon/aws/docsite/CHANGELOG.html) or the [raw generated changelog](https://github.com/ansible-collections/amazon.aws/tree/stable-12/CHANGELOG.rst).
 
 ## Related Information
 

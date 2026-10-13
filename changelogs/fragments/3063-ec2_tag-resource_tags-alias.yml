@@ -1,2 +1,0 @@
-minor_changes:
-  - ec2_tag - added ``resource_tags`` as an alias for the ``tags`` parameter, matching the convention already used by the ``ec2_instance`` module (https://github.com/ansible-collections/amazon.aws/pull/3085).
