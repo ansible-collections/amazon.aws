@@ -198,7 +198,7 @@ def get_vault_facts(module, client, vault_name):
         resp = client.describe_backup_vault(BackupVaultName=vault_name)
     except is_boto3_error_code("AccessDeniedException"):
         module.warn("Access Denied trying to describe backup vault")
-    except (BotoCoreError, ClientError) as err:
+    except (BotoCoreError, ClientError) as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(err, msg="Unable to get vault facts")
 
     # Now check to see if our vault exists and get status and tags

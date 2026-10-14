@@ -209,10 +209,10 @@ def main():
         module.exit_json(**(policy.run()))
     except is_boto3_error_code("NoSuchEntity") as e:
         module.exit_json(changed=False, msg=e.response["Error"]["Message"])
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e)
 
 
