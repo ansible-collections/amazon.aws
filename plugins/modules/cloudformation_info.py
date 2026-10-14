@@ -323,10 +323,10 @@ class CloudFormationServiceManager:
             self.module.fail_json(msg="Error describing stack(s) - an empty response was returned")
         except is_boto3_error_message("does not exist"):
             return {}
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             self.module.fail_json_aws(e, msg="Error describing stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)

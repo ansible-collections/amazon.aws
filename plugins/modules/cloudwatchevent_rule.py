@@ -267,10 +267,10 @@ class CloudWatchEventRule:
             rule_info = self.client.describe_rule(Name=self.name)
         except is_boto3_error_code("ResourceNotFoundException"):
             return {}
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             self.module.fail_json_aws(e, msg=f"Could not describe rule {self.name}")
         return camel_dict_to_snake_dict(rule_info)
 
@@ -330,10 +330,10 @@ class CloudWatchEventRule:
             targets = self.client.list_targets_by_rule(Rule=self.name)
         except is_boto3_error_code("ResourceNotFoundException"):
             return []
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             self.module.fail_json_aws(e, msg=f"Could not find target for rule {self.name}")
         return camel_dict_to_snake_dict(targets)["targets"]
 
