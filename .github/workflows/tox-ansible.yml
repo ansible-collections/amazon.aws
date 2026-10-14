@@ -28,10 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       envlist: ${{ steps.matrix.outputs.envlist }}
+      sanity_targets: ${{ steps.matrix.outputs.sanity_targets }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up uv
@@ -48,6 +50,9 @@ jobs:
 
       - name: Generate matrix
         id: matrix
+        env:
+          DIFF_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DIFF_HEAD_SHA: ${{ github.sha }}
         run: |
           github_output="$GITHUB_OUTPUT"
           export GITHUB_OUTPUT="$RUNNER_TEMP/tox-ansible-output"
@@ -55,6 +60,8 @@ jobs:
           uv run --no-project tox --ansible --gh-matrix
           python3 - "$GITHUB_OUTPUT" "$github_output" <<'PY'
           import json
+          import os
+          import subprocess
           import sys
           from pathlib import Path
 
@@ -92,10 +99,42 @@ jobs:
                       }
                   )
 
+          base_sha = os.environ.get("DIFF_BASE_SHA", "")
+          head_sha = os.environ.get("DIFF_HEAD_SHA", "")
+          if base_sha and base_sha != "0" * len(base_sha) and head_sha:
+              changed = subprocess.run(
+                  ["git", "diff", "--name-only", "--diff-filter=ACMR", "-z", base_sha, head_sha],
+                  check=True,
+                  stdout=subprocess.PIPE,
+              ).stdout
+              changed_paths = changed.decode("utf-8", errors="surrogateescape").split("\0")
+          else:
+              changed_paths = subprocess.check_output(["git", "ls-files", "-z"]).decode(
+                  "utf-8", errors="surrogateescape"
+              ).split("\0")
+
+          collection_dirs = ("plugins/", "tests/", "extensions/", "docs/", "changelogs/", "meta/")
+          collection_files = {
+              "README.md",
+              "CHANGELOG.rst",
+              "galaxy.yml",
+              "requirements.txt",
+              "test-requirements.txt",
+              "bindep.txt",
+              "COPYING",
+          }
+          sanity_targets = sorted(
+              path
+              for path in changed_paths
+              if path and (path.startswith(collection_dirs) or path in collection_files)
+          )
+
           github_output_path.write_text(
               f"envlist={json.dumps(envlist, separators=(',', ':'))}\n",
               encoding="utf-8",
           )
+          with github_output_path.open("a", encoding="utf-8") as output:
+              output.write(f"sanity_targets={json.dumps(sanity_targets, separators=(',', ':'))}\n")
           PY
 
   tox-ansible:
@@ -127,9 +166,19 @@ jobs:
       - name: Run tox environment
         env:
           TOX_ENV: ${{ matrix.entry.name }}
+          SANITY_TARGETS: ${{ needs.generate-matrix.outputs.sanity_targets }}
         run: |
           if [[ "$TOX_ENV" == "unit-constraints" || "$TOX_ENV" == "coverage" ]]; then
             uv run --no-project tox -e "$TOX_ENV"
+          elif [[ "$TOX_ENV" == sanity-* ]]; then
+            mapfile -d '' -t sanity_targets < <(
+              python3 -c 'import json, sys; sys.stdout.buffer.write(b"\0".join(path.encode() for path in json.loads(sys.argv[1])))' "$SANITY_TARGETS"
+            )
+            if (( ${#sanity_targets[@]} == 0 )); then
+              echo "No changed collection files require sanity checks"
+            else
+              uv run --no-project tox --ansible -e "$TOX_ENV" -- "${sanity_targets[@]}"
+            fi
           else
             uv run --no-project tox --ansible -e "$TOX_ENV"
           fi
