@@ -685,6 +685,7 @@ def create(client, module: AnsibleAWSModule, allocation_id: Optional[str]) -> Tu
     params = {"ConnectivityType": connectivity_type}
 
     if availability_mode == "regional":
+        module.require_botocore_at_least("1.41.0", reason="to create regional NAT gateways")
         params["VpcId"] = module.params.get("vpc_id")
         params["AvailabilityMode"] = "regional"
     else:
