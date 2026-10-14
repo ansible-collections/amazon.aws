@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - tests - adopt tox-ansible matrix workflow for unit and sanity checks in CI (https://github.com/ansible-collections/amazon.aws/pull/3183).
