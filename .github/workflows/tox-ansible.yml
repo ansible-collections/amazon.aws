@@ -175,8 +175,8 @@ jobs:
 
       - name: Run ruff
         run: |
-          uvx ruff==0.16.9 check plugins tests extensions
-          uvx ruff==0.16.9 format --check plugins tests extensions
+          uvx ruff==0.16.10 check plugins tests extensions
+          uvx ruff==0.16.10 format --check plugins tests extensions
 
       - name: Run ansible-lint
         run: uvx --from 'ansible-lint>=26.6.0' ansible-lint --skip-list 'name[missing],yaml[line-length],args[module],run-once[task],ignore-errors,sanity[cannot-ignore],run-once[play]' --exclude=.tox/ --exclude=tests/output/ plugins tests extensions
