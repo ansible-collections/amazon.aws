@@ -15,7 +15,7 @@ The following tests run on every pull request:
 | Job | Description | Python Versions | ansible-core Versions |
 | --- | ----------- | --------------- | --------------------- |
 | Generate matrix | Uses `tox --ansible --gh-matrix` and adds collection-specific companion environments | 3.12 (generator) | n/a |
-| tox-ansible | Runs 18 unit combinations, sanity checks for changed collection files, plus full coverage for `plugins/` and `extensions/` | See compatibility table below | See compatibility table below |
+| tox-ansible | Runs 18 unit and 18 full-collection sanity combinations, plus full coverage for `plugins/` and `extensions/` | See compatibility table below | See compatibility table below |
 | Linters | Runs `ruff` and `ansible-lint` via `uvx` | 3.12 (runner) | n/a |
 | Changelog | Checks for the presence of changelog fragments | See changelog workflow | n/a |
 | Integration tests | Executes integration test suites through the integration workflow | See integration workflow | See integration workflow |
@@ -53,7 +53,7 @@ uv run tox -e diff-cover
 Notes:
 
 - PR and push CI use `.github/workflows/tox-ansible.yml`. The generated tox-ansible matrix is augmented with environments for combinations tox-ansible cannot generate, preserving all 18 unit and 18 sanity combinations.
-- Unit tests and coverage run across the full suite. Sanity environments run against changed collection files, matching the previous PR workflow's scope and avoiding unrelated pre-existing findings.
+- Unit tests, sanity checks, and coverage run across the full suite.
 - `downstream = true` adds the ansible-core 2.18 pairs supported by tox-ansible; ansible-core 2.16 is skipped because the collection floor is 2.18. `unit-constraints` covers unit tests at 2.18 / Python 3.11 with SDK pins, and a companion environment covers sanity at that pair.
 - Integration tests are not run via local tox-ansible (`skip = ["integration-"]`); use the GHA integration workflow.
 - SonarCloud / diff-cover coverage comes from `tox -e coverage`. It covers both `plugins/` and `extensions/` (including EDA event source plugins), and the CI workflow uploads its report for SonarCloud.
