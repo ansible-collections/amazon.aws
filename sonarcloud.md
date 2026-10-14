@@ -20,7 +20,7 @@ The collection uses **CI-based analysis** with GitHub Actions:
 
 - The SonarScanner runs inside the CI build.
 - Configuration is controlled in the repository (properties file and workflow).
-- **Code coverage** is produced by a dedicated coverage job (via `tox`) before the SonarCloud workflow runs; coverage reports are downloaded and passed to the scanner.
+- **Code coverage** is produced by a dedicated coverage matrix entry (via `tox`) before the SonarCloud workflow runs; coverage reports are downloaded and passed to the scanner.
 
 Automatic analysis is not used because it does not support code coverage and has limited branch support.
 
@@ -60,8 +60,9 @@ cover `extensions/`:
 - **Reports**: HTML (`--cov-report html`) and Cobertura XML (`--cov-report xml`).
 - **Output**: `coverage.xml` is written under the `coverage` tox environment directory in `.tox/`.
 
-The CI coverage job runs `uv run tox -e coverage` so that a single, consistent coverage report
-covering both `plugins/` and `extensions/` is produced for SonarCloud.
+The CI tox-ansible matrix includes a dedicated `coverage` environment that runs
+`uv run tox -e coverage`. It produces one report covering both `plugins/` and
+`extensions/` for SonarCloud.
 
 ### `pyproject.toml` (coverage and `pytest`)
 
@@ -76,40 +77,40 @@ These affect how coverage is generated (and thus what appears in `coverage.xml`)
 
 Two workflows implement the integration:
 
-1. **`all_green`** (`.github/workflows/all_green_check.yml`) runs on pull requests and pushes to `main` and `stable-*`. It runs linters, sanity, units, and a **coverage** job. When all required jobs succeed, it triggers the SonarCloud workflow via `workflow_run`.
+1. **`tox-ansible`** (`.github/workflows/tox-ansible.yml`) runs on pull requests and pushes to `main` and `stable-*`. It generates the tox-ansible matrix, runs generated and companion test environments, produces the full coverage report, and runs linters.
 
-2. **SonarCloud** (`.github/workflows/sonarcloud.yml`) runs after **all_green** completes successfully. It checks out the repo, downloads the coverage artifact from that run, locates the coverage XML, gathers PR metadata when applicable, and runs the SonarScanner with the appropriate arguments (including coverage paths).
+2. **SonarCloud** (`.github/workflows/sonarcloud.yml`) runs after **tox-ansible** completes successfully. It checks out the repo, downloads the coverage artifact from that run, locates the coverage XML, gathers PR metadata when applicable, and runs the SonarScanner with the appropriate arguments (including coverage paths).
 
 ### Why `workflow_run`
 
-- **Secrets**: Workflows triggered by `pull_request` from forks run in the fork context and do not have access to repository secrets (e.g. `SONAR_TOKEN`). By triggering SonarCloud from **all_green** via `workflow_run`, the SonarCloud job runs in the upstream repository context and can use the token.
-- **Ordering**: SonarCloud runs only after `all_green` (including the coverage job) has finished, so coverage data is available when the scanner runs.
+- **Secrets**: Workflows triggered by `pull_request` from forks run in the fork context and do not have access to repository secrets (e.g. `SONAR_TOKEN`). By triggering SonarCloud from **tox-ansible** via `workflow_run`, the SonarCloud job runs in the upstream repository context and can use the token.
+- **Ordering**: SonarCloud runs only after `tox-ansible` (including the coverage environment) has finished, so coverage data is available when the scanner runs.
 
 Flow:
 
-1. PR or `push` triggers **`all_green`** (linters, sanity, units, coverage).
-2. The **coverage** job runs `uv run tox -e coverage`, locates `coverage.xml` under `.tox`, and uploads it as the `coverage` artifact.
-3. When **`all_green`** completes successfully, the **SonarCloud** workflow is triggered.
+1. PR or `push` triggers **`tox-ansible`** (matrix generation, test environments, coverage, and linters).
+2. The `coverage` matrix entry runs `uv run tox -e coverage`, locates `coverage.xml` under `.tox`, and uploads it as the `coverage` artifact.
+3. When **`tox-ansible`** completes successfully, the **SonarCloud** workflow is triggered.
 4. The SonarCloud job checks out the repo at the run's commit, downloads the `coverage` artifact, sets `COVERAGE_PATHS`, and runs the scanner with `sonar.python.coverage.reportPaths` set so SonarCloud receives the coverage report.
 
-### `coverage.yml` (called from `all_green_check.yml`)
+### Coverage entry in `tox-ansible.yml`
 
-- **Trigger**: Invoked by **`all_green`** on `pull_request` and push to `main` / `stable-*` (same as units; always runs).
+- **Trigger**: Included in the tox-ansible matrix for `pull_request` and push to `main` / `stable-*`.
 - **Steps**:
-  1. Checkout repository.
-  2. Set up uv (Python 3.14) and run `uv sync --dev --locked`.
-  3. Run `uv run tox -e coverage` to execute unit tests and generate `coverage.xml` (plugins/ + extensions/) under `.tox`.
-  4. Locate `coverage.xml` under `.tox` (or repo root fallback).
-  5. Upload `coverage.xml` as the artifact named `coverage` (attached to the caller `all_green` run for SonarCloud).
-- **Gate**: The **`all_green`** job only succeeds when linters (on PRs), sanity (on PRs), units, and coverage all succeed (or are skipped where allowed).
+  1. Checkout repository and set up uv.
+  2. Install the tox-ansible orchestration tools.
+  3. Run `uv run --no-project tox -e coverage` to execute unit tests and generate `coverage.xml` (plugins/ + extensions/) under `.tox`.
+  4. Locate `coverage.xml` under `.tox`.
+  5. Upload `coverage.xml` as the artifact named `coverage` (attached to the `tox-ansible` run for SonarCloud).
+- **Gate**: The tox-ansible workflow succeeds only when its matrix entries and linters succeed.
 
 ### `sonarcloud.yml`: finalize job
 
-- **Trigger**: `workflow_run` when the **`all_green`** workflow completes (success only).
+- **Trigger**: `workflow_run` when the **`tox-ansible`** workflow completes (success only).
 - **Permissions**: `contents: read`, `pull-requests: read`, `actions: read` (needed to download artifacts from the triggering run).
 - **Steps**:
   1. **Checkout** the repository at `workflow_run.head_sha`.
-  2. **Download coverage artifacts** from the triggering all_green run using `dawidd6/action-download-artifact` (pinned by full commit SHA, v16 equivalent). Pattern: `coverage*`.
+  2. **Download coverage artifacts** from the triggering tox-ansible run using `dawidd6/action-download-artifact` (pinned by full commit SHA). Pattern: `coverage*`.
   3. **Set coverage report paths**: Run `find . -name "coverage*.xml"`, comma-separate the paths, and set `COVERAGE_PATHS` in the environment.
   4. **Get PR number and info** (when the triggering event was a pull_request): Use `gh pr list` and `gh api` to set `PR_NUMBER`, `PR_BASE`, and `PR_HEAD`.
   5. **Prepare SonarCloud args**: Set `sonar.scm.revision` to the commit SHA. For pull requests, add `sonar.pullrequest.key`, `sonar.pullrequest.branch`, and `sonar.pullrequest.base`. When `COVERAGE_PATHS` is set, add `sonar.python.coverage.reportPaths`.
@@ -121,13 +122,12 @@ Coverage is only passed to the scanner when the download step finds at least one
 
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
-| `all_green` | `.github/workflows/all_green_check.yml` | `pull_request`, push to `main` and `stable-*` | Call linters, sanity, units, and coverage workflows; gate on success |
-| Coverage | `.github/workflows/coverage.yml` | `workflow_call` from `all_green` | Run `uv run tox -e coverage` and upload `coverage` artifact |
-| SonarCloud | `.github/workflows/sonarcloud.yml` | After `all_green` completes successfully | Download coverage from `all_green` run and run SonarScanner with PR or branch analysis |
+| tox-ansible | `.github/workflows/tox-ansible.yml` | `pull_request`, push to `main` and `stable-*` | Generate and run the test matrix, lint, and upload full coverage |
+| SonarCloud | `.github/workflows/sonarcloud.yml` | After `tox-ansible` completes successfully | Download coverage from the tox-ansible run and run SonarScanner with PR or branch analysis |
 
 | Artifact / config | Source | Use |
 |-------------------|--------|-----|
-| Coverage XML | `tox` (coverage job) → path rewrite → artifact `coverage` | Downloaded by SonarCloud job and passed as `sonar.python.coverage.reportPaths` |
+| Coverage XML | `tox` (coverage matrix entry) → path rewrite → artifact `coverage` | Downloaded by SonarCloud job and passed as `sonar.python.coverage.reportPaths` |
 | `sonar-project.properties` | Repository root | Project key, organization, sources, tests, exclusions, default coverage path, Python version, reference branch |
 | `tox.ini` | Repository root | Defines testenv that runs `pytest` with `pytest-cov` and writes `coverage.xml` |
 | `pyproject.toml` | Repository root | Pytest and coverage report options (`exclude_lines`, etc.); no SonarCloud-specific config |
@@ -136,7 +136,7 @@ Coverage is only passed to the scanner when the download step finds at least one
 
 If analysis fails or coverage is missing:
 
-1. **Check `all_green`**: Ensure the `all_green` workflow (including the coverage job) succeeded for the same commit. SonarCloud downloads artifacts from that run.
+1. **Check `tox-ansible`**: Ensure the `tox-ansible` workflow (including its coverage matrix entry) succeeded for the same commit. SonarCloud downloads artifacts from that run.
 2. **Check artifact**: In the SonarCloud run, confirm the "Download coverage artifacts" and "Set coverage report paths" steps found at least one `coverage*.xml` and set `COVERAGE_PATHS`.
 3. **Run SonarScanner locally**: Install [SonarScanner CLI](https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-cli/), set `SONAR_TOKEN` from [SonarCloud Security](https://sonarcloud.io/account/security), and run from the repo root:
    ```sh
