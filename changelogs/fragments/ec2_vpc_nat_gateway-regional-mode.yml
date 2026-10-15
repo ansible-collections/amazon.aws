@@ -1,0 +1,4 @@
+minor_changes:
+  - ec2_vpc_nat_gateway - Added ``availability_mode`` and ``vpc_id`` parameters for regional NAT gateway support (https://github.com/ansible-collections/amazon.aws/pull/2989).
+  - ec2_vpc_nat_gateway - The ``release_eip`` option now correctly releases all EIP addresses when deleting a NAT gateway with multiple addresses (https://github.com/ansible-collections/amazon.aws/pull/2989).
+  - ec2_vpc_nat_gateway_info - Added return field documentation for regional NAT gateway fields ``availability_mode``, ``auto_scaling_ips``, ``auto_provision_zones``, and ``route_table_id`` (https://github.com/ansible-collections/amazon.aws/pull/2989).
