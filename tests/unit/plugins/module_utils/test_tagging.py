@@ -60,8 +60,8 @@ class TestTagging:
 
     def test_ansible_dict_to_boto3_tag_list(self):
         converted_list = ansible_dict_to_boto3_tag_list(self.tag_example_dict)
-        sorted_converted_list = sorted(converted_list, key=lambda i: (i["Key"]))
-        sorted_list = sorted(self.tag_example_boto3_list, key=lambda i: (i["Key"]))
+        sorted_converted_list = sorted(converted_list, key=lambda i: i["Key"])
+        sorted_list = sorted(self.tag_example_boto3_list, key=lambda i: i["Key"])
         assert sorted_converted_list == sorted_list
 
     def test_ansible_dict_to_boto3_tag_list_empty(self):
@@ -248,8 +248,8 @@ class TestTagging:
             {"ResourceType": "instance", "Tags": self.tag_minimal_boto3_list},
             {"ResourceType": "volume", "Tags": self.tag_minimal_boto3_list},
         ]
-        sorted_tag_spec = sorted(tag_specification, key=lambda i: (i["ResourceType"]))
-        sorted_expected = sorted(expected_specification, key=lambda i: (i["ResourceType"]))
+        sorted_tag_spec = sorted(tag_specification, key=lambda i: i["ResourceType"])
+        sorted_expected = sorted(expected_specification, key=lambda i: i["ResourceType"])
         assert sorted_tag_spec == sorted_expected
 
     def test_ansible_dict_to_tag_filter_dict_empty(self):

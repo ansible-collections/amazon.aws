@@ -606,15 +606,15 @@ class Ec2Metadata:
                 content = self._fetch(new_uri)
                 if field == "security-groups" or field == "security-group-ids":
                     sg_fields = ",".join(content.split("\n"))
-                    self._data["%s" % (new_uri)] = sg_fields
+                    self._data[f"{new_uri}"] = sg_fields
                 else:
                     try:
                         json_dict = json.loads(content)
-                        self._data["%s" % (new_uri)] = content
+                        self._data[f"{new_uri}"] = content
                         for key, value in json_dict.items():
-                            self._data["%s:%s" % (new_uri, key.lower())] = value
+                            self._data[f"{new_uri}:{key.lower()}"] = value
                     except (json_decode_error, AttributeError):
-                        self._data["%s" % (new_uri)] = content  # not a stringified JSON string
+                        self._data[f"{new_uri}"] = content  # not a stringified JSON string
 
     def fix_invalid_varnames(self, data):
         """Change ':'' and '-' to '_' to ensure valid template variable names"""
@@ -656,7 +656,7 @@ class Ec2Metadata:
     def get_instance_tags(self, tag_keys, data):
         tags = {}
         for key in tag_keys:
-            value = data.get("ansible_ec2_tags_instance_{}".format(key))
+            value = data.get(f"ansible_ec2_tags_instance_{key}")
             if value is not None:
                 tags[key] = value
         return tags
