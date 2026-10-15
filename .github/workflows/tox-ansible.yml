@@ -1,23 +1,8 @@
 ---
 name: tox-ansible
 
-concurrency:
-  group: ${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
-
 on: # yamllint disable-line rule:truthy
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-    branches:
-      - main
-      - stable-*
-  push:
-    branches:
-      - main
-      - stable-*
+  workflow_call:
 
 permissions:
   contents: read
