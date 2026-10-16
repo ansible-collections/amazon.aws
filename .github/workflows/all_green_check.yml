@@ -26,18 +26,25 @@ jobs:
   tox-ansible:
     uses: ./.github/workflows/tox-ansible.yml
 
+  linters:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/linters.yml
+
   all_green:
     name: all_green
     if: ${{ always() }}
     needs:
       - tox-ansible
+      - linters
     runs-on: ubuntu-latest
     steps:
       - name: Check required workflow result
         run: |
           python -c "
           required = ['tox-ansible']
-          results = {'tox-ansible': '${{ needs.tox-ansible.result }}'}
+          if '${{ github.event_name }}' == 'pull_request':
+            required.append('linters')
+          results = {'tox-ansible': '${{ needs.tox-ansible.result }}', 'linters': '${{ needs.linters.result }}'}
           ok = all(results[j] == 'success' for j in required)
           skipped_ok = all(results[j] in ('success', 'skipped') for j in results)
           assert ok and skipped_ok, f'required={required} results={results}'

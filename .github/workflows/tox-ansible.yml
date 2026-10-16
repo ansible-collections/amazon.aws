@@ -19,69 +19,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
-        with:
-          enable-cache: true
-          python-version: "3.12"
-
-      - name: Create tool environment
-        run: uv venv --python 3.12
-
-      - name: Install test orchestration tools
-        run: uv pip install tox-ansible==26.9.0 tox-uv-bare==1.36.0
-
       - name: Generate matrix
         id: matrix
-        run: |
-          github_output="$GITHUB_OUTPUT"
-          export GITHUB_OUTPUT="$RUNNER_TEMP/tox-ansible-output"
-          : > "$GITHUB_OUTPUT"
-          uv run --no-project tox --ansible --gh-matrix
-          python3 - "$GITHUB_OUTPUT" "$github_output" <<'PY'
-          import json
-          import sys
-          from pathlib import Path
-
-          output_path = Path(sys.argv[1])
-          github_output_path = Path(sys.argv[2])
-          contents = output_path.read_text(encoding="utf-8")
-          prefix = "envlist="
-          if not contents.startswith(prefix):
-              raise SystemExit("tox-ansible did not write an envlist output")
-          envlist = json.loads(contents[len(prefix) :].strip())
-          envlist = [
-              entry
-              for entry in envlist
-              if entry["name"].startswith(("unit-", "sanity-"))
-          ]
-
-          companions = [
-              ("unit-constraints", "3.11"),
-              ("sanity-py3.11-2.18", "3.11"),
-              ("unit-py3.15-devel", "3.15"),
-              ("sanity-py3.15-devel", "3.15"),
-              ("unit-py3.15-milestone", "3.15"),
-              ("sanity-py3.15-milestone", "3.15"),
-              ("coverage", "3.14"),
-          ]
-          existing = {entry["name"] for entry in envlist}
-          for name, python_version in companions:
-              if name not in existing:
-                  envlist.append(
-                      {
-                          "description": f"Run {name}",
-                          "factors": name.split("-"),
-                          "name": name,
-                          "python": python_version,
-                      }
-                  )
-
-          github_output_path.write_text(
-              f"envlist={json.dumps(envlist, separators=(',', ':'))}\n",
-              encoding="utf-8",
-          )
-          PY
+        uses: ./.github/actions/tox-ansible-matrix
+        with:
+          matrix-config: .github/tox-ansible-matrix.json
 
   tox-ansible:
     name: Run ${{ matrix.entry.name }}
@@ -100,24 +42,23 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
+          activate-environment: true
           enable-cache: true
-          python-version: "3.12"
-
-      - name: Create tool environment
-        run: uv venv --python 3.12
+          python-version: ${{ matrix.entry.python }}
 
       - name: Install test orchestration tools
-        run: uv pip install tox-ansible==26.9.0 tox-uv-bare==1.36.0
+        run: uv pip install -r .github/actions/tox-ansible-matrix/requirements.txt
 
       - name: Run tox environment
         env:
           TOX_ENV: ${{ matrix.entry.name }}
         run: |
+          set -euo pipefail
+          extra_args=(--ansible)
           if [[ "$TOX_ENV" == "unit-constraints" || "$TOX_ENV" == "coverage" ]]; then
-            uv run --no-project tox -e "$TOX_ENV"
-          else
-            uv run --no-project tox --ansible -e "$TOX_ENV"
+            extra_args=()
           fi
+          uv run --no-project tox "${extra_args[@]}" -e "$TOX_ENV"
 
       - name: Locate full coverage report
         if: matrix.entry.name == 'coverage'
@@ -142,26 +83,3 @@ jobs:
         with:
           name: coverage
           path: ${{ env.COVERAGE_FILE }}
-
-  linters:
-    name: Linters
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
-        with:
-          enable-cache: true
-          python-version: "3.12"
-
-      - name: Run ruff
-        run: |
-          uvx ruff==0.16.10 check plugins tests extensions
-          uvx ruff==0.16.10 format --check plugins tests extensions
-
-      - name: Run ansible-lint
-        run: uvx --from 'ansible-lint>=26.6.0' ansible-lint --skip-list 'name[missing],yaml[line-length],args[module],run-once[task],ignore-errors,sanity[cannot-ignore],run-once[play]' --exclude=.tox/ --exclude=tests/output/ plugins tests extensions

@@ -1,0 +1,3 @@
+# Keep tox-ansible in sync with the tox.ini [tox] requires pin.
+tox-ansible==26.9.0
+tox-uv-bare==1.36.0

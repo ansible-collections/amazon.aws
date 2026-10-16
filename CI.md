@@ -2,7 +2,7 @@
 
 ## AWS Upstream Testing
 
-GitHub Actions are used to run CI for the amazon.aws collection. The workflows are in [`.github/workflows`](https://github.com/ansible-collections/amazon.aws/tree/main/.github/workflows). `all_green_check.yml` calls the reusable `tox-ansible` workflow and gates its generated unit and sanity matrix, companion environments, full coverage, and linters. Other workflows handle changelog and integration checks.
+GitHub Actions are used to run CI for the amazon.aws collection. The workflows are in [`.github/workflows`](https://github.com/ansible-collections/amazon.aws/tree/main/.github/workflows). `all_green_check.yml` calls the reusable `tox-ansible` and `linters` workflows and gates their required results. Other workflows handle changelog and integration checks.
 
 The collection uses reusable workflows from [ansible-network/github_actions](https://github.com/ansible-network/github_actions) for standardized testing.
 
@@ -14,10 +14,10 @@ The following tests run on every pull request:
 
 | Job | Description | Python Versions | ansible-core Versions |
 | --- | ----------- | --------------- | --------------------- |
-| Generate matrix | Uses `tox --ansible --gh-matrix` and adds collection-specific companion environments | 3.12 (generator) | n/a |
+| Generate matrix | The reusable matrix action runs `tox --ansible --gh-matrix` and adds environments from `.github/tox-ansible-matrix.json` | 3.12 (generator) | n/a |
 | tox-ansible | Runs 18 unit and 18 full-collection sanity combinations, plus full coverage for `plugins/` and `extensions/` | See compatibility table below | See compatibility table below |
-| Linters | Runs `ruff` and `ansible-lint` via `uvx` | 3.12 (runner) | n/a |
-| all_green | Fails unless the reusable tox-ansible workflow completes successfully | n/a | n/a |
+| Linters | Runs the tox `lint` environments (ruff and pylint), plus `ansible-lint` | 3.12 (runner) | n/a |
+| all_green | Requires tox-ansible on pushes and tox-ansible plus linters on pull requests | n/a | n/a |
 | Changelog | Checks for the presence of changelog fragments | See changelog workflow | n/a |
 | Integration tests | Executes integration test suites through the integration workflow | See integration workflow | See integration workflow |
 
@@ -53,7 +53,7 @@ uv run tox -e diff-cover
 
 Notes:
 
-- PR and push CI use `.github/workflows/all_green_check.yml`, which calls `.github/workflows/tox-ansible.yml` and gates on its aggregate result. The generated matrix is augmented with environments for combinations tox-ansible cannot generate, preserving all 18 unit and 18 sanity combinations.
+- PR and push CI use `.github/workflows/all_green_check.yml`. It always gates the reusable `.github/workflows/tox-ansible.yml` workflow and also gates `.github/workflows/linters.yml` on pull requests. The local action in `.github/actions/tox-ansible-matrix` generates the matrix, then adds environments from `.github/tox-ansible-matrix.json` to preserve all 18 unit and 18 sanity combinations.
 - Unit tests, sanity checks, and coverage run across the full suite.
 - `downstream = true` adds the ansible-core 2.18 pairs supported by tox-ansible; ansible-core 2.16 is skipped because the collection floor is 2.18. `unit-constraints` covers unit tests at 2.18 / Python 3.11 with SDK pins, and a companion environment covers sanity at that pair.
 - Integration tests are not run via local tox-ansible (`skip = ["integration-"]`); use the GHA integration workflow.
@@ -61,7 +61,7 @@ Notes:
 
 ### Python Version Compatibility by ansible-core Version (required CI)
 
-These are covered by the generated matrix and the companion environments in `.github/workflows/tox-ansible.yml`.
+These are covered by the generated matrix and companion environments in `.github/tox-ansible-matrix.json`.
 
 | ansible-core Version | Sanity Tests | Unit Tests |
 | -------------------- | ------------ | ---------- |

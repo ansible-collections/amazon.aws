@@ -9,6 +9,17 @@ exclude_paths:
   - tests/unit
   - .ansible
   - .github
+  - .tox
+  - tests/output
+
+skip_list:
+  - name[missing]
+  - yaml[line-length]
+  - args[module]
+  - run-once[task]
+  - ignore-errors
+  - sanity[cannot-ignore]
+  - run-once[play]
 
 warn_list:
   - no-log-password

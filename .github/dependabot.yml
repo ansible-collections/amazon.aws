@@ -4,6 +4,22 @@
 
 version: 2
 updates:
+  # Monitor the pinned tox-ansible matrix tooling requirements.
+  - package-ecosystem: "pip"
+    directory: "/.github/actions/tox-ansible-matrix"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    allow:
+      - dependency-name: "tox-ansible"
+      - dependency-name: "tox-uv-bare"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+
   # Monitor GitHub Actions for version updates
   - package-ecosystem: "github-actions"
     directory: "/"

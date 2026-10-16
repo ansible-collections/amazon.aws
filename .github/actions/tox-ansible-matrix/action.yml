@@ -1,0 +1,36 @@
+---
+name: Generate tox-ansible matrix
+description: Generate the collection unit and sanity matrix with tox-ansible.
+inputs:
+  matrix-config:
+    description: JSON file defining collection-specific companion environments.
+    required: false
+    default: .github/tox-ansible-matrix.json
+outputs:
+  envlist:
+    description: JSON matrix for GitHub Actions.
+    value: ${{ steps.generate.outputs.envlist }}
+runs:
+  using: composite
+  steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      with:
+        activate-environment: true
+        enable-cache: true
+        python-version: "3.12"
+
+    - name: Install tox-ansible tooling
+      shell: bash
+      run: |
+        set -euo pipefail
+        uv pip install -r "$GITHUB_ACTION_PATH/requirements.txt"
+
+    - name: Generate matrix
+      id: generate
+      shell: bash
+      env:
+        MATRIX_CONFIG: ${{ inputs.matrix-config }}
+      run: |
+        set -euo pipefail
+        python "$GITHUB_ACTION_PATH/generate_matrix.py"
