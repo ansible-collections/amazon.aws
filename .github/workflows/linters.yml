@@ -1,11 +1,33 @@
 ---
-name: changelog and linters
+name: linters
 
-on: [workflow_call] # allow this workflow to be called from other workflows
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   linters:
-    uses: ansible-network/github_actions/.github/workflows/tox.yml@4678c74a7d712d55e663c88f66eec6d9c3642550 # @main as of 2026-09-21
-    with:
-      envname: ""
-      labelname: lint
+    name: Run lint environments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: true
+          python-version: "3.12"
+
+      - name: Install developer toolchain
+        run: uv sync --dev --locked
+
+      - name: Run tox lint environments
+        run: uv run tox run -m lint
+
+      - name: Run ansible-lint
+        run: uv run tox run -e ansible-lint

@@ -510,10 +510,10 @@ def get_kms_tags(connection, module, key_id):
             tags.extend(tag_response["Tags"])
         except is_boto3_error_code("AccessDeniedException"):
             tag_response = {}
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             module.fail_json_aws(e, msg="Failed to obtain key tags")
         if tag_response.get("NextMarker"):
             kwargs["Marker"] = tag_response["NextMarker"]
@@ -528,10 +528,10 @@ def get_kms_policies(connection, module, key_id):
         return [get_key_policy_with_backoff(connection, key_id, policy)["Policy"] for policy in policies]
     except is_boto3_error_code("AccessDeniedException"):
         return []
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="Failed to obtain key policies")
 
 
@@ -802,10 +802,10 @@ def update_key_rotation(connection, module, key, enable_key_rotation):
             return False
     except is_boto3_error_code("AccessDeniedException"):
         pass
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="Unable to get current key rotation status")
 
     if not module.check_mode:
