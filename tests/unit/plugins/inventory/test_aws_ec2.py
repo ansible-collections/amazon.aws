@@ -472,9 +472,9 @@ def test_iter_entry(inventory):
             [1, 2],
             [4],
             [
-                [{"InstanceId": 4, "name": "instance-4"}],
                 [{"InstanceId": 1, "name": "instance-1"}],
                 [{"InstanceId": 2, "name": "instance-2"}],
+                [{"InstanceId": 4, "name": "instance-4"}],
             ],
             [{"InstanceId": 1, "name": "instance-1"}, {"InstanceId": 2, "name": "instance-2"}],
         ),
@@ -483,8 +483,8 @@ def test_iter_entry(inventory):
             [1],
             [
                 [{"InstanceId": 1, "name": "instance-1"}],
-                [{"InstanceId": 1, "name": "instance-1"}],
                 [{"InstanceId": 2, "name": "instance-2"}],
+                [{"InstanceId": 1, "name": "instance-1"}],
             ],
             [{"InstanceId": 2, "name": "instance-2"}],
         ),
@@ -514,6 +514,32 @@ def test_inventory_query(inventory, include_filters, exclude_filters, instances_
     assert inventory._query(**params) == {"aws_ec2": instances}
     if not instances_by_region:
         inventory._get_instances_by_region.assert_not_called()
+
+
+def test_inventory_query_runs_exclude_filters_after_include_filters(inventory):
+    # Instance 2 only starts matching the exclude filter after the include filters were queried; it must
+    # still be excluded (https://github.com/ansible-collections/amazon.aws/issues/2708).
+    calls = []
+
+    def get_instances(regions, filters, strict_permissions):
+        name = filters[0]["Name"]
+        calls.append(name)
+        if name == "include":
+            return [{"InstanceId": 1}, {"InstanceId": 2}]
+        return [{"InstanceId": 2}] if "include" in calls else []
+
+    inventory._get_instances_by_region = MagicMock(side_effect=get_instances)
+
+    result = inventory._query(
+        regions=["us-east-1"],
+        include_filters=[{"include": "x"}],
+        exclude_filters=[{"exclude": "x"}],
+        strict_permissions=False,
+        use_ssm_inventory=False,
+    )
+
+    assert calls == ["include", "exclude"]
+    assert result == {"aws_ec2": [{"InstanceId": 1}]}
 
 
 @pytest.mark.parametrize(
