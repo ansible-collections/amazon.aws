@@ -356,7 +356,7 @@ nat_gateway_addresses:
         returned: when availability_mode is regional
         type: str
         sample: us-east-1a
-        version_added: 12.0.0
+        version_added: 12.1.0
     availability_zone_id:
         description: The availability zone ID of the address (regional NAT gateways only).
         returned: when availability_mode is regional
