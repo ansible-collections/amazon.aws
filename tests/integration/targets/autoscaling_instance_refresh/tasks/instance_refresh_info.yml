@@ -63,7 +63,7 @@
 - name: Assert that valid message with fake-token is returned
   ansible.builtin.assert:
     that:
-      - '"Failed to describe InstanceRefreshes: An error occurred (InvalidNextToken) when calling the DescribeInstanceRefreshes operation: The token ''********''
+      - '"Failed to describe InstanceRefreshes: An error occurred (InvalidNextToken) when calling the DescribeInstanceRefreshes operation: The token ''$REDACTED$''
         is invalid." in output.msg'
 
 - name: Retrieve instance refresh info using max_records
