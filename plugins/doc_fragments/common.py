@@ -140,6 +140,7 @@ options:
     env:
       - name: AWS_SECRET_ACCESS_KEY
       - name: AWS_SECRET_KEY
+    secret: true
   session_token:
     description:
       - AWS STS session token for use with temporary credentials.
@@ -150,6 +151,7 @@ options:
     aliases: ['aws_session_token']
     env:
       - name: AWS_SESSION_TOKEN
+    secret: true
 
   profile:
     description:
