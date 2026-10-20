@@ -216,7 +216,7 @@ uv run tox -f unit --ansible -p auto
 ```
 
 For the oldest collection-supported pair (ansible-core 2.17 / Python 3.10) with
-pinned boto3/botocore from `tests/unit/constraints.txt`:
+pinned boto3/botocore from `tests/constraints.in`:
 
 ```bash
 uv run tox -e unit-constraints
