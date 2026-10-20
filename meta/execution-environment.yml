@@ -1,0 +1,6 @@
+---
+version: 3
+dependencies:
+  # Paths are resolved relative to the collection root, not to meta/.
+  python: meta/ee-requirements.txt
+  system: meta/ee-bindep.txt

@@ -22,3 +22,5 @@ build_ignore:
   - collections
   - .tox
   - uv.lock
+  # Dev convenience pointer to meta/ee-requirements.txt; not a shippable artifact.
+  - requirements.txt
