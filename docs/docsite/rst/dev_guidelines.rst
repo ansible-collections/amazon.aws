@@ -891,7 +891,7 @@ Custom SDK versions for Integration Tests
 
 By default integration tests will run against the earliest supported version of
 the AWS SDK.  The current supported versions can be found in
-``tests/integration/constraints.txt`` and should not be updated.  Where a module
+``tests/constraints.in`` and should not be updated.  Where a module
 needs access to a later version of the SDK this can be installed by depending on
 the ``setup_botocore_pip`` role and setting the ``botocore_version`` variable in
 the ``meta/main.yml`` file for your tests.
