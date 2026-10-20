@@ -362,7 +362,7 @@ nat_gateway_addresses:
         returned: when availability_mode is regional
         type: str
         sample: use1-az1
-        version_added: 12.0.0
+        version_added: 12.1.0
   sample: [
        {
             "allocation_id": "eipalloc-08ec128d03629671d",
