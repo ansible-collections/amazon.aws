@@ -473,15 +473,22 @@ def balanced_prefix(text, close):
     return None
 
 
-def pipeline_is_safe(alternative, paths):
-    """``X | ascii_downcase`` cannot be null when ``X`` is proven non-null."""
-    stages = split_top(alternative, "|")
+def pipeline_is_safe(alternative, proven):
+    """``X | ascii_downcase`` cannot be null when ``X`` is proven non-null.
+
+    The parens have to come off before the split: ``(.id | tostring)`` keeps its
+    ``|`` at depth 1, so ``split_top`` would hand back a single stage and report
+    a safe pipeline as unsafe. Recursing through ``can_be_null`` on the head --
+    rather than testing it against ``paths`` -- also covers a head that is itself
+    a proven chain, as in ``((.uniqueId // .name) | tostring)``.
+    """
+    text = " ".join((alternative or "").split())
+    while outer_parens_match(text):
+        text = text[1:-1].strip()
+    stages = split_top(text, "|")
     if len(stages) < 2:
         return False
-    head = stages[0]
-    while outer_parens_match(head):
-        head = head[1:-1].strip()
-    if head not in paths:
+    if can_be_null(stages[0], proven):
         return False
     return all(
         any(stage.startswith(name) for name in SAFE_FILTERS)
@@ -581,9 +588,7 @@ def can_be_null(expression, proven):
             return False            # null is the identity for jq's `+`
         if alternative in paths:
             return False            # proven non-null by an earlier guard
-        if "tostring" in alternative or "tojson" in alternative:
-            return False            # coerced to a string
-        if pipeline_is_safe(alternative, paths):
+        if pipeline_is_safe(alternative, proven):
             return False            # `<proven> | ascii_downcase` and friends
         if not PATH.findall(alternative):
             return False            # no path reference, cannot be null
@@ -597,6 +602,35 @@ def can_be_null(expression, proven):
 # --------------------------------------------------------------------------
 # Tests
 # --------------------------------------------------------------------------
+
+# Cases the null analysis itself must get right. Without these, the analysis
+# can go permanently vacuous and every null check below still reports green:
+# an earlier revision short-circuited on `tostring`, and since every query
+# writes `name: (<id> | tostring)`, dropping a `select(... != null)` guard
+# raised no failure anywhere in this file.
+CAN_BE_NULL_CASES = [
+    # (expression, paths proven non-null, can this evaluate to null?)
+    ("(.id | tostring)", set(), True),
+    ("(.id | tostring)", {".id"}, False),
+    ("(.id | tojson)", set(), True),
+    ("((.uniqueId // .name) | tostring)", {".name"}, False),
+    (".name // (.id | tostring)", set(), True),
+    (".name // (.id | tostring)", {".id"}, False),
+    (".id", {".id"}, False),
+    (".id", set(), True),
+    ('"literal"', set(), False),
+    ("(.a | ascii_downcase)", {".a"}, False),
+]
+
+
+@pytest.mark.parametrize("expression,paths,nullable", CAN_BE_NULL_CASES)
+def test_can_be_null_analysis_is_sound(expression, paths, nullable):
+    assert can_be_null(expression, (set(paths), [])) is nullable, (
+        "can_be_null(%r, proven=%r) should be %s. The null checks in this file "
+        "are only as good as this analysis -- if it answers False for "
+        "everything, they all pass vacuously." % (expression, sorted(paths), nullable)
+    )
+
 
 def test_query_file_exists_and_parses():
     assert os.path.isfile(QUERY_FILE), "%s is missing" % QUERY_FILE
