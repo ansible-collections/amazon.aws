@@ -12,5 +12,26 @@ on:
       - stable-*
   pull_request_target:
 jobs:
-  update-variables:
-    uses: ansible-network/github_actions/.github/workflows/update_aws_variables.yml@4678c74a7d712d55e663c88f66eec6d9c3642550 # @main as of 2026-10-05
+  # Inlines just the user-agent job from ansible-network/github_actions'
+  # update_aws_variables.yml reusable workflow. That workflow also bundles a
+  # boto-constraints job which parses root requirements.txt for literal
+  # `botocore>=`/`boto3>=` lines to auto-rewrite MINIMUM_BOTOCORE_VERSION /
+  # MINIMUM_BOTO3_VERSION. Since ACA-7246's dependency consolidation made
+  # requirements.txt a `-r meta/ee-requirements.txt` pointer with no literal
+  # version string, that job finds nothing and pushes a commit blanking
+  # those constants to "" instead. Intentionally dropped here;
+  # check-ee-requirements.yml now owns keeping the SDK floor in sync.
+  user-agent:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Update aws user-agent variable
+        uses: ansible-network/github_actions/.github/actions/commit_to_pullrequest@main
+        with:
+          commit_message: "update aws user-agent variable with version from galaxy.yml"
+          python_libs: "pyyaml"
+          python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_user_agent.py"
+          file_pattern: "plugins/*.py"
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
