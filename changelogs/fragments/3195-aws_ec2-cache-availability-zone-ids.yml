@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_ec2 inventory - store the availability zone IDs in the inventory cache, so that a cache hit no longer calls ``DescribeAvailabilityZones`` for every region (https://github.com/ansible-collections/amazon.aws/issues/3195).
