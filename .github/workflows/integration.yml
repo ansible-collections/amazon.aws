@@ -163,6 +163,14 @@ jobs:
           # from a requirements.yml entry the way this action expects.
           test-deps: >-
             ${{ steps.set-path.outputs.collection_dep }}
+          # This job matrix tests both amazon.aws (meta/ee-* + tests/*.in layout)
+          # and community.aws (tests/integration/{requirements,constraints}.txt
+          # layout, not yet migrated), so the Python deps install step below
+          # branches on which layout is present in the checked-out collection.
           pre-test-cmd: |-
             ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
-            python3 -m pip install -c tests/constraints.in -r meta/ee-requirements.txt -r tests/integration/requirements.in
+            if [ -f tests/constraints.in ]; then
+              python3 -m pip install -c tests/constraints.in -r meta/ee-requirements.txt -r tests/integration/requirements.in
+            else
+              python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
+            fi
