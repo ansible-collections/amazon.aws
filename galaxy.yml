@@ -22,5 +22,6 @@ build_ignore:
   - collections
   - .tox
   - uv.lock
-  # Dev convenience pointer to meta/ee-requirements.txt; not a shippable artifact.
+  # Convenience pointer to meta/ee-requirements.txt for local development.
+  # Excluded to avoid issues with ansible-builder introspection.
   - requirements.txt
