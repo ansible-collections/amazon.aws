@@ -16,11 +16,11 @@ jobs:
   # update_aws_variables.yml reusable workflow. That workflow also bundles a
   # boto-constraints job which parses root requirements.txt for literal
   # `botocore>=`/`boto3>=` lines to auto-rewrite MINIMUM_BOTOCORE_VERSION /
-  # MINIMUM_BOTO3_VERSION. Since ACA-7246's dependency consolidation made
-  # requirements.txt a `-r meta/ee-requirements.txt` pointer with no literal
-  # version string, that job finds nothing and pushes a commit blanking
-  # those constants to "" instead. Intentionally dropped here;
-  # check-ee-requirements.yml now owns keeping the SDK floor in sync.
+  # MINIMUM_BOTO3_VERSION. Since requirements.txt is now a
+  # `-r meta/ee-requirements.txt` pointer with no literal version string,
+  # that job finds nothing and pushes a commit blanking those constants to
+  # "" instead. Intentionally dropped here; check-ee-requirements.yml now
+  # owns keeping the SDK floor in sync.
   user-agent:
     runs-on: ubuntu-latest
     permissions:
