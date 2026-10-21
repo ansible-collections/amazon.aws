@@ -482,17 +482,17 @@ def check_user_or_group_update_needed(module: AnsibleAWSModule, ec2) -> bool:
 
     if supplied_group_names:
         existing_group_names = {item.get("Group") for item in existing_create_vol_permission or []}
-        if set(supplied_group_names) == set(existing_group_names):
-            return False
-        else:
-            return True
+        if purge_permission:
+            return set(supplied_group_names) != existing_group_names
+        # Without purging, only missing group names need to be added
+        return not set(supplied_group_names).issubset(existing_group_names)
 
     if supplied_user_ids:
         existing_user_ids = {item.get("UserId") for item in existing_create_vol_permission or []}
-        if set(supplied_user_ids) == set(existing_user_ids):
-            return False
-        else:
-            return True
+        if purge_permission:
+            return set(supplied_user_ids) != existing_user_ids
+        # Without purging, only missing user IDs need to be added
+        return not set(supplied_user_ids).issubset(existing_user_ids)
 
     if purge_permission and existing_create_vol_permission == []:
         return False
