@@ -1,3 +1,4 @@
+<!-- DNM: trigger Zuul checks to verify log uploads for ansible/zuul-config#662; do not merge. -->
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ansible-collections_amazon.aws&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ansible-collections_amazon.aws)
