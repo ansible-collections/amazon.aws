@@ -1,0 +1,11 @@
+# Disabled pending aws-terminator IAM permissions for regional NAT gateway
+# creation (iam:CreateServiceLinkedRole for natgateway.amazonaws.com).
+# See https://github.com/mattclay/aws-terminator/pull/337 and ACA-6688/ACA-6689.
+# Remove this line once the permissions have landed and tests pass.
+disabled
+time=10m
+
+cloud/aws
+
+ec2_vpc_nat_gateway
+ec2_vpc_nat_gateway_info
