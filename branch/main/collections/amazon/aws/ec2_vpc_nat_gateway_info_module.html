@@ -394,6 +394,33 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-result/auto_provision_zones"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-auto-provision-zones"><strong>auto_provision_zones</strong></p>
+<a class="ansibleOptionLink" href="#return-result/auto_provision_zones" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether AWS automatically manages availability zone coverage.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when availability_mode is regional</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;enabled&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-result/auto_scaling_ips"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-auto-scaling-ips"><strong>auto_scaling_ips</strong></p>
+<a class="ansibleOptionLink" href="#return-result/auto_scaling_ips" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether AWS automatically allocates additional EIPs when more ports are needed.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when availability_mode is regional</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;enabled&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-result/availability_mode"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-availability-mode"><strong>availability_mode</strong></p>
+<a class="ansibleOptionLink" href="#return-result/availability_mode" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Whether the NAT gateway is zonal or regional.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;zonal&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/connectivity_type"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-connectivity-type"><strong>connectivity_type</strong></p>
 <a class="ansibleOptionLink" href="#return-result/connectivity_type" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -402,7 +429,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;public&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/create_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-create-time"><strong>create_time</strong></p>
 <a class="ansibleOptionLink" href="#return-result/create_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -411,7 +438,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2021-03-11T22:43:25+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/delete_time"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-delete-time"><strong>delete_time</strong></p>
 <a class="ansibleOptionLink" href="#return-result/delete_time" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -420,7 +447,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;2021-03-11T22:43:25+00:00&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses"><strong>nat_gateway_addresses</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -428,7 +455,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/allocation_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-allocation-id"><strong>allocation_id</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/allocation_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -437,7 +464,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipalloc-0853e66a40803da76&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/association_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-association-id"><strong>association_id</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/association_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -446,7 +473,25 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eipassoc-0d6365c7eeb7d4932&quot;</span></code></p>
 </div></td>
 </tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/availability_zone"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-availability-zone"><strong>availability_zone</strong></p>
+<a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/availability_zone" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The availability zone of the address (regional NAT gateways only).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when availability_mode is regional</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;us-east-1a&quot;</span></code></p>
+</div></td>
+</tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/availability_zone_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-availability-zone-id"><strong>availability_zone_id</strong></p>
+<a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/availability_zone_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The availability zone ID of the address (regional NAT gateways only).</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when availability_mode is regional</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;use1-az1&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/is_primary"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-is-primary"><strong>is_primary</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/is_primary" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -455,7 +500,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">true</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/network_interface_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-network-interface-id"><strong>network_interface_id</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/network_interface_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -464,7 +509,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;eni-0a37acdbe306c661c&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/private_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-private-ip"><strong>private_ip</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/private_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -473,7 +518,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;10.0.238.227&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/public_ip"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-public-ip"><strong>public_ip</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/public_ip" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -482,7 +527,7 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;203.0.113.9&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_addresses/status"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-addresses-status"><strong>status</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_addresses/status" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -491,13 +536,22 @@ see <a class="reference internal" href="#ansible-collections-amazon-aws-ec2-vpc-
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;succeeded&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="return-result/nat_gateway_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-nat-gateway-id"><strong>nat_gateway_id</strong></p>
 <a class="ansibleOptionLink" href="#return-result/nat_gateway_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The ID of the NAT gateway.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
 <p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;nat-0c242a2397acf6173&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-result/route_table_id"></div><p class="ansible-option-title" id="ansible-collections-amazon-aws-ec2-vpc-nat-gateway-info-module-return-result-route-table-id"><strong>route_table_id</strong></p>
+<a class="ansibleOptionLink" href="#return-result/route_table_id" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The route table ID associated with a regional NAT gateway.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when availability_mode is regional</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">&quot;rtb-12345678&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
