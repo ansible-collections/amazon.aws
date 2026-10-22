@@ -1,0 +1,6 @@
+---
+- name: Save credentials to file location
+  ansible.builtin.template:
+    src: credentials.j2
+    dest: "{{ role_path }}/../../cloud-config-aws.ini"
+    mode: "0755"

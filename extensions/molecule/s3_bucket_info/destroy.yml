@@ -1,0 +1,24 @@
+---
+- name: Destroy
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - vars/main.yml
+    - "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/aws_vars.yml"
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  tasks:
+    - name: Delete S3 buckets
+      amazon.aws.s3_bucket:
+        state: absent
+        name: "{{ item }}"
+      loop: "{{ testing_buckets }}"
+      ignore_errors: true

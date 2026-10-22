@@ -1,0 +1,16 @@
+- name: Create test configuration data
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Create cloud config configuration data
+      cloud_config_aws:
+        path: "{{ lookup('ansible.builtin.env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+      register: cloud_data
+      # no_log: true
+
+    - name: Dump cloud variables to Molecule's ephemeral directory
+      ansible.builtin.copy:
+        content: "{{ cloud_data.aws_vars | to_nice_yaml }}"
+        dest: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/aws_vars.yml"
+        mode: "0600"

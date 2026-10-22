@@ -1,0 +1,32 @@
+---
+- name: Prepare
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - vars/main.yml
+    - "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/aws_vars.yml"
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  tasks:
+    - name: Create a simple s3_bucket
+      amazon.aws.s3_bucket:
+        name: "{{ bucket_id }}"
+        state: present
+        versioning: true
+        tags:
+          lowercase spaced: hello cruel world
+          Title Case: Hello Cruel World
+          CamelCase: SimpleCamelCase
+          snake_case: simple_snake_case
+      register: output
+      loop: "{{ testing_buckets }}"
+      loop_control:
+        loop_var: bucket_id
