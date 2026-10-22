@@ -1,0 +1,2 @@
+# Unit-only test deps (currently none beyond the shared test framework).
+-r ../test-requirements.in

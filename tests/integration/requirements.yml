@@ -1,6 +1,13 @@
 ---
+# Single source of truth for integration test collection dependencies.
+# Installed directly via `ansible-galaxy collection install -r` in
+# .github/workflows/integration.yml (the local amazon.aws/community.aws
+# cross-checkout is handled separately there, since it's a filesystem path
+# rather than a Galaxy-installable name).
 collections:
-  - ansible.windows
-  - ansible.utils # ipv6 filter
   - amazon.cloud # used by integration tests - rds_cluster_modify
+  - ansible.netcommon
+  - ansible.utils # ipv6 filter
+  - ansible.windows
   - community.crypto # SSL certificate generation
+  - community.general

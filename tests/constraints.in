@@ -1,0 +1,15 @@
+# Single source of truth to pin SDK floor versions.
+# Keep these pins in sync with meta/ee-requirements.txt's `>=` minimums.
+# When updating, also update:
+# - meta/ee-requirements.txt
+# - plugins/module_utils/botocore.py (MINIMUM_BOTOCORE_VERSION / MINIMUM_BOTO3_VERSION)
+# - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
+botocore==1.38.23
+boto3==1.38.23
+# aiobotocore doesn't play nice:
+# - it's got very specific botocore requirements and rarely supports a.b.0
+aiobotocore==2.23.0
+
+# AWS CLI has `botocore==` dependencies, provide the one that matches botocore
+# to avoid needing to download over a years worth of awscli wheels.
+awscli==1.40.22
