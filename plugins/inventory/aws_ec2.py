@@ -505,6 +505,10 @@ def _get_tag_hostname(preference: str, instance: Dict[str, Any]) -> Any:
     return tag_values
 
 
+# Key of the zone name to zone ID mapping in the inventory cache, next to the groups.
+_AVAILABILITY_ZONE_IDS_KEY = "_availability_zone_ids"
+
+
 def _prepare_host_vars(
     original_host_vars: Dict[str, Any],
     availability_zone_ids: Dict[str, str],
@@ -1151,13 +1155,19 @@ class InventoryModule(AWSInventoryBase):
         if not result_was_cached:
             results = self._query(regions, include_filters, exclude_filters, strict_permissions, use_ssm_inventory)
 
+        # The zone IDs are cached with the instances, so a cache hit makes no AWS call.
+        # Cache entries written before they were added lack them: look them up then.
+        groups = dict(results)
+        availability_zone_ids = groups.pop(_AVAILABILITY_ZONE_IDS_KEY, None)
+        if availability_zone_ids is None:
+            availability_zone_ids = self._get_availability_zone_ids(strict_permissions)
+            results = {**groups, _AVAILABILITY_ZONE_IDS_KEY: availability_zone_ids}
+
         if self.route53_enabled:
             self.route53_resource_record_mapping = self._map_route53_records()
 
-        availability_zone_ids = self._get_availability_zone_ids(strict_permissions)
-
         self._populate(
-            results,
+            groups,
             hostnames,
             availability_zone_ids,
             allow_duplicated_hosts=allow_duplicated_hosts,
