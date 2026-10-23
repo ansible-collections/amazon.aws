@@ -1,8 +1,14 @@
 {% for item in peering_facts.vpc_peering_connections %}
-- canonical_facts:
-    id: "{{ item.vpc_peering_connection_id }}"
+- name: "{{ item.tags.Name | default(item.vpc_peering_connection_id) }}"
+  canonical_facts:
+    vpc_peering_connection_id: "{{ item.vpc_peering_connection_id }}"
+  facts:
+    device_type: {{ networking_facts.peering }}
+{% for key, value in networking_common_facts.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
     status: "{{ item.status.code }}"
-{% if item.tags != {} %}
+{% if item.tags %}
     tags:
 {% for key, value in item.tags.items() %}
       {{ key }}: {{ value }}
@@ -10,9 +16,4 @@
 {% else %}
     tags: {}
 {% endif %}
-  facts:
-    device_type: {{ networking_facts.peering }}
-{% for key, value in networking_common_facts.items()%}
-    {{ key }}: {{ value }}
-{% endfor %}
 {% endfor %}

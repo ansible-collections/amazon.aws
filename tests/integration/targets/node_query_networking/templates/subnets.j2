@@ -1,8 +1,14 @@
 {% for item in subnets_facts.subnets %}
-- canonical_facts:
-    id: "{{ item.subnet_id }}"
+- name: "{{ item.tags.Name | default(item.subnet_id) }}"
+  canonical_facts:
+    subnet_id: "{{ item.subnet_id }}"
+  facts:
+    device_type: {{ networking_facts.subnet }}
+{% for key, value in networking_common_facts.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
     status: "{{ item.state }}"
-{% if item.tags != {} %}
+{% if item.tags %}
     tags:
 {% for key, value in item.tags.items() %}
       {{ key }}: {{ value }}
@@ -10,9 +16,4 @@
 {% else %}
     tags: {}
 {% endif %}
-  facts:
-    device_type: {{ networking_facts.subnet }}
-{% for key, value in networking_common_facts.items()%}
-    {{ key }}: {{ value }}
-{% endfor %}
 {% endfor %}

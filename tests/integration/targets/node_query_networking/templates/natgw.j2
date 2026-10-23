@@ -1,8 +1,14 @@
 {% for item in natgw_facts.result %}
-- canonical_facts:
-    id: "{{ item.nat_gateway_id }}"
+- name: "{{ item.tags.Name | default(item.nat_gateway_id) }}"
+  canonical_facts:
+    nat_gateway_id: "{{ item.nat_gateway_id }}"
+  facts:
+    device_type: {{ networking_facts.nat_gateway }}
+{% for key, value in networking_common_facts.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
     status: "{{ item.state }}"
-{% if item.tags != {} %}
+{% if item.tags %}
     tags:
 {% for key, value in item.tags.items() %}
       {{ key }}: {{ value }}
@@ -10,9 +16,4 @@
 {% else %}
     tags: {}
 {% endif %}
-  facts:
-    device_type: {{ networking_facts.nat_gateway }}
-{% for key, value in networking_common_facts.items()%}
-    {{ key }}: {{ value }}
-{% endfor %}
 {% endfor %}
