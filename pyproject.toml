@@ -1,6 +1,6 @@
 [project]
 # Developer-environment metadata for uv; never built/published (tool.uv package = false).
-# Runtime/test deps stay out: requirements.txt, tests/{unit,integration}/requirements.txt.
+# Runtime/test deps stay out: requirements.txt, tests/unit/unit.txt, tests/integration/integration.txt.
 name = "amazon-aws"
 # uv requires a version even though this project is never packaged. Not mirrored
 # from galaxy.yml on purpose, so it doesn't need bumping every release.
