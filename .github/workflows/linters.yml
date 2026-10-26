@@ -21,13 +21,28 @@ jobs:
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           enable-cache: true
-          python-version: "3.12"
+          python-version: "3.11"
 
-      - name: Install developer toolchain
-        run: uv sync --dev --locked
+      - name: Run Ruff
+        run: |
+          uvx ruff==0.16.10 check plugins tests extensions
+          uvx ruff==0.16.10 format --check plugins tests extensions
 
-      - name: Run tox lint environments
-        run: uv run tox run -m lint
+      - name: Run Pylint
+        run: |
+          uvx pylint \
+            --disable R,C,W,E \
+            --enable pointless-statement \
+            --enable consider-using-dict-items \
+            --enable assignment-from-no-return \
+            --enable no-else-continue \
+            --enable no-else-break \
+            --enable simplifiable-if-statement \
+            --enable pointless-string-statement \
+            --enable redefined-outer-name \
+            --enable redefined-builtin \
+            --enable unused-import \
+            plugins tests extensions
 
       - name: Run ansible-lint
-        run: uv run tox run -e ansible-lint
+        run: uvx --from 'ansible-lint>=26.6.0' ansible-lint plugins tests extensions

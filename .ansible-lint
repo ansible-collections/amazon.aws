@@ -12,6 +12,8 @@ exclude_paths:
   - .tox
   - tests/output
 
+# Preserve exclusions already passed by the previous CI workflow while
+# centralizing the configuration here; reducing this list is separate cleanup.
 skip_list:
   - name[missing]
   - yaml[line-length]

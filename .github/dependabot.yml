@@ -19,6 +19,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
+      - "tox-ansible"
 
   # Monitor GitHub Actions for version updates
   - package-ecosystem: "github-actions"
