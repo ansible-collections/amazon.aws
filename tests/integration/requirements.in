@@ -10,4 +10,3 @@ jq
 # The event_source_aws_cloudtrail test is disabled, so these dependencies are not currently needed
 # ansible-rulebook
 # ansible-runner
-# aiobotocore[botocore]
