@@ -18,7 +18,7 @@ runs:
       with:
         activate-environment: true
         enable-cache: true
-        python-version: "3.12"
+        python-version: "3.11"
 
     - name: Install tox-ansible tooling
       shell: bash

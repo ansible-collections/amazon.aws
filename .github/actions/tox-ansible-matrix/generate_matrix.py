@@ -50,9 +50,6 @@ def main() -> None:
                 raise SystemExit(f"tox-ansible returned no Python version for {entry['name']}")
             envlist.append(entry)
 
-    if not envlist:
-        raise SystemExit("tox-ansible did not generate unit or sanity environments")
-
     config = json.loads(config_path.read_text(encoding="utf-8"))
     companions = config.get("companion_envs")
     if not isinstance(companions, list):
@@ -76,6 +73,9 @@ def main() -> None:
                 }
             )
             existing.add(name)
+
+    if not envlist:
+        raise SystemExit("tox-ansible and companion configuration produced no unit or sanity environments")
 
     with output_path.open("a", encoding="utf-8") as github_output:
         github_output.write(f"envlist={json.dumps(envlist, separators=(',', ':'))}\n")
