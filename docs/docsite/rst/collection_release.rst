@@ -74,7 +74,7 @@ SDK dependencies need to be updated in a number of places, primarily:
 
 * README.md
 * ``meta/ee-requirements.txt`` (runtime source of truth)
-* ``tests/constraints.in`` (pinned floor for tests)
+* ``tests/test-constraints.in`` (pinned floor for tests)
 * ``ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTOCORE_VERSION``
 * ``ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTO3_VERSION``
 

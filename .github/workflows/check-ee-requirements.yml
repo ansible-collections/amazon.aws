@@ -1,6 +1,6 @@
 ---
 # Keep the SDK floor version in sync across every place it's declared:
-# tests/constraints.in, meta/ee-requirements.txt, plugins/module_utils/botocore.py,
+# tests/test-constraints.in, meta/ee-requirements.txt, plugins/module_utils/botocore.py,
 # and tests/unit/.../test_minimal_versions.py. Catches a bump to one file without
 # the others, same shape as check-unit-requirements.yml.
 #
@@ -22,7 +22,7 @@ on:
       - reopened
       - synchronize
     paths:
-      - tests/constraints.in
+      - tests/test-constraints.in
       - meta/ee-requirements.txt
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
@@ -31,7 +31,7 @@ on:
       - main
       - stable-*
     paths:
-      - tests/constraints.in
+      - tests/test-constraints.in
       - meta/ee-requirements.txt
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
@@ -61,7 +61,7 @@ jobs:
                   sys.exit(1)
               return match.group(1)
 
-          constraints = "tests/constraints.in"
+          constraints = "tests/test-constraints.in"
           ee_requirements = "meta/ee-requirements.txt"
           botocore_py = "plugins/module_utils/botocore.py"
           test_minimal = (
@@ -70,13 +70,13 @@ jobs:
           )
 
           values = {
-              ("constraints.in", "botocore"): pin(constraints, r"^botocore==([\d.]+)", "botocore=="),
-              ("constraints.in", "boto3"): pin(constraints, r"^boto3==([\d.]+)", "boto3=="),
-              ("constraints.in", "aiobotocore"): pin(constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="),
+              ("test-constraints.in", "botocore"): pin(constraints, r"^botocore==([\d.]+)", "botocore=="),
+              ("test-constraints.in", "boto3"): pin(constraints, r"^boto3==([\d.]+)", "boto3=="),
+              ("test-constraints.in", "aiobotocore"): pin(constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="),
               ("ee-requirements.txt", "botocore"): pin(ee_requirements, r"^botocore>=([\d.]+)", "botocore>="),
               ("ee-requirements.txt", "boto3"): pin(ee_requirements, r"^boto3>=([\d.]+)", "boto3>="),
               ("ee-requirements.txt", "aiobotocore"): pin(
-                  ee_requirements, r"^aiobotocore\[botocore\]>=([\d.]+)", "aiobotocore[botocore]>="
+                  ee_requirements, r"^aiobotocore>=([\d.]+)", "aiobotocore>="
               ),
               ("botocore.py", "botocore"): pin(
                   botocore_py, r'MINIMUM_BOTOCORE_VERSION\s*=\s*"([\d.]+)"', "MINIMUM_BOTOCORE_VERSION"

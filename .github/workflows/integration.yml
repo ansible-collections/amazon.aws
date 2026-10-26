@@ -157,7 +157,7 @@ jobs:
           collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
           collection-root: ''
           target: ${{ steps.read-targets.outputs.job_targets }}
-          # Named collection deps come from tests/integration/requirements.yml (installed
+          # Named collection deps come from tests/integration/integration.yml (installed
           # below) now that it's the single source of truth; only the local cross-collection
           # checkout path stays here since ansible-galaxy can't install a filesystem path
           # from a requirements.yml entry the way this action expects.
@@ -168,9 +168,9 @@ jobs:
           # layout, not yet migrated), so the Python deps install step below
           # branches on which layout is present in the checked-out collection.
           pre-test-cmd: |-
-            ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
-            if [ -f tests/constraints.in ]; then
-              python3 -m pip install -c tests/constraints.in -r meta/ee-requirements.txt -r tests/integration/requirements.in
+            ansible-galaxy collection install -r tests/integration/integration.yml -p ${{ github.workspace }}
+            if [ -f tests/test-constraints.in ]; then
+              python3 -m pip install -c tests/test-constraints.in -r meta/ee-requirements.txt -r tests/integration/integration.in
             else
               python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
             fi
