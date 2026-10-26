@@ -1,6 +1,6 @@
 # Runtime source of truth for ansible-builder / execution environments.
 # When updating the minimal versions, also update:
-# - tests/constraints.in
+# - tests/test-constraints.in
 # - plugins/module_utils/botocore.py (MINIMUM_BOTOCORE_VERSION / MINIMUM_BOTO3_VERSION)
 # - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
 botocore>=1.38.23

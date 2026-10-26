@@ -28,10 +28,10 @@ jobs:
 
     steps:
       - name: Update aws user-agent variable
-        uses: ansible-network/github_actions/.github/actions/commit_to_pullrequest@main
+        uses: ansible-network/github_actions/.github/actions/commit_to_pullrequest@4678c74a7d712d55e663c88f66eec6d9c3642550 # @main as of 2026-10-26
         with:
           commit_message: "update aws user-agent variable with version from galaxy.yml"
           python_libs: "pyyaml"
-          python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_user_agent.py"
+          python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/4678c74a7d712d55e663c88f66eec6d9c3642550/scripts/update_aws_user_agent.py"
           file_pattern: "plugins/*.py"
           token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
