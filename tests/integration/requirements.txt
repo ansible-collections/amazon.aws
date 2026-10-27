@@ -1,0 +1,5 @@
+# ansible-test auto-installs this exact filename into the sandboxed
+# controller/target environment it provisions for integration tests,
+# independent of any pre-test-cmd run on the outer CI host. Keep it as a
+# thin pointer into the consolidated layout so that install still happens.
+-r integration.txt
