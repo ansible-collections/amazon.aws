@@ -1,5 +1,24 @@
 # ansible-test auto-installs this exact filename into the sandboxed
 # controller/target environment it provisions for integration tests,
-# independent of any pre-test-cmd run on the outer CI host. Keep it as a
-# thin pointer into the consolidated layout so that install still happens.
--r integration.txt
+# independent of any pre-test-cmd run on the outer CI host. That install
+# step only stages the contents of tests/integration/ itself, so a -r
+# reference to anything outside this directory (e.g. ../test-requirements.in)
+# fails with "No such file or directory" inside the sandbox even though it
+# resolves fine on a normal checkout. Keep this self-contained and in sync
+# with the package list in tests/integration/integration.in.
+#
+# Our code is based on the AWS SDKs
+boto3
+botocore
+
+# netaddr is needed for ansible.utils.ipv6
+netaddr
+virtualenv
+# Sometimes needed where we don't have features we need in modules
+awscli
+# Used for comparing SSH Public keys to the Amazon fingerprints
+cryptography
+# Used for recordings
+placebo
+# Used for indirect node count tests targets
+jq

@@ -1,8 +1,14 @@
 ---
 # Keep the SDK floor version in sync across every place it's declared:
 # tests/test-constraints.in, meta/ee-requirements.txt, plugins/module_utils/botocore.py,
-# and tests/unit/.../test_minimal_versions.py. Catches a bump to one file without
-# the others, same shape as check-unit-requirements.yml.
+# tests/unit/.../test_minimal_versions.py, and tests/integration/constraints.txt.
+# Catches a bump to one file without the others, same shape as
+# check-unit-requirements.yml.
+#
+# tests/integration/constraints.txt duplicates (rather than points at)
+# tests/test-constraints.in because ansible-test stages only the contents of
+# tests/integration/ before running its own hardcoded pip install there, so a
+# -c reference to a file outside that directory can't be resolved.
 #
 # NOTE: this is a local fallback. A generalized version of this check is proposed
 # as a reusable composite action in ansible/cloud-content-ci-automation (alongside
@@ -26,6 +32,7 @@ on:
       - meta/ee-requirements.txt
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
+      - tests/integration/constraints.txt
   push:
     branches:
       - main
@@ -35,6 +42,7 @@ on:
       - meta/ee-requirements.txt
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
+      - tests/integration/constraints.txt
 
 jobs:
   floor-versions-in-sync:
@@ -68,11 +76,13 @@ jobs:
               "tests/unit/plugins/module_utils/modules/"
               "ansible_aws_module/test_minimal_versions.py"
           )
+          integration_constraints = "tests/integration/constraints.txt"
 
           values = {
               ("test-constraints.in", "botocore"): pin(constraints, r"^botocore==([\d.]+)", "botocore=="),
               ("test-constraints.in", "boto3"): pin(constraints, r"^boto3==([\d.]+)", "boto3=="),
               ("test-constraints.in", "aiobotocore"): pin(constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="),
+              ("test-constraints.in", "awscli"): pin(constraints, r"^awscli==([\d.]+)", "awscli=="),
               ("ee-requirements.txt", "botocore"): pin(ee_requirements, r"^botocore>=([\d.]+)", "botocore>="),
               ("ee-requirements.txt", "boto3"): pin(ee_requirements, r"^boto3>=([\d.]+)", "boto3>="),
               ("ee-requirements.txt", "aiobotocore"): pin(
@@ -89,6 +99,18 @@ jobs:
               ),
               ("test_minimal_versions.py", "boto3"): pin(
                   test_minimal, r'MINIMAL_BOTO3\s*=\s*"([\d.]+)"', "MINIMAL_BOTO3"
+              ),
+              ("tests/integration/constraints.txt", "botocore"): pin(
+                  integration_constraints, r"^botocore==([\d.]+)", "botocore=="
+              ),
+              ("tests/integration/constraints.txt", "boto3"): pin(
+                  integration_constraints, r"^boto3==([\d.]+)", "boto3=="
+              ),
+              ("tests/integration/constraints.txt", "aiobotocore"): pin(
+                  integration_constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="
+              ),
+              ("tests/integration/constraints.txt", "awscli"): pin(
+                  integration_constraints, r"^awscli==([\d.]+)", "awscli=="
               ),
           }
 
