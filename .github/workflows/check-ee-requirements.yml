@@ -1,0 +1,134 @@
+---
+# Keep the SDK floor version in sync across every place it's declared:
+# tests/test-constraints.in, meta/ee-requirements.txt, plugins/module_utils/botocore.py,
+# tests/unit/.../test_minimal_versions.py, and tests/integration/constraints.txt.
+# Catches a bump to one file without the others, same shape as
+# check-unit-requirements.yml.
+#
+# tests/integration/constraints.txt duplicates (rather than points at)
+# tests/test-constraints.in because ansible-test stages only the contents of
+# tests/integration/ before running its own hardcoded pip install there, so a
+# -c reference to a file outside that directory can't be resolved.
+#
+# NOTE: this is a local fallback. A generalized version of this check is proposed
+# as a reusable composite action in ansible/cloud-content-ci-automation (alongside
+# ansible_test_splitter/ansible_read_targets) so other collections doing the same
+# Unified Testing Strategy dependency migration can reuse it. If/when that lands,
+# this workflow should be replaced with a call to the shared action.
+name: check-ee-requirements
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - tests/test-constraints.in
+      - meta/ee-requirements.txt
+      - plugins/module_utils/botocore.py
+      - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
+      - tests/integration/constraints.txt
+  push:
+    branches:
+      - main
+      - stable-*
+    paths:
+      - tests/test-constraints.in
+      - meta/ee-requirements.txt
+      - plugins/module_utils/botocore.py
+      - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
+      - tests/integration/constraints.txt
+
+jobs:
+  floor-versions-in-sync:
+    name: SDK floor versions match across dependency files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Assert botocore/boto3/aiobotocore floors are in sync
+        run: |
+          python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          def pin(path, pattern, label):
+              text = Path(path).read_text(encoding="utf-8")
+              match = re.search(pattern, text, re.MULTILINE)
+              if not match:
+                  print(f"::error file={path}::could not find {label} in {path}")
+                  sys.exit(1)
+              return match.group(1)
+
+          constraints = "tests/test-constraints.in"
+          ee_requirements = "meta/ee-requirements.txt"
+          botocore_py = "plugins/module_utils/botocore.py"
+          test_minimal = (
+              "tests/unit/plugins/module_utils/modules/"
+              "ansible_aws_module/test_minimal_versions.py"
+          )
+          integration_constraints = "tests/integration/constraints.txt"
+
+          values = {
+              ("test-constraints.in", "botocore"): pin(constraints, r"^botocore==([\d.]+)", "botocore=="),
+              ("test-constraints.in", "boto3"): pin(constraints, r"^boto3==([\d.]+)", "boto3=="),
+              ("test-constraints.in", "aiobotocore"): pin(constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="),
+              ("test-constraints.in", "awscli"): pin(constraints, r"^awscli==([\d.]+)", "awscli=="),
+              ("ee-requirements.txt", "botocore"): pin(ee_requirements, r"^botocore>=([\d.]+)", "botocore>="),
+              ("ee-requirements.txt", "boto3"): pin(ee_requirements, r"^boto3>=([\d.]+)", "boto3>="),
+              ("ee-requirements.txt", "aiobotocore"): pin(
+                  ee_requirements, r"^aiobotocore>=([\d.]+)", "aiobotocore>="
+              ),
+              ("botocore.py", "botocore"): pin(
+                  botocore_py, r'MINIMUM_BOTOCORE_VERSION\s*=\s*"([\d.]+)"', "MINIMUM_BOTOCORE_VERSION"
+              ),
+              ("botocore.py", "boto3"): pin(
+                  botocore_py, r'MINIMUM_BOTO3_VERSION\s*=\s*"([\d.]+)"', "MINIMUM_BOTO3_VERSION"
+              ),
+              ("test_minimal_versions.py", "botocore"): pin(
+                  test_minimal, r'MINIMAL_BOTOCORE\s*=\s*"([\d.]+)"', "MINIMAL_BOTOCORE"
+              ),
+              ("test_minimal_versions.py", "boto3"): pin(
+                  test_minimal, r'MINIMAL_BOTO3\s*=\s*"([\d.]+)"', "MINIMAL_BOTO3"
+              ),
+              ("tests/integration/constraints.txt", "botocore"): pin(
+                  integration_constraints, r"^botocore==([\d.]+)", "botocore=="
+              ),
+              ("tests/integration/constraints.txt", "boto3"): pin(
+                  integration_constraints, r"^boto3==([\d.]+)", "boto3=="
+              ),
+              ("tests/integration/constraints.txt", "aiobotocore"): pin(
+                  integration_constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="
+              ),
+              ("tests/integration/constraints.txt", "awscli"): pin(
+                  integration_constraints, r"^awscli==([\d.]+)", "awscli=="
+              ),
+          }
+
+          by_package = {}
+          for (source, package), version in values.items():
+              by_package.setdefault(package, {})[source] = version
+
+          failed = False
+          for package, sources in by_package.items():
+              distinct = set(sources.values())
+              if len(distinct) > 1:
+                  failed = True
+                  details = ", ".join(f"{source}={version}" for source, version in sources.items())
+                  print(f"::error::{package} floor version mismatch: {details}")
+              else:
+                  version = next(iter(distinct))
+                  print(f"OK: {package} floor is {version} everywhere")
+
+          if failed:
+              sys.exit(1)
+          PY

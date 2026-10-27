@@ -63,10 +63,6 @@ ade install --editable --no-seed .             # editable collection install
 to resolve. It generates a local `.ansible.cfg` and a `.venv`; both are
 git-ignored and excluded from the built Galaxy artifact.
 
-> **Note:** runtime dependencies will move to `meta/ee-requirements.txt` as part
-> of the dependency consolidation work. Until then, install them from
-> `requirements.txt` as shown above.
-
 ### Pre-commit Hooks
 
 This collection uses [prek](https://github.com/j178/prek) to manage Git pre-commit
@@ -111,7 +107,7 @@ uv run tox -e coverage                         # Sonar / diff-cover coverage XML
 ```
 
 Test dependencies are deliberately not in `pyproject.toml`; they live in
-`tests/unit/requirements.txt` and `tests/integration/requirements.txt` so that
+`tests/unit/unit.txt` and `tests/integration/integration.txt` so that
 `ansible-test` keeps working without uv.
 
 ## Writing New Code
@@ -215,8 +211,8 @@ To run all generated unit environments in parallel:
 uv run tox -f unit --ansible -p auto
 ```
 
-For the oldest collection-supported pair (ansible-core 2.17 / Python 3.10) with
-pinned boto3/botocore from `tests/unit/constraints.txt`:
+For the oldest collection-supported pair (ansible-core 2.18 / Python 3.11) with
+pinned boto3/botocore from `tests/test-constraints.in`:
 
 ```bash
 uv run tox -e unit-constraints

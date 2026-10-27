@@ -119,4 +119,4 @@ jobs:
           ansible-core-version: ${{ matrix.ansible-core-version }}
           testing-type: units
           target-python-version: ${{ matrix.python-version }}
-          # test-deps: -r tests/unit/requirements.txt
+          # test-deps: -r tests/unit/unit.txt
