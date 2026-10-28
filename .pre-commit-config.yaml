@@ -3,7 +3,6 @@
 # pre-commit. See CONTRIBUTING.md for setup and usage.
 #
 # Hook set: basic hygiene + ruff (check/format) + ansible-lint.
-# ruff rev must match [tool.ruff] required-version and tox ruff deps
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -33,13 +32,13 @@ repos:
         args:
           - -b main
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.10
+  - repo: local
     hooks:
-      - id: ruff-check
-        args:
-          - --fix
-      - id: ruff-format
+      - id: ruff
+        name: ruff
+        entry: tox -e ruff --
+        language: system
+        types: [python]
 
   - repo: https://github.com/ansible/ansible-lint
     rev: v26.6.0
