@@ -30,7 +30,7 @@ options:
     description:
       - >
         A dictionary/hash of tags in the format { tag1_name: 'tag1_value', tag2_name: 'tag2_value' } to match against the auto scaling
-        group(s) you are searching for.
+        group(s) you are searching for!!!
     required: false
     type: dict
 extends_documentation_fragment:
