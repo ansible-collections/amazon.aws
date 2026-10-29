@@ -37,24 +37,32 @@ The call will be retried the specified number of times, so the calling functions
 don't need to be wrapped in the backoff decorator.
 """
 
+# Deprecated backwards-compatibility re-exports
+# These imports are maintained for backwards compatibility but their use is deprecated.
+# New code should import directly from the appropriate module_utils submodule.
+# These re-exports will be removed in a future major release.
+# pylint: disable=unused-import,useless-import-alias
+
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.arn
-from .arn import parse_aws_arn  # pylint: disable=unused-import
+from .arn import parse_aws_arn as parse_aws_arn
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
-from .botocore import HAS_BOTO3  # pylint: disable=unused-import
-from .botocore import get_boto3_client_method_parameters  # pylint: disable=unused-import
-from .botocore import is_boto3_error_code  # pylint: disable=unused-import
-from .botocore import is_boto3_error_message  # pylint: disable=unused-import
-from .botocore import normalize_boto3_result  # pylint: disable=unused-import
+from .botocore import HAS_BOTO3 as HAS_BOTO3
+from .botocore import get_boto3_client_method_parameters as get_boto3_client_method_parameters
+from .botocore import is_boto3_error_code as is_boto3_error_code
+from .botocore import is_boto3_error_message as is_boto3_error_message
+from .botocore import normalize_boto3_result as normalize_boto3_result
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.exceptions
-from .exceptions import AnsibleAWSError  # pylint: disable=unused-import
+from .exceptions import AnsibleAWSError as AnsibleAWSError
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
-from .modules import AnsibleAWSModule  # pylint: disable=unused-import
+from .modules import AnsibleAWSModule as AnsibleAWSModule
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
-from .transformation import scrub_none_parameters  # pylint: disable=unused-import
+from .transformation import scrub_none_parameters as scrub_none_parameters
+
+# pylint: enable=unused-import,useless-import-alias
 
 # We will also export HAS_BOTO3 so end user modules can use it.
 __all__ = ("AnsibleAWSModule", "HAS_BOTO3", "is_boto3_error_code", "is_boto3_error_message")

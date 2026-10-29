@@ -10,8 +10,11 @@ import typing
 if typing.TYPE_CHECKING:
     from ansible_collections.amazon.aws.plugins.module_utils.botocore import ClientType
 
-# pylint: disable-next=unused-import
-from ansible_collections.amazon.aws.plugins.module_utils._route53.common import AnsibleRoute53Error
+# Deprecated backwards-compatibility re-export; import from _route53.common in new code.
+# pylint: disable-next=unused-import,useless-import-alias
+from ansible_collections.amazon.aws.plugins.module_utils._route53.common import (
+    AnsibleRoute53Error as AnsibleRoute53Error,
+)
 from ansible_collections.amazon.aws.plugins.module_utils._route53.common import Route53ErrorHandler
 from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
