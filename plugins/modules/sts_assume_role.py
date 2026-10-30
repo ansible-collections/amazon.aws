@@ -146,7 +146,7 @@ def assume_role_policy(connection, module):
         changed = True
     except is_boto3_error_code("MalformedPolicyDocument") as e:
         module.fail_json_aws(e, msg="Invalid policy document provided")
-    except (ClientError, ParamValidationError) as e:
+    except (ClientError, ParamValidationError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
     sts_cred, sts_user = _parse_response(response)

@@ -1,0 +1,85 @@
+---
+name: tox-ansible
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-matrix:
+    name: Generate tox-ansible matrix
+    runs-on: ubuntu-latest
+    outputs:
+      envlist: ${{ steps.matrix.outputs.envlist }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Generate matrix
+        id: matrix
+        uses: ./.github/actions/tox-ansible-matrix
+        with:
+          matrix-config: .github/tox-ansible-matrix.json
+
+  tox-ansible:
+    name: Run ${{ matrix.entry.name }}
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        entry: ${{ fromJSON(needs.generate-matrix.outputs.envlist) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          activate-environment: true
+          enable-cache: true
+          python-version: ${{ matrix.entry.python }}
+
+      - name: Install test orchestration tools
+        run: uv pip install -r .github/actions/tox-ansible-matrix/requirements.txt
+
+      - name: Run tox environment
+        env:
+          TOX_ENV: ${{ matrix.entry.name }}
+        run: |
+          set -euo pipefail
+          extra_args=(--ansible)
+          if [[ "$TOX_ENV" == "unit-constraints" || "$TOX_ENV" == "coverage" ]]; then
+            extra_args=()
+          fi
+          uv run --no-project tox "${extra_args[@]}" -e "$TOX_ENV"
+
+      - name: Locate full coverage report
+        if: matrix.entry.name == 'coverage'
+        run: |
+          set -euo pipefail
+          coverage_file=$(find .tox -name coverage.xml -type f -print -quit)
+          if [[ -z "$coverage_file" ]]; then
+            echo "::error::coverage.xml not found under .tox"
+            exit 1
+          fi
+          coverage_file=$(realpath "$coverage_file")
+          case "$coverage_file" in
+            "$GITHUB_WORKSPACE"/*) ;;
+            *) echo "::error::coverage.xml path outside workspace"; exit 1 ;;
+          esac
+          echo "COVERAGE_FILE=$coverage_file" >> "$GITHUB_ENV"
+          echo "Found full coverage report at $coverage_file"
+
+      - name: Upload coverage artifact
+        if: matrix.entry.name == 'coverage'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: ${{ env.COVERAGE_FILE }}

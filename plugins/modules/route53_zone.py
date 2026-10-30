@@ -656,7 +656,7 @@ def delete_hosted_zone(hosted_zone_id):
         client.delete_hosted_zone(Id=hosted_zone_id)
     except is_boto3_error_code("HostedZoneNotEmpty") as e:
         module.fail_json_aws(e, msg=f"Could not get delete hosted zone {hosted_zone_id}")
-    except (BotoCoreError, ClientError) as e:
+    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg=f"Could not delete hosted zone {hosted_zone_id}")
 
 
