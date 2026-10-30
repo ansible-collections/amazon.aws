@@ -87,8 +87,14 @@ uv run prek run --all-files
 The current hook set applies basic hygiene checks (trailing whitespace, end-of-file
 newlines, large-file guard, line endings, and blocking direct commits to `main`),
 runs `ruff-check` and `ruff-format` (pinned to the same Ruff version as
-`pyproject.toml` / tox), and runs `ansible-lint` (which invokes yamllint
-internally; there is no separate `.yamllint` file).
+`pyproject.toml` / tox), and runs `ansible-lint` with `--offline` for performance
+(which invokes yamllint internally; there is no separate `.yamllint` file).
+
+`ansible-lint` runs with `--offline` to avoid reinstalling the collection in the
+pre-commit environment, reducing hook execution time from ~20 seconds to ~5 seconds.
+This is safe because `ade install --editable` makes the collection discoverable in
+the virtual environment's site-packages, allowing `ansible-lint` to resolve imports
+without network access.
 
 To run the same Python lint/format checks outside prek:
 

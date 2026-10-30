@@ -45,3 +45,4 @@ repos:
     rev: v26.6.0
     hooks:
       - id: ansible-lint
+        args: [--offline]
