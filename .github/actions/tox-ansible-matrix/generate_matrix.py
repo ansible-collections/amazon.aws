@@ -50,6 +50,11 @@ def main() -> None:
                 raise SystemExit(f"tox-ansible returned no Python version for {entry['name']}")
             envlist.append(entry)
 
+    if not config_path.exists():
+        raise SystemExit(
+            f"Matrix config not found: {config_path}\n"
+            "Create the file with a 'companion_envs' key, or pass a different path via the matrix-config input."
+        )
     config = json.loads(config_path.read_text(encoding="utf-8"))
     companions = config.get("companion_envs")
     if not isinstance(companions, list):
