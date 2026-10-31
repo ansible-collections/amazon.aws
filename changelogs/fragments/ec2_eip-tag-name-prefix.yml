@@ -1,0 +1,2 @@
+bugfixes:
+  - ec2_eip - only remove the ``tag:`` prefix from ``tag_name`` when ``tag_value`` is not set. The prefix was removed with ``str.strip()``, which also dropped any leading or trailing ``t``, ``a``, ``g`` or ``:`` characters from the tag key, so ``tag_name=tag:Project`` searched for the tag key ``Projec`` and an existing Elastic IP was not found.

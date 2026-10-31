@@ -23,6 +23,11 @@ def fixture_ansible_module():
         (None, ANY, None),
         ("tag:SomeKey", None, {"tag-key": "SomeKey"}),
         ("SomeKey", None, {"tag-key": "SomeKey"}),
+        # Only the "tag:" prefix is removed, not the characters t, a, g and ':' at either end
+        ("tag:Project", None, {"tag-key": "Project"}),
+        ("tag:gateway", None, {"tag-key": "gateway"}),
+        ("tag:tag:Name", None, {"tag-key": "tag:Name"}),
+        ("Target", None, {"tag-key": "Target"}),
         ("tag:AnotherKey", "SomeValue", {"tag:AnotherKey": "SomeValue"}),
         ("AnotherKey", "AnotherValue", {"tag:AnotherKey": "AnotherValue"}),
     ],
