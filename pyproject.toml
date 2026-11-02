@@ -16,8 +16,9 @@ dev = [
     "tox-uv-bare>=1.35.0",  # lets tox provision envs via uv instead of pip
     "prek",
 ]
-# Shared by tox and the local prek hook.
+# Shared by tox and the local pre-commit hook.
 ruff = [
+    # Pin exactly so a floating ruff release cannot widen the default ruleset under us.
     "ruff==0.16.10",
 ]
 
