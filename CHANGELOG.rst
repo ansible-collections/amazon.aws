@@ -4,6 +4,19 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v11.5.1
+=======
+
+Release Summary
+---------------
+
+This patch release includes bugfixes for the ``acm`` module utilities to properly handle ACM certificates without domain names.
+
+Bugfixes
+--------
+
+- module_utils/acm - fix ``KeyError`` when listing ACM certificates that have no ``DomainName``, for example a certificate imported without a valid domain name. The certificate ARN is now used in error messages instead (https://github.com/ansible-collections/amazon.aws/issues/2405).
+
 v11.5.0
 =======
 
