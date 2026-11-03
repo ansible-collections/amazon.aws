@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Assert that botocore/boto3/aiobotocore floor versions are in sync.
 
 Used by .github/workflows/check-ee-requirements.yml to catch a bump to one
