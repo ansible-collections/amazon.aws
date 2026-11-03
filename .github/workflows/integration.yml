@@ -157,11 +157,11 @@ jobs:
           collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
           collection-root: ''
           target: ${{ steps.read-targets.outputs.job_targets }}
-          # Named collection deps come from tests/integration/integration.yml
-          # (amazon.aws) or tests/integration/requirements.yml (community.aws,
-          # not yet migrated), installed below; only the local cross-collection
-          # checkout path stays here since ansible-galaxy can't install a filesystem path
-          # from a requirements.yml entry the way this action expects.
+          # Named collection deps come from tests/integration/requirements.yml
+          # (both amazon.aws and community.aws), installed below; only the
+          # local cross-collection checkout path stays here since
+          # ansible-galaxy can't install a filesystem path from a
+          # requirements.yml entry the way this action expects.
           test-deps: >-
             ${{ steps.set-path.outputs.collection_dep }}
           # This job matrix tests both amazon.aws (meta/ee-* + tests/*.in layout)
@@ -171,7 +171,7 @@ jobs:
           # checked-out collection.
           pre-test-cmd: |-
             if [ -f tests/test-constraints.in ]; then
-              ansible-galaxy collection install -r tests/integration/integration.yml -p ${{ github.workspace }}
+              ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
               python3 -m pip install -c tests/test-constraints.in -r meta/ee-requirements.txt -r tests/integration/integration.in
             else
               ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
