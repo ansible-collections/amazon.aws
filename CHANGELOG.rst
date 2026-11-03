@@ -87,6 +87,19 @@ Bugfixes
 - route53_zone - Remove the default value for ``dnssec`` parameter to avoid idempotency issues (https://github.com/ansible-collections/amazon.aws/pull/2553).
 - secretsmanager_secret - fixed bug where falsy values (0, empty string, False) were incorrectly filtered when on_missing/on_denied was set to skip or warn. Now only None values are filtered. (https://github.com/ansible-collections/amazon.aws/pull/2914)
 
+v11.5.1
+=======
+
+Release Summary
+---------------
+
+This patch release includes bugfixes for the ``acm`` module utilities to properly handle ACM certificates without domain names.
+
+Bugfixes
+--------
+
+- module_utils/acm - fix ``KeyError`` when listing ACM certificates that have no ``DomainName``, for example a certificate imported without a valid domain name. The certificate ARN is now used in error messages instead (https://github.com/ansible-collections/amazon.aws/issues/2405).
+
 v11.5.0
 =======
 

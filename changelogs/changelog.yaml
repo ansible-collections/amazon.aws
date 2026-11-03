@@ -4419,6 +4419,18 @@ releases:
     - ruff-unused-test-cleanup.yml
     - ubuntu-dash-ssm.yml
     release_date: '2026-10-06'
+  11.5.1:
+    changes:
+      bugfixes:
+      - module_utils/acm - fix ``KeyError`` when listing ACM certificates that have
+        no ``DomainName``, for example a certificate imported without a valid domain
+        name. The certificate ARN is now used in error messages instead (https://github.com/ansible-collections/amazon.aws/issues/2405).
+      release_summary: This patch release includes bugfixes for the ``acm`` module
+        utilities to properly handle ACM certificates without domain names.
+    fragments:
+    - 11.5.1.yml
+    - 2405-acm-missing-domain-name.yml
+    release_date: '2026-11-03'
   12.0.0:
     changes:
       breaking_changes:
