@@ -944,6 +944,10 @@
         network_interface_id: "{{ create_ngw.nat_gateway_addresses[0].network_interface_id }}"
 
   # ============================================================
+  # Regional NAT Gateway tests moved to the ec2_vpc_nat_gateway_regional
+  # target (currently disabled pending aws-terminator IAM permissions,
+  # see ACA-6688/ACA-6689).
+  # ============================================================
 
   always:
     - name: Get NAT gateways
