@@ -4,6 +4,26 @@ amazon.aws Release Notes
 
 .. contents:: Topics
 
+v12.1.0
+=======
+
+Release Summary
+---------------
+
+This minor release adds regional NAT gateway support to the ``ec2_vpc_nat_gateway`` module and includes a bugfix for the ``acm`` module_utils.
+
+Minor Changes
+-------------
+
+- ec2_vpc_nat_gateway - Added ``availability_mode`` and ``vpc_id`` parameters for regional NAT gateway support (https://github.com/ansible-collections/amazon.aws/pull/2989).
+- ec2_vpc_nat_gateway - The ``release_eip`` option now correctly releases all EIP addresses when deleting a NAT gateway with multiple addresses (https://github.com/ansible-collections/amazon.aws/pull/2989).
+- ec2_vpc_nat_gateway_info - Added return field documentation for regional NAT gateway fields ``availability_mode``, ``auto_scaling_ips``, ``auto_provision_zones``, and ``route_table_id`` (https://github.com/ansible-collections/amazon.aws/pull/2989).
+
+Bugfixes
+--------
+
+- module_utils/acm - fix ``KeyError`` when listing ACM certificates that have no ``DomainName``, for example a certificate imported without a valid domain name. The certificate ARN is now used in error messages instead (https://github.com/ansible-collections/amazon.aws/issues/2405).
+
 v12.0.0
 =======
 
