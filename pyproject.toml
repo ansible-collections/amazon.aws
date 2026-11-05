@@ -21,6 +21,12 @@ ruff = [
     # Pin exactly so a floating ruff release cannot widen the default ruleset under us.
     "ruff==0.16.10",
 ]
+# Tool pins for the tox-ansible-matrix composite action. Keep in sync with
+# .github/actions/tox-ansible-matrix/README.md.
+matrix = [
+    "tox-ansible==26.9.0",
+    "tox-uv-bare==1.36.0",
+]
 
 [tool.uv]
 package = false

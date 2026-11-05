@@ -47,7 +47,7 @@ jobs:
           python-version: ${{ matrix.entry.python }}
 
       - name: Install test orchestration tools
-        run: uv pip install -r .github/actions/tox-ansible-matrix/requirements.txt
+        run: uv pip install --group matrix
 
       - name: Run tox environment
         env:

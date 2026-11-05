@@ -24,7 +24,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        uv pip install -r "$GITHUB_ACTION_PATH/requirements.txt"
+        uv pip install --group matrix
 
     - name: Generate matrix
       id: generate

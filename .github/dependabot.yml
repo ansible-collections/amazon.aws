@@ -4,9 +4,10 @@
 
 version: 2
 updates:
-  # Monitor the pinned tox-ansible matrix tooling requirements.
-  - package-ecosystem: "pip"
-    directory: "/.github/actions/tox-ansible-matrix"
+  # Monitor the pinned tox-ansible matrix tooling requirements (now in the
+  # "matrix" dependency group in pyproject.toml, resolved via uv.lock).
+  - package-ecosystem: "uv"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"

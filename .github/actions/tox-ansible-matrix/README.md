@@ -28,6 +28,9 @@ Use it in the current repository with:
 ```
 
 Other collections can reuse the action from this repository and pass their own
-matrix configuration. The action-specific tool pins are in `requirements.txt`.
-Collection-wide constraints and compiled test dependency lockfiles are part of
-the separate dependency-consolidation work, not this CI workflow change.
+matrix configuration, provided their `pyproject.toml` defines a `matrix`
+dependency group (see the `[dependency-groups]` table in this repository's
+`pyproject.toml` for the pins this action expects: `tox-ansible` and
+`tox-uv-bare`). Collection-wide constraints and compiled test dependency
+lockfiles are part of the separate dependency-consolidation work, not this CI
+workflow change.

@@ -66,8 +66,8 @@ def main() -> None:
             raise SystemExit("each companion environment must be a JSON object")
         name = companion.get("name")
         python_version = companion.get("python")
-        if not isinstance(name, str) or not isinstance(python_version, str):
-            raise SystemExit("each companion environment needs string name and python values")
+        if not isinstance(name, str) or not name or not isinstance(python_version, str) or not python_version:
+            raise SystemExit("each companion environment needs non-empty string name and python values")
         if name not in existing:
             envlist.append(
                 {
