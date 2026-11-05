@@ -16,7 +16,8 @@
       region: "{{ aws_region }}"
 
   tasks:
-    - ansible.builtin.include_tasks: "tasks/{{ scenario_id }}.yml"
+    - name: Run the s3_bucket_info test scenarios
+      ansible.builtin.include_tasks: "tasks/{{ scenario_id }}.yml"
       loop:
         - basic
         - bucket_ownership_controls

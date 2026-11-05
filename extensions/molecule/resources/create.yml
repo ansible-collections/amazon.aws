@@ -1,3 +1,4 @@
+---
 - name: Create test configuration data
   hosts: localhost
   gather_facts: false
@@ -7,7 +8,9 @@
       cloud_config_aws:
         path: "{{ lookup('ansible.builtin.env', 'MOLECULE_PROJECT_DIRECTORY') }}"
       register: cloud_data
-      # no_log: true
+      # aws_vars carries aws_secret_key and security_token; without this they
+      # are printed by any run at -v or above, including public CI logs.
+      no_log: true
 
     - name: Dump cloud variables to Molecule's ephemeral directory
       ansible.builtin.copy:
