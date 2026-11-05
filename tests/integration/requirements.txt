@@ -4,8 +4,8 @@
 # step only stages the contents of tests/integration/ itself, so a -r
 # reference to anything outside this directory (e.g. ../test-requirements.in)
 # fails with "No such file or directory" inside the sandbox even though it
-# resolves fine on a normal checkout. Keep this self-contained and in sync
-# with the package list in tests/integration/integration.in.
+# resolves fine on a normal checkout. Keep this self-contained with the
+# runtime dependencies needed for integration test execution.
 #
 # Our code is based on the AWS SDKs
 boto3
