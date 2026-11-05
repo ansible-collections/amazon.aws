@@ -177,10 +177,10 @@ class IAMConnection(object):
             results = policy.delete()
         except is_boto3_error_code("NoSuchEntity"):
             self.module.exit_json(changed=False, task_status={"IAM": "Couldn't find IAM Password Policy"})
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.ClientError,
             botocore.exceptions.BotoCoreError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             self.module.fail_json_aws(e, msg="Couldn't delete IAM Password Policy")
         return camel_dict_to_snake_dict(results)
 

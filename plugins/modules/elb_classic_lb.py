@@ -1930,10 +1930,10 @@ class ElbManager:
         except is_boto3_error_code("InvalidConfigurationRequest"):
             # Already deleted
             return False
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             self.module.fail_json_aws(e, msg=f"Failed to load balancer policy {policy_name}")
         return True
 

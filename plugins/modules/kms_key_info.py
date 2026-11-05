@@ -436,10 +436,10 @@ def get_key_details(connection, module, key_id, tokens=None):
     except is_boto3_error_code("AccessDeniedException"):  # pylint: disable=duplicate-except
         module.warn(f"Permission denied fetching key metadata ({key_id})")
         return None
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="Failed to obtain key metadata")
     result["KeyArn"] = result.pop("Arn")
 
@@ -448,10 +448,10 @@ def get_key_details(connection, module, key_id, tokens=None):
     except is_boto3_error_code("AccessDeniedException"):
         module.warn("Permission denied fetching key aliases")
         aliases = {}
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="Failed to obtain aliases")
     # We can only get aliases for our own account, so we don't need the full ARN
     result["aliases"] = aliases.get(result["KeyId"], [])
@@ -465,10 +465,10 @@ def get_key_details(connection, module, key_id, tokens=None):
     except is_boto3_error_code("AccessDeniedException"):
         module.warn(f"Permission denied fetching key grants ({key_id})")
         result["grants"] = []
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="Failed to obtain key grants")
 
     tags = get_kms_tags(connection, module, key_id)

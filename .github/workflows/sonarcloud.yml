@@ -1,14 +1,4 @@
-## SonarCloud Analysis Workflow for amazon.aws
-
-# This workflow runs SonarCloud analysis triggered by all_green workflow completion.
-#
-# FLOW: all_green completes (linters, sanity, units, coverage) → workflow_run triggers this workflow → finalize job runs
-#
-# - Triggered by: workflow_run (all_green on pull_request or push to main/stable-*)
-# - Steps: Checkout → Download coverage from all_green run → Get PR info (if PR) → Run SonarCloud scan
-# - Coverage: Unit test coverage is produced by the coverage job (via tox) in all_green and passed to SonarCloud here.
-#
-# This ensures coverage data is always available from the all_green run before analysis runs.
+# SonarCloud analysis runs after all_green completes with the full coverage report.
 #
 # What files are scanned:
 # - All files in the repository that SonarCloud can analyze

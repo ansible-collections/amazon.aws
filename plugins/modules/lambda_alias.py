@@ -233,10 +233,10 @@ def get_lambda_alias(module_params, client):
         results = client.get_alias(aws_retry=True, **api_params)
     except is_boto3_error_code("ResourceNotFoundException"):
         results = None
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         raise LambdaAnsibleAWSError("Error retrieving function alias", exception=e)
 
     return results
