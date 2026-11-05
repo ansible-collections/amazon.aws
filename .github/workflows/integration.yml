@@ -157,23 +157,26 @@ jobs:
           collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
           collection-root: ''
           target: ${{ steps.read-targets.outputs.job_targets }}
+          # Named collection deps come from tests/integration/requirements.yml
+          # (both amazon.aws and community.aws), installed below; only the
+          # local cross-collection checkout path stays here since
+          # ansible-galaxy can't install a filesystem path from a
+          # requirements.yml entry the way this action expects. It's also
+          # relative to the outer workspace, not the pre-test-cmd working
+          # directory (inside the checked-out collection), so it can't move
+          # into pre-test-cmd without the action's own path handling.
+          test-deps: >-
+            ${{ steps.set-path.outputs.collection_dep }}
           # This job matrix tests both amazon.aws (meta/ee-* + tests/*.in layout)
           # and community.aws (tests/integration/{requirements,constraints}.txt
           # layout, not yet migrated), so both the collection-deps install and the
           # Python deps install below branch on which layout is present in the
           # checked-out collection.
-          #
-          # The local cross-collection checkout path is installed as its own
-          # ansible-galaxy call (rather than folded into the -r call above it)
-          # because ansible-galaxy rejects combining -r with a positional
-          # collection_name in the same invocation ("mutually exclusive").
           pre-test-cmd: |-
             if [ -f tests/test-constraints.in ]; then
               ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
-              ansible-galaxy collection install ${{ steps.set-path.outputs.collection_dep }} -p ${{ github.workspace }}
               uv pip install -c tests/test-constraints.in -r tests/integration/integration.in
             else
               ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
-              ansible-galaxy collection install ${{ steps.set-path.outputs.collection_dep }} -p ${{ github.workspace }}
               uv pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
             fi
