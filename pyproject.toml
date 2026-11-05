@@ -25,7 +25,7 @@ ruff = [
 # .github/actions/tox-ansible-matrix/README.md.
 matrix = [
     "tox-ansible==26.9.0",
-    "tox-uv-bare==1.36.0",
+    "tox-uv-bare==1.37.3",
 ]
 
 [tool.uv]
