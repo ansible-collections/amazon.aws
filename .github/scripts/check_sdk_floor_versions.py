@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 
-def pin(path, pattern, label):
+def pin(path: str, pattern: str, label: str) -> str:
     text = Path(path).read_text(encoding="utf-8")
     match = re.search(pattern, text, re.MULTILINE)
     if not match:
@@ -25,31 +25,46 @@ def main():
     botocore_py = "plugins/module_utils/botocore.py"
     test_minimal = "tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py"
     integration_constraints = "tests/integration/constraints.txt"
+    unit_constraints = "tests/unit/constraints.txt"
 
     values = {
-        ("test-constraints.in", "botocore"): pin(constraints, r"^botocore==([\d.]+)", "botocore=="),
-        ("test-constraints.in", "boto3"): pin(constraints, r"^boto3==([\d.]+)", "boto3=="),
-        ("test-constraints.in", "aiobotocore"): pin(constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="),
-        ("test-constraints.in", "awscli"): pin(constraints, r"^awscli==([\d.]+)", "awscli=="),
-        ("ee-requirements.txt", "botocore"): pin(ee_requirements, r"^botocore>=([\d.]+)", "botocore>="),
-        ("ee-requirements.txt", "boto3"): pin(ee_requirements, r"^boto3>=([\d.]+)", "boto3>="),
-        ("ee-requirements.txt", "aiobotocore"): pin(ee_requirements, r"^aiobotocore>=([\d.]+)", "aiobotocore>="),
+        ("test-constraints.in", "botocore"): pin(constraints, r"^botocore==(\d+(?:\.\d+)+)", "botocore=="),
+        ("test-constraints.in", "boto3"): pin(constraints, r"^boto3==(\d+(?:\.\d+)+)", "boto3=="),
+        ("test-constraints.in", "aiobotocore"): pin(constraints, r"^aiobotocore==(\d+(?:\.\d+)+)", "aiobotocore=="),
+        ("test-constraints.in", "awscli"): pin(constraints, r"^awscli==(\d+(?:\.\d+)+)", "awscli=="),
+        ("ee-requirements.txt", "botocore"): pin(ee_requirements, r"^botocore>=(\d+(?:\.\d+)+)", "botocore>="),
+        ("ee-requirements.txt", "boto3"): pin(ee_requirements, r"^boto3>=(\d+(?:\.\d+)+)", "boto3>="),
+        ("ee-requirements.txt", "aiobotocore"): pin(ee_requirements, r"^aiobotocore>=(\d+(?:\.\d+)+)", "aiobotocore>="),
         ("botocore.py", "botocore"): pin(
-            botocore_py, r'MINIMUM_BOTOCORE_VERSION\s*=\s*"([\d.]+)"', "MINIMUM_BOTOCORE_VERSION"
+            botocore_py, r'MINIMUM_BOTOCORE_VERSION\s*=\s*"(\d+(?:\.\d+)+)"', "MINIMUM_BOTOCORE_VERSION"
         ),
-        ("botocore.py", "boto3"): pin(botocore_py, r'MINIMUM_BOTO3_VERSION\s*=\s*"([\d.]+)"', "MINIMUM_BOTO3_VERSION"),
+        ("botocore.py", "boto3"): pin(
+            botocore_py, r'MINIMUM_BOTO3_VERSION\s*=\s*"(\d+(?:\.\d+)+)"', "MINIMUM_BOTO3_VERSION"
+        ),
         ("test_minimal_versions.py", "botocore"): pin(
-            test_minimal, r'MINIMAL_BOTOCORE\s*=\s*"([\d.]+)"', "MINIMAL_BOTOCORE"
+            test_minimal, r'MINIMAL_BOTOCORE\s*=\s*"(\d+(?:\.\d+)+)"', "MINIMAL_BOTOCORE"
         ),
-        ("test_minimal_versions.py", "boto3"): pin(test_minimal, r'MINIMAL_BOTO3\s*=\s*"([\d.]+)"', "MINIMAL_BOTO3"),
+        ("test_minimal_versions.py", "boto3"): pin(
+            test_minimal, r'MINIMAL_BOTO3\s*=\s*"(\d+(?:\.\d+)+)"', "MINIMAL_BOTO3"
+        ),
         ("tests/integration/constraints.txt", "botocore"): pin(
-            integration_constraints, r"^botocore==([\d.]+)", "botocore=="
+            integration_constraints, r"^botocore==(\d+(?:\.\d+)+)", "botocore=="
         ),
-        ("tests/integration/constraints.txt", "boto3"): pin(integration_constraints, r"^boto3==([\d.]+)", "boto3=="),
+        ("tests/integration/constraints.txt", "boto3"): pin(
+            integration_constraints, r"^boto3==(\d+(?:\.\d+)+)", "boto3=="
+        ),
         ("tests/integration/constraints.txt", "aiobotocore"): pin(
-            integration_constraints, r"^aiobotocore==([\d.]+)", "aiobotocore=="
+            integration_constraints, r"^aiobotocore==(\d+(?:\.\d+)+)", "aiobotocore=="
         ),
-        ("tests/integration/constraints.txt", "awscli"): pin(integration_constraints, r"^awscli==([\d.]+)", "awscli=="),
+        ("tests/integration/constraints.txt", "awscli"): pin(
+            integration_constraints, r"^awscli==(\d+(?:\.\d+)+)", "awscli=="
+        ),
+        ("tests/unit/constraints.txt", "botocore"): pin(unit_constraints, r"^botocore==(\d+(?:\.\d+)+)", "botocore=="),
+        ("tests/unit/constraints.txt", "boto3"): pin(unit_constraints, r"^boto3==(\d+(?:\.\d+)+)", "boto3=="),
+        ("tests/unit/constraints.txt", "aiobotocore"): pin(
+            unit_constraints, r"^aiobotocore==(\d+(?:\.\d+)+)", "aiobotocore=="
+        ),
+        ("tests/unit/constraints.txt", "awscli"): pin(unit_constraints, r"^awscli==(\d+(?:\.\d+)+)", "awscli=="),
     }
 
     by_package = {}
