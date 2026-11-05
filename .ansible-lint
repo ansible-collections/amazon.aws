@@ -9,6 +9,19 @@ exclude_paths:
   - tests/unit
   - .ansible
   - .github
+  - .tox
+  - tests/output
+
+# Preserve exclusions already passed by the previous CI workflow while
+# centralizing the configuration here; reducing this list is separate cleanup.
+skip_list:
+  - name[missing]
+  - yaml[line-length]
+  - args[module]
+  - run-once[task]
+  - ignore-errors
+  - sanity[cannot-ignore]
+  - run-once[play]
 
 warn_list:
   - no-log-password

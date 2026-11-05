@@ -1,0 +1,11 @@
+{
+  "companion_envs": [
+    {"name": "unit-constraints", "python": "3.11"},
+    {"name": "sanity-py3.11-2.18", "python": "3.11"},
+    {"name": "unit-py3.15-devel", "python": "3.15"},
+    {"name": "sanity-py3.15-devel", "python": "3.15"},
+    {"name": "unit-py3.15-milestone", "python": "3.15"},
+    {"name": "sanity-py3.15-milestone", "python": "3.15"},
+    {"name": "coverage", "python": "3.14"}
+  ]
+}

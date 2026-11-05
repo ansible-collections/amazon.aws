@@ -276,10 +276,10 @@ def get_policy_statement(module, client):
         policy_results = client.get_policy(**api_params)
     except is_boto3_error_code("ResourceNotFoundException"):
         return {}
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="retrieving function policy")
 
     # get_policy returns a JSON string so must convert to dict before reassigning to its key

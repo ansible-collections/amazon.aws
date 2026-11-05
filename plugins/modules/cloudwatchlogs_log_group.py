@@ -236,10 +236,10 @@ def delete_log_group(client, log_group_name, module):
         client.delete_log_group(logGroupName=log_group_name)
     except is_boto3_error_code("ResourceNotFoundException"):
         return {}
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg=f"Unable to delete log group {log_group_name}")
 
 
@@ -261,10 +261,10 @@ def describe_log_group(client, log_group_name, module):
     except is_boto3_error_code("AccessDeniedException"):
         tags = {}
         module.warn(f"Permission denied listing tags for log group {log_group_name}")
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg=f"Unable to describe tags for log group {log_group_name}")
 
     found_log_group["tags"] = tags.get("tags", {})
