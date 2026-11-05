@@ -1,0 +1,5 @@
+---
+name_pattern: testbucket-ansible-integration
+testing_buckets:
+  - "{{ tiny_prefix }}-{{ name_pattern }}-1"
+  - "{{ tiny_prefix }}-{{ name_pattern }}-2"

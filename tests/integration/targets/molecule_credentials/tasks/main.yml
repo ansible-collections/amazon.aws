@@ -1,0 +1,6 @@
+---
+- name: Save credentials to file location
+  ansible.builtin.template:
+    src: credentials.j2
+    dest: "{{ role_path }}/../../molecule-aws-credentials.ini"
+    mode: "0600"

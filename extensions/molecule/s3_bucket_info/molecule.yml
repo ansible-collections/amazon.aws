@@ -1,0 +1,15 @@
+---
+prerun: false
+
+ansible:
+  playbooks:
+    create: ../resources/create.yml
+
+scenario:
+  test_sequence:
+    - create
+    - prepare
+    - verify
+    - destroy
+  destroy_sequence:
+    - destroy

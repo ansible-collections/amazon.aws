@@ -1,0 +1,25 @@
+---
+- name: Verify
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - vars/main.yml
+    - "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/aws_vars.yml"
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  tasks:
+    - name: Run the s3_bucket_info test scenarios
+      ansible.builtin.include_tasks: "tasks/{{ scenario_id }}.yml"
+      loop:
+        - basic
+        - bucket_ownership_controls
+      loop_control:
+        loop_var: scenario_id

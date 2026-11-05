@@ -1,0 +1,53 @@
+---
+- name: Destroy
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - vars/main.yml
+
+  vars:
+    aws_vars_file: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/aws_vars.yml"
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  tasks:
+    # aws_vars.yml is written by the create play. Loading it through vars_files
+    # would abort this play when create did not get that far, masking the real
+    # failure, so it is loaded conditionally instead. The scenario runs with
+    # 'molecule test --destroy always', and destroy is also reachable on its own
+    # after a reset.
+    - name: Check whether the create play produced AWS credentials
+      ansible.builtin.stat:
+        path: "{{ aws_vars_file }}"
+      register: aws_vars_stat
+
+    - name: Delete the buckets created by the prepare play
+      when: aws_vars_stat.stat.exists
+      block:
+        - name: Load AWS credentials written by the create play
+          ansible.builtin.include_vars:
+            file: "{{ aws_vars_file }}"
+          no_log: true
+
+        - name: Delete S3 buckets
+          amazon.aws.s3_bucket:
+            state: absent
+            name: "{{ item }}"
+          loop: "{{ testing_buckets }}"
+          # Best-effort cleanup: a bucket that was never created, or was already
+          # removed, must not fail the destroy sequence.
+          failed_when: false
+
+    - name: Warn when cleanup was skipped
+      ansible.builtin.debug:
+        msg: >-
+          '{{ aws_vars_file }}' not found, skipping bucket cleanup.
+          Any bucket left behind must be removed manually.
+      when: not aws_vars_stat.stat.exists
