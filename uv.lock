@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -36,7 +36,7 @@ dev = [
 ]
 matrix = [
     { name = "tox-ansible", specifier = "==26.9.0" },
-    { name = "tox-uv-bare", specifier = "==1.36.0" },
+    { name = "tox-uv-bare", specifier = "==1.37.3" },
 ]
 ruff = [{ name = "ruff", specifier = "==0.16.10" }]
 
@@ -66,11 +66,11 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "cryptography", marker = "python_full_version < '3.12'" },
-    { name = "jinja2", marker = "python_full_version < '3.12'" },
-    { name = "packaging", marker = "python_full_version < '3.12'" },
-    { name = "pyyaml", marker = "python_full_version < '3.12'" },
-    { name = "resolvelib", marker = "python_full_version < '3.12'" },
+    { name = "cryptography" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "resolvelib" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cd/ed/919710271c8e4f6ecf0760f3994aee36be2668b29df0214a44ecdeb14075/ansible_core-2.19.15.tar.gz", hash = "sha256:05fa7f0730199b8e0dd9204f258075992143bd51dae71f68965b832a50d422fe", size = 3434021, upload-time = "2026-11-02T17:12:02.49Z" }
 wheels = [
@@ -85,11 +85,11 @@ resolution-markers = [
     "python_full_version == '3.12.*'",
 ]
 dependencies = [
-    { name = "cryptography", marker = "python_full_version == '3.12.*'" },
-    { name = "jinja2", marker = "python_full_version == '3.12.*'" },
-    { name = "packaging", marker = "python_full_version == '3.12.*'" },
-    { name = "pyyaml", marker = "python_full_version == '3.12.*'" },
-    { name = "resolvelib", marker = "python_full_version == '3.12.*'" },
+    { name = "cryptography" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "resolvelib" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ed/9f/c3f578633cd374db6ed981f8abc401885819e94e3d6a8548a1bd0095c575/ansible_core-2.21.6.tar.gz", hash = "sha256:3fa05b4b1af69f2fa19b49dde8edd5a23e693c2c1c3bda2d85fce73bd6cfc36d", size = 3399162, upload-time = "2026-11-02T17:33:27.104Z" }
 wheels = [
@@ -104,11 +104,11 @@ resolution-markers = [
     "python_full_version >= '3.13'",
 ]
 dependencies = [
-    { name = "cryptography", marker = "python_full_version >= '3.13'" },
-    { name = "jinja2", marker = "python_full_version >= '3.13'" },
-    { name = "packaging", marker = "python_full_version >= '3.13'" },
-    { name = "pyyaml", marker = "python_full_version >= '3.13'" },
-    { name = "resolvelib", marker = "python_full_version >= '3.13'" },
+    { name = "cryptography" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "resolvelib" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/9d/9c/320090b2f1542122259cd759d5148678fd98945913837ee05718920f73ea/ansible_core-2.22.0.tar.gz", hash = "sha256:bf50b4a0cfa985e30585c7ba301897ea7050d224ca49d2816cab10e33a160e1c", size = 3476434, upload-time = "2026-11-02T17:35:11.837Z" }
 wheels = [
@@ -636,14 +636,14 @@ wheels = [
 
 [[package]]
 name = "python-discovery"
-version = "1.6.1"
+version = "1.9.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0c/57/250bd238b966cece44328235eb85290045d059265fdaf7527a3a958123db/python_discovery-1.6.1.tar.gz", hash = "sha256:cf87d3627dfb4412437fdd5b13eae402607722998d21567993aedbc59b23c15e", size = 84338, upload-time = "2026-09-18T01:31:53.971Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/d7/1e94df7d1636bf00b9f261bf88a4adc0414f14931ff60511eb0f34c250d1/python_discovery-1.9.4.tar.gz", hash = "sha256:c01b45fe515c1d268b57c57d554bb0e1d320b8e9eb5490bb2f4f577be26e4380", size = 140385, upload-time = "2026-11-04T05:25:52.097Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/7d/e9ffbadfbf89c93848412d04594135c4ae8c1d37d9e053b9c3ed718fabc4/python_discovery-1.6.1-py3-none-any.whl", hash = "sha256:d43fcdef879fe795352bd13ccf8d185ba5a9f86f36cfcd00529f596e737442b3", size = 38664, upload-time = "2026-09-18T01:31:52.448Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/44/b248f3b1a23f44d8de172e2767748082c41cbd9353009af72f4b11b00afa/python_discovery-1.9.4-py3-none-any.whl", hash = "sha256:b468f365040b40f4cb39918b0766d3e5a2f340968e07df752fbc96f1bb4641ab", size = 44220, upload-time = "2026-11-04T05:25:50.514Z" },
 ]
 
 [[package]]
@@ -904,7 +904,7 @@ wheels = [
 
 [[package]]
 name = "tox"
-version = "4.64.4"
+version = "4.67.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -919,9 +919,9 @@ dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/e0/7a2ce108942f825c1ac9a2ef931dc53b1a7d18ca25d1ae10add73aa83ebc/tox-4.64.4.tar.gz", hash = "sha256:99e2a36e75202bd468f68126be25f72b8d8483e4a27b65252d6f019e856e62fd", size = 317372, upload-time = "2026-09-27T16:20:19.793Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/70/fe/5789b64723ae5a870e6132e63d3e35c8161afb31ccabcd2df81c99f0d693/tox-4.67.11.tar.gz", hash = "sha256:9040a61d57304159fd2cbd726469c2a7cd513a8c669069433392eab1a756f344", size = 424483, upload-time = "2026-11-04T23:42:13.507Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/93/ee/3283286925ad7021282b01155a3ed4fdc87fd40e1a7e5db4e25183a1592a/tox-4.64.4-py3-none-any.whl", hash = "sha256:7158441d235d9e1b588f0e9f0547c07a45b3bd2f31530adb14ff5b3c1e84daeb", size = 232543, upload-time = "2026-09-27T16:20:18.407Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/99/23eeee71c330367ad6e80ae379139b9697911019758df380c964c8b3cddd/tox-4.67.11-py3-none-any.whl", hash = "sha256:a5760a98d440ef74321ab9c4d094f0a9071ed7f1f78e39c203f42dd694d5251f", size = 262555, upload-time = "2026-11-04T23:42:11.817Z" },
 ]
 
 [[package]]
@@ -942,15 +942,15 @@ wheels = [
 
 [[package]]
 name = "tox-uv-bare"
-version = "1.36.0"
+version = "1.37.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "tox" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/56/df/9f90a59de8c87cece6e691eee53dc1cb0a824d73aea8f380ae2f6ecb71de/tox_uv_bare-1.36.0.tar.gz", hash = "sha256:d9b0a2fd0f74fa65d9597108f8a0ef7abb08651c9196a998a6073b781b45cfd0", size = 32548, upload-time = "2026-07-21T13:09:56.435Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/95/a5/23841dce225732c58a2094da5e0a8cf268680bb1ea8b0a7387257fd76df9/tox_uv_bare-1.37.3.tar.gz", hash = "sha256:33bbbea7fc3a23d136f81638d87c320822796f6a76dd61b526ee7c2a1585a948", size = 34202, upload-time = "2026-10-31T15:11:11.207Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f7/0a/6dc462e4fb543305283a6157c80f43e3d12ca4702da6ae6521d541c6b55c/tox_uv_bare-1.36.0-py3-none-any.whl", hash = "sha256:ba397dd0396df95a75744d4e42a50ee27207c0ffcf277b62ffba9c3de455a939", size = 22489, upload-time = "2026-07-21T13:09:55.389Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/aa/606c4c5d7357b7a141a636224265148f2bf1991e09274ecd51e965d86b98/tox_uv_bare-1.37.3-py3-none-any.whl", hash = "sha256:1b999ed029feda594e0b6e391a7915a2c24ab5f91c16194926a18bec0285cdb8", size = 22682, upload-time = "2026-10-31T15:11:09.911Z" },
 ]
 
 [[package]]
