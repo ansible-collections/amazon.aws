@@ -98,6 +98,19 @@ options:
         See the AWS Change Sets docs for more information
         U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html)
     type: str
+  include_nested_stacks:
+    description:
+      - Creates a change set for the entire CloudFormation stack hierarchy.
+      - Only used when O(create_changeset=true).
+      - When V(true), CloudFormation deep-evaluates nested stack templates and only reports changes
+        when a nested stack's template or parameters have actually changed. Without this option,
+        nested stacks are always reported as V(Modify) in change sets due to dynamic evaluation,
+        causing false positives in check mode.
+      - Corresponds to the C(--include-nested-stacks) option of the AWS CLI C(create-change-set) command.
+        See U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/change-sets-for-nested-stacks.html)
+    type: bool
+    default: false
+    version_added: 9.1.0
   role_arn:
     description:
       - The role that AWS CloudFormation assumes to create the stack. See the AWS CloudFormation Service Role
@@ -414,6 +427,8 @@ def create_changeset(module, stack_params, cfn, events_limit):
 
     # changesets don't accept ClientRequestToken parameters
     stack_params.pop("ClientRequestToken", None)
+    if module.params.get("include_nested_stacks"):
+        stack_params["IncludeNestedStacks"] = True
 
     try:
         changeset_name = build_changeset_name(stack_params)
@@ -588,6 +603,8 @@ def check_mode_changeset(module, stack_params, cfn):
     stack_params["ChangeSetName"] = build_changeset_name(stack_params)
     # changesets don't accept ClientRequestToken parameters
     stack_params.pop("ClientRequestToken", None)
+    if module.params.get("include_nested_stacks"):
+        stack_params["IncludeNestedStacks"] = True
 
     try:
         for _i in range(60):  # total time 5 min
@@ -657,6 +674,7 @@ def main():
         template_url=dict(default=None, required=False),
         template_body=dict(default=None, required=False),
         create_changeset=dict(default=False, type="bool"),
+        include_nested_stacks=dict(default=False, type="bool"),
         changeset_name=dict(default=None, required=False),
         role_arn=dict(default=None, required=False),
         tags=dict(default=None, type="dict"),
