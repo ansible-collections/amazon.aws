@@ -759,9 +759,15 @@ class InventoryModule(AWSInventoryBase):
 
     def _sanitize_hostname(self, hostname):
         if ":" in to_text(hostname):
-            return self._sanitize_group_name(to_text(hostname))
+            hostname = self._sanitize_group_name(to_text(hostname))
         else:
-            return to_text(hostname)
+            hostname = to_text(hostname)
+        # Ansible cannot target a host whose inventory_hostname contains whitespace
+        # (for example a tag value like "Space In Name"), so collapse any run of
+        # whitespace to a single underscore. Underscore keeps this consistent with
+        # the tag:Name=Value -> Name_Value convention the plugin already uses. See
+        # https://github.com/ansible-collections/amazon.aws/issues/1496.
+        return re.sub(r"\s+", "_", hostname)
 
     def _get_hostname_with_jinja2_filter(self, instance, preference, return_single_hostname=False):
         jinja2_filter = None
