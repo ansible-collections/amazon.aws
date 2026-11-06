@@ -112,9 +112,13 @@ uv run tox -e unit-py3.14-2.20 --ansible       # a single unit environment
 uv run tox -e coverage                         # Sonar / diff-cover coverage XML
 ```
 
-Test dependencies are deliberately not in `pyproject.toml`; they live in
-`tests/unit/unit.txt` and `tests/integration/integration.txt` so that
-`ansible-test` keeps working without uv.
+Test dependencies are deliberately managed outside `pyproject.toml`. The
+`tests/unit/requirements.in` and `tests/unit/requirements.txt` files provide
+the unit-test inputs and compiled lockfile; `tests/integration/integration.in`
+and `tests/integration/integration.txt` serve the same purpose for integration
+dependencies. The `ansible-test` integration sandbox uses
+`tests/integration/requirements.txt` and `tests/integration/constraints.txt`
+instead, so keep those files in place for that tooling.
 
 ## Writing New Code
 
