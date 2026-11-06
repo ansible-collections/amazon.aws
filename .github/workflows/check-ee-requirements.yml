@@ -1,16 +1,10 @@
 ---
 # Keep the SDK floor version in sync across every place it's declared:
 # tests/test-constraints.in, meta/ee-requirements.txt, plugins/module_utils/botocore.py,
-# tests/unit/.../test_minimal_versions.py, tests/integration/constraints.txt, and
-# tests/unit/constraints.txt.
+# tests/unit/.../test_minimal_versions.py, and tests/integration/constraints.txt.
+#
 # Catches a bump to one file without the others, same shape as
 # check-unit-requirements.yml.
-#
-# tests/integration/constraints.txt and tests/unit/constraints.txt duplicate
-# (rather than point at) tests/test-constraints.in because ansible-test stages
-# only the contents of tests/integration/ or tests/unit/ before running its
-# own hardcoded pip install there, so a -c reference to a file outside that
-# directory can't be resolved.
 #
 # NOTE: this is a local fallback. A generalized version of this check is proposed
 # as a reusable composite action in ansible/cloud-content-ci-automation (alongside
@@ -38,7 +32,6 @@ on:
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
       - tests/integration/constraints.txt
-      - tests/unit/constraints.txt
   push:
     branches:
       - main
@@ -49,7 +42,6 @@ on:
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
       - tests/integration/constraints.txt
-      - tests/unit/constraints.txt
 
 jobs:
   floor-versions-in-sync:

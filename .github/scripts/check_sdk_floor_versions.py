@@ -25,7 +25,6 @@ def main():
     botocore_py = "plugins/module_utils/botocore.py"
     test_minimal = "tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py"
     integration_constraints = "tests/integration/constraints.txt"
-    unit_constraints = "tests/unit/constraints.txt"
 
     values = {
         ("test-constraints.in", "botocore"): pin(constraints, r"^botocore==(\d+(?:\.\d+)+)", "botocore=="),
@@ -59,12 +58,6 @@ def main():
         ("tests/integration/constraints.txt", "awscli"): pin(
             integration_constraints, r"^awscli==(\d+(?:\.\d+)+)", "awscli=="
         ),
-        ("tests/unit/constraints.txt", "botocore"): pin(unit_constraints, r"^botocore==(\d+(?:\.\d+)+)", "botocore=="),
-        ("tests/unit/constraints.txt", "boto3"): pin(unit_constraints, r"^boto3==(\d+(?:\.\d+)+)", "boto3=="),
-        ("tests/unit/constraints.txt", "aiobotocore"): pin(
-            unit_constraints, r"^aiobotocore==(\d+(?:\.\d+)+)", "aiobotocore=="
-        ),
-        ("tests/unit/constraints.txt", "awscli"): pin(unit_constraints, r"^awscli==(\d+(?:\.\d+)+)", "awscli=="),
     }
 
     by_package = {}
