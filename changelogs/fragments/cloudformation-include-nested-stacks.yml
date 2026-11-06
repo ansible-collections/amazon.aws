@@ -1,0 +1,4 @@
+minor_changes:
+  - cloudformation - Add ``include_nested_stacks`` parameter to enable deep change set evaluation
+    across the entire nested stack hierarchy, preventing false positives in check mode when
+    nested stack templates have not changed (https://github.com/ansible-collections/amazon.aws/pull/3227).
