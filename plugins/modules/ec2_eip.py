@@ -413,7 +413,7 @@ def generate_tag_dict(module: AnsibleAWSModule) -> Optional[Dict[str, str]]:
 
     if not tag_value:
         if tag_name.startswith("tag:"):
-            tag_name = tag_name.strip("tag:")
+            tag_name = tag_name[len("tag:") :]
         result = {"tag-key": tag_name}
     else:
         if not tag_name.startswith("tag:"):
