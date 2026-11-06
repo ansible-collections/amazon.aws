@@ -101,7 +101,6 @@ options:
   include_nested_stacks:
     description:
       - Creates a change set for the entire CloudFormation stack hierarchy.
-      - Only used when O(create_changeset=true).
       - When V(true), CloudFormation deep-evaluates nested stack templates and only reports changes
         when a nested stack's template or parameters have actually changed. Without this option,
         nested stacks are always reported as V(Modify) in change sets due to dynamic evaluation,
