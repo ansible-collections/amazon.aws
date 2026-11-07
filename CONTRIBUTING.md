@@ -113,7 +113,7 @@ uv run tox -e coverage                         # Sonar / diff-cover coverage XML
 ```
 
 Test dependencies are deliberately managed outside `pyproject.toml`. The
-`tests/unit/unit.in` and `tests/unit/unit.txt` files provide
+`tests/unit/requirements.in` and `tests/unit/requirements.txt` files provide
 the unit-test inputs and compiled lockfile; `tests/integration/integration.in`
 and `tests/integration/integration.txt` serve the same purpose for integration
 dependencies. The `ansible-test` integration sandbox uses
