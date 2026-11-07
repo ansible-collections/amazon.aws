@@ -1,0 +1,6 @@
+# Integration-only test deps, on top of the shared test framework.
+-r ../test-requirements.in
+
+virtualenv
+# Used for indirect node count tests targets
+jq

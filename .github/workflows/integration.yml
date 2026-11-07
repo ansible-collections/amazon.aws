@@ -157,12 +157,27 @@ jobs:
           collection-src-directory: ${{ steps.set-path.outputs.collection_path }}
           collection-root: ''
           target: ${{ steps.read-targets.outputs.job_targets }}
-          test-deps: >-
-            ansible.utils
-            ansible.netcommon
-            community.general
-            community.crypto
-            ansible.windows
-            ${{ steps.set-path.outputs.collection_dep }}
+          # This job matrix tests both amazon.aws (meta/ee-* + tests/*.in layout)
+          # and community.aws (tests/integration/{requirements,constraints}.txt
+          # layout, not yet migrated), so both the collection-deps install and the
+          # Python deps install below branch on which layout is present in the
+          # checked-out collection.
+          #
+          # The local cross-collection checkout path is installed as its own
+          # ansible-galaxy call, both because ansible-galaxy rejects combining
+          # -r with a positional collection_name in one invocation ("mutually
+          # exclusive"), and because ansible-test-gh-action copies the
+          # collection under test into ansible_collections/<namespace>/<name>/
+          # and runs pre-test-cmd from there -- three directories below the
+          # job workspace where collection_dep's path is relative to, hence
+          # the leading ../../../.
           pre-test-cmd: |-
-            python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
+            if [ -f tests/test-constraints.in ]; then
+              ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
+              ansible-galaxy collection install ../../../${{ steps.set-path.outputs.collection_dep }} -p ${{ github.workspace }}
+              python3 -m pip install -c tests/test-constraints.in -r tests/integration/integration.in
+            else
+              ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
+              ansible-galaxy collection install ../../../${{ steps.set-path.outputs.collection_dep }} -p ${{ github.workspace }}
+              python3 -m pip install -r tests/integration/requirements.txt -r tests/integration/constraints.txt
+            fi
