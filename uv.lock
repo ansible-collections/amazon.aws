@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -35,7 +35,7 @@ dev = [
     { name = "tox-uv-bare", specifier = ">=1.35.0" },
 ]
 matrix = [
-    { name = "tox-ansible", specifier = "==26.9.0" },
+    { name = "tox-ansible", specifier = "==26.11.0" },
     { name = "tox-uv-bare", specifier = "==1.36.0" },
 ]
 ruff = [{ name = "ruff", specifier = "==0.16.10" }]
@@ -66,11 +66,11 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "cryptography", marker = "python_full_version < '3.12'" },
-    { name = "jinja2", marker = "python_full_version < '3.12'" },
-    { name = "packaging", marker = "python_full_version < '3.12'" },
-    { name = "pyyaml", marker = "python_full_version < '3.12'" },
-    { name = "resolvelib", marker = "python_full_version < '3.12'" },
+    { name = "cryptography" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "resolvelib" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cd/ed/919710271c8e4f6ecf0760f3994aee36be2668b29df0214a44ecdeb14075/ansible_core-2.19.15.tar.gz", hash = "sha256:05fa7f0730199b8e0dd9204f258075992143bd51dae71f68965b832a50d422fe", size = 3434021, upload-time = "2026-11-02T17:12:02.49Z" }
 wheels = [
@@ -85,11 +85,11 @@ resolution-markers = [
     "python_full_version == '3.12.*'",
 ]
 dependencies = [
-    { name = "cryptography", marker = "python_full_version == '3.12.*'" },
-    { name = "jinja2", marker = "python_full_version == '3.12.*'" },
-    { name = "packaging", marker = "python_full_version == '3.12.*'" },
-    { name = "pyyaml", marker = "python_full_version == '3.12.*'" },
-    { name = "resolvelib", marker = "python_full_version == '3.12.*'" },
+    { name = "cryptography" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "resolvelib" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ed/9f/c3f578633cd374db6ed981f8abc401885819e94e3d6a8548a1bd0095c575/ansible_core-2.21.6.tar.gz", hash = "sha256:3fa05b4b1af69f2fa19b49dde8edd5a23e693c2c1c3bda2d85fce73bd6cfc36d", size = 3399162, upload-time = "2026-11-02T17:33:27.104Z" }
 wheels = [
@@ -104,11 +104,11 @@ resolution-markers = [
     "python_full_version >= '3.13'",
 ]
 dependencies = [
-    { name = "cryptography", marker = "python_full_version >= '3.13'" },
-    { name = "jinja2", marker = "python_full_version >= '3.13'" },
-    { name = "packaging", marker = "python_full_version >= '3.13'" },
-    { name = "pyyaml", marker = "python_full_version >= '3.13'" },
-    { name = "resolvelib", marker = "python_full_version >= '3.13'" },
+    { name = "cryptography" },
+    { name = "jinja2" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "resolvelib" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/9d/9c/320090b2f1542122259cd759d5148678fd98945913837ee05718920f73ea/ansible_core-2.22.0.tar.gz", hash = "sha256:bf50b4a0cfa985e30585c7ba301897ea7050d224ca49d2816cab10e33a160e1c", size = 3476434, upload-time = "2026-11-02T17:35:11.837Z" }
 wheels = [
@@ -926,7 +926,7 @@ wheels = [
 
 [[package]]
 name = "tox-ansible"
-version = "26.9.0"
+version = "26.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
@@ -935,9 +935,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "tox" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/35/46/ec5913edfbb8d3571e155b9ad1c5b20a0793b1fc79b0161710ed5538c0d1/tox_ansible-26.9.0.tar.gz", hash = "sha256:a4638171db7032f22d4f61e3cdb490329304efab7b753061d3ad8e43dbf07349", size = 238599, upload-time = "2026-09-23T08:54:22.47Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/ad/7c4c523f3a90c4e1b76027547d9a8aa3e122a48f33ab7a97fb449258ee7f/tox_ansible-26.11.0.tar.gz", hash = "sha256:547ea8f5c4ca239c73f23b45a2d33883a8654a3c6ea230bb0cdef3cc0ffa224c", size = 234793, upload-time = "2026-11-05T08:57:07.797Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/60/f9/056a63b386bc71ac1e63df998bf557d60deccf59955bf553f3d8d5b00994/tox_ansible-26.9.0-py3-none-any.whl", hash = "sha256:426cb0001c90121c426905a41bf50bcc8a70b9004ff349cbb5b7d425fbf6e969", size = 15638, upload-time = "2026-09-23T08:54:21.254Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/22/9799b3127fe5220d3462a8f8ed14fec6080b93d7afec1733f94230f99f36/tox_ansible-26.11.0-py3-none-any.whl", hash = "sha256:76417b2444a050795872f86b4a5d87642dcc09daea3346f03c5a543af516971e", size = 20033, upload-time = "2026-11-05T08:57:06.276Z" },
 ]
 
 [[package]]
