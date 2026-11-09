@@ -174,7 +174,7 @@ jobs:
           pre-test-cmd: |-
             if [ -f tests/test-constraints.in ]; then
               ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
-              ansible-galaxy collection install ../../../${{ steps.set-path.outputs.collection_dep }} -p ${{ github.workspace }}
+              ansible-galaxy collection install --force ../../../${{ steps.set-path.outputs.collection_dep }} -p ${{ github.workspace }}
               python3 -m pip install -c tests/test-constraints.in -r tests/integration/integration.in
             else
               ansible-galaxy collection install -r tests/integration/requirements.yml -p ${{ github.workspace }}
