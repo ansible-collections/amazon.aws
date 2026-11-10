@@ -940,7 +940,7 @@ an existing aliases file such as the <a class="reference external" href="https:/
 <h3><a class="toc-backref" href="#id41" role="doc-backlink">Custom SDK versions for Integration Tests</a><a class="headerlink" href="#custom-sdk-versions-for-integration-tests" title="Link to this heading"></a></h3>
 <p>By default integration tests will run against the earliest supported version of
 the AWS SDK.  The current supported versions can be found in
-<code class="docutils literal notranslate"><span class="pre">tests/integration/constraints.txt</span></code> and should not be updated.  Where a module
+<code class="docutils literal notranslate"><span class="pre">tests/test-constraints.in</span></code> and should not be updated.  Where a module
 needs access to a later version of the SDK this can be installed by depending on
 the <code class="docutils literal notranslate"><span class="pre">setup_botocore_pip</span></code> role and setting the <code class="docutils literal notranslate"><span class="pre">botocore_version</span></code> variable in
 the <code class="docutils literal notranslate"><span class="pre">meta/main.yml</span></code> file for your tests.</p>
