@@ -27,12 +27,12 @@ def filter_ansi(line: str, is_windows: bool) -> str:
     # Remove standalone carriage returns (PTY artifacts from line wrapping)
     line = line.replace("\r", "")
 
-    if is_windows:
-        osc_filter = re.compile(r"\x1b\][^\x07]*\x07")
-        line = osc_filter.sub("", line)
-        ansi_filter = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]")
-        line = ansi_filter.sub("", line)
+    osc_filter = re.compile(r"\x1b\][^\x07]*\x07")
+    line = osc_filter.sub("", line)
+    ansi_filter = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]")
+    line = ansi_filter.sub("", line)
 
+    if is_windows:
         if len(line) == 201:
             line = line[:-1]
 
