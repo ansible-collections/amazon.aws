@@ -133,6 +133,44 @@
           - update_permission_result is not failed
           - permissions_list | length == 2
 
+    - name: Modify snapshot createVolmePermission - subset of existing user_ids without purge - idempotent - check_mode
+      amazon.aws.ec2_snapshot:
+        snapshot_id: "{{ snapshot_id }}"
+        modify_create_vol_permission: true
+        user_ids:
+          - "111111111111"
+        wait: true
+      register: update_permission_result
+      check_mode: true
+
+    - ansible.builtin.assert:
+        that:
+          - update_permission_result is not changed
+          - update_permission_result is not failed
+
+    - name: Modify snapshot createVolmePermission - subset of existing user_ids without purge - idempotent
+      amazon.aws.ec2_snapshot:
+        snapshot_id: "{{ snapshot_id }}"
+        modify_create_vol_permission: true
+        user_ids:
+          - "111111111111"
+        wait: true
+      register: update_permission_result
+
+    - name: Get current createVolumePermission
+      amazon.aws.ec2_snapshot_info:
+        snapshot_ids:
+          - "{{ snapshot_id }}"
+      register: info_result
+    - ansible.builtin.set_fact:
+        permissions_list: "{{ info_result.snapshots[0].create_volume_permissions | map(attribute='user_id') | list }}"
+
+    - ansible.builtin.assert:
+        that:
+          - update_permission_result is not changed
+          - update_permission_result is not failed
+          - permissions_list | length == 2
+
     # Update Permissions to remove user_id --------------------------------------------------------
     - name: Modify snapshot createVolmePermission - remove user_id - check_mode
       amazon.aws.ec2_snapshot:
