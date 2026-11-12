@@ -79,8 +79,8 @@ def main():
     try:
         caller_info = client.get_caller_identity(aws_retry=True)
         caller_info.pop("ResponseMetadata", None)
-        # TEMPORARY: Testing CI behavior - intentionally corrupt the response
-        caller_info["Account"] = "INVALID_ACCOUNT_ID"
+        # TEMPORARY: Testing CI behavior - intentionally remove Account field
+        caller_info.pop("Account", None)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Failed to retrieve caller identity")
 
