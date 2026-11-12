@@ -2,7 +2,16 @@
 name: integration-tox-molecule
 
 on:
-  - workflow_call
+  - workflow_call:
+      inputs:
+        python-version:
+          type: string
+          required: false
+          default: "3.14"
+        ansible-version:
+          type: string
+          required: false
+          default: "milestone"
 
 permissions: {}
 
@@ -75,22 +84,34 @@ jobs:
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
-          python-version: "3.14"
+          python-version: "${{ inputs.python-version }}"
 
+      # ansible-core here is only for the outer `ansible-test` invocation that
+      # generates the AWS credentials below -- the version the tests actually run
+      # under is installed inside the tox env by tox-ansible/ade. Mirror ade's
+      # resolution (branch tarball for devel/milestone, PyPI otherwise) so the two
+      # cannot drift apart.
       - name: Install developer toolchain & ansible-core
         working-directory: ${{ env.COLLECTION_PATH }}
+        env:
+          ANSIBLE_VERSION: ${{ inputs.ansible-version }}
         run: |
           uv sync --dev
-          uv pip install https://github.com/ansible/ansible/archive/devel.tar.gz
+          case "${ANSIBLE_VERSION}" in
+            devel|milestone) spec="https://github.com/ansible/ansible/archive/${ANSIBLE_VERSION}.tar.gz" ;;
+            *) spec="ansible-core==${ANSIBLE_VERSION}.*" ;;
+          esac
+          uv pip install "${spec}"
+        shell: bash
 
       - name: Generate ssh key for ansible-test
         uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
 
       - name: Generate and save aws credentials keys
         working-directory: ${{ env.COLLECTION_PATH }}
-        run: ansible-test integration --python 3.14 molecule_credentials -v --no-temp-workdir
+        run: ansible-test integration --python "${{ inputs.python-version }}" molecule_credentials -v --no-temp-workdir
         shell: bash
 
       - name: Run molecule integration tests (tox)
         working-directory: ${{ env.COLLECTION_PATH }}
-        run: uv run tox -e molecule-py3.14-milestone --ansible
+        run: uv run tox -e molecule-py${{ inputs.python-version }}-${{ inputs.ansible-version }} --ansible
