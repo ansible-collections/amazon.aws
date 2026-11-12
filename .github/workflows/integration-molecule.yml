@@ -1,0 +1,117 @@
+---
+name: integration-tox-molecule
+
+on:
+  - workflow_call:
+      inputs:
+        python-version:
+          type: string
+          required: false
+          default: "3.14"
+        ansible-version:
+          type: string
+          required: false
+          default: "milestone"
+
+permissions: {}
+
+jobs:
+  # Mirrors the job of the same name in integration.yml. The caller enables this
+  # workflow on the 'recheck' issue_comment path, where github.sha points at the
+  # default branch rather than the pull request head, so the refs have to be
+  # resolved from the pull request itself.
+  retrieve-pr-info:
+    name: retrieve base ref
+    outputs:
+      base_ref: ${{ steps.retrieve-pr-info.outputs.base_ref }}
+      head_ref: ${{ steps.retrieve-pr-info.outputs.checkout_sha }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Retrieve pull request base ref
+        id: retrieve-pr-info
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number, // The issue number from the trigger
+            });
+
+            const baseBranch = pr.data.base.ref;
+            // The specific commit hash of the PR
+            const checkoutSha = pr.data.head.sha;
+
+            // This sets the output for other jobs
+            core.setOutput('base_ref', baseBranch);
+            core.info(`Successfully set output 'base_ref' to: ${baseBranch}`);
+            core.setOutput('checkout_sha', checkoutSha);
+            core.info(`Successfully set output 'checkout_sha' to: ${checkoutSha}`);
+
+  tox-molecule:
+    needs:
+      - retrieve-pr-info
+    name: Integration tests with tox molecule
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    env:
+      ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}
+      COLLECTION_PATH: ansible_collections/amazon/aws
+      COMMUNITY_PATH: ansible_collections/community/aws
+    steps:
+      - name: Checkout source collection
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: ${{ env.COLLECTION_PATH }}
+          fetch-depth: 0
+          ref: ${{ needs.retrieve-pr-info.outputs.head_ref }}
+          persist-credentials: false
+      # Comment since we are running on feature branch
+      # - name: Checkout community.aws collection
+      #   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      #   with:
+      #     repository: ansible-collections/community.aws
+      #     path: ${{ env.COMMUNITY_PATH }}
+      #     fetch-depth: 0
+      #     ref: ${{ needs.retrieve-pr-info.outputs.base_ref }}
+      #     persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        with:
+          enable-cache: true
+          python-version: "${{ inputs.python-version }}"
+
+      # ansible-core here is only for the outer `ansible-test` invocation that
+      # generates the AWS credentials below -- the version the tests actually run
+      # under is installed inside the tox env by tox-ansible/ade. Mirror ade's
+      # resolution (branch tarball for devel/milestone, PyPI otherwise) so the two
+      # cannot drift apart.
+      - name: Install developer toolchain & ansible-core
+        working-directory: ${{ env.COLLECTION_PATH }}
+        env:
+          ANSIBLE_VERSION: ${{ inputs.ansible-version }}
+        run: |
+          uv sync --dev
+          case "${ANSIBLE_VERSION}" in
+            devel|milestone) spec="https://github.com/ansible/ansible/archive/${ANSIBLE_VERSION}.tar.gz" ;;
+            *) spec="ansible-core==${ANSIBLE_VERSION}.*" ;;
+          esac
+          uv pip install "${spec}"
+        shell: bash
+
+      - name: Generate ssh key for ansible-test
+        uses: ansible/ansible-test-auth@008750a5bf07124c3ab86d30d73d7319d7518f36
+
+      - name: Generate and save aws credentials keys
+        working-directory: ${{ env.COLLECTION_PATH }}
+        run: ansible-test integration --python "${{ inputs.python-version }}" molecule_credentials -v --no-temp-workdir
+        shell: bash
+
+      - name: Run molecule integration tests (tox)
+        working-directory: ${{ env.COLLECTION_PATH }}
+        run: uv run tox -e molecule-py${{ inputs.python-version }}-${{ inputs.ansible-version }} --ansible
