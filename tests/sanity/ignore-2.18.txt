@@ -1,1 +1,7 @@
+plugins/connection/aws_ssm.py validate-modules:invalid-documentation  # secret not supported
+plugins/inventory/aws_ec2.py validate-modules:invalid-documentation  # secret not supported
+plugins/inventory/aws_rds.py validate-modules:invalid-documentation  # secret not supported
+plugins/lookup/aws_account_attribute.py validate-modules:invalid-documentation  # secret not supported
+plugins/lookup/secretsmanager_secret.py validate-modules:invalid-documentation  # secret not supported
+plugins/lookup/ssm_parameter.py validate-modules:invalid-documentation  # secret not supported
 plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
