@@ -396,6 +396,45 @@ def test_parse_tags_deprecation_warning(m_parse, inventory, use_deprecated_tags)
     assert inventory._populate.call_args.kwargs["use_deprecated_tags"] == use_deprecated_tags
 
 
+@pytest.mark.parametrize(
+    "cached_result,expected_lookup",
+    [
+        ({"aws_ec2": [], "_availability_zone_ids": {"us-east-1a": "use1-az1"}}, False),
+        # cache entry written before the zone IDs were cached
+        ({"aws_ec2": []}, True),
+    ],
+)
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.AWSInventoryBase.parse")
+def test_parse_cache_hit_availability_zone_ids(m_parse, inventory, cached_result, expected_lookup):
+    inventory.get_cached_result = MagicMock(return_value=(True, cached_result))
+    inventory.update_cached_result = MagicMock()
+    inventory._query = MagicMock()
+    inventory._get_availability_zone_ids = MagicMock(return_value={"us-east-1a": "use1-az1"})
+    inventory._populate = MagicMock()
+
+    inventory.parse(MagicMock(), MagicMock(), "aws_ec2.yml")
+
+    inventory._query.assert_not_called()
+    assert inventory._get_availability_zone_ids.called == expected_lookup
+    assert inventory._populate.call_args.args[:3] == ({"aws_ec2": []}, [], {"us-east-1a": "use1-az1"})
+
+
+@patch("ansible_collections.amazon.aws.plugins.inventory.aws_ec2.AWSInventoryBase.parse")
+def test_parse_cache_miss_caches_availability_zone_ids(m_parse, inventory):
+    inventory.get_cached_result = MagicMock(return_value=(False, None))
+    inventory.update_cached_result = MagicMock()
+    inventory._query = MagicMock(return_value={"aws_ec2": []})
+    inventory._get_availability_zone_ids = MagicMock(return_value={"us-east-1a": "use1-az1"})
+    inventory._populate = MagicMock()
+
+    inventory.parse(MagicMock(), MagicMock(), "aws_ec2.yml")
+
+    assert inventory._populate.call_args.args[0] == {"aws_ec2": []}
+    inventory.update_cached_result.assert_called_once_with(
+        "aws_ec2.yml", True, {"aws_ec2": [], "_availability_zone_ids": {"us-east-1a": "use1-az1"}}
+    )
+
+
 def test_iter_entry(inventory):
     hosts = [
         {
