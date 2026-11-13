@@ -25,14 +25,16 @@
     classic_elb_tags:
       resource_prefix: "{{ resource_prefix }}"
       test_type: "node_query_classic"
+    # Taxonomy values must be lowercase_with_underscores or the indirect-node
+    # rollup cannot bucket them.
     alb_facts:
-      device_type: "ApplicationLoadBalancer"
-      infra_bucket: "Networking"
-      infra_type: "PublicCloud"
+      device_type: "application_load_balancer"
+      infra_bucket: "networking"
+      infra_type: "public_cloud"
     classic_elb_facts:
-      device_type: "ClassicLoadBalancer"
-      infra_bucket: "Networking"
-      infra_type: "PublicCloud"
+      device_type: "classic_load_balancer"
+      infra_bucket: "networking"
+      infra_type: "public_cloud"
     default_listeners:
       - protocol: http
         load_balancer_port: 80
@@ -170,9 +172,18 @@
           ansible.builtin.assert:
             that:
               - alb_node_result | length == 1
-              - alb_node_result[0].canonical_facts.name == alb_name
-              - alb_node_result[0].canonical_facts.tags == alb_tags
-              - alb_node_result[0].facts == alb_facts
+              - alb_node_result[0].name == alb_name
+              # The ARN is the identity: a load balancer name can be reused
+              # after the load balancer is deleted, and the tags that used to
+              # live here re-counted the load balancer on every tag edit.
+              - alb_node_result[0].canonical_facts | list == ["load_balancer_arn"]
+              - >-
+                alb_node_result[0].canonical_facts.load_balancer_arn
+                == _alb_info.load_balancers[0].load_balancer_arn
+              - alb_node_result[0].facts.tags == alb_tags
+              - >-
+                alb_node_result[0].facts == alb_facts
+                | combine({"status": _alb_info.load_balancers[0].state.code, "tags": alb_tags})
 
         # Test Classic Load Balancer node query
         - name: Get Classic ELB info
@@ -189,9 +200,14 @@
           ansible.builtin.assert:
             that:
               - classic_elb_node_result | length == 1
-              - classic_elb_node_result[0].canonical_facts.name == classic_elb_name
-              - classic_elb_node_result[0].canonical_facts.tags == classic_elb_tags
-              - classic_elb_node_result[0].facts == classic_elb_facts
+              - classic_elb_node_result[0].name == classic_elb_name
+              # A classic load balancer's return carries no ARN, so the name
+              # is the only available identity.
+              - classic_elb_node_result[0].canonical_facts | list == ["load_balancer_name"]
+              - classic_elb_node_result[0].canonical_facts.load_balancer_name == classic_elb_name
+              - >-
+                classic_elb_node_result[0].facts == classic_elb_facts
+                | combine({"tags": classic_elb_tags})
 
         - name: Create an ALB without tags
           amazon.aws.elb_application_lb:
@@ -227,9 +243,15 @@
           ansible.builtin.assert:
             that:
               - alb_notags_result | length == 1
-              - alb_notags_result[0].canonical_facts.name == alb_name + "-notags"
-              - alb_notags_result[0].canonical_facts.tags == {}
-              - alb_notags_result[0].facts == alb_facts
+              - alb_notags_result[0].name == alb_name + "-notags"
+              - alb_notags_result[0].canonical_facts | list == ["load_balancer_arn"]
+              - >-
+                alb_notags_result[0].canonical_facts.load_balancer_arn
+                == _alb_notags_info.load_balancers[0].load_balancer_arn
+              - alb_notags_result[0].facts.tags == {}
+              - >-
+                alb_notags_result[0].facts == alb_facts
+                | combine({"status": _alb_notags_info.load_balancers[0].state.code, "tags": {}})
 
         - name: Create a Classic ELB without tags
           amazon.aws.elb_classic_lb:
@@ -258,9 +280,12 @@
           ansible.builtin.assert:
             that:
               - classic_elb_notags_result | length == 1
-              - classic_elb_notags_result[0].canonical_facts.name == classic_elb_name + "-notags"
-              - classic_elb_notags_result[0].canonical_facts.tags == {}
-              - classic_elb_notags_result[0].facts == classic_elb_facts
+              - classic_elb_notags_result[0].name == classic_elb_name + "-notags"
+              - classic_elb_notags_result[0].canonical_facts | list == ["load_balancer_name"]
+              - classic_elb_notags_result[0].canonical_facts.load_balancer_name == classic_elb_name + "-notags"
+              - >-
+                classic_elb_notags_result[0].facts == classic_elb_facts
+                | combine({"tags": {}})
 
       always:
         - name: Delete ALB without tags

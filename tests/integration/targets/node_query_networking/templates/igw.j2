@@ -1,12 +1,14 @@
 {% for item in igw_facts.internet_gateways %}
-- canonical_facts:
-    id: "{{ item.internet_gateway_id }}"
-    status:
-{% for attach in item.attachments %}
-    - vpc_id: {{ attach.vpc_id }}
-      status: {{ attach.state }}
+- name: "{{ item.tags.Name | default(item.internet_gateway_id) }}"
+  canonical_facts:
+    internet_gateway_id: "{{ item.internet_gateway_id }}"
+  facts:
+    device_type: {{ networking_facts.igw }}
+{% for key, value in networking_common_facts.items() %}
+    {{ key }}: {{ value }}
 {% endfor %}
-{% if item.tags != {} %}
+    attached_vpc_ids: {{ item.attachments | default([]) | map(attribute='vpc_id') | list }}
+{% if item.tags %}
     tags:
 {% for key, value in item.tags.items() %}
       {{ key }}: {{ value }}
@@ -14,9 +16,4 @@
 {% else %}
     tags: {}
 {% endif %}
-  facts:
-    device_type: {{ networking_facts.igw }}
-{% for key, value in networking_common_facts.items()%}
-    {{ key }}: {{ value }}
-{% endfor %}
 {% endfor %}

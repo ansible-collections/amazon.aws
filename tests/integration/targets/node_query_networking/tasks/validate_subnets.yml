@@ -15,7 +15,7 @@
     - name: Validate result is as expected
       ansible.builtin.assert:
         that:
-          - node_count | sort(attribute='canonical_facts.id') == expected_result | sort(attribute='canonical_facts.id')
+          - node_count | sort(attribute='canonical_facts.subnet_id') == expected_result | sort(attribute='canonical_facts.subnet_id')
       register: test_result
   always:
     - name: Display expected result

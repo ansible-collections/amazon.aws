@@ -1,0 +1,30 @@
+---
+bugfixes:
+  - event_query - emit a non-null top-level ``name`` from every query. Thirteen of the fifteen
+    queries emitted none at all, and the indirect node counting consumer discards any record
+    without one (https://github.com/ansible-collections/amazon.aws/pull/3092).
+  - event_query - guard the source array of every query with ``[]?``. ``.object_info[]`` and
+    ``.internet_gateways[] | .attachments | map(...)`` raised "Cannot iterate over null" for
+    result shapes both modules routinely return, and a jq error is handled at the event, so it
+    discarded the audit records of every other module in the same event
+    (https://github.com/ansible-collections/amazon.aws/pull/3092).
+  - event_query - move ``status``, ``tags`` and the user-supplied RDS identifiers out of
+    ``canonical_facts`` and into ``facts``. ``canonical_facts`` is the sole deduplication key, so
+    stopping an instance, editing a tag or renaming a database counted the resource again
+    (https://github.com/ansible-collections/amazon.aws/pull/3092).
+  - event_query - key ``elb_application_lb_info`` on the load balancer ARN rather than its name,
+    which can be reused after the load balancer is deleted
+    (https://github.com/ansible-collections/amazon.aws/pull/3092).
+minor_changes:
+  - event_query - normalize every ``infra_type``, ``infra_bucket`` and ``device_type`` value to
+    ``lowercase_with_underscores``. ``PublicCloud`` and ``public_cloud`` are two separate buckets
+    downstream, and ``NAT Gateway`` and ``Route table`` matched no bucket at all. The two
+    ambiguous RDS values are now ``database_instance`` and ``database_cluster``
+    (https://github.com/ansible-collections/amazon.aws/pull/3092).
+trivial:
+  - tests - add unit tests asserting the ``extensions/audit/event_query.yml`` output contract
+    (non-null top-level ``name``, non-null and identity-only ``canonical_facts``, complete and
+    normalized taxonomy) and correct the ``event_query_parser`` return sample to match it.
+  - tests - update the ``node_query_*`` integration targets to the corrected contract. Their
+    expected results were derived from the queries' own output, so they agreed with every defect
+    above by construction.

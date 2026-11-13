@@ -18,10 +18,12 @@
       name: "instance-{{ resource_prefix }}"
       tags:
         resource_prefix: "{{ resource_prefix }}"
+    # Taxonomy values must be lowercase_with_underscores or the indirect-node
+    # rollup cannot bucket them.
     ec2_instance_facts:
-      device_type: "EC2"
-      infra_bucket: "Compute"
-      infra_type: "PublicCloud"
+      device_type: "ec2"
+      infra_bucket: "compute"
+      infra_type: "public_cloud"
 
   tasks:
     - block:
@@ -52,11 +54,12 @@
             that:
               - node_count == expected_result  
           vars:
-            expected_result: 
+            # canonical_facts is the only dedup key, so it holds the instance
+            # id and nothing else: state and tags both change over the life of
+            # an instance and would each re-count it.
+            expected_result:
               - name: "{{ ec2_instance_buckets.name }}"
                 canonical_facts:
-                  id: "{{ _instances.instances.0.instance_id }}"
-                  status: "{{ _instances.instances.0.state.name }}"
-                  tags: "{{ _instances.instances.0.tags }}"
-                facts: "{{ ec2_instance_facts }}"
+                  instance_id: "{{ _instances.instances.0.instance_id }}"
+                facts: "{{ ec2_instance_facts | combine({'status': _instances.instances.0.state.name, 'tags': _instances.instances.0.tags}) }}"
                 
