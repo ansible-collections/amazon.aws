@@ -14,6 +14,11 @@ updates:
     allow:
       - dependency-name: "tox-ansible"
       - dependency-name: "tox-uv-bare"
+    groups:
+      uv-deps:
+        patterns:
+          - "tox-ansible"
+          - "tox-uv-bare"
     commit-message:
       prefix: "ci"
       include: "scope"
