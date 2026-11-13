@@ -105,7 +105,7 @@ class S3ClientManager:
                 # versions of it (e.g. CentOS 7)
                 put_command_headers = " ".join([f"-H '{h}: {v}'" for h, v in put_headers.items()])
                 command = (
-                    "curl --request PUT "
+                    "curl --fail --retry 5 --retry-delay 1 --request PUT "
                     f"{put_command_headers} "
                     f"--upload-file '{in_path}' "
                     f"'{url}'"
@@ -128,11 +128,12 @@ class S3ClientManager:
                     f"[System.IO.File]::WriteAllBytes('{escaped_out_path}', $response.Content)"
                 )  # fmt: skip
             else:
+                # --fail/--retry survive a transient S3 5xx; "&& touch" lets a persistent failure exit non-zero
                 command = (
-                    "curl "
+                    "curl --fail --retry 5 --retry-delay 1 "
                     f"-o '{out_path}' "
                     f"'{url}'"
-                    ";"
+                    " && "
                     "touch "
                     f"'{out_path}'"
                 )  # fmt: skip
