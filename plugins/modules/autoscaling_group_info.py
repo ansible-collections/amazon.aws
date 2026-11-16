@@ -22,7 +22,7 @@ options:
   name:
     description:
       - The prefix or name of the auto scaling group(s) you are searching for.
-      - "Note: This is a regular expression match with implicit '^' (beginning of string). Append '$' for a complete name match."
+      - "Note: This is a regular expression match with implicit '^' (beginning of string). Append '$' for a complete name match!"
     type: str
     required: false
     aliases: ["group_name"]
