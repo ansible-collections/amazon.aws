@@ -4,8 +4,9 @@
 # Requires botocore >= 1.41.0 for AvailabilityMode/VpcId support
 #
 # Split out into its own target because regional NAT gateways require
-# IAM permissions (iam:CreateServiceLinkedRole for natgateway.amazonaws.com)
-# that are not yet available in the CI account. See ACA-6688/ACA-6689.
+# IAM permissions (iam:CreateServiceLinkedRole for the NAT gateway
+# service-linked role). Public regional NAT gateways also require an
+# Internet Gateway on the VPC (Gateway.NotAttached otherwise).
 # ============================================================
 
 - name: Run ec2_vpc_nat_gateway regional tests
@@ -37,6 +38,20 @@
     - name: "Set fact: VPC ID"
       ansible.builtin.set_fact:
         vpc_id: "{{ vpc_result.vpc.id }}"
+
+    # ============================================================
+    - name: Create IGW
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+      register: create_igw
+
+    - name: Assert IGW success
+      ansible.builtin.assert:
+        that:
+          - create_igw is successful
+          - create_igw.gateway_id.startswith("igw-")
+          - create_igw.vpc_id == vpc_id
+          - '"gateway_id" in create_igw'
 
     # ============================================================
     - name: Create new regional NAT gateway - CHECK_MODE
@@ -170,20 +185,29 @@
       amazon.aws.ec2_vpc_nat_gateway_info:
         filters:
           vpc-id: "{{ vpc_id }}"
-          state: [available]
+          state: [pending, available, deleting, failed]
       register: existing_ngws
       ignore_errors: true
+      when: vpc_id is defined
 
     - name: Tidy up NAT gateway
       amazon.aws.ec2_vpc_nat_gateway:
         subnet_id: "{{ item.subnet_id | default(omit) }}"
         nat_gateway_id: "{{ item.nat_gateway_id }}"
-        connectivity_type: "{{ item.connectivity_type }}"
+        connectivity_type: "{{ item.connectivity_type | default(omit) }}"
         release_eip: true
         state: absent
         wait: true
-      with_items: "{{ existing_ngws.result }}"
+      with_items: "{{ existing_ngws.result | default([]) }}"
       ignore_errors: true
+      when: vpc_id is defined
+
+    - name: Delete IGW
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        state: absent
+      ignore_errors: true
+      when: vpc_id is defined
 
     - name: Delete VPC
       amazon.aws.ec2_vpc_net:
