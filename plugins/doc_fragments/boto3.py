@@ -7,6 +7,7 @@
 class ModuleDocFragment:
     # Minimum requirements for the collection.
     # Each section is a plain string so the docs can be read without running this code.
+    # .github/scripts/check_sdk_floor_versions.py checks the versions against module_utils/botocore.py.
     DOCUMENTATION = r"""
 options: {}
 requirements:
