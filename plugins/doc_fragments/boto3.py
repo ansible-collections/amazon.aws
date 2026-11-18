@@ -16,7 +16,8 @@ requirements:
   - botocore >= 1.38.23
 """
 
-    # Modules and Plugins can (currently) use the same fragment
+    # Because the docs will be statically generated, without executing the code,
+    # we need to copy the documentation for both Modules and Plugins
     MODULES = r"""
 options: {}
 requirements:
