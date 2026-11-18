@@ -131,6 +131,7 @@ class TestConnectionBaseClass:
         session_manager = MagicMock()
         if session_manager_initialized:
             loaded_aws_ssm.session_manager = session_manager
+            loaded_aws_ssm._windows_executor = MagicMock()
         loaded_aws_ssm.close()
 
         if session_manager_initialized:
@@ -138,6 +139,7 @@ class TestConnectionBaseClass:
         else:
             session_manager.terminate.assert_not_called()
         assert loaded_aws_ssm.session_manager is None
+        assert loaded_aws_ssm._windows_executor is None
 
     def test_plugins_connection_aws_ssm_del_handles_exceptions(self, loaded_aws_ssm):
         """Test that __del__ handles exceptions gracefully during shutdown"""

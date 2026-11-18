@@ -1,0 +1,2 @@
+bugfixes:
+  - aws_ssm - reset the cached Windows command executor when the connection is closed, so Windows hosts reconnect after a reboot instead of failing every command with ``I/O operation on closed file`` (https://github.com/ansible-collections/amazon.aws/issues/3247).

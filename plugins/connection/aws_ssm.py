@@ -903,5 +903,6 @@ class Connection(AWSConnectionBase):
 
             self.session_manager.terminate()
             self.session_manager = None
+            self._windows_executor = None
 
         self._connected = False
