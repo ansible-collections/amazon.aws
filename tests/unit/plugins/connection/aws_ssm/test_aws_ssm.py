@@ -217,7 +217,7 @@ class TestS3ClientManager:
                         "-Body $fileContent -Uri 'https://test-url' -UseBasicParsing"
                     )
                 else:
-                    assert test_command_generation.startswith("curl --request PUT ")
+                    assert test_command_generation.startswith("curl --fail --retry 5 --retry-delay 1 --request PUT ")
                     assert test_command_generation.endswith("--upload-file 'test/in/path' 'https://test-url'")
                 assert put_args == encryption_args
                 s3_client_manager.get_url.assert_called_once_with(
@@ -233,7 +233,10 @@ class TestS3ClientManager:
                         "[System.IO.File]::WriteAllBytes('test/out/path', $response.Content)"
                     ) == test_command_generation
                 else:
-                    assert "curl -o 'test/out/path' 'https://test-url';touch 'test/out/path'" == test_command_generation
+                    assert (
+                        "curl --fail --retry 5 --retry-delay 1 -o 'test/out/path' 'https://test-url' && touch 'test/out/path'"
+                        == test_command_generation
+                    )
                 assert put_args == encryption_args
                 s3_client_manager.get_url.assert_called_once_with("get_object", bucket_name, s3_path, "GET")
 
