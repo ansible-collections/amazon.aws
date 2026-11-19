@@ -1,2 +1,2 @@
 trivial:
-  - Backport the tox-ansible matrix CI workflow (unit/sanity/coverage) and the consolidated uvx linters workflow to the stable-12 branch. Includes lint-only reformatting of exception handlers in several modules (relocated ``# pylint: disable=duplicate-except`` comments and ruff formatting); no functional change.
+  - Backport the tox-ansible matrix CI workflow (unit, sanity, and coverage) and the consolidated uvx linters workflow to the stable-12 branch, including lint-only reformatting of exception handlers in several modules. No functional change.
