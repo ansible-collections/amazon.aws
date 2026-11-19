@@ -57,7 +57,8 @@ options:
     description:
       - List of routes in the route table.
       - Routes are specified as dicts containing the keys V(dest) and one of V(gateway_id),
-        V(instance_id), V(network_interface_id), V(transit_gateway_id), or V(vpc_peering_connection_id).
+        V(instance_id), V(network_interface_id), V(transit_gateway_id), V(vpc_peering_connection_id)
+        or V(egress_only_internet_gateway_id).
       - The value of V(dest) is used for the destination match. It may be a IPv4 CIDR block
         or a IPv6 CIDR block.
       - If V(gateway_id) is specified, you can refer to the VPC's IGW by using the value V(igw).
