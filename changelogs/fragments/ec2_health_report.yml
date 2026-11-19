@@ -1,0 +1,8 @@
+---
+minor_changes:
+  - ec2_health_report - Add new module to generate health reports for EC2 instances (https://github.com/ansible-collections/community.aws/pull/XXXX).
+
+new_modules:
+  - name: ec2_health_report
+    description: Generate comprehensive health reports for EC2 instances including CloudWatch metrics
+    namespace: ''
