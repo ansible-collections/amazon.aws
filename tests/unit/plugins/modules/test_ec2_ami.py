@@ -63,7 +63,7 @@ def test_get_image_by_id_found(m_describe_images, m_describe_image_attribute):
     image = ec2_ami.get_image_by_id(connection, "ami-0c7a795306730b288")
     assert image["ImageId"] == "ami-0c7a795306730b288"
     assert m_describe_images.call_count == 1
-    assert m_describe_image_attribute.call_count == 2
+    assert m_describe_image_attribute.call_count == 3
     m_describe_images.assert_has_calls(
         [
             call(
