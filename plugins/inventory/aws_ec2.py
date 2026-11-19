@@ -905,25 +905,30 @@ class InventoryModule(AWSInventoryBase):
 
         """
         instances = []
-        ids_to_ignore = []
-        for filter_dict in exclude_filters:
-            for i in self._get_instances_by_region(
-                regions,
-                ansible_dict_to_boto3_filter_list(filter_dict),
-                strict_permissions,
-            ):
-                ids_to_ignore.append(i["InstanceId"])
+        seen_ids = set()
         for filter_dict in include_filters:
             for i in self._get_instances_by_region(
                 regions,
                 ansible_dict_to_boto3_filter_list(filter_dict),
                 strict_permissions,
             ):
-                if i["InstanceId"] not in ids_to_ignore:
+                if i["InstanceId"] not in seen_ids:
                     instances.append(i)
-                    ids_to_ignore.append(i["InstanceId"])
+                    seen_ids.add(i["InstanceId"])
+        # Query the exclude filters after the include filters so that an instance which starts matching an
+        # exclude filter while the inventory is being built is still excluded.
+        ids_to_ignore = set()
+        for filter_dict in exclude_filters:
+            for i in self._get_instances_by_region(
+                regions,
+                ansible_dict_to_boto3_filter_list(filter_dict),
+                strict_permissions,
+            ):
+                ids_to_ignore.add(i["InstanceId"])
 
-        instances = sorted(instances, key=lambda x: x["InstanceId"])
+        instances = sorted(
+            (i for i in instances if i["InstanceId"] not in ids_to_ignore), key=lambda x: x["InstanceId"]
+        )
 
         if use_ssm_inventory and instances:
             for connection, _region in self.all_clients("ssm"):
