@@ -1,0 +1,20 @@
+---
+name: "Release collection on Galaxy and Automation Hub"
+on:
+  release:
+    types: [published]
+
+jobs:
+  release_galaxy:
+    uses: ansible/ansible-content-actions/.github/workflows/release_galaxy.yaml@main
+    with:
+      environment: release
+    secrets:
+      ansible_galaxy_api_key: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}
+  release_automation_hub:
+    uses: ansible/ansible-content-actions/.github/workflows/release_ah.yaml@main
+    with:
+      environment: release
+    secrets:
+      ah_client_id: ${{ secrets.AH_CLIENT_ID }}
+      ah_client_secret: ${{ secrets.AH_CLIENT_SECRET }}
