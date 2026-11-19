@@ -20,6 +20,16 @@ dev = [
 [tool.uv]
 package = false
 
+# tox config (incl. the tox-ansible `requires` pin) lives in tox.ini, which is the
+# active config source and takes precedence over pyproject's [tool.tox]. tox-ansible
+# still reads [tool.tox-ansible] below directly, regardless of the config source.
+[tool.tox-ansible]
+# Persistent unit coverage for Sonar/diff-cover; pass --cov-report=xml via posargs when needed.
+coverage = true
+molecule = "false"
+# Integration tests stay on GHA — do not fan out AWS-backed envs locally.
+skip = ["integration-"]
+
 [tool.flake8]
 # Kept for flake8-cognitive-complexity (CCR001). Style linting is owned by ruff.
 show-source = true
