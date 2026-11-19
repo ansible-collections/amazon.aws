@@ -14,7 +14,7 @@ description:
     has the appropriate permissions to read the secret.
   - Lookup is based on the secret's I(Name) value.
   - Optional parameters can be passed into this lookup; O(version_id) and O(version_stage).
-  - Prior to release 6.0.0 this module was known as C(aws_ssm), the usage remains the same.
+  - Prior to release 6.0.0 this plugin was known as C(aws_secret), the usage remains the same.
 
 options:
   _terms:
