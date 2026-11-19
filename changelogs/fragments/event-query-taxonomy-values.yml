@@ -1,0 +1,15 @@
+---
+bugfixes:
+  - event_query - ten queries emitted raw AWS resource names as ``device_type``
+    (``ec2``, ``route_table``, ``bucket``, ``object``, ``database_instance``,
+    ``database_cluster``, ``application_load_balancer``,
+    ``classic_load_balancer``, ``virtual_gateway``, ``vpn_connection``). None is
+    a value in the Normalized Resource Taxonomy, so these nodes could not
+    aggregate with the equivalent resources reported by any other collection -
+    an EC2 instance did not group with a VMware or Azure virtual machine. The
+    values now follow the mapping table published in the taxonomy article.
+minor_changes:
+  - event_query - the contract test now compiles every expression with ``jq``,
+    and ``test_taxonomy_values_are_normalized`` previously asserted only that a
+    value was lowercase snake_case, which every one of the ten raw names
+    satisfied.
