@@ -73,6 +73,8 @@ def fixture_inventory():
     inventory._set_credentials = MagicMock()
 
     inventory.get_cache_key = MagicMock()
+    inventory.get_cached_result = MagicMock()
+    inventory.update_cached_result = MagicMock()
 
     inventory._cache = {}
     return inventory
@@ -174,36 +176,6 @@ def test_get_rds_hostname(host, expected):
     assert expected == _get_rds_hostname(host)
 
 
-@pytest.mark.parametrize("hosts", ["", "host1", "host2,host3", "host2,host3,host1"])
-@patch("ansible_collections.amazon.aws.plugins.inventory.aws_rds._get_rds_hostname")
-def test_inventory_format_inventory(m_get_rds_hostname, inventory, hosts):
-    hosts_vars = {
-        "host1": {"var10": "value10"},
-        "host2": {"var20": "value20", "var21": "value21"},
-        "host3": {"var30": "value30", "var31": "value31", "var32": "value32"},
-    }
-
-    m_get_rds_hostname.side_effect = lambda h: h["name"]
-
-    class _inventory_host(object):
-        def __init__(self, name, host_vars):
-            self.name = name
-            self.vars = host_vars
-
-    inventory.inventory = MagicMock()
-    inventory.inventory.get_host.side_effect = lambda x: _inventory_host(name=x, host_vars=hosts_vars.get(x))
-
-    hosts = [{"name": x} for x in hosts.split(",") if x]
-    expected = {
-        "_meta": {"hostvars": {x["name"]: hosts_vars.get(x["name"]) for x in hosts}},
-        "aws_rds": {"hosts": [x["name"] for x in hosts]},
-    }
-
-    assert expected == inventory._format_inventory(hosts)
-    if hosts == []:
-        m_get_rds_hostname.assert_not_called()
-
-
 @pytest.mark.parametrize("length", range(0, 10, 2))
 def test_inventory_populate(inventory, length):
     group = "aws_rds"
@@ -220,50 +192,6 @@ def test_inventory_populate(inventory, length):
     else:
         inventory._add_hosts.assert_called_with(hosts=hosts, group=group)
         inventory.inventory.add_child.assert_called_with("all", group)
-
-
-def test_inventory_populate_from_source(inventory):
-    source_data = {
-        "_meta": {
-            "hostvars": {
-                "host_1_0": {"var10": "value10"},
-                "host_2": {"var2": "value2"},
-                "host_3": {"var3": ["value30", "value31", "value32"]},
-            }
-        },
-        "all": {"hosts": ["host_1_0", "host_1_1", "host_2", "host_3"]},
-        "aws_host_1": {"hosts": ["host_1_0", "host_1_1"]},
-        "aws_host_2": {"hosts": ["host_2"]},
-        "aws_host_3": {"hosts": ["host_3"]},
-    }
-
-    inventory._populate_from_source(source_data)
-    inventory.inventory.add_group.assert_has_calls(
-        [
-            call("aws_host_1"),
-            call("aws_host_2"),
-            call("aws_host_3"),
-        ],
-        any_order=True,
-    )
-    inventory.inventory.add_child.assert_has_calls(
-        [
-            call("all", "aws_host_1"),
-            call("all", "aws_host_2"),
-            call("all", "aws_host_3"),
-        ],
-        any_order=True,
-    )
-
-    inventory._populate_host_vars.assert_has_calls(
-        [
-            call(["host_1_0"], {"var10": "value10"}, "aws_host_1"),
-            call(["host_1_1"], {}, "aws_host_1"),
-            call(["host_2"], {"var2": "value2"}, "aws_host_2"),
-            call(["host_3"], {"var3": ["value30", "value31", "value32"]}, "aws_host_3"),
-        ],
-        any_order=True,
-    )
 
 
 @pytest.mark.parametrize("strict", [True, False])
@@ -630,12 +558,7 @@ def test_inventory_parse(
     cache_key = path + generate_random_string()
     inventory.get_cache_key.return_value = cache_key
 
-    cache_key_value = generate_random_string()
-    if cache_hit:
-        inventory._cache[cache_key] = cache_key_value
-
     inventory._populate = MagicMock()
-    inventory._populate_from_source = MagicMock()
     inventory._get_all_db_hosts = MagicMock()
     all_db_hosts = [
         {"host": f"host_{int(random.randint(1, 1000))}"},
@@ -645,9 +568,12 @@ def test_inventory_parse(
     ]
     inventory._get_all_db_hosts.return_value = all_db_hosts
 
-    format_cache_key_value = f"format_inventory_{all_db_hosts}"
-    inventory._format_inventory = MagicMock()
-    inventory._format_inventory.return_value = format_cache_key_value
+    # get_cached_result behavior depends on cache flags and whether there's a cache hit
+    # With v2 caching, we return raw host data (not formatted inventory)
+    if cache and user_cache_directive and cache_hit:
+        inventory.get_cached_result.return_value = (True, all_db_hosts)
+    else:
+        inventory.get_cached_result.return_value = (False, None)
 
     inventory.parse(inventory_data, loader, path, cache)
 
@@ -660,7 +586,15 @@ def test_inventory_parse(
             {"db-cluster-id": options["filters"]["db-cluster-id"]}
         )
 
-    if not cache or not user_cache_directive or (cache and user_cache_directive and not cache_hit):
+    # With v2 caching: always call _populate() with raw data (from cache or fresh fetch)
+    inventory._populate.assert_called_with(all_db_hosts)
+
+    # When there's a cache hit, we don't fetch or update cache
+    if cache and user_cache_directive and cache_hit:
+        inventory._get_all_db_hosts.assert_not_called()
+        inventory.update_cached_result.assert_not_called()
+    else:
+        # No cache hit: fetch data and update cache with raw data
         inventory._get_all_db_hosts.assert_called_with(
             options["regions"],
             boto3_instance_filters,
@@ -669,16 +603,5 @@ def test_inventory_parse(
             options["statuses"],
             include_clusters,
         )
-        inventory._populate.assert_called_with(all_db_hosts)
-        inventory._format_inventory.assert_called_with(all_db_hosts)
-    else:
-        inventory._get_all_db_hosts.assert_not_called()
-        inventory._populate.assert_not_called()
-        inventory._format_inventory.assert_not_called()
-
-    if cache and user_cache_directive and cache_hit:
-        inventory._populate_from_source.assert_called_with(cache_key_value)
-
-    if cache and user_cache_directive and not cache_hit or (not cache and user_cache_directive):
-        # validate that cache was populated
-        assert inventory._cache[cache_key] == format_cache_key_value
+        # Cache the raw host data
+        inventory.update_cached_result.assert_called_with(path, cache, all_db_hosts)
