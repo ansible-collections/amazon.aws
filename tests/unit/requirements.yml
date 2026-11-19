@@ -12,4 +12,4 @@ collections:
     type: dir
   - name: https://github.com/ansible-collections/community.aws.git
     type: git
-    version: main
+    version: stable-12
