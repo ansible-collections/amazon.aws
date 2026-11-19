@@ -34,7 +34,7 @@ disable_error_code = ["import-untyped"]
 [tool.ruff]
 # Pin exactly so a floating ruff release cannot widen the default ruleset under us.
 # Keep this in sync with tox [testenv:ruff*] deps and .pre-commit-config.yaml rev.
-required-version = "==0.16.9"
+required-version = "==0.16.10"
 line-length = 120
 exclude = [".tox", "tests/output"]
 
