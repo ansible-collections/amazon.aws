@@ -3,10 +3,30 @@ name: ansible-lint
 
 on: [workflow_call] # allow this workflow to be called from other workflows
 
+permissions:
+  contents: read
+
 jobs:
   ansible-lint:
-    # Run the "ansible-lint" tox env so the lint configuration (deps, skip-list,
-    # excludes) lives in tox.ini and stays consistent between local and CI runs.
-    uses: ansible-network/github_actions/.github/workflows/tox.yml@4678c74a7d712d55e663c88f66eec6d9c3642550 # @main as of 2026-09-21
-    with:
-      envname: "ansible-lint"
+    name: Run ansible-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          python-version: "3.11"
+
+      # Skip-list and excludes are passed on the command line to match the
+      # previous tox-based job (this branch's .ansible-lint does not carry them).
+      - name: Run ansible-lint
+        run: |
+          uvx --from 'ansible-lint>=26.6.0' ansible-lint \
+            '--skip-list=name[missing],yaml[line-length],args[module],run-once[task],ignore-errors,sanity[cannot-ignore],run-once[play]' \
+            --exclude=.tox/ --exclude=tests/output/ \
+            plugins tests extensions
