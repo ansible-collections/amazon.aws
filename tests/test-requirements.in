@@ -1,5 +1,5 @@
-botocore
-boto3
+# Common test framework dependencies, shared by unit and integration tests.
+-r ../meta/ee-requirements.txt
 
 placebo
 mock
@@ -22,4 +22,3 @@ cryptography
 # For testing event source plugins
 asyncmock
 pytest-asyncio
-aiobotocore[botocore]

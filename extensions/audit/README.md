@@ -90,7 +90,7 @@ Reliability is ensured through integration testing. The **extensions/audit/event
 To validate the node counting logic yourself, you can run any integration test target prefixed with **node_query_**.
 
 #### Prerequisites
-The indirect node counts integration tests have additional dependencies, specifically the `jq` Python bindings. Please run `pip install -r tests/integration/requirements.txt` to ensure all requirements are installed."
+The indirect node counts integration tests have additional dependencies, specifically the `jq` Python bindings. Please run `pip install -r tests/integration/integration.txt` to ensure all requirements are installed.
 
 #### Command
 **Example: Running the Networking Node Query Test**
