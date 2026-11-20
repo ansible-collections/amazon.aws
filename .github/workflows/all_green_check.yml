@@ -19,34 +19,32 @@ on: # yamllint disable-line rule:truthy
       - main
       - stable-*
 
+permissions:
+  contents: read
+
 jobs:
+  tox-ansible:
+    uses: ./.github/workflows/tox-ansible.yml
+
   linters:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/linters.yml
-  ansible-lint:
-    if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/ansible-lint.yml
-  ansible-test:
-    uses: ./.github/workflows/ansible-test.yml
-  coverage:
-    uses: ./.github/workflows/coverage.yml
 
   all_green:
+    name: all_green
     if: ${{ always() }}
     needs:
+      - tox-ansible
       - linters
-      - ansible-lint
-      - ansible-test
-      - coverage
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - name: Check required workflow result
+        run: |
           python -c "
-          required = ['ansible-test', 'coverage']
+          required = ['tox-ansible']
           if '${{ github.event_name }}' == 'pull_request':
-            required = ['linters', 'ansible-lint', 'ansible-test', 'coverage']
-          results = {'linters': '${{ needs.linters.result }}', 'ansible-lint': '${{ needs.ansible-lint.result }}',
-                     'ansible-test': '${{ needs.ansible-test.result }}', 'coverage': '${{ needs.coverage.result }}'}
+            required.append('linters')
+          results = {'tox-ansible': '${{ needs.tox-ansible.result }}', 'linters': '${{ needs.linters.result }}'}
           ok = all(results[j] == 'success' for j in required)
           skipped_ok = all(results[j] in ('success', 'skipped') for j in results)
           assert ok and skipped_ok, f'required={required} results={results}'

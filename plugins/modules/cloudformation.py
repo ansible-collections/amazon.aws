@@ -353,10 +353,10 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
     except is_boto3_error_message("does not exist"):
         ret["log"].append("Stack does not exist.")
         return ret
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ValidationError,
         botocore.exceptions.ClientError,
-    ) as err:  # pylint: disable=duplicate-except
+    ) as err:
         error_msg = boto_exception(err)
         ret["log"].append("Unknown error: " + str(error_msg))
         return ret
@@ -460,7 +460,10 @@ def create_changeset(module, stack_params, cfn, events_limit):
             ]
     except is_boto3_error_message("No updates are to be performed."):
         result = dict(changed=False, output="Stack is already up-to-date.")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
+    except (  # pylint: disable=duplicate-except
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as err:
         module.fail_json_aws(err, msg="Failed to create change set")
 
     if not result:
@@ -487,7 +490,10 @@ def update_stack(module, stack_params, cfn, events_limit):
         )
     except is_boto3_error_message("No updates are to be performed."):
         result = dict(changed=False, output="Stack is already up-to-date.")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
+    except (  # pylint: disable=duplicate-except
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as err:
         module.fail_json_aws(err, msg=f"Failed to update stack {stack_params.get('StackName')}")
     if not result:
         module.fail_json(msg="empty result")
@@ -620,10 +626,10 @@ def get_stack_facts(module, cfn, stack_name, raise_errors=False):
         stack_info = stack_response["Stacks"][0]
     except is_boto3_error_message("does not exist"):
         return None
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ValidationError,
         botocore.exceptions.ClientError,
-    ) as err:  # pylint: disable=duplicate-except
+    ) as err:
         if raise_errors:
             raise err
         module.fail_json_aws(err, msg="Failed to describe stack")

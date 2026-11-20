@@ -334,10 +334,10 @@ def alias_details(client, module, function_name):
         lambda_info.update(aliases=_paginate(client, "list_aliases", FunctionName=function_name)["Aliases"])
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(aliases=[])
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="Trying to get aliases")
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -418,10 +418,10 @@ def config_details(client, module, function_name):
         lambda_info.update(client.get_function_configuration(aws_retry=True, FunctionName=function_name))
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(function={})
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg=f"Trying to get {function_name} configuration")
 
     if "Environment" in lambda_info and "Variables" in lambda_info["Environment"]:
@@ -456,10 +456,10 @@ def mapping_details(client, module, function_name):
         lambda_info.update(mappings=_paginate(client, "list_event_source_mappings", **params)["EventSourceMappings"])
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(mappings=[])
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg="Trying to get source event mappings")
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -482,10 +482,10 @@ def policy_details(client, module, function_name):
         lambda_info.update(policy=json.loads(client.get_policy(aws_retry=True, FunctionName=function_name)["Policy"]))
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(policy={})
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg=f"Trying to get {function_name} policy")
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -509,10 +509,10 @@ def version_details(client, module, function_name):
         )
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(versions=[])
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg=f"Trying to get {function_name} versions")
 
     return camel_dict_to_snake_dict(lambda_info)
@@ -534,10 +534,10 @@ def tags_details(client, module, function_name):
         lambda_info.update(tags=client.get_function(aws_retry=True, FunctionName=function_name).get("Tags", {}))
     except is_boto3_error_code("ResourceNotFoundException"):
         lambda_info.update(function={})
-    except (
+    except (  # pylint: disable=duplicate-except
         botocore.exceptions.ClientError,
         botocore.exceptions.BotoCoreError,
-    ) as e:  # pylint: disable=duplicate-except
+    ) as e:
         module.fail_json_aws(e, msg=f"Trying to get {function_name} tags")
 
     return camel_dict_to_snake_dict(lambda_info)

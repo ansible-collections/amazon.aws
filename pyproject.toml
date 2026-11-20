@@ -21,6 +21,12 @@ ruff = [
     # Pin exactly so a floating ruff release cannot widen the default ruleset under us.
     "ruff==0.16.10",
 ]
+# Tool pins for the tox-ansible-matrix composite action. Keep in sync with
+# .github/actions/tox-ansible-matrix/README.md.
+matrix = [
+    "tox-ansible==26.9.0",
+    "tox-uv-bare==1.36.0",
+]
 
 [tool.uv]
 package = false
@@ -31,9 +37,10 @@ package = false
 [tool.tox-ansible]
 # Persistent unit coverage for Sonar/diff-cover; pass --cov-report=xml via posargs when needed.
 coverage = true
+downstream = true
 molecule = "false"
 # Integration tests stay on GHA — do not fan out AWS-backed envs locally.
-skip = ["integration-"]
+skip = ["integration-", "2.16"]
 
 [tool.flake8]
 # Kept for flake8-cognitive-complexity (CCR001). Style linting is owned by ruff.

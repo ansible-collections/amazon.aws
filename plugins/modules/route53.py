@@ -911,10 +911,10 @@ def main():
             module.exit_json(changed=False)
         except botocore.exceptions.WaiterError as e:
             module.fail_json_aws(e, msg="Timeout waiting for resource records changes to be applied")
-        except (
+        except (  # pylint: disable=duplicate-except
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
-        ) as e:  # pylint: disable=duplicate-except
+        ) as e:
             module.fail_json_aws(e, msg="Failed to update records")
         except Exception as e:
             module.fail_json(msg=f"Unhandled exception. ({to_native(e)})")
