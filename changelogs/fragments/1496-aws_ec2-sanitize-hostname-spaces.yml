@@ -1,0 +1,4 @@
+bugfixes:
+  - aws_ec2 inventory plugin - replace whitespace in hostnames derived from instance tags with underscores
+    so that hosts whose tag value contains spaces can be targeted on the command line
+    (https://github.com/ansible-collections/amazon.aws/issues/1496).
