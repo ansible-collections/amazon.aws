@@ -69,12 +69,16 @@ collection's policy to support the minor versions of ``botocore`` and ``boto3`` 
 12 months prior to the most recent major collection release.  SDK support for Python versions also
 drives which versions of Python the collections support.
 
+``meta/ee-requirements.txt`` is the runtime source of truth for the SDK floor version.
 SDK dependencies need to be updated in a number of places, primarily:
 
 * README.md
-* constraints.txt files (for our tests)
+* ``meta/ee-requirements.txt`` (runtime source of truth)
+* ``tests/test-constraints.in`` (pinned floor for tests)
 * ``ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTOCORE_VERSION``
 * ``ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTO3_VERSION``
+
+The ``check-ee-requirements`` CI workflow asserts these stay in sync automatically.
 
 The pull request to update the SDK requirements can also include dropping explicit requirements for a
 minimum ``boto3`` or ``botocore`` version in modules.  However, dropping code that maintains
