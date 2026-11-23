@@ -168,13 +168,16 @@ or abandon the deprecation.</p>
 collection’s policy to support the minor versions of <code class="docutils literal notranslate"><span class="pre">botocore</span></code> and <code class="docutils literal notranslate"><span class="pre">boto3</span></code> that were released
 12 months prior to the most recent major collection release.  SDK support for Python versions also
 drives which versions of Python the collections support.</p>
-<p>SDK dependencies need to be updated in a number of places, primarily:</p>
+<p><code class="docutils literal notranslate"><span class="pre">meta/ee-requirements.txt</span></code> is the runtime source of truth for the SDK floor version.
+SDK dependencies need to be updated in a number of places, primarily:</p>
 <ul class="simple">
 <li><p>README.md</p></li>
-<li><p>constraints.txt files (for our tests)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">meta/ee-requirements.txt</span></code> (runtime source of truth)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tests/test-constraints.in</span></code> (pinned floor for tests)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTOCORE_VERSION</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ansible_collections.amazon.aws.plugins.module_utils.botocore.MINIMUM_BOTO3_VERSION</span></code></p></li>
 </ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">check-ee-requirements</span></code> CI workflow asserts these stay in sync automatically.</p>
 <p>The pull request to update the SDK requirements can also include dropping explicit requirements for a
 minimum <code class="docutils literal notranslate"><span class="pre">boto3</span></code> or <code class="docutils literal notranslate"><span class="pre">botocore</span></code> version in modules.  However, dropping code that maintains
 backwards compatible support for an older SDK version would be a breaking change and must not be
