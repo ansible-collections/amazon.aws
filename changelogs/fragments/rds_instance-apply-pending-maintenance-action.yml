@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_instance - add ``apply_pending_maintenance_action`` option to apply a scheduled pending maintenance action (such as an engine version upgrade or OS patch) to a DB instance instead of waiting for the maintenance window (https://github.com/ansible-collections/amazon.aws/pull/3263).
