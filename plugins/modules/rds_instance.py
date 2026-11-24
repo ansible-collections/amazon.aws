@@ -39,7 +39,7 @@ options:
           - The module first checks the pending maintenance actions for the instance. If no pending action matches
             O(apply_pending_maintenance_action.apply_action), the module makes no change (C(changed=false)).
         type: dict
-        version_added: 13.0.0
+        version_added: 12.2.0
         suboptions:
             apply_action:
                 description:
@@ -1594,17 +1594,17 @@ def ensure_iam_roles(client, module: AnsibleAWSModule, instance_id: str) -> bool
     return changed
 
 
-def ensure_pending_maintenance_action(client, module: AnsibleAWSModule, instance_id: str) -> bool:
+def ensure_pending_maintenance_action(client, module: AnsibleAWSModule, instance: Dict[str, Any]) -> bool:
     """
     Applies a scheduled pending maintenance action to the DB instance if one matches the requested action.
 
     Checks the instance's pending maintenance actions first and is a no-op if no pending action matches the
-    requested apply_action.
+    requested apply_action or if the matching action is already in the requested opt-in state.
 
         Parameters:
             client: boto3 rds client
             module: AnsibleAWSModule
-            instance_id (str): Existing DB instance identifier
+            instance (dict): Current instance attributes as returned by get_instance()
 
         Returns:
             changed (bool): True if a matching pending maintenance action was applied, False if there was nothing to do
@@ -1613,7 +1613,6 @@ def ensure_pending_maintenance_action(client, module: AnsibleAWSModule, instance
     apply_action = requested["apply_action"]
     opt_in_type = requested["opt_in_type"]
 
-    instance = get_instance(client, module, instance_id)
     if not instance:
         return False
     resource_arn = instance["DBInstanceArn"]
@@ -1621,7 +1620,7 @@ def ensure_pending_maintenance_action(client, module: AnsibleAWSModule, instance
     try:
         pending = describe_pending_maintenance_actions(client, ResourceIdentifier=resource_arn)
     except AnsibleRDSError as e:
-        module.fail_json_aws(e, msg=f"Failed to describe pending maintenance actions for {instance_id}")
+        module.fail_json_aws(e, msg=f"Failed to describe pending maintenance actions for {resource_arn}")
 
     matching = None
     for resource in pending:
@@ -1634,6 +1633,17 @@ def ensure_pending_maintenance_action(client, module: AnsibleAWSModule, instance
 
     # No pending maintenance action matches the request, nothing to do
     if matching is None:
+        return False
+
+    # An empty string or missing OptInStatus means no opt-in request is currently active
+    current_opt_in = matching.get("OptInStatus") or None
+    if opt_in_type == "undo-opt-in":
+        # Nothing to undo if there is no active opt-in or it is already undone. An existing "immediate"
+        # opt-in cannot be undone, so let the request proceed and AWS raise the expected error.
+        if current_opt_in in (None, "undo-opt-in"):
+            return False
+    elif current_opt_in == opt_in_type:
+        # The action is already in the requested opt-in state
         return False
 
     if module.check_mode:
@@ -1929,7 +1939,7 @@ def main():
 
             # Apply a pending maintenance action if requested
             if module.params.get("apply_pending_maintenance_action"):
-                changed |= ensure_pending_maintenance_action(client, module, instance_id)
+                changed |= ensure_pending_maintenance_action(client, module, instance)
 
             # Check IAM roles
             if module.params.get("iam_roles") or module.params.get("purge_iam_roles"):

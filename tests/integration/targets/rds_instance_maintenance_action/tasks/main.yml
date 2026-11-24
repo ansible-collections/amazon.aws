@@ -12,18 +12,6 @@
       region: "{{ aws_region }}"
 
   block:
-    - name: Ensure the resource doesn't exist
-      amazon.aws.rds_instance:
-        id: "{{ instance_id }}"
-        state: absent
-        skip_final_snapshot: true
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - not result.changed
-      ignore_errors: true
-
     - name: Create a mariadb instance
       amazon.aws.rds_instance:
         id: "{{ instance_id }}"
