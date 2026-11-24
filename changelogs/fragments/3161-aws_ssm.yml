@@ -1,0 +1,2 @@
+bugfixes:
+  - "aws_ssm connection plugin - correctly mark string options as using type ``string`` (https://github.com/ansible-collections/amazon.aws/pull/3161)."
