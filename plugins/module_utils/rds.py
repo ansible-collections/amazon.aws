@@ -27,6 +27,7 @@ describe_db_snapshots = _api.describe_db_snapshots
 describe_global_clusters = _api.describe_global_clusters
 describe_option_groups = _api.describe_option_groups
 describe_db_subnet_groups = _api.describe_db_subnet_groups
+describe_pending_maintenance_actions = _api.describe_pending_maintenance_actions
 list_tags_for_resource = _api.list_tags_for_resource
 get_final_identifier = _api.get_final_identifier
 handle_errors = _api.handle_errors

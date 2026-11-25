@@ -8,6 +8,8 @@ from unittest.mock import patch
 
 import pytest
 
+from ansible.module_utils.common.arg_spec import ArgumentSpecValidator
+
 from ansible_collections.amazon.aws.plugins.module_utils.rds import AnsibleRDSError
 from ansible_collections.amazon.aws.plugins.modules import rds_instance
 from ansible_collections.amazon.aws.plugins.modules.rds_instance import get_instance
@@ -254,5 +256,147 @@ class TestGetParametersSelfManagedAD:
         m_format_params.return_value = raw_parameters.copy()
 
         rds_instance.get_parameters(client, module, raw_parameters, "create_db_instance")
-
         m_format_params.assert_called_once_with(client, module, raw_parameters, "create_db_instance", format_tags=False)
+
+
+DB_INSTANCE_ARN = "arn:aws:rds:us-east-1:123456789012:db:my-instance"
+
+
+INSTANCE = {"DBInstanceArn": DB_INSTANCE_ARN}
+
+
+def _pending(action="system-update", opt_in_status=""):
+    detail = {"Action": action}
+    if opt_in_status is not None:
+        detail["OptInStatus"] = opt_in_status
+    return [{"ResourceIdentifier": DB_INSTANCE_ARN, "PendingMaintenanceActionDetails": [detail]}]
+
+
+@patch(mod_name + ".call_method")
+@patch(mod_name + ".describe_pending_maintenance_actions")
+def test_ensure_pending_maintenance_action_applied(m_describe, m_call_method):
+    client = MagicMock()
+    module = MagicMock()
+    module.check_mode = False
+    module.params = {
+        "apply_pending_maintenance_action": {"apply_action": "system-update", "opt_in_type": "immediate"},
+    }
+    m_describe.return_value = _pending(action="system-update", opt_in_status="")
+    m_call_method.return_value = ({}, True)
+
+    changed = rds_instance.ensure_pending_maintenance_action(client, module, INSTANCE)
+
+    assert changed is True
+    m_describe.assert_called_once_with(client, ResourceIdentifier=DB_INSTANCE_ARN)
+    m_call_method.assert_called_once_with(
+        client,
+        module,
+        method_name="apply_pending_maintenance_action",
+        parameters={
+            "ResourceIdentifier": DB_INSTANCE_ARN,
+            "ApplyAction": "system-update",
+            "OptInType": "immediate",
+        },
+    )
+
+
+@patch(mod_name + ".call_method")
+@patch(mod_name + ".describe_pending_maintenance_actions")
+def test_ensure_pending_maintenance_action_no_pending(m_describe, m_call_method):
+    client = MagicMock()
+    module = MagicMock()
+    module.check_mode = False
+    module.params = {
+        "apply_pending_maintenance_action": {"apply_action": "db-upgrade", "opt_in_type": "immediate"},
+    }
+    # A pending action exists, but it does not match the requested apply_action
+    m_describe.return_value = _pending(action="system-update")
+
+    changed = rds_instance.ensure_pending_maintenance_action(client, module, INSTANCE)
+
+    assert changed is False
+    m_call_method.assert_not_called()
+
+
+@patch(mod_name + ".call_method")
+@patch(mod_name + ".describe_pending_maintenance_actions")
+def test_ensure_pending_maintenance_action_already_opted_in(m_describe, m_call_method):
+    client = MagicMock()
+    module = MagicMock()
+    module.check_mode = False
+    module.params = {
+        "apply_pending_maintenance_action": {"apply_action": "system-update", "opt_in_type": "next-maintenance"},
+    }
+    # The action is already opted-in to the requested type: idempotent no-op
+    m_describe.return_value = _pending(action="system-update", opt_in_status="next-maintenance")
+
+    changed = rds_instance.ensure_pending_maintenance_action(client, module, INSTANCE)
+
+    assert changed is False
+    m_call_method.assert_not_called()
+
+
+@patch(mod_name + ".call_method")
+@patch(mod_name + ".describe_pending_maintenance_actions")
+def test_ensure_pending_maintenance_action_undo_without_opt_in(m_describe, m_call_method):
+    client = MagicMock()
+    module = MagicMock()
+    module.check_mode = False
+    module.params = {
+        "apply_pending_maintenance_action": {"apply_action": "system-update", "opt_in_type": "undo-opt-in"},
+    }
+    # Nothing has been opted-in, so there is nothing to undo
+    m_describe.return_value = _pending(action="system-update", opt_in_status="")
+
+    changed = rds_instance.ensure_pending_maintenance_action(client, module, INSTANCE)
+
+    assert changed is False
+    m_call_method.assert_not_called()
+
+
+@patch(mod_name + ".call_method")
+@patch(mod_name + ".describe_pending_maintenance_actions")
+def test_ensure_pending_maintenance_action_check_mode(m_describe, m_call_method):
+    client = MagicMock()
+    module = MagicMock()
+    module.check_mode = True
+    module.params = {
+        "apply_pending_maintenance_action": {"apply_action": "system-update", "opt_in_type": "immediate"},
+    }
+    m_describe.return_value = _pending(action="system-update", opt_in_status="")
+
+    changed = rds_instance.ensure_pending_maintenance_action(client, module, INSTANCE)
+
+    # check_mode reports the change without calling the API
+    assert changed is True
+    m_call_method.assert_not_called()
+
+
+class _StopMain(Exception):
+    """Sentinel used to stop rds_instance.main() once the argument spec is built."""
+
+
+def test_apply_pending_maintenance_action_argument_spec_validation():
+    captured = {}
+
+    def capture(**kwargs):
+        captured["argument_spec"] = kwargs["argument_spec"]
+        raise _StopMain
+
+    with patch(mod_name + ".AnsibleAWSModule", side_effect=capture):
+        with pytest.raises(_StopMain):
+            rds_instance.main()
+
+    argument_spec = captured["argument_spec"]
+
+    valid = {
+        "db_instance_identifier": "my-instance",
+        "apply_pending_maintenance_action": {"apply_action": "system-update", "opt_in_type": "immediate"},
+    }
+    invalid = {
+        "db_instance_identifier": "my-instance",
+        "apply_pending_maintenance_action": {"apply_action": "not-a-real-action", "opt_in_type": "immediate"},
+    }
+
+    assert not ArgumentSpecValidator(argument_spec).validate(valid).error_messages
+    assert ArgumentSpecValidator(argument_spec).validate(invalid).error_messages

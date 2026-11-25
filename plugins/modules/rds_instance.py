@@ -32,6 +32,39 @@ options:
         choices: ['present', 'absent', 'terminated', 'running', 'started', 'stopped', 'rebooted', 'restarted']
         default: 'present'
         type: str
+    apply_pending_maintenance_action:
+        description:
+          - Apply a pending maintenance action that is already scheduled for the DB instance (for example an engine
+            version upgrade or OS patch) rather than waiting for the maintenance window.
+          - The module first checks the pending maintenance actions for the instance. If no pending action matches
+            O(apply_pending_maintenance_action.apply_action), the module makes no change (C(changed=false)).
+        type: dict
+        version_added: 12.2.0
+        suboptions:
+            apply_action:
+                description:
+                  - The pending maintenance action to apply to the DB instance.
+                type: str
+                required: true
+                choices:
+                  - system-update
+                  - db-upgrade
+                  - hardware-maintenance
+                  - ca-certificate-rotation
+                  - db-setting-change
+            opt_in_type:
+                description:
+                  - The type of opt-in request, or to undo an opt-in request.
+                  - V(immediate) applies the maintenance action immediately.
+                  - V(next-maintenance) applies the maintenance action during the next maintenance window.
+                  - V(undo-opt-in) cancels any existing O(apply_pending_maintenance_action.opt_in_type) request of
+                    type V(immediate) or V(next-maintenance).
+                type: str
+                required: true
+                choices:
+                  - immediate
+                  - next-maintenance
+                  - undo-opt-in
     creation_source:
         description: Which source to use if restoring from a template (an existing instance, S3 bucket, or snapshot).
         choices: ['snapshot', 's3', 'instance']
@@ -595,6 +628,13 @@ EXAMPLES = r"""
     engine: mariadb
     state: present
   register: restored_db
+
+- name: Apply a pending system update to a DB instance immediately
+  amazon.aws.rds_instance:
+    id: 'my-database'
+    apply_pending_maintenance_action:
+      apply_action: system-update
+      opt_in_type: immediate
 """
 
 RETURN = r"""
@@ -922,6 +962,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 from ansible_collections.amazon.aws.plugins.module_utils.rds import compare_iam_roles
 from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_db_instances
+from ansible_collections.amazon.aws.plugins.module_utils.rds import describe_pending_maintenance_actions
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import format_rds_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
@@ -1553,6 +1594,74 @@ def ensure_iam_roles(client, module: AnsibleAWSModule, instance_id: str) -> bool
     return changed
 
 
+def ensure_pending_maintenance_action(client, module: AnsibleAWSModule, instance: Dict[str, Any]) -> bool:
+    """
+    Applies a scheduled pending maintenance action to the DB instance if one matches the requested action.
+
+    Checks the instance's pending maintenance actions first and is a no-op if no pending action matches the
+    requested apply_action or if the matching action is already in the requested opt-in state.
+
+        Parameters:
+            client: boto3 rds client
+            module: AnsibleAWSModule
+            instance (dict): Current instance attributes as returned by get_instance()
+
+        Returns:
+            changed (bool): True if a matching pending maintenance action was applied, False if there was nothing to do
+    """
+    requested = module.params["apply_pending_maintenance_action"]
+    apply_action = requested["apply_action"]
+    opt_in_type = requested["opt_in_type"]
+
+    if not instance:
+        return False
+    resource_arn = instance["DBInstanceArn"]
+
+    try:
+        pending = describe_pending_maintenance_actions(client, ResourceIdentifier=resource_arn)
+    except AnsibleRDSError as e:
+        module.fail_json_aws(e, msg=f"Failed to describe pending maintenance actions for {resource_arn}")
+
+    matching = None
+    for resource in pending:
+        for detail in resource.get("PendingMaintenanceActionDetails", []):
+            if detail.get("Action") == apply_action:
+                matching = detail
+                break
+        if matching:
+            break
+
+    # No pending maintenance action matches the request, nothing to do
+    if matching is None:
+        return False
+
+    # An empty string or missing OptInStatus means no opt-in request is currently active
+    current_opt_in = matching.get("OptInStatus") or None
+    if opt_in_type == "undo-opt-in":
+        # Nothing to undo if there is no active opt-in or it is already undone. An existing "immediate"
+        # opt-in cannot be undone, so let the request proceed and AWS raise the expected error.
+        if current_opt_in in (None, "undo-opt-in"):
+            return False
+    elif current_opt_in == opt_in_type:
+        # The action is already in the requested opt-in state
+        return False
+
+    if module.check_mode:
+        return True
+
+    _result, changed = call_method(
+        client,
+        module,
+        method_name="apply_pending_maintenance_action",
+        parameters={
+            "ResourceIdentifier": resource_arn,
+            "ApplyAction": apply_action,
+            "OptInType": opt_in_type,
+        },
+    )
+    return changed
+
+
 def update_instance_state(client, module: AnsibleAWSModule, instance: Dict[str, Any], state: str) -> bool:
     """
     Starts, stops, or reboots an instance given the desired state and current instance attributes.
@@ -1637,6 +1746,27 @@ def main():
         read_replica=dict(type="bool"),
         wait=dict(type="bool", default=True),
         purge_security_groups=dict(type="bool", default=True),
+        apply_pending_maintenance_action=dict(
+            type="dict",
+            options=dict(
+                apply_action=dict(
+                    type="str",
+                    required=True,
+                    choices=[
+                        "system-update",
+                        "db-upgrade",
+                        "hardware-maintenance",
+                        "ca-certificate-rotation",
+                        "db-setting-change",
+                    ],
+                ),
+                opt_in_type=dict(
+                    type="str",
+                    required=True,
+                    choices=["immediate", "next-maintenance", "undo-opt-in"],
+                ),
+            ),
+        ),
     )
 
     parameter_options = dict(
@@ -1806,6 +1936,10 @@ def main():
             # Check tagging/promoting/rebooting/starting/stopping instance
             if not module.check_mode or instance:
                 changed |= update_instance(client, module, instance, instance_id)
+
+            # Apply a pending maintenance action if requested
+            if module.params.get("apply_pending_maintenance_action"):
+                changed |= ensure_pending_maintenance_action(client, module, instance)
 
             # Check IAM roles
             if module.params.get("iam_roles") or module.params.get("purge_iam_roles"):

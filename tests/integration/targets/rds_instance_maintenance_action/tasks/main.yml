@@ -1,0 +1,81 @@
+---
+# Note: a real pending maintenance action cannot be reliably provisioned on demand in CI, so this
+# target exercises the deterministic paths: the no-op when no matching action is pending (plain and
+# check_mode) and argument validation. Applying a genuine pending action is covered by the unit tests.
+- name: Rds_instance / apply pending maintenance action integration tests
+
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+    - name: Create a mariadb instance
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+        tags:
+          Name: "{{ instance_id }}"
+          Created_by: Ansible rds_instance tests
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.changed
+
+    - name: Apply a pending maintenance action that is not pending - check_mode
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        apply_pending_maintenance_action:
+          apply_action: system-update
+          opt_in_type: immediate
+      register: result
+      check_mode: true
+
+    - name: Assert no change when no matching action is pending (check_mode)
+      ansible.builtin.assert:
+        that:
+          - not result.changed
+
+    - name: Apply a pending maintenance action that is not pending
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        apply_pending_maintenance_action:
+          apply_action: system-update
+          opt_in_type: immediate
+      register: result
+
+    - name: Assert no change when no matching action is pending
+      ansible.builtin.assert:
+        that:
+          - not result.changed
+
+    - name: Apply a pending maintenance action with an invalid action name
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        apply_pending_maintenance_action:
+          apply_action: not-a-real-action
+          opt_in_type: immediate
+      register: result
+      ignore_errors: true
+
+    - name: Assert invalid action name is rejected
+      ansible.builtin.assert:
+        that:
+          - result.failed
+
+  always:
+    - name: Remove DB instance
+      amazon.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: true
+        wait: false
+      ignore_errors: true

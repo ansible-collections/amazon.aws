@@ -71,6 +71,7 @@ instance_method_names = [
     "reboot_db_instance",
     "add_role_to_db_instance",
     "remove_role_from_db_instance",
+    "apply_pending_maintenance_action",
 ]
 
 cluster_snapshot_method_names = [
@@ -115,6 +116,7 @@ _RESOURCE_CONFIGS = {
             "remove_role_from_db_instance": {"waiter": "role_disassociated"},
             "promote_read_replica": {"waiter": "read_replica_promoted"},
             "restore_db_instance_from_db_snapshot": {"retry_codes": ["InvalidDBSnapshotState"]},
+            "apply_pending_maintenance_action": {"waiter": "db_instance_available"},
         },
     },
     "cluster_snapshot": {

@@ -1,0 +1,6 @@
+---
+instance_id: ansible-test-{{ tiny_prefix }}
+username: test
+password: "{{ lookup('password', 'dev/null length=12 chars=ascii_letters,digits') }}"
+db_instance_class: db.t3.micro
+allocated_storage: 20
