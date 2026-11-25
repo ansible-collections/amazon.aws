@@ -1,0 +1,295 @@
+---
+- name: Integration tests for the s3_table_bucket module
+  module_defaults:
+    group/aws:
+      access_key: "{{ aws_access_key }}"
+      secret_key: "{{ aws_secret_key }}"
+      session_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Get ARN of calling user
+      amazon.aws.aws_caller_info:
+      register: aws_caller_info
+
+    - name: Set table bucket name and ARN based on resource_prefix
+      ansible.builtin.set_fact:
+        s3_table_bucket_name: "{{ resource_prefix }}-tb"
+        s3_table_bucket_arn: "arn:aws:s3tables:{{ aws_region }}:{{ aws_caller_info.account }}:bucket/{{ resource_prefix }}-tb"
+
+    - name: Create a KMS key for table bucket encryption
+      amazon.aws.kms_key:
+        alias: "{{ resource_prefix }}-kms-s3tables"
+        policy: "{{ lookup('template', 'kms_policy.j2') }}"
+        state: present
+        enabled: true
+      register: kms_key
+
+    # Scenario 1: missing table_bucket_name
+    - name: Create a table bucket without a name (expected to fail)
+      amazon.aws.s3_table_bucket:
+        state: present
+      register: _missing_name
+      ignore_errors: true
+
+    - name: Assert failure
+      ansible.builtin.assert:
+        that:
+          - _missing_name is failed
+          - '"table_bucket_name" in _missing_name.msg'
+
+    # Scenario 2: invalid bucket name
+    - name: Create a table bucket with an invalid name (expected to fail)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "Invalid_Name_!"
+        state: present
+      register: _invalid_name
+      ignore_errors: true
+
+    - name: Assert failure
+      ansible.builtin.assert:
+        that:
+          - _invalid_name is failed
+
+    # Scenario 3: create (check mode / real / rerun)
+    - name: Create a table bucket (check_mode)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        tags:
+          Phase: "initial"
+        encryption_configuration:
+          sse_algorithm: "AES256"
+        state: present
+      check_mode: true
+      register: _create_check
+
+    - name: Assert check mode reports the pending creation
+      ansible.builtin.assert:
+        that:
+          - _create_check is successful
+          - _create_check.changed
+          - '"msg" in _create_check'
+          - "_create_check.msg is match('Check mode: would have .*')"
+
+    - name: Assert the table bucket was not created
+      amazon.aws.s3_table_bucket_info:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+      register: _info_after_check
+      failed_when: _info_after_check.table_buckets | length > 0
+
+    - name: Create a table bucket
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        tags:
+          Phase: "initial"
+        encryption_configuration:
+          sse_algorithm: "AES256"
+        state: present
+      register: _create
+
+    - name: Assert the table bucket was created
+      ansible.builtin.assert:
+        that:
+          - _create is successful
+          - _create.changed
+          - '"table_bucket" in _create'
+          - _create.table_bucket.name == s3_table_bucket_name
+          - "_create.table_bucket.tags == {'Phase': 'initial'}"
+          - _create.table_bucket.encryption_configuration.sse_algorithm == "AES256"
+
+    - name: Create the same table bucket again (idempotency)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        tags:
+          Phase: "initial"
+        encryption_configuration:
+          sse_algorithm: "AES256"
+        state: present
+      register: _create_rerun
+
+    - name: Assert nothing changed
+      ansible.builtin.assert:
+        that:
+          - _create_rerun is successful
+          - not _create_rerun.changed
+          - _create_rerun.table_bucket.name == s3_table_bucket_name
+
+    # Scenario 4: info after create
+    - name: Get information about the table bucket
+      amazon.aws.s3_table_bucket_info:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+      register: _info_after_create
+
+    - name: Assert the info module returns the created bucket and no tables
+      ansible.builtin.assert:
+        that:
+          - _info_after_create is successful
+          - _info_after_create.table_buckets | length == 1
+          - _info_after_create.table_buckets[0].name == s3_table_bucket_name
+          - _info_after_create.table_buckets[0].tables == []
+
+    # Scenario 5: tag update (check mode / real / rerun)
+    - name: Replace the tags on the table bucket (check_mode)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        tags:
+          Phase: "updated"
+        state: present
+      check_mode: true
+      register: _tags_check
+
+    - name: Assert check mode reports the pending update
+      ansible.builtin.assert:
+        that:
+          - _tags_check is successful
+          - _tags_check.changed
+          - "_tags_check.msg is match('Check mode: would have .*')"
+
+    - name: Replace the tags on the table bucket
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        tags:
+          Phase: "updated"
+        state: present
+      register: _tags_update
+
+    - name: Assert the tags were replaced
+      ansible.builtin.assert:
+        that:
+          - _tags_update is successful
+          - _tags_update.changed
+          - "_tags_update.table_bucket.tags == {'Phase': 'updated'}"
+
+    - name: Replace the tags on the table bucket again (idempotency)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        tags:
+          Phase: "updated"
+        state: present
+      register: _tags_update_rerun
+
+    - name: Assert nothing changed
+      ansible.builtin.assert:
+        that:
+          - _tags_update_rerun is successful
+          - not _tags_update_rerun.changed
+
+    # Scenario 6: encryption update (check mode / real / rerun)
+    - name: Update the encryption configuration to use the test KMS key (check_mode)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        encryption_configuration:
+          sse_algorithm: "aws:kms"
+          kms_key_arn: "{{ kms_key.key_arn }}"
+        state: present
+      check_mode: true
+      register: _encryption_check
+
+    - name: Assert check mode reports the pending update
+      ansible.builtin.assert:
+        that:
+          - _encryption_check is successful
+          - _encryption_check.changed
+          - "_encryption_check.msg is match('Check mode: would have .*')"
+
+    - name: Update the encryption configuration to use the test KMS key
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        encryption_configuration:
+          sse_algorithm: "aws:kms"
+          kms_key_arn: "{{ kms_key.key_arn }}"
+        state: present
+      register: _encryption_update
+
+    - name: Assert the encryption configuration was updated
+      ansible.builtin.assert:
+        that:
+          - _encryption_update is successful
+          - _encryption_update.changed
+          - _encryption_update.table_bucket.encryption_configuration.sse_algorithm == "aws:kms"
+          - _encryption_update.table_bucket.encryption_configuration.kms_key_arn == kms_key.key_arn
+
+    - name: Update the encryption configuration again (idempotency)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        encryption_configuration:
+          sse_algorithm: "aws:kms"
+          kms_key_arn: "{{ kms_key.key_arn }}"
+        state: present
+      register: _encryption_update_rerun
+
+    - name: Assert nothing changed
+      ansible.builtin.assert:
+        that:
+          - _encryption_update_rerun is successful
+          - not _encryption_update_rerun.changed
+
+    # Scenario 7: delete (check mode / real / rerun)
+    - name: Delete the table bucket (check_mode)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        state: absent
+      check_mode: true
+      register: _delete_check
+
+    - name: Assert check mode reports the pending deletion
+      ansible.builtin.assert:
+        that:
+          - _delete_check is successful
+          - _delete_check.changed
+          - "_delete_check.msg is match('Check mode: would have .*')"
+
+    - name: Assert the table bucket still exists
+      amazon.aws.s3_table_bucket_info:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+      register: _info_delete_check
+      failed_when: _info_delete_check.table_buckets | length == 0
+
+    - name: Delete the table bucket
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        state: absent
+      register: _delete
+
+    - name: Assert the table bucket was deleted
+      ansible.builtin.assert:
+        that:
+          - _delete is successful
+          - _delete.changed
+          - _delete.table_bucket == {}
+
+    - name: Get information about the table bucket after deletion
+      amazon.aws.s3_table_bucket_info:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+      register: _info_after_delete
+
+    - name: Assert the info module returns an empty list
+      ansible.builtin.assert:
+        that:
+          - _info_after_delete is successful
+          - _info_after_delete.table_buckets == []
+
+    - name: Delete the table bucket again (idempotency)
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        state: absent
+      register: _delete_rerun
+
+    - name: Assert nothing changed
+      ansible.builtin.assert:
+        that:
+          - _delete_rerun is successful
+          - not _delete_rerun.changed
+
+  always:
+    - name: Delete the table bucket
+      amazon.aws.s3_table_bucket:
+        table_bucket_name: "{{ s3_table_bucket_name }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Delete the KMS key
+      amazon.aws.kms_key:
+        state: absent
+        alias: "{{ resource_prefix }}-kms-s3tables"
+        pending_window: 7
+      ignore_errors: true
