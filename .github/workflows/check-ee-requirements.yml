@@ -1,7 +1,8 @@
 ---
 # Keep the SDK floor version in sync across every place it's declared:
 # tests/test-constraints.in, meta/ee-requirements.txt, plugins/module_utils/botocore.py,
-# tests/unit/.../test_minimal_versions.py, and tests/integration/constraints.txt.
+# tests/unit/.../test_minimal_versions.py, tests/integration/constraints.txt,
+# and plugins/doc_fragments/boto3.py.
 #
 # Catches a bump to one file without the others, same shape as
 # check-unit-requirements.yml.
@@ -32,6 +33,7 @@ on:
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
       - tests/integration/constraints.txt
+      - plugins/doc_fragments/boto3.py
   push:
     branches:
       - main
@@ -42,6 +44,7 @@ on:
       - plugins/module_utils/botocore.py
       - tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py
       - tests/integration/constraints.txt
+      - plugins/doc_fragments/boto3.py
 
 jobs:
   floor-versions-in-sync:

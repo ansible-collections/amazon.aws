@@ -25,6 +25,7 @@ def main():
     botocore_py = "plugins/module_utils/botocore.py"
     test_minimal = "tests/unit/plugins/module_utils/modules/ansible_aws_module/test_minimal_versions.py"
     integration_constraints = "tests/integration/constraints.txt"
+    boto3_fragment = "plugins/doc_fragments/boto3.py"
 
     values = {
         ("test-constraints.in", "botocore"): pin(constraints, r"^botocore==(\d+(?:\.\d+)+)", "botocore=="),
@@ -59,6 +60,11 @@ def main():
             integration_constraints, r"^awscli==(\d+(?:\.\d+)+)", "awscli=="
         ),
     }
+    for section in ("DOCUMENTATION", "MODULES", "PLUGINS"):
+        for package in ("botocore", "boto3"):
+            values[(f"doc_fragments/boto3.py {section}", package)] = pin(
+                boto3_fragment, rf'{section} = r"""[^"]*?- {package} >= (\d+(?:\.\d+)+)', f"{package} in {section}"
+            )
 
     by_package = {}
     for (source, package), version in values.items():
