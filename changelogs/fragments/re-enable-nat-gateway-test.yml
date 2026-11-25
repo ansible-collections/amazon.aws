@@ -1,0 +1,3 @@
+---
+trivial:
+  - ec2_vpc_nat_gateway - re-enable the ``ec2_vpc_nat_gateway_regional`` integration target by removing the ``disabled`` alias, creating and attaching an Internet Gateway before public regional NAT gateway creation (required to avoid ``Gateway.NotAttached``), deleting the IGW during cleanup, and hardening always-block cleanup for non-available NAT states (https://github.com/ansible-collections/amazon.aws/pull/3243).
