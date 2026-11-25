@@ -2,7 +2,19 @@
 # Managed with prek (https://github.com/j178/prek), a drop-in replacement for
 # pre-commit. See CONTRIBUTING.md for setup and usage.
 #
-# Hook set: basic hygiene + ruff (check/format) + ansible-lint.
+# Hook set: basic hygiene + ruff (check/format) + ansible-lint + AWS variable sync.
+
+ci:
+  autofix_commit_msg: "update collection variables"
+  autofix_prs: true
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
+  autoupdate_schedule: weekly
+  # The ruff hook is `language: system` and shells out to tox, so pre-commit
+  # installs nothing for it and tox has to already be on PATH. That holds for a
+  # local checkout but not for pre-commit.ci's environment.
+  skip:
+    - ruff
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -51,3 +63,26 @@ repos:
     hooks:
       - id: ansible-lint
         args: [--offline]
+
+  # Replaces .github/workflows/update-variables.yml, which called the
+  # update_aws_variables.yml reusable workflow and pushed commits back to the
+  # pull request with a write-scoped token. That approach cannot work for pull
+  # requests from forks: GITHUB_TOKEN is scoped to the base repository, so the
+  # push to the contributor's fork is rejected.
+  - repo: https://github.com/ansible-network/github_actions
+    rev: 38b45197e14346c2e1b9d4bca048d0ff8c29a9b2 # main as of 2026-11-23
+    hooks:
+      # Was the `user-agent` job: keeps AMAZON_AWS_COLLECTION_VERSION in
+      # plugins/module_utils/common.py in sync with the version in galaxy.yml.
+      - id: update-aws-user-agent
+      #
+      # The `boto-constraints` job is deliberately NOT enabled here.
+      # update_aws_boto_constraints.py reads the boto3/botocore floors from
+      # requirements.txt, but in this collection that file only contains
+      # "-r meta/ee-requirements.txt" and the script does not follow the
+      # include. Its regexes match nothing, both versions resolve to the empty
+      # string, and it rewrites them as empty:
+      #   plugins/module_utils/botocore.py   MINIMUM_BOTOCORE_VERSION = ""
+      #   tests/integration/constraints.txt  botocore==
+      # Enabling it needs an upstream fix first: read meta/ee-requirements.txt,
+      # or fail loudly when no version is found.
