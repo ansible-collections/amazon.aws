@@ -147,6 +147,8 @@ action_groups:
     - s3_bucket_info
     - s3_object
     - s3_object_info
+    - s3_table_bucket
+    - s3_table_bucket_info
     - sts_assume_role
 plugin_routing:
   action:

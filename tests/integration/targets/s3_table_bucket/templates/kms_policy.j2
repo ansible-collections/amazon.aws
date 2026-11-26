@@ -1,0 +1,31 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "EnableIAMUserPermissions",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::{{ aws_caller_info.account }}:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "EnableS3TablesMaintenanceKeyUsage",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "maintenance.s3tables.amazonaws.com"
+            },
+            "Action": [
+                "kms:GenerateDataKey",
+                "kms:Decrypt"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "kms:EncryptionContext:aws:s3:arn": "{{ s3_table_bucket_arn }}/*"
+                }
+            }
+        }
+    ]
+}
