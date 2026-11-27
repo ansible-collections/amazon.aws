@@ -71,7 +71,7 @@ and permissions to create IAM roles.
 You could also deploy [the policies used by the CI](https://github.com/mattclay/aws-terminator/tree/master/aws/policy).
 
 All modules MUST have integration tests for new features.
-Bug fixes for modules that currently have integration tests SHOULD have tests added.  
+Bug fixes for modules that currently have integration tests SHOULD have tests added.
 
 Once you're able to run integration tests for the existing code,
 now start by adding tests in `tests/integration/targets`
